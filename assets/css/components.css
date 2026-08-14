@@ -739,6 +739,79 @@ body.login-view-active .content-body {
   font-weight: 600;
 }
 
+/* ==========================================================================
+   Plano de Estudos - Accordion Interativo dos Módulos Numerados
+   ========================================================================== */
+.study-accordion-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.study-accordion-card:hover {
+  border-color: rgba(255, 183, 3, 0.35);
+}
+
+.study-accordion-header {
+  width: 100%;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  gap: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.study-accordion-header:hover {
+  background: rgba(255, 183, 3, 0.06);
+}
+
+.study-accordion-header.active {
+  background: rgba(255, 183, 3, 0.08);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.study-accordion-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.study-accordion-title h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FFF;
+  margin: 0 0 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.study-accordion-icon {
+  font-size: 1rem;
+  color: var(--accent-gold);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.study-accordion-body {
+  display: none;
+  padding: 20px;
+  animation: fadeIn 0.25s ease;
+}
+
+.study-accordion-body.active {
+  display: block;
+}
+
 /* 9. Modals & Video Player */
 .modal-overlay {
   position: fixed;

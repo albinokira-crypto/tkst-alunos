@@ -1040,69 +1040,117 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Curriculum Sections -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+      <!-- Curriculum Sections as Accordion Buttons -->
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 16px;">
         
         <!-- 1. KIHON -->
-        <div class="curriculum-section">
-          <div class="section-title-group" style="margin-bottom: 14px;">
-            <h3 style="font-size: 1.15rem;"><i class="fas fa-fist-raised" style="color: var(--accent-crimson);"></i> 1. Kihon (Técnicas Fundamentais)</h3>
-            <p>Execução em avanço (Mae) e recuo (Sagate)</p>
-          </div>
+        <div class="study-accordion-card" id="studyCard_kihon">
+          <button type="button" class="study-accordion-header active" id="studyHeader_kihon" onclick="window.TKST_APP.toggleStudyAccordion('kihon')">
+            <div class="study-accordion-title">
+              <i class="fas fa-fist-raised" style="color: var(--accent-crimson); font-size: 1.25rem;"></i>
+              <div>
+                <h3>1. Kihon (Técnicas Fundamentais)</h3>
+                <div style="font-size: 0.78rem; color: #94A3B8;">${curr.kihon.length} técnicas exigidas em avanço (Mae) e recuo (Sagate) • Toque para abrir/fechar</div>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kihon" style="transform: rotate(180deg);"></i>
+          </button>
 
-          <div class="technique-list">
-            ${curr.kihon.map(k => {
-              const isChecked = progress.masteredItems && progress.masteredItems[k.id];
-              return `
-                <div class="technique-item ${isChecked ? 'mastered' : ''}">
-                  <div class="technique-main">
-                    <div class="technique-checkbox ${isChecked ? 'checked' : ''}" onclick="window.TKST_APP.toggleCheck('${k.id}')">
-                      <i class="fas fa-check"></i>
-                    </div>
-                    <div>
-                      <div class="technique-name">${k.technique}</div>
-                      <div class="technique-meta">
-                        <span class="stance">${k.stance}</span> • <span>${k.direction}</span> • <span style="color: #64748B;">${k.count}</span>
+          <div class="study-accordion-body active" id="studyBody_kihon">
+            <div class="technique-list">
+              ${curr.kihon.map(k => {
+                const isChecked = progress.masteredItems && progress.masteredItems[k.id];
+                return `
+                  <div class="technique-item ${isChecked ? 'mastered' : ''}">
+                    <div class="technique-main">
+                      <div class="technique-checkbox ${isChecked ? 'checked' : ''}" onclick="window.TKST_APP.toggleCheck('${k.id}')">
+                        <i class="fas fa-check"></i>
+                      </div>
+                      <div>
+                        <div class="technique-name">${k.technique}</div>
+                        <div class="technique-meta">
+                          <span class="stance">${k.stance}</span> • <span>${k.direction}</span> • <span style="color: #64748B;">${k.count}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              `;
-            }).join('')}
+                `;
+              }).join('')}
+            </div>
           </div>
         </div>
 
-        <!-- 2. KATA & KUMITE & DEFESA PESSOAL -->
-        <div class="curriculum-section">
-          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px;">
-            <h3 style="font-size: 1.15rem; color: #FFF; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-              <i class="fas fa-book-open" style="color: var(--accent-gold);"></i> 2. Kata Exigido
-            </h3>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+        <!-- 2. KATA EXIGIDO -->
+        <div class="study-accordion-card" id="studyCard_kata">
+          <button type="button" class="study-accordion-header" id="studyHeader_kata" onclick="window.TKST_APP.toggleStudyAccordion('kata')">
+            <div class="study-accordion-title">
+              <i class="fas fa-book-open" style="color: var(--accent-gold); font-size: 1.25rem;"></i>
+              <div>
+                <h3>2. Kata Exigido</h3>
+                <div style="font-size: 0.78rem; color: #94A3B8;">${curr.kata.required.join(', ')} • Toque para ver detalhes</div>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kata"></i>
+          </button>
+
+          <div class="study-accordion-body" id="studyBody_kata">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
               ${curr.kata.required.map(kt => `
-                <span class="badge badge-amarela" style="font-size: 0.82rem; padding: 6px 12px; cursor: pointer;" onclick="window.TKST_APP.openKataDetailByName('${kt}')">
-                  🥋 ${kt}
+                <span class="badge badge-amarela" style="font-size: 0.85rem; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="window.TKST_APP.openKataDetailByName('${kt}')">
+                  🥋 ${kt} <i class="fas fa-external-link-alt" style="font-size: 0.7rem; opacity: 0.7;"></i>
                 </span>
               `).join('')}
             </div>
-            <p style="font-size: 0.88rem; color: #94A3B8;">${curr.kata.description}</p>
+            <p style="font-size: 0.9rem; color: #CBD5E1; line-height: 1.6; margin: 0;">${curr.kata.description}</p>
           </div>
+        </div>
 
-          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px;">
-            <h3 style="font-size: 1.15rem; color: #FFF; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-              <i class="fas fa-shield-alt" style="color: var(--accent-blue);"></i> 3. Kumite (Combate)
-            </h3>
-            <div style="color: var(--accent-gold); font-weight: 600; margin-bottom: 4px;">${curr.kumite.type}</div>
-            <p style="font-size: 0.88rem; color: #94A3B8;">${curr.kumite.description}</p>
+        <!-- 3. KUMITE -->
+        <div class="study-accordion-card" id="studyCard_kumite">
+          <button type="button" class="study-accordion-header" id="studyHeader_kumite" onclick="window.TKST_APP.toggleStudyAccordion('kumite')">
+            <div class="study-accordion-title">
+              <i class="fas fa-shield-alt" style="color: var(--accent-blue); font-size: 1.25rem;"></i>
+              <div>
+                <h3>3. Kumite (Combate)</h3>
+                <div style="font-size: 0.78rem; color: #94A3B8;">${curr.kumite.type} • Toque para ver regras e postura</div>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kumite"></i>
+          </button>
+
+          <div class="study-accordion-body" id="studyBody_kumite">
+            <div style="color: var(--accent-gold); font-weight: 700; font-size: 1rem; margin-bottom: 8px;">
+              <i class="fas fa-fist-raised" style="margin-right: 6px;"></i> ${curr.kumite.type}
+            </div>
+            <p style="font-size: 0.9rem; color: #CBD5E1; line-height: 1.6; margin: 0;">${curr.kumite.description}</p>
           </div>
+        </div>
 
-          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px;">
-            <h3 style="font-size: 1.15rem; color: #FFF; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-              <i class="fas fa-user-shield" style="color: var(--accent-emerald);"></i> 4. Defesa Pessoal & Requisitos
-            </h3>
-            <p style="font-size: 0.88rem; color: #E2E8F0; margin-bottom: 12px;"><strong>Defesa Pessoal:</strong> ${curr.defesaPessoal}</p>
-            <div style="font-size: 0.8rem; color: #64748B; margin-bottom: 6px; font-weight: 700; text-transform: uppercase;">Requisitos da Banca:</div>
-            <ul style="padding-left: 18px; font-size: 0.85rem; color: #94A3B8;">
+        <!-- 4. DEFESA PESSOAL & REQUISITOS -->
+        <div class="study-accordion-card" id="studyCard_defesa">
+          <button type="button" class="study-accordion-header" id="studyHeader_defesa" onclick="window.TKST_APP.toggleStudyAccordion('defesa')">
+            <div class="study-accordion-title">
+              <i class="fas fa-user-shield" style="color: var(--accent-emerald); font-size: 1.25rem;"></i>
+              <div>
+                <h3>4. Defesa Pessoal & Requisitos da Banca</h3>
+                <div style="font-size: 0.78rem; color: #94A3B8;">Critérios avaliativos e técnicas complementares • Toque para ver</div>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_defesa"></i>
+          </button>
+
+          <div class="study-accordion-body" id="studyBody_defesa">
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px;">
+              <strong style="color: var(--accent-emerald); display: block; font-size: 0.92rem; margin-bottom: 4px;">
+                <i class="fas fa-shield-virus" style="margin-right: 6px;"></i> Defesa Pessoal:
+              </strong>
+              <span style="font-size: 0.88rem; color: #E2E8F0;">${curr.defesaPessoal}</span>
+            </div>
+
+            <div style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+              <i class="fas fa-clipboard-check" style="color: var(--accent-gold); margin-right: 6px;"></i> Requisitos Avaliados pela Banca Examinadora:
+            </div>
+            <ul style="padding-left: 20px; font-size: 0.88rem; color: #CBD5E1; line-height: 1.7; margin: 0;">
               ${curr.requirements.map(r => `<li>${r}</li>`).join('')}
             </ul>
           </div>
@@ -1793,6 +1841,23 @@ document.addEventListener('DOMContentLoaded', () => {
     selectBelt: (kyu) => {
       selectedBeltKyu = kyu;
       renderMyExam();
+    },
+    toggleStudyAccordion: (sectionId) => {
+      const body = document.getElementById(`studyBody_${sectionId}`);
+      const header = document.getElementById(`studyHeader_${sectionId}`);
+      const icon = document.getElementById(`studyIcon_${sectionId}`);
+      if (!body) return;
+
+      const isOpen = body.classList.contains('active');
+      if (isOpen) {
+        body.classList.remove('active');
+        header?.classList.remove('active');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      } else {
+        body.classList.add('active');
+        header?.classList.add('active');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
     },
     selectGlossaryCategory: (cat) => {
       glossaryCategory = cat;
