@@ -59,7 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let glossaryCategory = 'all';
   let glossarySearchQuery = '';
   let authMode = 'student-login';
-  let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'quizzes', 'files'
+  let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'quizzes', 'files', 'questions'
+  let adminQuizSelectedKyu = 7;
   
   // Quiz State
   let currentQuizIndex = 0;
@@ -90,6 +91,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (b.includes('vermelha')) return 'badge-vermelha';
     if (b.includes('amarela')) return 'badge-amarela';
     return 'badge-branca';
+  }
+
+  function getBeltNameFromKyu(kyu) {
+    switch (parseInt(kyu)) {
+      case 7: return "Faixa Branca 7º Kyu";
+      case 6: return "Faixa Amarela 6º Kyu";
+      case 5: return "Faixa Vermelha 5º Kyu";
+      case 4: return "Faixa Laranja 4º Kyu";
+      case 3: return "Faixa Verde 3º Kyu";
+      case 2: return "Faixa Roxa 2º Kyu";
+      case 1: return "Faixa Marrom 1º Kyu";
+      case 0: return "Faixa Preta Shodan";
+      default: return "Faixa Branca 7º Kyu";
+    }
   }
 
   function getBeltImage(beltName) {
@@ -673,6 +688,16 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
+        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('questions')" style="cursor: pointer; padding: 14px;" title="Banco de Questões dos Simulados">
+          <div class="stat-icon-box crimson" style="width: 42px; height: 42px; font-size: 1.2rem;">
+            <i class="fas fa-question-circle"></i>
+          </div>
+          <div style="min-width: 0;">
+            <div class="stat-value" style="font-size: 1.2rem;">${(window.TKST_QUIZ_BANK || []).length}</div>
+            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Banco de Questões</div>
+          </div>
+        </div>
+
         <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('dojos')" style="cursor: pointer; padding: 14px;" title="Gerenciar Dojos">
           <div class="stat-icon-box purple" style="width: 42px; height: 42px; font-size: 1.2rem;">
             <i class="fas fa-torii-gate"></i>
@@ -701,6 +726,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
         <button class="chip-btn ${adminSubTab === 'students' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('students')" style="flex-shrink: 0; white-space: nowrap;">
           <i class="fas fa-users"></i> Alunos Matriculados (${students.length})
+        </button>
+        <button class="chip-btn ${adminSubTab === 'questions' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('questions')" style="flex-shrink: 0; white-space: nowrap;">
+          <i class="fas fa-question-circle"></i> Banco de Questões (${(window.TKST_QUIZ_BANK || []).length})
         </button>
         <button class="chip-btn ${adminSubTab === 'quizzes' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="flex-shrink: 0; white-space: nowrap;">
           <i class="fas fa-clipboard-list"></i> Provas & Simulados (${quizSubmissions.length})
@@ -1047,6 +1075,98 @@ document.addEventListener('DOMContentLoaded', () => {
               </tbody>
             </table>
           `}
+        </div>
+      ` : ''}
+
+      ${adminSubTab === 'questions' ? `
+        <!-- BANCO DE QUESTÕES DOS SIMULADOS -->
+        <div class="admin-table-container">
+          <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 2px;">
+                <i class="fas fa-edit" style="color: var(--accent-gold);"></i> Gestor de Perguntas & Gabarito dos Simulados
+              </h4>
+              <div style="font-size: 0.82rem; color: #94A3B8;">
+                Selecione a graduação abaixo para visualizar em ordem, criar ou corrigir as perguntas e a resposta correta de cada questão.
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="window.TKST_APP.openAddQuizQuestionModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;">
+              <i class="fas fa-plus"></i> Nova Questão para esta Faixa
+            </button>
+          </div>
+
+          <!-- Graduation Filter Buttons -->
+          <div style="padding: 14px 18px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,0.2);">
+            ${[
+              { kyu: 7, label: "7º Kyu Branca", color: "#FFFFFF" },
+              { kyu: 6, label: "6º Kyu Amarela", color: "#F5BE00" },
+              { kyu: 5, label: "5º Kyu Vermelha", color: "#E63946" },
+              { kyu: 4, label: "4º Kyu Laranja", color: "#FF7700" },
+              { kyu: 3, label: "3º Kyu Verde", color: "#10B981" },
+              { kyu: 2, label: "2º Kyu Roxa", color: "#8B5CF6" },
+              { kyu: 1, label: "1º Kyu Marrom", color: "#78350F" },
+              { kyu: 0, label: "Shodan Preta", color: "#18181B" }
+            ].map(b => `
+              <button 
+                class="btn ${adminQuizSelectedKyu === b.kyu ? 'btn-gold' : 'btn-secondary'}" 
+                onclick="window.TKST_APP.setAdminQuizSelectedKyu(${b.kyu})"
+                style="font-size: 0.8rem; padding: 7px 12px; font-weight: 700; border-left: 4px solid ${b.color}; ${adminQuizSelectedKyu === b.kyu ? 'box-shadow: 0 0 10px rgba(255,183,3,0.3);' : ''}"
+              >
+                ${b.label}
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- Questions List Ordered -->
+          <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+            ${(() => {
+              const currentKyuQuestions = (window.TKST_QUIZ_BANK || []).filter(q => q.kyuNumber === adminQuizSelectedKyu);
+              if (currentKyuQuestions.length === 0) {
+                return `
+                  <div style="padding: 30px; text-align: center; color: #64748B;">
+                    <i class="fas fa-question-circle" style="font-size: 2.2rem; margin-bottom: 8px; display: block;"></i>
+                    Nenhuma questão cadastrada para ${getBeltNameFromKyu(adminQuizSelectedKyu)}. Clique no botão acima para adicionar a primeira!
+                  </div>
+                `;
+              }
+              return currentKyuQuestions.map((q, idx) => {
+                const correctText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
+                return `
+                  <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 18px; background: rgba(18, 23, 34, 0.9); border-left: 4px solid var(--accent-gold); gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="badge badge-gold" style="font-weight: 800; font-size: 0.78rem;">Questão ${idx + 1}</span>
+                        <span style="font-size: 0.76rem; color: #94A3B8;">ID: ${q.id}</span>
+                      </div>
+                      <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openEditQuizQuestionModal('${q.id}')" style="font-size: 0.76rem; padding: 5px 12px; font-weight: 600;">
+                          <i class="fas fa-edit"></i> Editar Pergunta & Resposta
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteQuizQuestion('${q.id}')" style="font-size: 0.76rem; padding: 5px 10px;" title="Excluir">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style="font-size: 1.02rem; font-weight: 700; color: #FFF; line-height: 1.5;">
+                      ${q.question}
+                    </div>
+
+                    <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid var(--accent-emerald); border-radius: var(--radius-sm); padding: 10px 14px; color: #6EE7B7; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                      <i class="fas fa-check-circle" style="color: var(--accent-emerald); font-size: 1.05rem;"></i>
+                      <span><strong>Resposta Correta (Gabarito):</strong> ${correctText}</span>
+                    </div>
+
+                    ${q.explanation ? `
+                      <div style="font-size: 0.82rem; color: #94A3B8; font-style: italic; line-height: 1.4; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 8px;">
+                        💡 <strong>Explicação:</strong> ${q.explanation}
+                      </div>
+                    ` : ''}
+                  </div>
+                `;
+              }).join('');
+            })()}
+          </div>
         </div>
       ` : ''}
     `;
@@ -3204,21 +3324,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. LEVEL SELECTOR SCREEN
     if (!quizActive) {
       const quizLevels = [
-        { kyu: 7, name: "Faixa Branca (7º Kyu)", color: "#FFFFFF", textColor: "#000", badge: "7º Kyu" },
-        { kyu: 6, name: "Faixa Amarela (6º Kyu)", color: "#F5BE00", textColor: "#000", badge: "6º Kyu" },
-        { kyu: 5, name: "Faixa Vermelha (5º Kyu)", color: "#E63946", textColor: "#FFF", badge: "5º Kyu" },
-        { kyu: 4, name: "Faixa Laranja (4º Kyu)", color: "#FF7700", textColor: "#FFF", badge: "4º Kyu" },
-        { kyu: 3, name: "Faixa Verde (3º Kyu)", color: "#10B981", textColor: "#FFF", badge: "3º Kyu" },
-        { kyu: 2, name: "Faixa Roxa (2º Kyu)", color: "#8B5CF6", textColor: "#FFF", badge: "2º Kyu" },
-        { kyu: 1, name: "Faixa Marrom (1º Kyu)", color: "#78350F", textColor: "#FFF", badge: "1º Kyu" },
-        { kyu: 0, name: "Faixa Preta (Shodan)", color: "#18181B", textColor: "#FFF", badge: "Shodan" }
+        { kyu: 7, name: "Faixa Branca 7º Kyu", color: "#FFFFFF", textColor: "#000" },
+        { kyu: 6, name: "Faixa Amarela 6º Kyu", color: "#F5BE00", textColor: "#000" },
+        { kyu: 5, name: "Faixa Vermelha 5º Kyu", color: "#E63946", textColor: "#FFF" },
+        { kyu: 4, name: "Faixa Laranja 4º Kyu", color: "#FF7700", textColor: "#FFF" },
+        { kyu: 3, name: "Faixa Verde 3º Kyu", color: "#10B981", textColor: "#FFF" },
+        { kyu: 2, name: "Faixa Roxa 2º Kyu", color: "#8B5CF6", textColor: "#FFF" },
+        { kyu: 1, name: "Faixa Marrom 1º Kyu", color: "#78350F", textColor: "#FFF" },
+        { kyu: 0, name: "Faixa Preta Shodan", color: "#18181B", textColor: "#FFF" }
       ];
 
       let html = `
         <div class="section-header" style="margin-bottom: 20px;">
           <div class="section-title-group">
             <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulador de Exame Teórico de Graduação</h3>
-            <p>Escolha o nível da graduação para realizar o teste de 10 perguntas sorteadas aleatoriamente. Todas as provas são enviadas ao Sensei Diego.</p>
           </div>
         </div>
 
@@ -3250,27 +3369,24 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
           ${quizLevels.map(lvl => {
             const isUnlocked = isAdmin || lvl.kyu >= userKyu || hasPerfectInOwnBelt;
-            const isCurrent = lvl.kyu === userKyu;
 
             return `
               <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px; border-top: 5px solid ${lvl.color}; border-left: 1.5px solid ${lvl.color}55; background: ${isUnlocked ? 'rgba(18, 23, 34, 0.95)' : 'rgba(18, 23, 34, 0.45)'}; opacity: ${isUnlocked ? '1' : '0.65'}; gap: 14px;">
-                <!-- Linha 1: Faixa XXX (Xº Kyu) -->
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                  <h4 style="color: #FFF; font-size: 1.12rem; font-family: var(--font-heading); margin: 0; font-weight: 700;">
+                <!-- Linha 1: Faixa XXX Xº Kyu (sem parenteses e sem quebra de linha) -->
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;">
+                  <h4 style="color: #FFF; font-size: 1.15rem; font-family: var(--font-heading); margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     ${lvl.name}
                   </h4>
-                  <span class="badge" style="background: ${lvl.color}; color: ${lvl.textColor}; font-weight: 800; font-size: 0.76rem; border: 1px solid rgba(255,255,255,0.25);">
-                    ${lvl.badge}
-                  </span>
+                  <span style="width: 14px; height: 14px; border-radius: 50%; background: ${lvl.color}; border: 1.5px solid rgba(255,255,255,0.4); flex-shrink: 0;"></span>
                 </div>
 
                 <!-- Linha 2: Iniciar Simulado -->
                 ${isUnlocked ? `
-                  <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel(${lvl.kyu}, '${lvl.name}')" style="width: 100%; justify-content: center; font-weight: 700; padding: 12px; font-size: 0.95rem;">
+                  <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel(${lvl.kyu}, '${lvl.name}')" style="width: 100%; justify-content: center; font-weight: 700; padding: 12px; font-size: 0.95rem; white-space: nowrap;">
                     <i class="fas fa-play" style="font-size: 0.85rem; margin-right: 6px;"></i> Iniciar Simulado
                   </button>
                 ` : `
-                  <button class="btn btn-secondary" disabled style="width: 100%; justify-content: center; opacity: 0.5; cursor: not-allowed; padding: 12px; font-size: 0.86rem;">
+                  <button class="btn btn-secondary" disabled style="width: 100%; justify-content: center; opacity: 0.5; cursor: not-allowed; padding: 12px; font-size: 0.86rem; white-space: nowrap;">
                     <i class="fas fa-lock" style="margin-right: 6px;"></i> Bloqueado (Requer 10/10)
                   </button>
                 `}
@@ -3293,7 +3409,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="section-header" style="justify-content: center; text-align: center; margin-bottom: 20px;">
           <div class="section-title-group">
             <h3><i class="fas fa-trophy" style="color: var(--accent-gold);"></i> Resultado do Simulado • ${currentQuizBelt}</h3>
-            <p>Prova concluída e enviada automaticamente para o painel do Sensei Diego!</p>
           </div>
         </div>
 
@@ -3307,7 +3422,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </p>
 
           <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; font-size: 0.86rem; color: #6EE7B7; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <i class="fas fa-check-double"></i> Prova detalhada gravada e sincronizada na nuvem com o Administrador.
+            <i class="fas fa-check-double"></i> Prova gravada com sucesso no sistema.
           </div>
 
           <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
@@ -3361,7 +3476,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="section-header" style="justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div class="section-title-group">
           <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulado • ${currentQuizBelt}</h3>
-          <p>Responda com atenção. Suas respostas serão enviadas ao Sensei.</p>
         </div>
         <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="font-size: 0.78rem; padding: 6px 12px;">
           <i class="fas fa-times"></i> Cancelar / Trocar Nível
@@ -3391,7 +3505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
           <button id="quizNextBtn" class="btn btn-primary" style="display: none;" onclick="window.TKST_APP.nextQuizQuestion()">
-            ${currentQuizIndex + 1 === currentQuizQuestions.length ? 'Finalizar Prova e Enviar ao Sensei <i class="fas fa-paper-plane"></i>' : 'Próxima Questão <i class="fas fa-arrow-right"></i>'}
+            ${currentQuizIndex + 1 === currentQuizQuestions.length ? 'Finalizar Prova <i class="fas fa-check-circle"></i>' : 'Próxima Questão <i class="fas fa-arrow-right"></i>'}
           </button>
         </div>
       </div>
@@ -3641,6 +3755,183 @@ document.addEventListener('DOMContentLoaded', () => {
     restartQuiz,
     startQuizLevel: (kyu, beltName) => startQuiz(kyu, beltName),
     exitQuiz,
+    setAdminQuizSelectedKyu: (kyu) => {
+      adminQuizSelectedKyu = parseInt(kyu);
+      renderAdminMaster();
+    },
+
+    openEditQuizQuestionModal: (qId) => {
+      const bank = window.TKST_QUIZ_BANK || [];
+      const q = bank.find(item => item.id === qId);
+      if (!q) {
+        alert('Questão não encontrada.');
+        return;
+      }
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      const currentCorrectText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
+
+      modalTitle.innerHTML = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Questão (${q.beltName || 'Faixa'})</span>`;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditQuizQuestion('${q.id}');" style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite o enunciado e a <strong>resposta correta oficial</strong>. O sistema atualizará o simulado imediatamente.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
+            </label>
+            <textarea id="editQuizQuestionInput" class="form-input" rows="3" required style="resize: vertical; font-size: 0.9rem;">${q.question}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito Oficial):
+            </label>
+            <input type="text" id="editQuizCorrectAnswerInput" class="form-input" value="${currentCorrectText.replace(/"/g, '&quot;')}" required style="font-size: 0.9rem; font-weight: 600; color: #6EE7B7;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-lightbulb" style="color: var(--accent-gold); margin-right: 6px;"></i> Explicação Técnica / Justificativa (Opcional):
+            </label>
+            <textarea id="editQuizExplanationInput" class="form-input" rows="2" style="resize: vertical; font-size: 0.85rem;">${q.explanation || ''}</textarea>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
+              <i class="fas fa-save"></i> Salvar e Sincronizar
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    submitEditQuizQuestion: (qId) => {
+      const bank = window.TKST_QUIZ_BANK || [];
+      const q = bank.find(item => item.id === qId);
+      if (!q) return;
+
+      const questionText = document.getElementById('editQuizQuestionInput').value.trim();
+      const correctAnswer = document.getElementById('editQuizCorrectAnswerInput').value.trim();
+      const explanationText = document.getElementById('editQuizExplanationInput').value.trim();
+
+      if (!questionText || !correctAnswer) {
+        alert('Por favor, preencha a pergunta e a resposta correta.');
+        return;
+      }
+
+      q.question = questionText;
+      if (!Array.isArray(q.options) || q.options.length === 0) {
+        q.options = [correctAnswer, "Alternativa B (Incorreta)", "Alternativa C (Incorreta)", "Alternativa D (Incorreta)"];
+        q.correctIndex = 0;
+      } else {
+        const cIdx = (q.correctIndex !== undefined && q.correctIndex >= 0 && q.correctIndex < q.options.length) ? q.correctIndex : 0;
+        q.options[cIdx] = correctAnswer;
+        q.correctIndex = cIdx;
+      }
+      q.explanation = explanationText;
+
+      window.TKST_AUTH.saveCustomQuizBank(bank);
+      detailModal.classList.remove('active');
+      alert('Questão atualizada com sucesso e sincronizada na nuvem!');
+      renderAdminMaster();
+    },
+
+    openAddQuizQuestionModal: (kyu) => {
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      const beltName = getBeltNameFromKyu(kyu);
+
+      modalTitle.innerHTML = `<span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Nova Questão (${beltName})</span>`;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddQuizQuestion(${kyu});" style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite a pergunta e a <strong>resposta correta</strong> para a graduação <strong>${beltName}</strong>.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
+            </label>
+            <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite a pergunta do exame..." style="resize: vertical; font-size: 0.9rem;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito):
+            </label>
+            <input type="text" id="newQuizCorrectAnswerInput" class="form-input" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.9rem; font-weight: 600; color: #6EE7B7;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-lightbulb" style="color: var(--accent-gold); margin-right: 6px;"></i> Explicação Técnica / Justificativa:
+            </label>
+            <textarea id="newQuizExplanationInput" class="form-input" rows="2" placeholder="Explicação que aparece após o aluno responder..." style="resize: vertical; font-size: 0.85rem;"></textarea>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
+              <i class="fas fa-plus-circle"></i> Cadastrar Questão
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    submitAddQuizQuestion: (kyu) => {
+      const bank = window.TKST_QUIZ_BANK || [];
+      const questionText = document.getElementById('newQuizQuestionInput').value.trim();
+      const correctAnswer = document.getElementById('newQuizCorrectAnswerInput').value.trim();
+      const explanationText = document.getElementById('newQuizExplanationInput').value.trim();
+
+      if (!questionText || !correctAnswer) {
+        alert('Por favor, preencha a pergunta e a resposta correta.');
+        return;
+      }
+
+      const beltName = getBeltNameFromKyu(kyu);
+      const newQuestion = {
+        id: `q_custom_${kyu}_${Date.now()}`,
+        kyuNumber: kyu,
+        beltName: beltName,
+        question: questionText,
+        options: [correctAnswer, "Alternativa B (Incorreta)", "Alternativa C (Incorreta)", "Alternativa D (Incorreta)"],
+        correctIndex: 0,
+        explanation: explanationText || correctAnswer
+      };
+
+      bank.push(newQuestion);
+      window.TKST_AUTH.saveCustomQuizBank(bank);
+      detailModal.classList.remove('active');
+      alert('Nova questão cadastrada com sucesso e sincronizada na nuvem!');
+      renderAdminMaster();
+    },
+
+    deleteQuizQuestion: (qId) => {
+      if (confirm('Deseja realmente excluir esta questão do simulado?')) {
+        let bank = window.TKST_QUIZ_BANK || [];
+        bank = bank.filter(item => item.id !== qId);
+        window.TKST_AUTH.saveCustomQuizBank(bank);
+        renderAdminMaster();
+      }
+    },
+
     openQuizDetailModal: (submissionId) => {
       const submissions = window.TKST_AUTH.getAllQuizSubmissions();
       const sub = submissions.find(s => s.id === submissionId);

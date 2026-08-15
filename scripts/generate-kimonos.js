@@ -7,38 +7,42 @@ if (!fs.existsSync(outputDir)) {
 }
 
 const belts = [
-  { id: 'branca', name: 'Faixa Branca', color1: '#FFFFFF', color2: '#E2E8F0', color3: '#CBD5E1', text: '#334155', border: '#94A3B8' },
-  { id: 'amarela', name: 'Faixa Amarela', color1: '#FCD34D', color2: '#F59E0B', color3: '#D97706', text: '#78350F', border: '#B45309' },
-  { id: 'vermelha', name: 'Faixa Vermelha', color1: '#F87171', color2: '#DC2626', color3: '#991B1B', text: '#FFFFFF', border: '#7F1D1D' },
-  { id: 'laranja', name: 'Faixa Laranja', color1: '#FB923C', color2: '#EA580C', color3: '#C2410C', text: '#FFFFFF', border: '#9A3412' },
-  { id: 'verde', name: 'Faixa Verde', color1: '#34D399', color2: '#059669', color3: '#065F46', text: '#FFFFFF', border: '#064E3B' },
-  { id: 'roxa', name: 'Faixa Roxa', color1: '#A78BFA', color2: '#7C3AED', color3: '#5B21B6', text: '#FFFFFF', border: '#4C1D95' },
-  { id: 'marrom', name: 'Faixa Marrom', color1: '#A16207', color2: '#78350F', color3: '#451A03', text: '#FFFFFF', border: '#381602' },
-  { id: 'preta', name: 'Faixa Preta', color1: '#27272A', color2: '#18181B', color3: '#09090B', text: '#F59E0B', border: '#000000', isDan: true }
+  { id: 'branca', name: 'Faixa Branca', color1: '#FFFFFF', color2: '#E2E8F0', color3: '#CBD5E1', border: '#94A3B8' },
+  { id: 'amarela', name: 'Faixa Amarela', color1: '#FCD34D', color2: '#F59E0B', color3: '#D97706', border: '#B45309' },
+  { id: 'vermelha', name: 'Faixa Vermelha', color1: '#F87171', color2: '#DC2626', color3: '#991B1B', border: '#7F1D1D' },
+  { id: 'laranja', name: 'Faixa Laranja', color1: '#FB923C', color2: '#EA580C', color3: '#C2410C', border: '#9A3412' },
+  { id: 'verde', name: 'Faixa Verde', color1: '#34D399', color2: '#059669', color3: '#065F46', border: '#064E3B' },
+  { id: 'roxa', name: 'Faixa Roxa', color1: '#A78BFA', color2: '#7C3AED', color3: '#5B21B6', border: '#4C1D95' },
+  { id: 'marrom', name: 'Faixa Marrom', color1: '#A16207', color2: '#78350F', color3: '#451A03', border: '#381602' },
+  { id: 'preta', name: 'Faixa Preta', color1: '#27272A', color2: '#18181B', color3: '#09090B', border: '#000000' }
 ];
 
 belts.forEach(b => {
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" width="160" height="180" fill="none">
   <defs>
     <!-- Gi Fabric Gradients -->
-    <linearGradient id="giBase" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="giBody" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="60%" stop-color="#F1F5F9"/>
+      <stop offset="60%" stop-color="#F8FAFC"/>
       <stop offset="100%" stop-color="#E2E8F0"/>
     </linearGradient>
-    <linearGradient id="giLapelLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="giSleeveL" x1="100%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="80%" stop-color="#F8FAFC"/>
       <stop offset="100%" stop-color="#CBD5E1"/>
     </linearGradient>
-    <linearGradient id="giLapelRight" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#F1F5F9"/>
-      <stop offset="100%" stop-color="#94A3B8"/>
+    <linearGradient id="giSleeveR" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="giPants" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="30%" stop-color="#F1F5F9"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
     </linearGradient>
     <linearGradient id="giInnerShadow" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#0F172A" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#1E293B" stop-opacity="0.3"/>
+      <stop offset="0%" stop-color="#0F172A" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#1E293B" stop-opacity="0.4"/>
     </linearGradient>
 
     <!-- Belt Gradients -->
@@ -55,81 +59,97 @@ belts.forEach(b => {
 
     <!-- Drop Shadow Filter -->
     <filter id="shadow_${b.id}" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.45"/>
     </filter>
   </defs>
 
-  <!-- ================= KIMONO / KARATEGI BODY ================= -->
+  <!-- ================= 1. KARATE PANTS (CALÇA DO QUIMONO) ================= -->
   <g filter="url(#shadow_${b.id})">
-    <!-- Outer Shoulders & Torso -->
-    <path d="M 30 46 L 52 18 L 108 18 L 130 46 L 126 122 L 34 122 Z" fill="url(#giBase)" stroke="#CBD5E1" stroke-width="1.5"/>
-    
-    <!-- Chest Inner V-Neck (Skin / Inner Gi Shadow) -->
-    <polygon points="62,18 98,18 80,68" fill="url(#giInnerShadow)"/>
-
-    <!-- Right Lapel (Underneath) -->
-    <path d="M 98 18 L 54 90 L 46 90 L 78 24 Z" fill="url(#giLapelRight)" stroke="#94A3B8" stroke-width="1"/>
-
-    <!-- Left Lapel (Over right lapel - Traditional Hidari-mae) -->
-    <path d="M 62 18 L 106 90 L 115 88 L 84 22 Z" fill="url(#giLapelLeft)" stroke="#CBD5E1" stroke-width="1.2"/>
-
-    <!-- Collar Stitching Accents -->
-    <path d="M 66 19 L 108 88" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="2,2"/>
-    <path d="M 94 19 L 58 78" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
-
-    <!-- TKST Chest Kanji / Seal (Left Breast) -->
-    <g transform="translate(42, 54)">
-      <circle cx="9" cy="9" r="8" fill="#B91C1C" opacity="0.85"/>
-      <path d="M 6 9 L 12 9 M 9 5 L 9 13" stroke="#FDE047" stroke-width="1.5" stroke-linecap="round"/>
-      <circle cx="9" cy="9" r="6.5" stroke="#FFFFFF" stroke-width="0.7" fill="none"/>
-    </g>
-
-    <!-- Side Seam Creases -->
-    <path d="M 38 70 Q 44 95 40 120" stroke="#CBD5E1" stroke-width="1" fill="none"/>
-    <path d="M 122 70 Q 116 95 120 120" stroke="#CBD5E1" stroke-width="1" fill="none"/>
+    <!-- Left Leg -->
+    <path d="M 44 98 L 40 166 L 73 166 L 76 112 Z" fill="url(#giPants)" stroke="#94A3B8" stroke-width="1.2"/>
+    <!-- Right Leg -->
+    <path d="M 116 98 L 120 166 L 87 166 L 84 112 Z" fill="url(#giPants)" stroke="#94A3B8" stroke-width="1.2"/>
+    <!-- Pants Hem Cuffs -->
+    <line x1="40" y1="162" x2="73" y2="162" stroke="#94A3B8" stroke-width="0.8" stroke-dasharray="2,2"/>
+    <line x1="87" y1="162" x2="120" y2="162" stroke="#94A3B8" stroke-width="0.8" stroke-dasharray="2,2"/>
+    <!-- Vertical Creases -->
+    <path d="M 56 106 L 56 162" stroke="#CBD5E1" stroke-width="1"/>
+    <path d="M 104 106 L 104 162" stroke="#CBD5E1" stroke-width="1"/>
   </g>
 
-  <!-- ================= OBI / BELT & TRADITIONAL KNOT ================= -->
+  <!-- ================= 2. KARATEGI JACKET & SLEEVES (BLUSA E MANGAS) ================= -->
   <g filter="url(#shadow_${b.id})">
-    <!-- Main Horizontal Belt Band (Waist) -->
-    <path d="M 33 90 C 50 94, 110 94, 127 90 L 128 108 C 110 113, 50 113, 32 108 Z" 
+    <!-- Left Sleeve (Braço Esquerdo) -->
+    <path d="M 48 18 L 14 42 L 26 72 L 46 56 Z" fill="url(#giSleeveL)" stroke="#94A3B8" stroke-width="1.2"/>
+    <line x1="16" y1="46" x2="28" y2="70" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2,2"/>
+
+    <!-- Right Sleeve (Braço Direito) -->
+    <path d="M 112 18 L 146 42 L 134 72 L 114 56 Z" fill="url(#giSleeveR)" stroke="#94A3B8" stroke-width="1.2"/>
+    <line x1="144" y1="46" x2="132" y2="70" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2,2"/>
+
+    <!-- Main Jacket Body -->
+    <path d="M 46 16 L 114 16 L 122 104 L 38 104 Z" fill="url(#giBody)" stroke="#94A3B8" stroke-width="1.2"/>
+
+    <!-- Chest Inner V-Neck Shadow -->
+    <polygon points="64,16 96,16 80,60" fill="url(#giInnerShadow)"/>
+
+    <!-- Right Lapel (Underneath) -->
+    <path d="M 96 16 L 52 82 L 44 82 L 78 20 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1"/>
+
+    <!-- Left Lapel (Over right lapel - Traditional Hidari-mae) -->
+    <path d="M 64 16 L 108 82 L 116 80 L 84 18 Z" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+
+    <!-- Lapel Stitching Details -->
+    <path d="M 68 17 L 110 80" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="2,2"/>
+    <path d="M 92 17 L 56 72" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2,2" opacity="0.5"/>
+
+    <!-- TKST Chest Kanji Badge (Left Breast) -->
+    <g transform="translate(48, 44)">
+      <circle cx="8" cy="8" r="7" fill="#B91C1C" opacity="0.9"/>
+      <path d="M 5 8 L 11 8 M 8 4.5 L 8 11.5" stroke="#FDE047" stroke-width="1.4" stroke-linecap="round"/>
+      <circle cx="8" cy="8" r="5.5" stroke="#FFFFFF" stroke-width="0.6" fill="none"/>
+    </g>
+
+    <!-- Lower Gi Jacket Skirt Creases -->
+    <path d="M 46 86 L 42 104" stroke="#94A3B8" stroke-width="1"/>
+    <path d="M 114 86 L 118 104" stroke="#94A3B8" stroke-width="1"/>
+  </g>
+
+  <!-- ================= 3. OBI / BELT & TRADITIONAL KNOT ================= -->
+  <g filter="url(#shadow_${b.id})">
+    <!-- Horizontal Waist Belt -->
+    <path d="M 38 78 C 55 82, 105 82, 122 78 L 124 94 C 105 98, 55 98, 36 94 Z" 
           fill="url(#beltGrad_${b.id})" 
           stroke="${b.border}" 
-          stroke-width="1.5"/>
+          stroke-width="1.4"/>
 
-    <!-- Belt Fabric Seam Lines -->
-    <path d="M 33 96 C 50 100, 110 100, 127 96" stroke="rgba(255,255,255,0.3)" stroke-width="0.8" fill="none"/>
-    <path d="M 33 102 C 50 106, 110 106, 127 102" stroke="rgba(0,0,0,0.25)" stroke-width="0.8" fill="none"/>
+    <!-- Belt Ribbing Texture Lines -->
+    <path d="M 37 83 C 55 87, 105 87, 123 83" stroke="rgba(255,255,255,0.3)" stroke-width="0.7" fill="none"/>
+    <path d="M 37 89 C 55 93, 105 93, 123 89" stroke="rgba(0,0,0,0.25)" stroke-width="0.7" fill="none"/>
 
     <!-- Left Hanging Belt End (Falling Down) -->
-    <path d="M 72 104 Q 68 118 64 148 L 78 152 Q 82 122 80 104 Z" 
+    <path d="M 72 90 Q 68 104 64 136 L 77 140 Q 82 110 80 90 Z" 
           fill="url(#beltGrad_${b.id})" 
           stroke="${b.border}" 
-          stroke-width="1.5"/>
-    <path d="M 69 112 L 72 148" stroke="rgba(255,255,255,0.25)" stroke-width="0.7"/>
+          stroke-width="1.4"/>
+    <path d="M 70 98 L 72 136" stroke="rgba(255,255,255,0.25)" stroke-width="0.6"/>
 
     <!-- Right Hanging Belt End (Falling Down) -->
-    <path d="M 80 104 Q 86 120 90 146 L 104 142 Q 96 118 88 104 Z" 
+    <path d="M 80 90 Q 86 106 90 134 L 103 130 Q 95 104 88 90 Z" 
           fill="url(#beltGrad_${b.id})" 
           stroke="${b.border}" 
-          stroke-width="1.5"/>
-    <path d="M 88 112 L 96 142" stroke="rgba(255,255,255,0.25)" stroke-width="0.7"/>
+          stroke-width="1.4"/>
+    <path d="M 88 98 L 96 130" stroke="rgba(255,255,255,0.25)" stroke-width="0.6"/>
 
-    ${b.isDan ? `
-      <!-- Red / Gold Dan Tip on Black Belt -->
-      <path d="M 64 138 L 78 142 L 77 151 L 64 147 Z" fill="#DC2626" stroke="#991B1B" stroke-width="0.8"/>
-      <line x1="66" y1="133" x2="77" y2="136" stroke="#F59E0B" stroke-width="1.5"/>
-    ` : ''}
-
-    <!-- Central Traditional Belt Knot (Square Knot / Koma-musubi) -->
-    <ellipse cx="80" cy="104" rx="14" ry="9" fill="url(#beltKnot_${b.id})" stroke="${b.border}" stroke-width="1.8"/>
+    <!-- Central Traditional Knot (Koma-musubi) -->
+    <ellipse cx="80" cy="90" rx="13" ry="8" fill="url(#beltKnot_${b.id})" stroke="${b.border}" stroke-width="1.6"/>
     <!-- Knot Cross-wrap Overlay -->
-    <path d="M 72 98 Q 80 108 88 111" stroke="rgba(0,0,0,0.35)" stroke-width="1.5" fill="none"/>
-    <path d="M 73 110 Q 80 102 87 97" stroke="rgba(255,255,255,0.4)" stroke-width="1" fill="none"/>
+    <path d="M 72 85 Q 80 94 88 96" stroke="rgba(0,0,0,0.35)" stroke-width="1.3" fill="none"/>
+    <path d="M 73 95 Q 80 88 87 84" stroke="rgba(255,255,255,0.4)" stroke-width="1" fill="none"/>
   </g>
 </svg>`;
 
   const filePath = path.join(outputDir, `quimono-${b.id}.svg`);
   fs.writeFileSync(filePath, svg, 'utf8');
-  console.log(`Generated: ${filePath}`);
+  console.log(`Generated Full Kimono: ${filePath}`);
 });

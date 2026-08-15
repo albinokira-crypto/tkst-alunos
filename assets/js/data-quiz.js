@@ -484,7 +484,7 @@ window.TKST_QUIZ_BANK = [
     id: "q4-1",
     kyuNumber: 4,
     beltName: "Faixa Laranja (4º Kyu)",
-    question: "Qual é o Kata característico do 4º Kyu que introduz a base Kiba Dachi e defesas com cotovelo e costas da mão?",
+    question: "Qual é o Kata característico do 4º Kyu que introduz a base Kiba Dachi e técnicas com o cotovelo e costas da mão?",
     options: [
       "Heian Sandan",
       "Heian Shodan",
@@ -492,7 +492,7 @@ window.TKST_QUIZ_BANK = [
       "Jion"
     ],
     correctIndex: 0,
-    explanation: "Heian Sandan trabalha transições ágeis entre Zenkutsu Dachi, Kokutsu Dachi e Kiba Dachi com golpes de cotovelo (Empi) e pisadas (Fumikomi)."
+    explanation: "Heian Sandan trabalha transições ágeis entre Zenkutsu Dachi, Kokutsu Dachi e Kiba Dachi com técnicas de cotovelo (Empi) e pisadas (Fumikomi)."
   },
   {
     id: "q4-2",

@@ -30,6 +30,7 @@ let inMemoryData = {
   custom_videos: {},
   progress: {},
   quiz_submissions: [],
+  custom_quiz_bank: null,
   deletedStudentIds: [],
   lastSync: new Date().toISOString()
 };
@@ -94,6 +95,7 @@ module.exports = async (req, res) => {
         custom_videos: incoming.custom_videos ? { ...inMemoryData.custom_videos, ...incoming.custom_videos } : inMemoryData.custom_videos,
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
         quiz_submissions: Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []),
+        custom_quiz_bank: Array.isArray(incoming.custom_quiz_bank) ? incoming.custom_quiz_bank : inMemoryData.custom_quiz_bank,
         deletedStudentIds: allDeleted,
         lastSync: new Date().toISOString()
       };

@@ -11,11 +11,20 @@
   const STORAGE_KEY_VIDEOS = 'tkst_custom_kata_videos';
   const STORAGE_KEY_DELETED = 'tkst_deleted_student_ids';
   const STORAGE_KEY_QUIZ_SUBMISSIONS = 'tkst_quiz_submissions';
+  const STORAGE_KEY_QUIZ_BANK = 'tkst_custom_quiz_bank';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_TOPIC = 'tkst_karate_master_stream_2026';
   const SYNC_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
   let isSyncing = false;
+
+  // Load custom quiz bank on initialization if present
+  try {
+    const savedBank = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+    if (Array.isArray(savedBank) && savedBank.length > 0) {
+      window.TKST_QUIZ_BANK = savedBank;
+    }
+  } catch(e) {}
 
   const DEFAULT_DOJOS = [
     'TKST Matriz - Central',
@@ -42,6 +51,7 @@
       const videos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
       const progress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
       const quiz_submissions = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+      const custom_quiz_bank = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || (window.TKST_QUIZ_BANK || []);
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
 
       const payload = {
@@ -50,6 +60,7 @@
         custom_videos: videos,
         progress,
         quiz_submissions,
+        custom_quiz_bank,
         deletedStudentIds,
         timestamp: Date.now()
       };
@@ -158,6 +169,17 @@
       const newSubsStr = JSON.stringify(mergedSubs);
       if (localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS) !== newSubsStr) {
         localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, newSubsStr);
+        changed = true;
+      }
+    }
+
+    // 6. Sync Custom Quiz Bank (Admin Questions)
+    if (Array.isArray(cloudData.custom_quiz_bank) && cloudData.custom_quiz_bank.length > 0) {
+      const localBankStr = localStorage.getItem(STORAGE_KEY_QUIZ_BANK);
+      const cloudBankStr = JSON.stringify(cloudData.custom_quiz_bank);
+      if (localBankStr !== cloudBankStr) {
+        localStorage.setItem(STORAGE_KEY_QUIZ_BANK, cloudBankStr);
+        window.TKST_QUIZ_BANK = cloudData.custom_quiz_bank;
         changed = true;
       }
     }
@@ -838,6 +860,22 @@
       } catch(e) {
         return [];
       }
+    },
+
+    getCustomQuizBank: function() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+        if (Array.isArray(saved) && saved.length > 0) return saved;
+      } catch(e) {}
+      return window.TKST_QUIZ_BANK || [];
+    },
+
+    saveCustomQuizBank: function(bank) {
+      if (!Array.isArray(bank)) return false;
+      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(bank));
+      window.TKST_QUIZ_BANK = bank;
+      pushToCloud();
+      return true;
     },
 
     saveQuizResult: function(score, total, kyu) {
