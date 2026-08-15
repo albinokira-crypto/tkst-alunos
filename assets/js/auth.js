@@ -520,6 +520,42 @@
         return { success: false, message: 'A senha deve conter entre 4 e 11 caracteres (somente letras e números).' };
       }
 
+      const beltKyuMap = {
+        'Faixa Branca': 6,
+        'Faixa Amarela': 6,
+        'Faixa Amarela (6º Kyu)': 6,
+        'Faixa Vermelha': 5,
+        'Faixa Vermelha (5º Kyu)': 5,
+        'Faixa Laranja': 4,
+        'Faixa Laranja (4º Kyu)': 4,
+        'Faixa Verde': 3,
+        'Faixa Verde (3º Kyu)': 3,
+        'Faixa Roxa': 2,
+        'Faixa Roxa (2º Kyu)': 2,
+        'Faixa Marrom': 1,
+        'Faixa Marrom (1º Kyu)': 1,
+        'Faixa Preta': 0,
+        'Faixa Preta (Shodan)': 0,
+        'Faixa Preta (Shodan - 1º Dan)': 0,
+        'Faixa Preta (Nidan - 2º Dan)': 0,
+        'Faixa Preta (Sandan - 3º Dan)': 0,
+        'Faixa Preta (Yondan - 4º Dan)': 0,
+        'Faixa Preta (Godan - 5º Dan)': 0,
+        'Faixa Preta (Sensei Master)': 0
+      };
+
+      const selectedBelt = studentData.currentBelt || 'Faixa Branca';
+      let parsedKyu = parseInt(studentData.currentKyu);
+      if (isNaN(parsedKyu) || parsedKyu === undefined) {
+        parsedKyu = beltKyuMap[selectedBelt] !== undefined ? beltKyuMap[selectedBelt] : 6;
+      }
+      if (selectedBelt.toLowerCase().includes('preta') || selectedBelt.toLowerCase().includes('dan') || selectedBelt.toLowerCase().includes('sensei')) {
+        parsedKyu = 0;
+      }
+
+      const isBlack = parsedKyu === 0 || selectedBelt.toLowerCase().includes('preta') || selectedBelt.toLowerCase().includes('dan');
+      const targetBelt = isBlack ? 'Faixa Preta' : (studentData.targetBelt || 'Faixa Amarela (6º Kyu)');
+
       const newStudent = {
         id: 'std_' + Date.now(),
         username: cleanNick,
@@ -527,12 +563,12 @@
         password: pass,
         name: studentData.name.trim(),
         role: studentData.role || 'aluno',
-        currentBelt: studentData.currentBelt || 'Faixa Branca',
-        targetBelt: studentData.targetBelt || 'Faixa Amarela (6º Kyu)',
-        currentKyu: parseInt(studentData.currentKyu) || 6,
+        currentBelt: selectedBelt,
+        targetBelt: targetBelt,
+        currentKyu: parsedKyu,
         dojo: studentData.dojo || 'TKST Matriz - Central',
         startDate: studentData.startDate || new Date().toISOString().split('T')[0],
-        avatar: studentData.avatar || 'assets/images/tigre.png',
+        avatar: studentData.avatar || 'assets/images/logo-tkst.png',
         status: studentData.status || 'pending',
         phone: studentData.phone ? studentData.phone.trim() : '',
         notes: studentData.notes || 'Novo cadastro realizado pelo portal.'
@@ -698,6 +734,7 @@
         currentBelt: selectedBelt,
         currentKyu: kyu,
         targetBelt: targetBelt,
+        avatar: updatedData.avatar || currentUser.avatar || 'assets/images/logo-tkst.png',
         password: newPassword
       };
 

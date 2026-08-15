@@ -1,22 +1,30 @@
-const CACHE_NAME = 'tkst-alunos-v47';
+const CACHE_NAME = 'tkst-alunos-v48';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './assets/css/main.css?v=47',
-  './assets/css/components.css?v=47',
-  './assets/js/auth.js?v=47',
-  './assets/js/data-curriculum.js?v=47',
-  './assets/js/data-katas.js?v=47',
-  './assets/js/data-kumite.js?v=47',
-  './assets/js/data-glossary.js?v=47',
-  './assets/js/data-quiz.js?v=47',
-  './assets/js/app.js?v=47',
+  './assets/css/main.css?v=48',
+  './assets/css/components.css?v=48',
+  './assets/js/auth.js?v=48',
+  './assets/js/data-curriculum.js?v=48',
+  './assets/js/data-katas.js?v=48',
+  './assets/js/data-kumite.js?v=48',
+  './assets/js/data-glossary.js?v=48',
+  './assets/js/data-quiz.js?v=48',
+  './assets/js/app.js?v=48',
   './assets/images/logo-tkst.png',
   './assets/images/icon-192.png',
   './assets/images/icon-512.png',
   './assets/images/icon-maskable.png',
   './assets/images/apple-touch-icon.png',
-  './assets/images/tigre.png'
+  './assets/images/tigre.png',
+  './assets/images/faixas/faixa-branca.png',
+  './assets/images/faixas/faixa-amarela.png',
+  './assets/images/faixas/faixa-vermelha.png',
+  './assets/images/faixas/faixa-laranja.png',
+  './assets/images/faixas/faixa-verde.png',
+  './assets/images/faixas/faixa-roxa.png',
+  './assets/images/faixas/faixa-marrom.png',
+  './assets/images/faixas/faixa-preta.png'
 ];
 
 self.addEventListener('install', (event) => {

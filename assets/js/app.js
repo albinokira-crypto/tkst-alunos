@@ -88,6 +88,21 @@ document.addEventListener('DOMContentLoaded', () => {
     return 'badge-branca';
   }
 
+  function getBeltImage(beltName) {
+    if (!beltName) return 'assets/images/faixas/faixa-branca.png';
+    const b = beltName.toLowerCase();
+    if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan') || b.includes('yondan') || b.includes('godan')) {
+      return 'assets/images/faixas/faixa-preta.png';
+    }
+    if (b.includes('marrom')) return 'assets/images/faixas/faixa-marrom.png';
+    if (b.includes('roxa')) return 'assets/images/faixas/faixa-roxa.png';
+    if (b.includes('verde')) return 'assets/images/faixas/faixa-verde.png';
+    if (b.includes('laranja')) return 'assets/images/faixas/faixa-laranja.png';
+    if (b.includes('vermelha')) return 'assets/images/faixas/faixa-vermelha.png';
+    if (b.includes('amarela')) return 'assets/images/faixas/faixa-amarela.png';
+    return 'assets/images/faixas/faixa-branca.png';
+  }
+
   // Video Helpers
   function getCustomKataVideos() {
     try {
@@ -960,7 +975,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = window.TKST_AUTH.getCurrentUser();
     if (!user) { renderLogin(); return; }
 
-    const curriculum = window.TKST_CURRICULUM.find(c => c.kyuNumber === user.currentKyu) || window.TKST_CURRICULUM[0];
+    let currentKyu = user.currentKyu;
+    if (user.currentBelt && (user.currentBelt.toLowerCase().includes('preta') || user.currentBelt.toLowerCase().includes('dan') || user.currentBelt.toLowerCase().includes('sensei'))) {
+      currentKyu = 0;
+    }
+    const curriculum = window.TKST_CURRICULUM.find(c => c.kyuNumber === currentKyu) || window.TKST_CURRICULUM[0];
     const progress = window.TKST_AUTH.getProgress();
 
     const totalKihon = curriculum.kihon ? curriculum.kihon.length : 1;
@@ -1027,14 +1046,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>Bem-vindo ao seu portal oficial de estudos na <strong>Tradicional Karate-Do Shotokan Tsuyoi (TKST)</strong>.</p>
           </div>
           <div class="hero-rank-display" onclick="window.TKST_APP.openEditProfileModal()" style="cursor: pointer;" title="Toque para editar suas informações e graduação">
-            <div class="hero-belt-node" style="background: ${curriculum.beltColor};"></div>
+            <div class="hero-belt-img-wrapper">
+              <img src="${getBeltImage(user.currentBelt)}" alt="${user.currentBelt}" class="hero-belt-img">
+            </div>
             <div class="hero-rank-meta" style="flex: 1;">
               <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                 <div class="rank-label">Graduação Atual</div>
                 <span class="hero-edit-badge"><i class="fas fa-user-edit"></i> Editar Dados</span>
               </div>
               <div class="rank-name">${user.currentBelt}</div>
-              <div class="target-name">Meta: ${curriculum.targetBelt}</div>
             </div>
           </div>
         </div>
@@ -3478,6 +3498,21 @@ document.addEventListener('DOMContentLoaded', () => {
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitRegisterFromModal();">
           
+          <!-- Foto de Perfil (Opcional - Galeria ou Câmera) -->
+          <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 14px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 12px;">
+            <div style="position: relative; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 2.5px solid var(--accent-gold); box-shadow: 0 4px 12px rgba(0,0,0,0.5); margin-bottom: 8px;">
+              <img id="regPhotoPreview" src="assets/images/logo-tkst.png" alt="Foto de Perfil" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <label for="regPhotoInput" class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fas fa-camera"></i> Foto de Perfil (Opcional)
+            </label>
+            <input type="file" id="regPhotoInput" accept="image/*" style="display: none;" onchange="window.TKST_APP.handlePhotoUpload(event, 'regPhotoPreview', 'regPhotoBase64')">
+            <input type="hidden" id="regPhotoBase64" value="assets/images/logo-tkst.png">
+            <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 4px; text-align: center;">
+              Tire uma foto ou escolha da galeria. Se não enviar, usaremos o logo oficial da escola.
+            </div>
+          </div>
+
           <!-- 1ª Linha: Nome Completo -->
           <div class="form-group" style="margin-bottom: 12px;">
             <label class="form-label" style="font-size: 0.8rem; white-space: nowrap; margin-bottom: 4px;">Nome Completo</label>
@@ -3608,6 +3643,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      const avatar = (document.getElementById('regPhotoBase64') && document.getElementById('regPhotoBase64').value) ? document.getElementById('regPhotoBase64').value : 'assets/images/logo-tkst.png';
+
       const res = window.TKST_AUTH.register({
         name,
         username: nick,
@@ -3616,6 +3653,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentKyu: parseInt(currentKyu),
         dojo,
         password,
+        avatar,
         status: 'pending'
       });
 
@@ -3686,10 +3724,22 @@ document.addEventListener('DOMContentLoaded', () => {
       modalBody.innerHTML = `
         <form id="editProfileForm" onsubmit="event.preventDefault(); window.TKST_APP.submitEditProfile();" style="display: flex; flex-direction: column; gap: 14px; max-width: 550px; margin: 0 auto; padding: 4px 0;">
           
+          <!-- Foto de Perfil -->
+          <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 12px;">
+            <div style="position: relative; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 2.5px solid var(--accent-gold); box-shadow: 0 4px 12px rgba(0,0,0,0.5); margin-bottom: 8px;">
+              <img id="editPhotoPreview" src="${user.avatar || 'assets/images/logo-tkst.png'}" alt="Foto de Perfil" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <label for="editPhotoInput" class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fas fa-camera"></i> Alterar Foto de Perfil
+            </label>
+            <input type="file" id="editPhotoInput" accept="image/*" style="display: none;" onchange="window.TKST_APP.handlePhotoUpload(event, 'editPhotoPreview', 'editPhotoBase64')">
+            <input type="hidden" id="editPhotoBase64" value="${user.avatar || 'assets/images/logo-tkst.png'}">
+          </div>
+
           <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
             <i class="fas fa-info-circle" style="color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;"></i>
             <div style="font-size: 0.8rem; color: #E2E8F0; line-height: 1.4;">
-              Atualize seu nome, graduação, dojo ou senha. As alterações entram em vigor imediatamente.
+              Atualize seu nome, graduação, dojo, foto ou senha. As alterações entram em vigor imediatamente.
             </div>
           </div>
 
@@ -3784,6 +3834,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const pass = document.getElementById('editProfPass').value;
       const passConfirm = document.getElementById('editProfPassConfirm').value;
       const feedback = document.getElementById('profileEditFeedback');
+      const avatar = (document.getElementById('editPhotoBase64') && document.getElementById('editPhotoBase64').value) ? document.getElementById('editPhotoBase64').value : undefined;
 
       const res = window.TKST_AUTH.updateProfile({
         name,
@@ -3792,6 +3843,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dojo,
         currentBelt,
         currentKyu: parseInt(currentKyu),
+        avatar,
         password: pass,
         passwordConfirm: passConfirm
       });
@@ -4080,6 +4132,51 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           setTimeout(() => { if (fb) fb.innerHTML = ''; }, 3000);
         }
       });
+    },
+
+    handlePhotoUpload: (event, previewImgId, hiddenInputId) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Resize & compress to max 280x280 using HTML5 Canvas
+          const canvas = document.createElement('canvas');
+          const maxDim = 280;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to lightweight JPEG (~15-25KB)
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
+
+          const preview = document.getElementById(previewImgId);
+          if (preview) preview.src = compressedDataUrl;
+
+          const hidden = document.getElementById(hiddenInputId);
+          if (hidden) hidden.value = compressedDataUrl;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   };
 
