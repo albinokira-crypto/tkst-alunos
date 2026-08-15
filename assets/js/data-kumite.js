@@ -1,4 +1,66 @@
 window.TKST_KUMITE = {
+  "gohonKumite": {
+    "title": "Gohon Kumite (Combate Básico em Cinco Passos)",
+    "japanese": "五本組手",
+    "description": "Combate fundamental do Karatê Shotokan realizado em 5 passos contínuos. O atacante (Tori) avança 5 passos atacando com o mesmo golpe, enquanto o defensor (Uke) recua 5 passos bloqueando em Zenkutsu Dachi. No 5º passo, o Uke bloqueia com firmeza e contra-ataca com Gyaku Tsuki Chudan com forte Kiai.",
+    "series": [
+      {
+        "id": "jodan",
+        "targetName": "Jodan (Alto / Rosto)",
+        "badgeColor": "#E63946",
+        "attackTechnique": "Jodan Oi Tsuki (5x em avanço)",
+        "defenseTechnique": "Jodan Age Uke (5x em recuo)",
+        "counterTechnique": "Gyaku Tsuki Chudan (No 5º passo com Kiai!)",
+        "stance": "Zenkutsu Dachi",
+        "toriAnnouncement": "Jodan!",
+        "summary": "Tori avança 5 socos altos em direção ao queixo. Uke recua 5 defesas altas e no 5º bloqueio dispara Gyaku Tsuki no plexo solar."
+      },
+      {
+        "id": "chudan",
+        "targetName": "Chudan (Médio / Plexo Solar)",
+        "badgeColor": "#2A9D8F",
+        "attackTechnique": "Chudan Oi Tsuki (5x em avanço)",
+        "defenseTechnique": "Chudan Soto Uke (5x em recuo)",
+        "counterTechnique": "Gyaku Tsuki Chudan (No 5º passo com Kiai!)",
+        "stance": "Zenkutsu Dachi",
+        "toriAnnouncement": "Chudan!",
+        "summary": "Tori avança 5 socos médios no tronco. Uke recua 5 defesas médias e no 5º bloqueio contra-ataca com Gyaku Tsuki potente."
+      },
+      {
+        "id": "maegeri",
+        "targetName": "Mae Geri (Baixo / Abdômen)",
+        "badgeColor": "#F5BE00",
+        "attackTechnique": "Mae Geri Chudan (5x em avanço)",
+        "defenseTechnique": "Gedan Barai (5x em recuo)",
+        "counterTechnique": "Gyaku Tsuki Chudan (No 5º passo com Kiai!)",
+        "stance": "Zenkutsu Dachi",
+        "toriAnnouncement": "Mae Geri!",
+        "summary": "Tori avança 5 chutes frontais no abdômen. Uke recua 5 varreduras baixas e no 5º bloqueio finaliza com Gyaku Tsuki e Kiai."
+      }
+    ],
+    "principles": [
+      {
+        "name": "Metsuke (目付け)",
+        "meaning": "Olhar Fixo",
+        "desc": "Manter contato visual inabalável nos olhos do oponente durante todos os 5 passos."
+      },
+      {
+        "name": "Ma-ai & Sun-dome (間合い)",
+        "meaning": "Distância & Controle",
+        "desc": "Ataques com alcance real e contra-ataque parado milimetricamente (2-3 cm) do alvo."
+      },
+      {
+        "name": "Kiai & Kime (気合 • 決め)",
+        "meaning": "Espírito & Foco",
+        "desc": "Kiai explosivo do Tori no 5º avanço e do Uke na finalização do contra-ataque."
+      },
+      {
+        "name": "Zanshin (残心)",
+        "meaning": "Estado de Alerta",
+        "desc": "Manter a base firme e atenção plena após o contragolpe antes do retorno à postura Yoi."
+      }
+    ]
+  },
   "sanbonKumite": {
     "title": "Sanbon Kumite (Combate em Três Passos)",
     "description": "Trabalho de ataque em três avanços sucessivos: Jodan Oi Tsuki (cabeça), Chudan Oi Tsuki (tórax) e Mae Geri (abdômen). A defesa deve recuar bloqueando em Zenkutsu Dachi e no 3º passo aplicar esquiva e contra-ataque com Kiai.",

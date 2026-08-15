@@ -6,7 +6,7 @@ window.TKST_CURRICULUM = [
     "beltColor": "#F5BE00",
     "previousBelt": "Faixa Branca",
     "targetBelt": "Faixa Amarela (6º Kyu)",
-    "description": "Primeiro exame de graduação da TKST. Foco na assimilação das bases fundamentais (Zenkutsu Dachi e Kiba Dachi), defesas básicas e socos em avanço e recuo.",
+    "description": "Foco na assimilação das bases fundamentais (Zenkutsu Dachi e Kiba Dachi), defesas básicas e socos em avanço e recuo.",
     "kihon": [
       {
         "id": "k6-1",
@@ -124,7 +124,7 @@ window.TKST_CURRICULUM = [
     "beltColor": "#E63946",
     "previousBelt": "Faixa Amarela",
     "targetBelt": "Faixa Vermelha (5º Kyu)",
-    "description": "Segunda graduação. Transição de base, combinações de defesa com contra-ataque e introdução de chutes circulares e reversos.",
+    "description": "Transição de base, combinações de defesa com contra-ataque e introdução de chutes circulares e reversos.",
     "kihon": [
       {
         "id": "k5-1",
@@ -237,7 +237,7 @@ window.TKST_CURRICULUM = [
     "beltColor": "#FB8500",
     "previousBelt": "Faixa Vermelha",
     "targetBelt": "Faixa Laranja (4º Kyu)",
-    "description": "Terceira graduação. Aprofundamento no trabalho de quadril, combinações duplas de chutes e transições rápidas de base.",
+    "description": "Aprofundamento no trabalho de quadril, combinações duplas de chutes e transições rápidas de base.",
     "kihon": [
       {
         "id": "k4-1",
@@ -337,7 +337,7 @@ window.TKST_CURRICULUM = [
     "beltColor": "#2A9D8F",
     "previousBelt": "Faixa Laranja",
     "targetBelt": "Faixa Verde (3º Kyu)",
-    "description": "Quarta graduação. Entrada no grupo intermediário/avançado. Introdução de chutes duplos na mesma perna sem tocar o chão e combinações complexas.",
+    "description": "Entrada no grupo intermediário/avançado com introdução de chutes duplos na mesma perna sem tocar o chão e combinações complexas.",
     "kihon": [
       {
         "id": "k3-1",
@@ -480,7 +480,7 @@ window.TKST_CURRICULUM = [
     "beltColor": "#7209B7",
     "previousBelt": "Faixa Verde",
     "targetBelt": "Faixa Roxa (2º Kyu)",
-    "description": "Quinta graduação. Fase de maturidade técnica. Elaboração própria de Kihon pelo aluno e início do estudo dos Katas Superiores (Sentei Katas).",
+    "description": "Fase de maturidade técnica. Elaboração própria de Kihon pelo aluno e início do estudo dos Katas Superiores (Sentei Katas).",
     "kihon": [
       {
         "id": "k2-1",
@@ -598,7 +598,7 @@ window.TKST_CURRICULUM = [
     "beltColor": "#6F4E37",
     "previousBelt": "Faixa Roxa",
     "targetBelt": "Faixa Marrom (1º Kyu)",
-    "description": "Sexta graduação. Pré-requisito para o exame de Faixa Preta (Shodan). Domínio de todas as formas de Kumite e aplicação (Bunkai) de todos os Heian Katas.",
+    "description": "Pré-requisito para o exame de Faixa Preta (Shodan). Domínio de todas as formas de Kumite e aplicação (Bunkai) de todos os Heian Katas.",
     "kihon": [
       {
         "id": "k1-1",
@@ -695,7 +695,7 @@ window.TKST_CURRICULUM = [
     "beltColor": "#1A1A1A",
     "previousBelt": "Faixa Marrom",
     "targetBelt": "Faixa Preta (1º Dan - Shodan)",
-    "description": "Exame de Faixa Preta (Shodan). O início do verdadeiro caminho do Karatê-Dō. Demonstração de excelência técnica, força mental, filosofia e liderança.",
+    "description": "O início do verdadeiro caminho do Karatê-Dō. Demonstração de excelência técnica, força mental, filosofia e liderança.",
     "kihon": [
       {
         "id": "d1-1",
