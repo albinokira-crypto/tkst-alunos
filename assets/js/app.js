@@ -3682,7 +3682,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kyuNumber === 'all' || kyuNumber === -99) {
       pool = [...bank];
       questionCount = 30;
-      beltName = "Mega Simulado Geral (30 Questões - Todas as Faixas)";
+      beltName = "Simulado Geral";
     } else {
       const parsedKyu = parseInt(kyuNumber);
       pool = bank.filter(q => q.kyuNumber === parsedKyu);
@@ -3762,7 +3762,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <!-- MEGA SIMULADO GERAL (30 QUESTÕES - TODAS AS GRADUAÇÕES) -->
+        <!-- SIMULADO GERAL (30 QUESTÕES - TODAS AS GRADUAÇÕES) -->
         <div class="stat-card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(255, 183, 3, 0.12) 0%, rgba(18, 23, 34, 0.98) 100%); border: 2px solid var(--accent-gold); padding: 22px; flex-direction: column; align-items: stretch; gap: 14px; box-shadow: 0 4px 20px rgba(255, 183, 3, 0.15); border-radius: var(--radius-md);">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 14px;">
@@ -3774,16 +3774,16 @@ document.addEventListener('DOMContentLoaded', () => {
                   <i class="fas fa-unlock"></i> Aberto a Todos os Alunos
                 </span>
                 <h3 style="color: #FFF; font-family: var(--font-heading); font-size: 1.3rem; margin: 0; font-weight: 700;">
-                  Mega Simulado Geral (30 Questões Aleatórias)
+                  Simulado Geral
                 </h3>
               </div>
             </div>
-            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('all', 'Mega Simulado Geral (Todas as Graduações)')" style="padding: 12px 22px; font-weight: 800; font-size: 0.95rem; background: linear-gradient(135deg, #FFB703 0%, #D97706 100%); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); cursor: pointer;">
-              <i class="fas fa-bolt" style="margin-right: 6px;"></i> Iniciar Desafio (30 Questões)
+            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('all', 'Simulado Geral')" style="padding: 12px 22px; font-weight: 800; font-size: 0.95rem; background: linear-gradient(135deg, #FFB703 0%, #D97706 100%); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); cursor: pointer;">
+              <i class="fas fa-play" style="margin-right: 6px;"></i> Iniciar Simulado (30 Questões)
             </button>
           </div>
           <p style="color: #CBD5E1; font-size: 0.88rem; line-height: 1.6; margin: 0;">
-            Desafio teórico completo com <strong>30 perguntas sorteadas aleatoriamente</strong> entre todas as faixas (Branca, Amarela, Vermelha, Laranja, Verde, Roxa, Marrom, Shodan, Nidan e Sandan). Qualquer aluno de qualquer faixa pode praticar este simulado a qualquer momento!
+            Desafio teórico completo com <strong>30 perguntas sorteadas aleatoriamente</strong> entre todas as faixas (Branca, Amarela, Vermelha, Laranja, Verde, Roxa, Marrom, Shodan, Nidan e Sandan).
           </p>
         </div>
 
