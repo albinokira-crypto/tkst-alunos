@@ -427,10 +427,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </button>
         ` : ''}
         <button class="btn btn-secondary" onclick="window.TKST_APP.openEditProfileModal()" style="font-size: 0.78rem; padding: 6px 10px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); white-space: nowrap;" title="Editar Perfil e Informações">
-          <i class="fas fa-user-edit"></i> <span class="hide-mobile">Perfil</span>
+          <i class="fas fa-user-edit"></i> <span>Perfil</span>
         </button>
         <button class="btn btn-secondary" onclick="window.TKST_APP.handleLogout()" style="font-size: 0.78rem; padding: 6px 10px; background: rgba(230, 57, 70, 0.15); border-color: rgba(230, 57, 70, 0.4); color: #FF808A; white-space: nowrap;" title="Sair da Conta">
-          <i class="fas fa-power-off"></i> <span class="hide-mobile">Sair</span>
+          <i class="fas fa-power-off"></i> <span>Sair</span>
         </button>
       `;
     }
