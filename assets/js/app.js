@@ -232,6 +232,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = window.TKST_AUTH.getCurrentUser();
     if (!user) {
       switchTab('login');
+      // Auto open registration modal if accessed via invitation link ?cadastro=1
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('cadastro') === '1') {
+        setTimeout(() => {
+          if (window.TKST_APP && window.TKST_APP.openRegisterModal) {
+            window.TKST_APP.openRegisterModal();
+          }
+        }, 350);
+      }
     } else {
       switchTab('dashboard');
     }
@@ -600,6 +609,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; margin-top: 8px;">
+          <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.82rem; padding: 8px 14px; background: #25D366; color: #FFF; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
+            <i class="fab fa-whatsapp"></i> Convidar Aluno para Cadastro
+          </button>
           <button class="btn btn-primary" onclick="window.TKST_APP.openManualStudentModal()" style="font-size: 0.82rem; padding: 8px 14px;">
             <i class="fas fa-user-plus"></i> Novo Aluno Manual
           </button>
@@ -987,6 +999,23 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <button type="button" class="btn btn-gold" style="font-size: 0.78rem; padding: 8px 16px; white-space: nowrap; flex-shrink: 0;">
             <i class="fas fa-user-check"></i> Aprovar Alunos
+          </button>
+        </div>
+      ` : ''}
+
+      ${isAdmin ? `
+        <div style="background: rgba(37, 211, 102, 0.08); border: 1px solid rgba(37, 211, 102, 0.3); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(37, 211, 102, 0.2); display: flex; align-items: center; justify-content: center; color: #25D366; font-size: 1.2rem; flex-shrink: 0;">
+              <i class="fab fa-whatsapp"></i>
+            </div>
+            <div>
+              <div style="color: #FFF; font-weight: 700; font-size: 0.9rem;">Convidar Novos Alunos</div>
+              <div style="color: #94A3B8; font-size: 0.78rem;">Envie o convite oficial com link de matrícula direta no WhatsApp</div>
+            </div>
+          </div>
+          <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="background: #25D366; color: #FFF; font-weight: 700; font-size: 0.82rem; padding: 8px 16px; border-radius: var(--radius-sm); border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);">
+            <i class="fab fa-whatsapp"></i> Enviar Convite
           </button>
         </div>
       ` : ''}
@@ -3979,6 +4008,107 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
+    },
+
+    openInviteModal: () => {
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      modalTitle.innerHTML = `<span><i class="fab fa-whatsapp" style="color: #25D366;"></i> Convidar Aluno para Cadastro</span>`;
+      modalBody.innerHTML = `
+        <div style="padding: 6px 2px;">
+          <p style="font-size: 0.88rem; color: #94A3B8; margin-bottom: 16px; line-height: 1.5;">
+            Envie o convite oficial do portal <strong>TKST Alunos</strong> para novos praticantes realizarem o cadastro no sistema:
+          </p>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">WhatsApp do Aluno (com DDD - opcional):</label>
+            <input type="tel" id="inviteStudentPhone" class="form-input" placeholder="Ex: (21) 98888-7777 ou deixe vazio para escolher o contato">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">Nome do Aluno (opcional):</label>
+            <input type="text" id="inviteStudentName" class="form-input" placeholder="Ex: Lucas">
+          </div>
+
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 18px; font-size: 0.85rem; color: #E2E8F0; line-height: 1.5;">
+            <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
+              <i class="fas fa-comment-dots"></i> Mensagem formatada:
+            </div>
+            <div id="inviteMsgPreview" style="font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; color: #CBD5E1; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;">🥋 *CONVITE OFICIAL - TKST TRADICIONAL KARATE SHOTOKAN* 🥋
+
+Olá! O Sensei Diego convida você para se cadastrar no portal de estudos e graduações TKST Alunos.
+
+👉 Toque no link abaixo para realizar sua matrícula:
+https://tkst-alunos.vercel.app/?cadastro=1
+
+Após preencher seus dados, sua solicitação será liberada pelo Sensei. Oss!</div>
+          </div>
+
+          <div id="inviteFeedback" style="margin-bottom: 12px;"></div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button type="button" class="btn" onclick="window.TKST_APP.sendInviteWhatsApp()" style="width: 100%; padding: 13px; font-weight: 700; background: #25D366; color: #FFF; font-size: 0.95rem; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35);">
+              <i class="fab fa-whatsapp" style="font-size: 1.25rem;"></i> Enviar Convite no WhatsApp
+            </button>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteText()" style="padding: 10px 8px; font-size: 0.82rem;">
+                <i class="fas fa-copy"></i> Copiar Mensagem
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteLink()" style="padding: 10px 8px; font-size: 0.82rem;">
+                <i class="fas fa-link"></i> Copiar Link
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    sendInviteWhatsApp: () => {
+      const phoneInput = document.getElementById('inviteStudentPhone');
+      const nameInput = document.getElementById('inviteStudentName');
+      const rawPhone = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
+      const studentName = nameInput && nameInput.value.trim() ? ` ${nameInput.value.trim()}` : '';
+      
+      const text = `🥋 *CONVITE OFICIAL - TKST TRADICIONAL KARATE SHOTOKAN* 🥋\n\nOlá${studentName}! O Sensei Diego convida você para se cadastrar no portal oficial de estudos e graduações TKST Alunos.\n\n👉 *Toque no link abaixo para realizar sua matrícula:*\nhttps://tkst-alunos.vercel.app/?cadastro=1\n\nApós preencher seus dados, sua solicitação será liberada pelo Sensei. Oss!`;
+      
+      let url = '';
+      if (rawPhone.length >= 10) {
+        const fullNumber = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`;
+        url = `https://wa.me/${fullNumber}?text=${encodeURIComponent(text)}`;
+      } else {
+        url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      }
+      
+      window.open(url, '_blank');
+    },
+
+    copyInviteText: () => {
+      const nameInput = document.getElementById('inviteStudentName');
+      const studentName = nameInput && nameInput.value.trim() ? ` ${nameInput.value.trim()}` : '';
+      const text = `🥋 *CONVITE OFICIAL - TKST TRADICIONAL KARATE SHOTOKAN* 🥋\n\nOlá${studentName}! O Sensei Diego convida você para se cadastrar no portal oficial de estudos e graduações TKST Alunos.\n\n👉 *Toque no link abaixo para realizar sua matrícula:*\nhttps://tkst-alunos.vercel.app/?cadastro=1\n\nApós preencher seus dados, sua solicitação será liberada pelo Sensei. Oss!`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const fb = document.getElementById('inviteFeedback');
+        if (fb) {
+          fb.innerHTML = `<div style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; color: #6EE7B7; padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; text-align: center;"><i class="fas fa-check-circle"></i> Mensagem copiada com sucesso!</div>`;
+          setTimeout(() => { if (fb) fb.innerHTML = ''; }, 3000);
+        }
+      });
+    },
+
+    copyInviteLink: () => {
+      const url = 'https://tkst-alunos.vercel.app/?cadastro=1';
+      navigator.clipboard.writeText(url).then(() => {
+        const fb = document.getElementById('inviteFeedback');
+        if (fb) {
+          fb.innerHTML = `<div style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; color: #6EE7B7; padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; text-align: center;"><i class="fas fa-check-circle"></i> Link copiado para a área de transferência!</div>`;
+          setTimeout(() => { if (fb) fb.innerHTML = ''; }, 3000);
+        }
+      });
     }
   };
 
