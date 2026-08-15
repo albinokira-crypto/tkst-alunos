@@ -810,6 +810,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const customVideos = getCustomKataVideos();
     const dojos = window.TKST_AUTH.getDojos();
     const quizSubmissions = window.TKST_AUTH.getAllQuizSubmissions();
+    const quizBankList = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+    const quizBankCount = quizBankList.length;
 
     let html = `
       <div class="section-header" style="margin-bottom: 20px;">
