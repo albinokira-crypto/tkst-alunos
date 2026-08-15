@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function getBeltBadgeClass(belt) {
     if (!belt) return 'badge-branca';
     const b = belt.toLowerCase();
-    if (b.includes('preta') || b.includes('dan') || b.includes('sensei')) return 'badge-preta';
+    if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan')) return 'badge-preta';
     if (b.includes('marrom')) return 'badge-marrom';
     if (b.includes('roxa')) return 'badge-roxa';
     if (b.includes('verde')) return 'badge-verde';
@@ -103,7 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
       case 3: return "Faixa Verde 3º Kyu";
       case 2: return "Faixa Roxa 2º Kyu";
       case 1: return "Faixa Marrom 1º Kyu";
-      case 0: return "Faixa Preta Shodan";
+      case 0: return "Faixa Preta Shodan (1º Dan)";
+      case -1: return "Faixa Preta Nidan (2º Dan)";
+      case -2: return "Faixa Preta Sandan (3º Dan)";
       default: return "Faixa Branca 7º Kyu";
     }
   }
@@ -2441,20 +2443,99 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Princípios da Banca Examinadora -->
           <div class="gohon-principles-grid">
             <div class="gohon-principle-item">
-              <div class="gohon-principle-title"><i class="fas fa-eye"></i> Visão Periférica 360°</div>
-              <div class="gohon-principle-desc">Consciência espacial completa ao lidar com múltiplos atacantes sem perder o centro.</div>
-            </div>
-            <div class="gohon-principle-item">
-              <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin Absoluto</div>
-              <div class="gohon-principle-desc">Manutenção permanente da postura marcial antes, durante e após o término dos combates.</div>
-            </div>
-            <div class="gohon-principle-item">
               <div class="gohon-principle-title"><i class="fas fa-heartbeat"></i> Fudoshin & Resistência</div>
               <div class="gohon-principle-desc">Mente imperturbável mesmo sob exaustão física e pressão real de múltiplos adversários.</div>
             </div>
             <div class="gohon-principle-item">
               <div class="gohon-principle-title"><i class="fas fa-medal"></i> Espírito de Faixa Preta</div>
               <div class="gohon-principle-desc">Humildade, respeito aos parceiros de tatame e fidelidade inegociável aos princípios do Karatê-Dō.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Nidan (2º Dan) - Kumite Oficial: Jiyu Ippon (3 formas) & Contra 1, 2 e 4
+    if (kyu === -1) {
+      return `
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge" style="background: rgba(37, 99, 235, 0.2); border-color: rgba(59, 130, 246, 0.5); color: #60A5FA;">
+              <i class="fas fa-fist-raised"></i> Guia Oficial • Kumite de Nidan (2º Dan TKST)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Exame Oficial de Graduação para 2º Dan</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            O exame de <strong>Nidan (2º Dan)</strong> exige domínio consolidado de esquivas dinâmicas (<em>Tai Sabaki</em>), contra-ataques cirúrgicos no <em>Jiyu Ippon Kumite</em> (3 formas) e sustentação de alto ritmo de luta livre contínua contra múltiplos atacantes.
+          </p>
+
+          <div class="gohon-series-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+            <div class="gohon-series-card" style="border-left: 4px solid #3B82F6;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">Jiyu Ippon Kumite (3 Formas)</strong>
+                <span class="shodan-arrow-badge mae">Semi-Livre</span>
+              </div>
+              <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6; margin-top: 6px;">
+                Aplicação de 3 formas de ataque pré-determinado com movimentação livre e resposta técnica imediata e decisiva no tempo exato (<em>De-ai</em>).
+              </p>
+            </div>
+
+            <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">Kumite Múltiplo (Contra 1, 2 e 4)</strong>
+                <span class="shodan-arrow-badge mawate">Resistência</span>
+              </div>
+              <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6; margin-top: 6px;">
+                Combates sucessivos contra 1, 2 e 4 oponentes demonstrando visão periférica 360°, serenidade mental e condicionamento aeróbico de elite.
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Sandan (3º Dan) - Kumite Integral: Sanbon, Kihon Ippon, Jiyu Ippon, Shiai & Jiyu
+    if (kyu === -2) {
+      return `
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge" style="background: rgba(220, 38, 38, 0.2); border-color: rgba(239, 68, 68, 0.5); color: #F87171;">
+              <i class="fas fa-fist-raised"></i> Guia Oficial • Avaliação Integral de Kumite Sandan (3º Dan)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Exame Oficial de Graduação para 3º Dan</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            O teste de combate para <strong>Sandan (3º Dan)</strong> abrange todas as modalidades tradicionais e competitivas do Karatê Shotokan, avaliando maturidade tática, controle, velocidade de decisão e espírito de mestre instrutor.
+          </p>
+
+          <div class="gohon-series-grid" style="grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));">
+            <div class="gohon-series-card" style="border-left: 4px solid #3B82F6;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.9rem;">Sanbon & Kihon Ippon</strong>
+              </div>
+              <p style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.5; margin-top: 6px;">
+                3 formas de Sanbon e 3 formas de Kihon Ippon executadas com rigor absoluto de postura e base.
+              </p>
+            </div>
+
+            <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.9rem;">Jiyu Ippon Kumite</strong>
+              </div>
+              <p style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.5; margin-top: 6px;">
+                3 formas em movimentação de combate real com distância de aplicação perfeita (<em>Ma-ai</em>).
+              </p>
+            </div>
+
+            <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.9rem;">Shiai & Jiyu Kumite</strong>
+              </div>
+              <p style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.5; margin-top: 6px;">
+                Luta sob regras oficiais de pontuação (Shiai) e combate livre contínuo tradicional (Jiyu Kumite).
+              </p>
             </div>
           </div>
         </div>
@@ -2476,15 +2557,19 @@ document.addEventListener('DOMContentLoaded', () => {
       3: { label: "Laranja para Verde", fullLabel: "Faixa Laranja ➔ Faixa Verde", kyuLabel: "3º Kyu", fromColor: "#FF7700", toColor: "#10B981", textColor: "#FFFFFF", isDark: false },
       2: { label: "Verde para Roxa", fullLabel: "Faixa Verde ➔ Faixa Roxa", kyuLabel: "2º Kyu", fromColor: "#10B981", toColor: "#8B5CF6", textColor: "#FFFFFF", isDark: false },
       1: { label: "Roxa para Marrom", fullLabel: "Faixa Roxa ➔ Faixa Marrom", kyuLabel: "1º Kyu", fromColor: "#8B5CF6", toColor: "#78350F", textColor: "#FFFFFF", isDark: false },
-      0: { label: "Marrom para Preta", fullLabel: "Faixa Marrom ➔ Faixa Preta", kyuLabel: "Shodan (1º Dan)", fromColor: "#78350F", toColor: "#0A0A0A", textColor: "#FFFFFF", isDark: false }
+      0: { label: "Marrom para Shodan", fullLabel: "Faixa Marrom ➔ Shodan (1º Dan)", kyuLabel: "Shodan", fromColor: "#78350F", toColor: "#0A0A0A", textColor: "#FFFFFF", isDark: false },
+      "-1": { label: "Exame Nidan (2º Dan)", fullLabel: "Shodan (1º Dan) ➔ Nidan (2º Dan)", kyuLabel: "Nidan", fromColor: "#0A0A0A", toColor: "#1E293B", textColor: "#FFFFFF", isDark: false },
+      "-2": { label: "Exame Sandan (3º Dan)", fullLabel: "Nidan (2º Dan) ➔ Sandan (3º Dan)", kyuLabel: "Sandan", fromColor: "#1E293B", toColor: "#020617", textColor: "#FFFFFF", isDark: false }
     };
-    const activeTrans = transMap[curr.kyuNumber] || { label: curr.beltName, fullLabel: curr.beltName, kyuLabel: curr.kyuNumber === 0 ? 'Shodan' : curr.kyuNumber + 'º Kyu', fromColor: '#FFFFFF', toColor: curr.beltColor, textColor: '#FFFFFF', isDark: false };
+    const activeTrans = transMap[curr.kyuNumber] || { label: curr.beltName, fullLabel: curr.beltName, kyuLabel: curr.kyuNumber === 0 ? 'Shodan' : (curr.kyuNumber === -1 ? 'Nidan' : (curr.kyuNumber === -2 ? 'Sandan' : curr.kyuNumber + 'º Kyu')), fromColor: '#FFFFFF', toColor: curr.beltColor, textColor: '#FFFFFF', isDark: false };
+
+    const beltTitleText = curr.kyuNumber === 0 ? 'SHODAN (1º DAN)' : (curr.kyuNumber === -1 ? 'NIDAN (2º DAN)' : (curr.kyuNumber === -2 ? 'SANDAN (3º DAN)' : curr.kyuNumber + 'º KYU'));
 
     let html = `
       <div class="section-header">
         <div class="section-title-group">
           <h3><i class="fas fa-graduation-cap" style="color: var(--accent-crimson);"></i> Plano de Estudos de Graduação</h3>
-          <p>Selecione a faixa desejada para estudar o conteúdo programático completo da TKST 2026</p>
+          <p>Selecione a faixa ou Dan desejado para estudar o conteúdo programático completo da TKST 2026</p>
         </div>
 
         <!-- Desktop Belt Chips -->
@@ -2528,7 +2613,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="belt-mobile-dropdown-header">
                 <div class="belt-mobile-dropdown-title">
                   <i class="fas fa-layer-group" style="color: var(--accent-gold);"></i>
-                  <span>Selecione a Faixa / Exame:</span>
+                  <span>Selecione a Faixa / Dan:</span>
                 </div>
                 <button type="button" class="belt-mobile-dropdown-close" onclick="window.TKST_APP.toggleBeltMobileMenu(event, false)" aria-label="Fechar Menu">
                   <i class="fas fa-times"></i>
@@ -2537,7 +2622,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
               <div class="belt-mobile-options-list">
                 ${window.TKST_CURRICULUM.map(c => {
-                  const trans = transMap[c.kyuNumber] || { label: c.beltName, fullLabel: c.beltName, kyuLabel: c.kyuNumber === 0 ? 'Shodan' : c.kyuNumber + 'º Kyu', fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
+                  const trans = transMap[c.kyuNumber] || { label: c.beltName, fullLabel: c.beltName, kyuLabel: c.kyuNumber === 0 ? 'Shodan' : (c.kyuNumber === -1 ? 'Nidan' : (c.kyuNumber === -2 ? 'Sandan' : c.kyuNumber + 'º Kyu')), fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
                   const isActive = c.kyuNumber === selectedBeltKyu;
                   return `
                     <div 
@@ -2574,7 +2659,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p style="color: #94A3B8; max-width: 700px; margin-top: 6px;">${curr.description}</p>
           </div>
           <div style="text-align: right;">
-            <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-gold);">${curr.kyuNumber === 0 ? 'SHODAN' : curr.kyuNumber + 'º KYU'}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-gold);">${beltTitleText}</div>
           </div>
         </div>
       </div>
@@ -2588,7 +2673,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="study-accordion-title">
               <i class="fas fa-fist-raised" style="color: var(--accent-crimson); font-size: 1.25rem;"></i>
               <div>
-                <h3>1. Kihon (Técnicas Fundamentais${curr.kyuNumber === 0 ? ' • Tabela Oficial' : ''})</h3>
+                <h3>1. Kihon (Técnicas Fundamentais${curr.kyuNumber === 0 ? ' • Tabela Oficial' : (curr.kyuNumber < 0 ? ' • 3x Cada' : '')})</h3>
                 <div style="font-size: 0.78rem; color: #94A3B8;">
                   ${curr.kyuNumber === 0 ? '86 técnicas e bases oficiais divididas em 4 pilares • Toque para abrir/fechar' : `${curr.kihon.length} técnicas exigidas em avanço (Mae) e recuo (Sagate) • Toque para abrir/fechar`}
                 </div>
@@ -2738,15 +2823,76 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <!-- 2. KATA EXIGIDO -->
+        ${curr.geri ? `
+          <!-- GERI WAZA (Chutes Especiais) -->
+          <div class="study-accordion-card" id="studyCard_geri">
+            <button type="button" class="study-accordion-header" id="studyHeader_geri" onclick="window.TKST_APP.toggleStudyAccordion('geri')">
+              <div class="study-accordion-title">
+                <i class="fas fa-shoe-prints" style="color: #F5BE00; font-size: 1.25rem;"></i>
+                <div>
+                  <h3>2. Geri Waza (Técnicas de Chutes • 3x)</h3>
+                  <div style="font-size: 0.78rem; color: #94A3B8;">${curr.geri.length} sequências dinâmicas de chutes exigidas em avaliação • Toque para abrir/fechar</div>
+                </div>
+              </div>
+              <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_geri"></i>
+            </button>
+
+            <div class="study-accordion-body" id="studyBody_geri">
+              <div class="technique-list">
+                ${curr.geri.map(g => `
+                  <div class="technique-item" style="border-left: 3px solid #F5BE00;">
+                    <div class="technique-main" style="align-items: flex-start;">
+                      <div style="width: 8px; height: 8px; border-radius: 50%; background: #F5BE00; margin-top: 6px; margin-right: 10px; flex-shrink: 0;"></div>
+                      <div>
+                        <div class="technique-name" style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${g.name}</div>
+                        <div class="technique-meta" style="margin-top: 4px; color: #94A3B8;">
+                          <i class="fas fa-info-circle" style="color: var(--accent-gold); font-size: 0.75rem;"></i> ${g.detail}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        ${curr.ukemi ? `
+          <!-- UKEMI (Quedas e Rolamentos) -->
+          <div class="study-accordion-card" id="studyCard_ukemi">
+            <button type="button" class="study-accordion-header" id="studyHeader_ukemi" onclick="window.TKST_APP.toggleStudyAccordion('ukemi')">
+              <div class="study-accordion-title">
+                <i class="fas fa-user-ninja" style="color: #10B981; font-size: 1.25rem;"></i>
+                <div>
+                  <h3>${curr.geri ? '3' : '2'}. Ukemi (Quedas & Rolamentos Amortecidos • 3x)</h3>
+                  <div style="font-size: 0.78rem; color: #94A3B8;">4 técnicas de amortecimento de impacto e projeção • Toque para abrir/fechar</div>
+                </div>
+              </div>
+              <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_ukemi"></i>
+            </button>
+
+            <div class="study-accordion-body" id="studyBody_ukemi">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
+                ${curr.ukemi.map(u => `
+                  <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-left: 3px solid #10B981; border-radius: var(--radius-sm); padding: 12px 14px;">
+                    <div style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 4px;">🥋 ${u.name}</div>
+                    <div style="font-size: 0.8rem; color: #94A3B8;">${u.detail}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- KATA EXIGIDO -->
         <div class="study-accordion-card" id="studyCard_kata">
           <button type="button" class="study-accordion-header" id="studyHeader_kata" onclick="window.TKST_APP.toggleStudyAccordion('kata')">
             <div class="study-accordion-title">
               <i class="fas fa-book-open" style="color: var(--accent-gold); font-size: 1.25rem;"></i>
               <div>
-                <h3>2. Kata Exigido</h3>
+                <h3>${(curr.geri && curr.ukemi) ? '4' : ((curr.geri || curr.ukemi) ? '3' : '2')}. Kata Exigido</h3>
                 <div style="font-size: 0.78rem; color: #94A3B8;">
-                  ${curr.shodanProgram ? '9 Katas Oficiais (5 Heian com Bunkai + 4 Superiores) • Toque para ver detalhes' : `${curr.kata.required.join(', ')} • Toque para ver detalhes`}
+                  ${curr.shodanProgram ? '9 Katas Oficiais (5 Heian com Bunkai + 4 Superiores)' : `${(curr.kata.required || []).join(', ')}${curr.kata.optional ? ` • +${curr.kata.optional.length} Opcionais` : ''}`} • Toque para ver detalhes
                 </div>
               </div>
             </div>
@@ -2754,28 +2900,56 @@ document.addEventListener('DOMContentLoaded', () => {
           </button>
 
           <div class="study-accordion-body" id="studyBody_kata">
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-              ${curr.shodanProgram ? curr.shodanProgram.kataList.map(kt => `
-                <span class="badge badge-amarela" style="font-size: 0.85rem; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="window.TKST_APP.openKataDetailByName('${kt.name}')">
-                  🥋 <strong>${kt.name}</strong> <span style="font-size: 0.72rem; color: #F5BE00; opacity: 0.9; font-weight: 600;">(${kt.note})</span> <i class="fas fa-external-link-alt" style="font-size: 0.7rem; opacity: 0.7;"></i>
-                </span>
-              `).join('') : curr.kata.required.map(kt => `
-                <span class="badge badge-amarela" style="font-size: 0.85rem; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="window.TKST_APP.openKataDetailByName('${kt}')">
-                  🥋 ${kt} <i class="fas fa-external-link-alt" style="font-size: 0.7rem; opacity: 0.7;"></i>
-                </span>
-              `).join('')}
-            </div>
+            ${curr.shodanProgram ? `
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                ${curr.shodanProgram.kataList.map(kt => `
+                  <span class="badge badge-amarela" style="font-size: 0.85rem; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="window.TKST_APP.openKataDetailByName('${kt.name}')">
+                    🥋 <strong>${kt.name}</strong> <span style="font-size: 0.72rem; color: #F5BE00; opacity: 0.9; font-weight: 600;">(${kt.note})</span> <i class="fas fa-external-link-alt" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                  </span>
+                `).join('')}
+              </div>
+            ` : `
+              ${curr.kata.required && curr.kata.required.length > 0 ? `
+                <div style="margin-bottom: 12px;">
+                  <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-check-circle"></i> Katas Obrigatórios:
+                  </div>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${curr.kata.required.map(kt => `
+                      <span class="badge badge-amarela" style="font-size: 0.85rem; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="window.TKST_APP.openKataDetailByName('${kt}')">
+                        🥋 <strong>${kt}</strong> <i class="fas fa-external-link-alt" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${curr.kata.optional && curr.kata.optional.length > 0 ? `
+                <div style="margin-bottom: 12px;">
+                  <div style="font-size: 0.8rem; font-weight: 700; color: #60A5FA; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-hand-pointer"></i> Katas de Escolha / Opcionais:
+                  </div>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${curr.kata.optional.map(kt => `
+                      <span class="badge badge-azul" style="font-size: 0.85rem; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: rgba(37,99,235,0.2); border: 1px solid rgba(59,130,246,0.4); color: #93C5FD;" onclick="window.TKST_APP.openKataDetailByName('${kt}')">
+                        🥋 ${kt} <i class="fas fa-external-link-alt" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            `}
             <p style="font-size: 0.9rem; color: #CBD5E1; line-height: 1.6; margin: 0;">${curr.kata.description}</p>
           </div>
         </div>
 
-        <!-- 3. KUMITE -->
+        <!-- KUMITE -->
         <div class="study-accordion-card" id="studyCard_kumite">
           <button type="button" class="study-accordion-header" id="studyHeader_kumite" onclick="window.TKST_APP.toggleStudyAccordion('kumite')">
             <div class="study-accordion-title">
               <i class="fas fa-shield-alt" style="color: var(--accent-blue); font-size: 1.25rem;"></i>
               <div>
-                <h3>3. Kumite (Combate)</h3>
+                <h3>${(curr.geri && curr.ukemi) ? '5' : ((curr.geri || curr.ukemi) ? '4' : '3')}. Kumite (Combate)</h3>
                 <div style="font-size: 0.78rem; color: #94A3B8;">${curr.kumite.type} • Toque para ver regras e postura</div>
               </div>
             </div>

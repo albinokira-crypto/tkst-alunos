@@ -947,5 +947,256 @@ window.TKST_CURRICULUM = [
       "Domínio completo da Tabela Oficial de Shodan da TKST",
       "Aprovação unânime da banca de faixas pretas"
     ]
+  },
+  {
+    "id": "dan-2",
+    "kyuNumber": -1,
+    "beltName": "Faixa Preta (Nidan)",
+    "beltColor": "#1E293B",
+    "previousBelt": "Shodan (1º Dan)",
+    "targetBelt": "Faixa Preta 2º Dan (Nidan)",
+    "description": "Exame Oficial de Graduação para 2º Dan (Nidan) da TKST: aprofundamento do Kihon em bases avançadas (Fudo Dachi, Sanchin Dachi, Shiko Dachi), Geri com Tobi Geri, Ukemi (quedas e rolamentos), Katas Obrigatórios e de Escolha, e Kumite múltiplo.",
+    "kihon": [
+      {
+        "id": "k-nid-1",
+        "direction": "Mae (Avanço)",
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu-Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-2",
+        "direction": "Sagate (Recuo)",
+        "technique": "Chudan Shuto Uke (Kokutsu Dachi) / Gyaku Tsuki Chudan (Zenkutsu-Dachi)",
+        "stance": "Kokutsu ➔ Zenkutsu Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-3",
+        "direction": "Transfere",
+        "technique": "Gedan Barai",
+        "stance": "Shiko Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-4",
+        "direction": "Mae (Avanço)",
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Fudo Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-5",
+        "direction": "Sagate (Recuo)",
+        "technique": "Yoko Tsuki Jodan",
+        "stance": "Kiba Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-6",
+        "direction": "Vira pela Costa",
+        "technique": "Yoko Empi",
+        "stance": "Kiba Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-7",
+        "direction": "Vira pela Costa",
+        "technique": "Yoko Empi",
+        "stance": "Kiba Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-8",
+        "direction": "Lateral",
+        "technique": "Gedan Barai",
+        "stance": "Nekoashi Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-9",
+        "direction": "Mae (Avanço)",
+        "technique": "Migi Mawashi Uke",
+        "stance": "Sanchin Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-nid-10",
+        "direction": "Mae (Avanço)",
+        "technique": "Hidari Mawashi Uke",
+        "stance": "Sanchin Dachi",
+        "count": "3 vezes (3x)"
+      }
+    ],
+    "geri": [
+      {
+        "name": "Sequência 4 Direções: Mae Geri / Yoko Geri / Ushiro Geri / Mawashi Geri",
+        "detail": "Frente / Lateral / Trás / Frente em fluidez contínua (3x)"
+      },
+      {
+        "name": "Mae Tobi Geri / Kizami Mawashi Geri",
+        "detail": "Chute frontal saltando seguido de chute circular com a perna da frente (3x)"
+      },
+      {
+        "name": "Mae Tobi Geri / Ushiro Geri",
+        "detail": "Chute frontal saltando seguido de chute traseiro potente com o calcanhar (3x)"
+      }
+    ],
+    "ukemi": [
+      { "name": "Mae Ukemi", "detail": "Queda frontal amortecida com os antebraços (3x)" },
+      { "name": "Yoko Ukemi", "detail": "Queda lateral amortecida com batida de braço (3x)" },
+      { "name": "Ushiro Ukemi", "detail": "Queda para trás com amortecimento dorsal e braços (3x)" },
+      { "name": "Zempo Kaiten Ukemi", "detail": "Rolamento frontal com projeção e recuperação em guarda em pé (3x)" }
+    ],
+    "kata": {
+      "required": [
+        "Tekki Nidan",
+        "Bassai Dai",
+        "Kanku Dai",
+        "Jion"
+      ],
+      "optional": [
+        "Hangetsu",
+        "Jitte",
+        "Gankaku",
+        "Empi"
+      ],
+      "description": "Katas Obrigatórios: Tekki Nidan, Bassai Dai, Kanku Dai e Jion. Katas de Escolha do Candidato: Hangetsu, Jitte, Gankaku ou Empi."
+    },
+    "kumite": {
+      "type": "Kumite Múltiplo (Contra 1, 2 e 4) & Jiyu Ippon Kumite (3 formas)",
+      "description": "Jiyu Ippon Kumite em 3 formas oficiais e combate livre com avaliação de resistência e Zanshin contra 1, 2 e 4 oponentes simultâneos."
+    },
+    "requirements": [
+      "Mínimo de 2 anos como Faixa Preta Shodan (1º Dan)",
+      "Participação em bancas examinadoras e arbitragem oficial",
+      "Aprovação da comissão de graus da TKST"
+    ]
+  },
+  {
+    "id": "dan-3",
+    "kyuNumber": -2,
+    "beltName": "Faixa Preta (Sandan)",
+    "beltColor": "#020617",
+    "previousBelt": "Nidan (2º Dan)",
+    "targetBelt": "Faixa Preta 3º Dan (Sandan)",
+    "description": "Exame Oficial de Graduação para 3º Dan (Sandan) da TKST: maestria de combinações dinâmicas de Kihon com Tsuriashi e Kage Tsuki, Geri Waza avançado (Gyaku Mawashi, Ura Mawashi), Ukemi completo, Katas Superiores com 2 Bunkai práticos e todas as modalidades de Kumite.",
+    "kihon": [
+      {
+        "id": "k-san-1",
+        "direction": "Mae (Avanço)",
+        "technique": "Gedan Barai / Gyaku Tsuki Chudan",
+        "stance": "Zenkutsu-Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-2",
+        "direction": "Sagate (Recuo)",
+        "technique": "Chudan Shuto Uke (Kokutsu Dachi) / Kizami Yoko Geri Kekomi / Gyaku Tsuki Chudan (Zenkutsu-Dachi)",
+        "stance": "Kokutsu ➔ Zenkutsu Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-3",
+        "direction": "Transfere",
+        "technique": "Gedan Barai (Shiko Dachi) / Kizami Uraken Jodan / Gyaku Tsuki Chudan (Zenkutsu Dachi)",
+        "stance": "Shiko ➔ Zenkutsu Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-4",
+        "direction": "Mae (Avanço)",
+        "technique": "Sanbon Tsuki Chudan",
+        "stance": "Fudo Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-5",
+        "direction": "Sagate (Recuo)",
+        "technique": "Yoko Tsuki Jodan (Kiba Dachi) / Tsuriashi Yoko Empi / Kage Tsuki",
+        "stance": "Kiba Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-6",
+        "direction": "Vira pela Costa",
+        "technique": "Yoko Empi (Kiba Dachi) / Gedan Barai / Kage Tsuki",
+        "stance": "Kiba Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-7",
+        "direction": "Vira pela Costa",
+        "technique": "Yoko Empi (Kiba Dachi) / Gedan Barai / Kage Tsuki",
+        "stance": "Kiba Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-8",
+        "direction": "Lateral",
+        "technique": "Gedan Barai (Nekoashi Dachi) / Kizami Geri / Gyaku Tsuki",
+        "stance": "Nekoashi Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-9",
+        "direction": "Mae (Avanço)",
+        "technique": "Migi Mawashi Uke",
+        "stance": "Sanchin Dachi",
+        "count": "3 vezes (3x)"
+      },
+      {
+        "id": "k-san-10",
+        "direction": "Mae (Avanço)",
+        "technique": "Hidari Mawashi Uke",
+        "stance": "Sanchin Dachi",
+        "count": "3 vezes (3x)"
+      }
+    ],
+    "geri": [
+      {
+        "name": "Sequência 4 Direções: Mae Geri / Yoko Geri / Ushiro Geri / Mawashi Geri",
+        "detail": "Frente / Lateral / Trás / Frente em fluidez e controle máximo (3x)"
+      },
+      {
+        "name": "Mae Tobi Geri / Ura Mawashi Geri",
+        "detail": "Chute frontal voador seguido de chute circular reverso de calcanhar (3x)"
+      },
+      {
+        "name": "Mae Tobi Geri / Ushiro Geri",
+        "detail": "Chute frontal voador seguido de chute penetrante para trás (3x)"
+      },
+      {
+        "name": "Gyaku Mawashi Geri / Mawashi Geri / Ushiro Geri",
+        "detail": "Sequência de 3 chutes rotacionais consecutivos em alta velocidade (3x)"
+      }
+    ],
+    "ukemi": [
+      { "name": "Mae Ukemi", "detail": "Queda frontal amortecida (3x)" },
+      { "name": "Yoko Ukemi", "detail": "Queda lateral amortecida (3x)" },
+      { "name": "Ushiro Ukemi", "detail": "Queda para trás com amortecimento (3x)" },
+      { "name": "Zempo Kaiten Ukemi", "detail": "Rolamento frontal com recuperação em postura de combate (3x)" }
+    ],
+    "kata": {
+      "required": [
+        "Tekki Sandan",
+        "Empi",
+        "Gankaku",
+        "Hangetsu"
+      ],
+      "optional": [
+        "Qualquer Kata superior diferente dos obrigatórios (com 2 Bunkai)"
+      ],
+      "description": "Katas Obrigatórios: Tekki Sandan, Empi, Gankaku e Hangetsu. Katas Opcionais: Qualquer Kata superior diferente dos obrigatórios com demonstração completa de 2 aplicações de Bunkai."
+    },
+    "kumite": {
+      "type": "Sanbon Kumite, Kihon Ippon, Jiyu Ippon, Shiai Kumite & Jiyu Kumite",
+      "description": "Avaliação integral de combate: Sanbon Kumite (3 formas), Kihon Ippon Kumite (3 formas), Jiyu Ippon Kumite (3 formas), Shiai Kumite (regras de competição oficial) e Jiyu Kumite (combate livre contínuo)."
+    },
+    "requirements": [
+      "Mínimo de 3 anos como Faixa Preta Nidan (2º Dan)",
+      "Apresentação técnica de Bunkai e trabalho pedagógico",
+      "Aprovação da comissão de mestres da TKST"
+    ]
   }
 ];
