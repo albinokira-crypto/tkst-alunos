@@ -2054,13 +2054,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="shodan-col-title">
                       <i class="fas fa-hand-paper" style="color: #3B82F6;"></i> Te Waza
                     </div>
-                    <span class="shodan-arrow-badge mae">28 Golpes • ➡ Mae</span>
+                    <span class="shodan-arrow-badge mae" style="font-size: 0.7rem;">28 Golpes • Mae / Sagate</span>
                   </div>
                   <div class="shodan-item-list">
                     ${curr.shodanProgram.teWaza.map((t, idx) => `
                       <div class="shodan-tech-item">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <span class="shodan-arrow-badge mae">${t.arrow}</span>
+                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
                       </div>
                     `).join('')}
                   </div>
@@ -2072,13 +2072,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="shodan-col-title">
                       <i class="fas fa-shield-alt" style="color: #10B981;"></i> Uke Waza
                     </div>
-                    <span class="shodan-arrow-badge sagate">25 Defesas • ⬅ Sagate</span>
+                    <span class="shodan-arrow-badge sagate" style="font-size: 0.7rem;">25 Defesas • Mae / Sagate</span>
                   </div>
                   <div class="shodan-item-list">
                     ${curr.shodanProgram.ukeWaza.map((t, idx) => `
                       <div class="shodan-tech-item">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <span class="shodan-arrow-badge sagate">${t.arrow}</span>
+                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
                       </div>
                     `).join('')}
                   </div>
@@ -2090,7 +2090,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="shodan-col-title">
                       <i class="fas fa-shoe-prints" style="color: #F5BE00;"></i> Ashi Waza
                     </div>
-                    <span class="shodan-arrow-badge mawate">15 Chutes • 🔄 Giro</span>
+                    <span class="shodan-arrow-badge mawate" style="font-size: 0.7rem;">15 Chutes • 🔄 Giro</span>
                   </div>
                   <div class="shodan-item-list">
                     ${curr.shodanProgram.ashiWaza.map((t, idx) => `
@@ -2108,13 +2108,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="shodan-col-title">
                       <i class="fas fa-layer-group" style="color: #8B5CF6;"></i> Dachi Waza
                     </div>
-                    <span class="shodan-arrow-badge dachi">18 Bases • 1 Movimento</span>
+                    <span class="shodan-arrow-badge dachi" style="font-size: 0.7rem;">18 Bases • Mae / Sagate</span>
                   </div>
                   <div class="shodan-item-list">
                     ${curr.shodanProgram.dachiWaza.map((t, idx) => `
                       <div class="shodan-tech-item">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <span style="font-size: 0.72rem; color: #94A3B8;">Mae / Sagate</span>
+                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
                       </div>
                     `).join('')}
                   </div>
