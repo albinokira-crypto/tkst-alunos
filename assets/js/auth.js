@@ -14,6 +14,8 @@
   const STORAGE_KEY_QUIZ_BANK = 'tkst_custom_quiz_bank';
   const STORAGE_KEY_DELETED_QUIZZES = 'tkst_deleted_quiz_ids';
   const STORAGE_KEY_DELETED_QUIZ_SUBS = 'tkst_deleted_quiz_sub_ids';
+  const STORAGE_KEY_GLOSSARY = 'tkst_custom_glossary';
+  const STORAGE_KEY_DELETED_GLOSSARY = 'tkst_deleted_glossary_terms';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_TOPIC = 'tkst_karate_master_stream_2026';
@@ -91,8 +93,10 @@
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
       const deletedQuizIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+      const deletedGlossaryTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
       const quiz_submissions = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => !deletedQuizSubIds.includes(s.id));
       const custom_quiz_bank = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || (window.TKST_QUIZ_BANK || [])).filter(q => !deletedQuizIds.includes(q.id));
+      const custom_glossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || (window.TKST_GLOSSARY || {});
 
       const payload = {
         dojos,
@@ -101,9 +105,11 @@
         progress,
         quiz_submissions,
         custom_quiz_bank,
+        custom_glossary,
         deletedStudentIds,
         deletedQuizIds,
         deletedQuizSubIds,
+        deletedGlossaryTerms,
         timestamp: Date.now()
       };
 
@@ -278,6 +284,41 @@
       if (localBankStr !== newBankStr) {
         localStorage.setItem(STORAGE_KEY_QUIZ_BANK, newBankStr);
         window.TKST_QUIZ_BANK = mergedBank;
+        changed = true;
+      }
+    }
+
+    // 8. Sync Custom Glossary (Merge with defaults and filter deleted terms)
+    let localDeletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
+    if (Array.isArray(cloudData.deletedGlossaryTerms)) {
+      const mergedDelTerms = Array.from(new Set([...localDeletedTerms, ...cloudData.deletedGlossaryTerms]));
+      if (mergedDelTerms.length !== localDeletedTerms.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED_GLOSSARY, JSON.stringify(mergedDelTerms));
+        localDeletedTerms = mergedDelTerms;
+        changed = true;
+      }
+    }
+
+    if (cloudData.custom_glossary && typeof cloudData.custom_glossary === 'object') {
+      const defaultGlossary = window.TKST_DEFAULT_GLOSSARY || window.TKST_GLOSSARY || {};
+      let baseGlossary = JSON.parse(JSON.stringify(defaultGlossary));
+      let localGlossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || baseGlossary;
+
+      ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+        if (!baseGlossary[cat]) baseGlossary[cat] = [];
+        const termMap = new Map();
+        baseGlossary[cat].forEach(t => termMap.set(t.japanese.toLowerCase().trim(), { ...t }));
+        (localGlossary[cat] || []).forEach(t => termMap.set(t.japanese.toLowerCase().trim(), t));
+        (cloudData.custom_glossary[cat] || []).forEach(t => termMap.set(t.japanese.toLowerCase().trim(), t));
+
+        baseGlossary[cat] = Array.from(termMap.values()).filter(t => !localDeletedTerms.includes(t.japanese.toLowerCase().trim()));
+      });
+
+      const localGStr = localStorage.getItem(STORAGE_KEY_GLOSSARY);
+      const newGStr = JSON.stringify(baseGlossary);
+      if (localGStr !== newGStr) {
+        localStorage.setItem(STORAGE_KEY_GLOSSARY, newGStr);
+        window.TKST_GLOSSARY = baseGlossary;
         changed = true;
       }
     }
@@ -1046,6 +1087,90 @@
 
     saveQuizResult: function(score, total, kyu) {
       return this.saveQuizSubmission({ score, total, beltLevel: kyu || 'Geral' });
+    },
+
+    getCustomGlossary: function() {
+      const deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
+      const defaultGlossary = window.TKST_DEFAULT_GLOSSARY || window.TKST_GLOSSARY || {};
+      let baseGlossary = JSON.parse(JSON.stringify(defaultGlossary));
+
+      try {
+        let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY));
+        if (saved && typeof saved === 'object') {
+          ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+            if (!baseGlossary[cat]) baseGlossary[cat] = [];
+            const termMap = new Map();
+            baseGlossary[cat].forEach(t => termMap.set(t.japanese.toLowerCase().trim(), { ...t }));
+            (saved[cat] || []).forEach(t => {
+              if (!deletedTerms.includes(t.japanese.toLowerCase().trim())) {
+                termMap.set(t.japanese.toLowerCase().trim(), t);
+              }
+            });
+            baseGlossary[cat] = Array.from(termMap.values()).filter(t => !deletedTerms.includes(t.japanese.toLowerCase().trim()));
+          });
+          localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(baseGlossary));
+          window.TKST_GLOSSARY = baseGlossary;
+          return baseGlossary;
+        }
+      } catch(e) {}
+
+      ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+        if (baseGlossary[cat]) {
+          baseGlossary[cat] = baseGlossary[cat].filter(t => !deletedTerms.includes(t.japanese.toLowerCase().trim()));
+        }
+      });
+      localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(baseGlossary));
+      window.TKST_GLOSSARY = baseGlossary;
+      return baseGlossary;
+    },
+
+    saveCustomGlossary: function(glossary) {
+      if (!glossary || typeof glossary !== 'object') return false;
+      localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(glossary));
+      window.TKST_GLOSSARY = glossary;
+      pushToCloud();
+      return true;
+    },
+
+    addGlossaryTerm: function(category, term) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas o administrador pode cadastrar novos termos.' };
+      if (!category || !term || !term.japanese || !term.meaning) {
+        return { success: false, error: 'Preencha todos os campos obrigatórios.' };
+      }
+
+      let deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
+      const cleanKey = term.japanese.toLowerCase().trim();
+      deletedTerms = deletedTerms.filter(k => k !== cleanKey);
+      localStorage.setItem(STORAGE_KEY_DELETED_GLOSSARY, JSON.stringify(deletedTerms));
+
+      const glossary = this.getCustomGlossary();
+      if (!glossary[category]) glossary[category] = [];
+
+      const existingIdx = glossary[category].findIndex(t => t.japanese.toLowerCase().trim() === cleanKey);
+      if (existingIdx !== -1) {
+        glossary[category][existingIdx] = { ...term };
+      } else {
+        glossary[category].unshift({ ...term });
+      }
+
+      this.saveCustomGlossary(glossary);
+      return { success: true, term };
+    },
+
+    deleteGlossaryTerm: function(category, japaneseName) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas o administrador pode excluir termos.' };
+      const cleanKey = (japaneseName || '').toLowerCase().trim();
+
+      let deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
+      if (!deletedTerms.includes(cleanKey)) deletedTerms.push(cleanKey);
+      localStorage.setItem(STORAGE_KEY_DELETED_GLOSSARY, JSON.stringify(deletedTerms));
+
+      const glossary = this.getCustomGlossary();
+      if (glossary[category]) {
+        glossary[category] = glossary[category].filter(t => t.japanese.toLowerCase().trim() !== cleanKey);
+      }
+      this.saveCustomGlossary(glossary);
+      return { success: true };
     },
 
     getFirebaseUrl: function() {

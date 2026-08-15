@@ -3590,7 +3590,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderGlossary() {
-    const glossary = window.TKST_GLOSSARY;
+    const glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : window.TKST_GLOSSARY;
+    const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
 
     const categories = [
       { id: 'all', name: 'Todos os Termos' },
@@ -3604,31 +3605,49 @@ document.addEventListener('DOMContentLoaded', () => {
     let terms = [];
     if (glossaryCategory === 'all') {
       terms = [
-        ...glossary.bases.map(t => ({ ...t, cat: 'Base (Dachi)' })),
-        ...glossary.defesas.map(t => ({ ...t, cat: 'Defesa (Uke)' })),
-        ...glossary.socosGolpes.map(t => ({ ...t, cat: 'Soco / Golpe' })),
-        ...glossary.chutes.map(t => ({ ...t, cat: 'Chute (Geri)' })),
-        ...glossary.comandosEContagem.map(t => ({ ...t, cat: 'Comando / Conceito' }))
+        ...(glossary.bases || []).map(t => ({ ...t, cat: 'Base (Dachi)', categoryKey: 'bases' })),
+        ...(glossary.defesas || []).map(t => ({ ...t, cat: 'Defesa (Uke)', categoryKey: 'defesas' })),
+        ...(glossary.socosGolpes || []).map(t => ({ ...t, cat: 'Soco / Golpe', categoryKey: 'socosGolpes' })),
+        ...(glossary.chutes || []).map(t => ({ ...t, cat: 'Chute (Geri)', categoryKey: 'chutes' })),
+        ...(glossary.comandosEContagem || []).map(t => ({ ...t, cat: 'Comando / Conceito', categoryKey: 'comandosEContagem' }))
       ];
     } else {
-      terms = (glossary[glossaryCategory] || []).map(t => ({ ...t, cat: glossaryCategory === 'bases' ? 'Base (Dachi)' : glossaryCategory === 'defesas' ? 'Defesa (Uke)' : glossaryCategory === 'socosGolpes' ? 'Soco / Golpe' : glossaryCategory === 'chutes' ? 'Chute (Geri)' : 'Comando / Conceito' }));
+      const catLabels = {
+        bases: 'Base (Dachi)',
+        defesas: 'Defesa (Uke)',
+        socosGolpes: 'Soco / Golpe',
+        chutes: 'Chute (Geri)',
+        comandosEContagem: 'Comando / Conceito'
+      };
+      terms = (glossary[glossaryCategory] || []).map(t => ({
+        ...t,
+        cat: catLabels[glossaryCategory] || 'Termo',
+        categoryKey: glossaryCategory
+      }));
     }
 
     if (glossarySearchQuery) {
       const q = glossarySearchQuery.toLowerCase();
-      terms = terms.filter(t => t.japanese.toLowerCase().includes(q) || t.meaning.toLowerCase().includes(q));
+      terms = terms.filter(t => t.japanese.toLowerCase().includes(q) || t.meaning.toLowerCase().includes(q) || (t.kanji && t.kanji.toLowerCase().includes(q)));
     }
 
     let html = `
-      <div class="section-header">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
         <div class="section-title-group">
           <h3><i class="fas fa-language" style="color: var(--accent-crimson);"></i> Dicionário Japonês de Karatê</h3>
           <p>Terminologia técnica, comandos e conceitos do Shotokan Tradicional</p>
         </div>
 
-        <div class="search-input-wrapper">
-          <i class="fas fa-search"></i>
-          <input type="text" id="glossarySearchInput" placeholder="Buscar termo em japonês ou português..." value="${glossarySearchQuery}">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          ${isAdmin ? `
+            <button class="btn btn-primary" onclick="window.TKST_APP.openAddGlossaryTermModal('${glossaryCategory}')" style="font-size: 0.86rem; padding: 10px 16px; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 10px rgba(255,183,3,0.25);">
+              <i class="fas fa-plus-circle"></i> Novo Termo
+            </button>
+          ` : ''}
+          <div class="search-input-wrapper" style="margin: 0;">
+            <i class="fas fa-search"></i>
+            <input type="text" id="glossarySearchInput" placeholder="Buscar termo em japonês ou português..." value="${glossarySearchQuery}">
+          </div>
         </div>
       </div>
 
@@ -3641,11 +3660,23 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-        ${terms.map(t => `
-          <div class="stat-card" style="flex-direction: column; align-items: flex-start; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 6px;">
+        ${terms.length === 0 ? `
+          <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: #64748B;">
+            <i class="fas fa-search" style="font-size: 2.2rem; margin-bottom: 10px; display: block;"></i>
+            Nenhum termo encontrado para a busca selecionada.
+          </div>
+        ` : terms.map(t => `
+          <div class="stat-card" style="flex-direction: column; align-items: flex-start; padding: 20px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 6px; gap: 8px;">
               <span class="badge badge-amarela" style="font-size: 0.68rem;">${t.cat || 'Termo'}</span>
-              <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.25); font-size: 1.2rem;">${t.kanji || ''}</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.3); font-size: 1.15rem;">${t.kanji || ''}</span>
+                ${isAdmin ? `
+                  <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; line-height: 1;">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                ` : ''}
+              </div>
             </div>
             <div style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
               ${t.japanese}
@@ -5362,6 +5393,105 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
+    },
+
+    openAddGlossaryTermModal: (defaultCat) => {
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      modalTitle.innerHTML = `<span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Novo Termo no Dicionário</span>`;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddGlossaryTerm();" style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Cadastre um novo termo com nome em japonês/romaji, ideogramas em Kanji (opcional) e significado completo.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-folder" style="color: var(--accent-gold); margin-right: 6px;"></i> Categoria:
+            </label>
+            <select id="newGlossaryCategory" class="form-input" required style="font-size: 0.88rem;">
+              <option value="bases" ${defaultCat === 'bases' ? 'selected' : ''}>Bases (Dachi)</option>
+              <option value="defesas" ${defaultCat === 'defesas' ? 'selected' : ''}>Defesas (Uke)</option>
+              <option value="socosGolpes" ${defaultCat === 'socosGolpes' ? 'selected' : ''}>Socos e Golpes (Tsuki/Uchi)</option>
+              <option value="chutes" ${defaultCat === 'chutes' ? 'selected' : ''}>Chutes (Geri)</option>
+              <option value="comandosEContagem" ${defaultCat === 'comandosEContagem' ? 'selected' : ''}>Comandos e Conceitos</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-language" style="color: var(--accent-gold); margin-right: 6px;"></i> Termo em Japonês (Romaji):
+            </label>
+            <input type="text" id="newGlossaryJapanese" class="form-input" required placeholder="ex: Kage Tsuki ou Fudo Dachi" style="font-size: 0.9rem; font-weight: 600;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-pen-fancy" style="color: var(--accent-gold); margin-right: 6px;"></i> Kanji / Ideogramas (Opcional):
+            </label>
+            <input type="text" id="newGlossaryKanji" class="form-input" placeholder="ex: 鉤突き ou 不動立ち" style="font-size: 0.9rem; font-family: var(--font-kanji);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-align-left" style="color: var(--accent-gold); margin-right: 6px;"></i> Significado / Explicação:
+            </label>
+            <textarea id="newGlossaryMeaning" class="form-input" rows="3" required placeholder="ex: Soco em gancho curto lateral com cotovelo a 90 graus..." style="resize: vertical; font-size: 0.88rem;"></textarea>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
+              <i class="fas fa-plus-circle"></i> Cadastrar Termo
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    submitAddGlossaryTerm: () => {
+      const cat = document.getElementById('newGlossaryCategory').value;
+      const japanese = document.getElementById('newGlossaryJapanese').value.trim();
+      const kanji = document.getElementById('newGlossaryKanji').value.trim();
+      const meaning = document.getElementById('newGlossaryMeaning').value.trim();
+
+      if (!cat || !japanese || !meaning) {
+        alert('Por favor, preencha o termo em japonês e o seu significado.');
+        return;
+      }
+
+      const res = window.TKST_AUTH.addGlossaryTerm(cat, {
+        japanese,
+        kanji,
+        meaning
+      });
+
+      if (res && res.success) {
+        document.getElementById('detailModal').classList.remove('active');
+        alert(`Termo "${japanese}" adicionado com sucesso ao dicionário!`);
+        renderGlossary();
+      } else {
+        alert((res && res.error) || 'Erro ao adicionar termo.');
+      }
+    },
+
+    deleteGlossaryTerm: (category, japaneseName) => {
+      if (!confirm(`Tem certeza que deseja excluir o termo "${japaneseName}" do dicionário?`)) {
+        return;
+      }
+      const res = window.TKST_AUTH.deleteGlossaryTerm(category, japaneseName);
+      if (res && res.success) {
+        alert(`Termo "${japaneseName}" excluído com sucesso!`);
+        renderGlossary();
+      } else {
+        alert((res && res.error) || 'Erro ao excluir termo.');
+      }
     }
   };
 

@@ -627,3 +627,43 @@ window.TKST_GLOSSARY = {
     }
   ]
 };
+
+window.TKST_DEFAULT_GLOSSARY = JSON.parse(JSON.stringify(window.TKST_GLOSSARY));
+
+// Initialize Custom Glossary overlay and deletions
+(function() {
+  try {
+    const deletedTerms = JSON.parse(localStorage.getItem('tkst_deleted_glossary_terms')) || [];
+    const customGlossary = JSON.parse(localStorage.getItem('tkst_custom_glossary'));
+    
+    let baseGlossary = JSON.parse(JSON.stringify(window.TKST_DEFAULT_GLOSSARY || {}));
+    
+    if (customGlossary && typeof customGlossary === 'object') {
+      ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+        if (!baseGlossary[cat]) baseGlossary[cat] = [];
+        const termMap = new Map();
+        baseGlossary[cat].forEach(t => termMap.set(t.japanese.toLowerCase().trim(), { ...t }));
+        (customGlossary[cat] || []).forEach(t => {
+          if (!deletedTerms.includes(t.japanese.toLowerCase().trim())) {
+            termMap.set(t.japanese.toLowerCase().trim(), t);
+          }
+        });
+        
+        baseGlossary[cat] = Array.from(termMap.values()).filter(t => !deletedTerms.includes(t.japanese.toLowerCase().trim()));
+      });
+      localStorage.setItem('tkst_custom_glossary', JSON.stringify(baseGlossary));
+      window.TKST_GLOSSARY = baseGlossary;
+    } else {
+      ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+        if (baseGlossary[cat]) {
+          baseGlossary[cat] = baseGlossary[cat].filter(t => !deletedTerms.includes(t.japanese.toLowerCase().trim()));
+        }
+      });
+      window.TKST_GLOSSARY = baseGlossary;
+      localStorage.setItem('tkst_custom_glossary', JSON.stringify(baseGlossary));
+    }
+  } catch(e) {
+    window.TKST_GLOSSARY = window.TKST_DEFAULT_GLOSSARY;
+  }
+})();
+
