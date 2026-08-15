@@ -23,7 +23,6 @@ window.TKST_KUMITE = {
         "attackTechnique": "5x Chudan Oi Tsuki",
         "defenseTechnique": "5x Chudan Soto Uke",
         "defenseNote": "( Defesa de fora para dentro )",
-        "altDefense": "5x Chudan Uchi Uke ( Defesa de dentro para fora )",
         "counterTechnique": "Gyaku Tsuki Chudan (No 5º passo com Kiai!)",
         "stance": "Zenkutsu Dachi",
         "toriAnnouncement": "Chudan!",

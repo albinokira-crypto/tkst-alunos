@@ -110,7 +110,6 @@ window.TKST_CURRICULUM = [
       "type": "Gohon Kumite / Shiai Kumite Básico",
       "description": "Gohon Kumite (5 passos) com ataques de Jodan Oi Tsuki, Chudan Oi Tsuki e Mae Geri. Defesas com Age Uke, Soto Uke e Gedan Barai com contra-ataque de Gyaku Tsuki."
     },
-    "defesaPessoal": "Defesa básica de pegada de punho e controle de distância com Kamae.",
     "requirements": [
       "Mínimo de 3 meses de treino",
       "Frequência mínima de 75%",
@@ -224,7 +223,6 @@ window.TKST_CURRICULUM = [
       "type": "Sanbon Kumite (1ª e 2ª Forma) & Shiai Kumite",
       "description": "Sanbon Kumite (1ª e 2ª forma) com ataques coordenados e defesas com esquiva e contra-ataque preciso."
     },
-    "defesaPessoal": "Defesa contra agarrão de gola frontal com projeção ou contra-golpe em ponto vital.",
     "requirements": [
       "Mínimo de 3 meses na faixa amarela",
       "Aprovação prévia do Sensei"
@@ -324,7 +322,6 @@ window.TKST_CURRICULUM = [
       "type": "Sanbon Kumite (3ª, 4ª e 5ª Forma) & Shiai Kumite",
       "description": "Sanbon Kumite avançado com defesas em ângulos de 45° e 90° e contra-ataques simultâneos."
     },
-    "defesaPessoal": "Defesa contra abraço de urso e agarrão por trás com cotovelada (Empi) e queda simples.",
     "requirements": [
       "Mínimo de 4 meses na faixa vermelha",
       "Dojo Kun na ponta da língua"
@@ -467,7 +464,6 @@ window.TKST_CURRICULUM = [
       "type": "Kihon Ippon Kumite (1ª e 2ª Forma) & Jiyu Kumite",
       "description": "Kihon Ippon Kumite (ataques pré-determinados com aplicação rápida de contra-ataque imediato) e luta livre (Jiyu Kumite)."
     },
-    "defesaPessoal": "Defesas contra agressão de soco em avanço com esquiva, projeção e chave de articulação.",
     "requirements": [
       "Mínimo de 5 meses na faixa laranja",
       "Demonstração de domínio de bases"
@@ -585,7 +581,6 @@ window.TKST_CURRICULUM = [
       "type": "Jiyu Ippon Kumite (1ª e 2ª Forma) & Jiyu Kumite (Contra 1 e 2 oponentes)",
       "description": "Jiyu Ippon Kumite sem contato mas com controle milimétrico e velocidade real de combate."
     },
-    "defesaPessoal": "Defesa pessoal avançada com projeção (Nage Waza) e imobilização no solo.",
     "requirements": [
       "Mínimo de 6 meses na faixa verde",
       "Apresentar plano de aula simulado"
@@ -682,7 +677,6 @@ window.TKST_CURRICULUM = [
       "type": "Jiyu Ippon Kumite (1ª, 2ª, 3ª e 4ª Forma) & Jiyu Kumite (Contra 1, 2 e 4 oponentes)",
       "description": "Luta livre contínua demonstrando controle emocional, Zanshin, tempo de reação e condicionamento cardiovascular."
     },
-    "defesaPessoal": "Defesas contra ataques múltiplos e desarmamento com queda e imobilização.",
     "requirements": [
       "Mínimo de 8 meses na faixa roxa",
       "Participação ativa em cursos e arbitragem"
@@ -734,7 +728,6 @@ window.TKST_CURRICULUM = [
       "type": "Jiyu Ippon Kumite Completo, Jiyu Kumite e Shiai Kumite",
       "description": "Demonstração de todos os aspectos do combate: Kihon Ippon, Jiyu Ippon (todas as 6 formas) e Jiyu Kumite contra múltiplos oponentes."
     },
-    "defesaPessoal": "Sistema completo de Goshin Jutsu (defesa pessoal) com desarmes, projeções e finalizações.",
     "requirements": [
       "Mínimo de 1 ano como Faixa Marrom 1º Kyu",
       "Redação/Monografia sobre a Filosofia do Karate-Dō",

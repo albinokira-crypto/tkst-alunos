@@ -1100,24 +1100,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div class="study-accordion-body" id="studyBody_kihon">
             <div class="technique-list">
-              ${curr.kihon.map(k => {
-                const isChecked = progress.masteredItems && progress.masteredItems[k.id];
-                return `
-                  <div class="technique-item ${isChecked ? 'mastered' : ''}">
-                    <div class="technique-main">
-                      <div class="technique-checkbox ${isChecked ? 'checked' : ''}" onclick="window.TKST_APP.toggleCheck('${k.id}')">
-                        <i class="fas fa-check"></i>
-                      </div>
-                      <div>
-                        <div class="technique-name">${k.technique}</div>
-                        <div class="technique-meta">
-                          <span class="stance">${k.stance}</span> • <span>${k.direction}</span> • <span style="color: #64748B;">${k.count}</span>
-                        </div>
+              ${curr.kihon.map(k => `
+                <div class="technique-item">
+                  <div class="technique-main" style="align-items: center;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-crimson); margin-right: 10px; flex-shrink: 0;"></div>
+                    <div>
+                      <div class="technique-name">${k.technique}</div>
+                      <div class="technique-meta">
+                        <span class="stance">${k.stance}</span> • <span>${k.direction}</span> • <span style="color: #64748B;">${k.count}</span>
                       </div>
                     </div>
                   </div>
-                `;
-              }).join('')}
+                </div>
+              `).join('')}
             </div>
           </div>
         </div>
@@ -1260,8 +1255,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <span class="gohon-role-badge uke">Sagate</span>
                       <div>
                         <strong>5x Chudan Soto Uke</strong><br>
-                        <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span><br>
-                        <span style="font-size: 0.75rem; color: #64748B;">*ou Chudan Uchi Uke ( Defesa de dentro para fora )</span>
+                        <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span>
                       </div>
                     </div>
                     <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
@@ -1316,31 +1310,21 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <!-- 4. DEFESA PESSOAL & REQUISITOS -->
+        <!-- 4. REQUISITOS AVALIADOS PELA BANCA -->
         <div class="study-accordion-card" id="studyCard_defesa">
           <button type="button" class="study-accordion-header" id="studyHeader_defesa" onclick="window.TKST_APP.toggleStudyAccordion('defesa')">
             <div class="study-accordion-title">
-              <i class="fas fa-user-shield" style="color: var(--accent-emerald); font-size: 1.25rem;"></i>
+              <i class="fas fa-clipboard-check" style="color: var(--accent-emerald); font-size: 1.25rem;"></i>
               <div>
-                <h3>4. Defesa Pessoal & Requisitos da Banca</h3>
-                <div style="font-size: 0.78rem; color: #94A3B8;">Critérios avaliativos e técnicas complementares • Toque para ver</div>
+                <h3>4. Requisitos Avaliados pela Banca</h3>
+                <div style="font-size: 0.78rem; color: #94A3B8;">Critérios avaliativos e postura exigidos • Toque para ver</div>
               </div>
             </div>
             <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_defesa"></i>
           </button>
 
           <div class="study-accordion-body" id="studyBody_defesa">
-            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px;">
-              <strong style="color: var(--accent-emerald); display: block; font-size: 0.92rem; margin-bottom: 4px;">
-                <i class="fas fa-shield-virus" style="margin-right: 6px;"></i> Defesa Pessoal:
-              </strong>
-              <span style="font-size: 0.88rem; color: #E2E8F0;">${curr.defesaPessoal}</span>
-            </div>
-
-            <div style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
-              <i class="fas fa-clipboard-check" style="color: var(--accent-gold); margin-right: 6px;"></i> Requisitos Avaliados pela Banca Examinadora:
-            </div>
-            <ul style="padding-left: 20px; font-size: 0.88rem; color: #CBD5E1; line-height: 1.7; margin: 0;">
+            <ul style="padding-left: 20px; font-size: 0.88rem; color: #CBD5E1; line-height: 1.8; margin: 0;">
               ${curr.requirements.map(r => `<li>${r}</li>`).join('')}
             </ul>
           </div>
@@ -1739,8 +1723,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="gohon-role-badge uke">Sagate</span>
               <div>
                 <strong>5x Chudan Soto Uke</strong><br>
-                <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span><br>
-                <span style="font-size: 0.75rem; color: #64748B;">*ou Chudan Uchi Uke ( Defesa de dentro para fora )</span>
+                <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span>
               </div>
             </div>
             <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
