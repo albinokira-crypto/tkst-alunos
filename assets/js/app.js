@@ -1267,7 +1267,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   <strong>2º Soto Uke Chudan</strong><br>
                   <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span><br>
                   <strong>3º Gedan Barai</strong><br>
-                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span><br>
+                  <strong>4º Gyaku Tsuki Chudan</strong>
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
@@ -1384,12 +1385,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div>
                   <strong>1º Yama Uke</strong> (Bloqueio em U)<br>
                   <strong>2º Teisho Uke Chudan</strong> (Bloqueio com a palma da mão)<br>
-                  <strong>3º Haiwan Uke Jodan</strong> (Transição de base)<br>
+                  <strong>3º Haiwan Uke Gedan</strong><br>
                   <strong>4º Kage Tsuki Chudan</strong> (Contra-ataque lateral)
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 3º passo:</strong> Transiciona para <em>Kiba Dachi</em> e desfere contra-ataque de <strong>Kage Tsuki Chudan</strong> potente com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia com <em>Haiwan Uke Gedan</em> e desfere contra-ataque de <strong>Kage Tsuki Chudan</strong> potente com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
 

@@ -109,7 +109,7 @@ window.TKST_KUMITE = {
       {
         "formNumber": 4,
         "title": "4ª Forma de Defesa",
-        "sequence": "1º passo: Yama Uke | 2º passo: Teisho Uke Chudan | 3º passo: Haiwan Uke em transição para Kiba Dachi ➔ Contra-ataque de Kage Tsuki Chudan com Kiai!",
+        "sequence": "1º passo: Yama Uke | 2º passo: Teisho Uke Chudan | 3º passo: Haiwan Uke Gedan ➔ Contra-ataque de Kage Tsuki Chudan com Kiai!",
         "stance": "Zenkutsu Dachi -> Kiba Dachi"
       },
       {
