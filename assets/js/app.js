@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let authMode = 'student-login';
   let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'quizzes', 'files', 'questions'
   let adminQuizSelectedKyu = 7;
+  let quizModalTempImage = '';
   
   // Quiz State
   let currentQuizIndex = 0;
@@ -105,6 +106,44 @@ document.addEventListener('DOMContentLoaded', () => {
       case 0: return "Faixa Preta Shodan";
       default: return "Faixa Branca 7º Kyu";
     }
+  }
+
+  function compressQuizImage(file, callback) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Compress to JPEG with high quality and low file size
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        callback(compressedDataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 
   function getBeltImage(beltName) {
@@ -1152,16 +1191,20 @@ document.addEventListener('DOMContentLoaded', () => {
                       ${q.question}
                     </div>
 
+                    ${q.image ? `
+                      <div style="margin: 4px 0 8px 0; display: inline-flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); padding: 6px 12px;">
+                        <img src="${q.image}" alt="Imagem da Questão" style="height: 65px; max-width: 120px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${q.image}')" title="Clique para ampliar">
+                        <div>
+                          <span class="badge badge-gold" style="font-size: 0.72rem; margin-bottom: 2px;"><i class="fas fa-image"></i> Possui Imagem Ilustrativa</span>
+                          <div style="font-size: 0.76rem; color: #94A3B8;">Clique na miniatura para ampliar</div>
+                        </div>
+                      </div>
+                    ` : ''}
+
                     <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid var(--accent-emerald); border-radius: var(--radius-sm); padding: 10px 14px; color: #6EE7B7; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                       <i class="fas fa-check-circle" style="color: var(--accent-emerald); font-size: 1.05rem;"></i>
                       <span><strong>Resposta Correta (Gabarito):</strong> ${correctText}</span>
                     </div>
-
-                    ${q.explanation ? `
-                      <div style="font-size: 0.82rem; color: #94A3B8; font-style: italic; line-height: 1.4; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 8px;">
-                        💡 <strong>Explicação:</strong> ${q.explanation}
-                      </div>
-                    ` : ''}
                   </div>
                 `;
               }).join('');
@@ -3449,17 +3492,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${det.isCorrect ? '✓ Acertou' : '✗ Errou'}
                   </span>
                 </div>
+                ${det.image ? `
+                  <div style="margin: 6px 0 10px 0;">
+                    <img src="${det.image}" alt="Ilustração" style="max-height: 120px; max-width: 100%; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${det.image}')" title="Clique para ampliar">
+                  </div>
+                ` : ''}
                 <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">
                   Sua resposta: <strong style="color: ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">${det.selectedText}</strong>
                 </div>
                 ${!det.isCorrect ? `
-                  <div style="font-size: 0.84rem; color: #6EE7B7; margin-bottom: 4px;">
+                  <div style="font-size: 0.84rem; color: #6EE7B7;">
                     Resposta correta: <strong>${det.correctText}</strong>
                   </div>
                 ` : ''}
-                <div style="font-size: 0.78rem; color: #94A3B8; font-style: italic; margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 6px;">
-                  💡 ${det.explanation}
-                </div>
               </div>
             `).join('')}
           </div>
@@ -3489,6 +3534,12 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <div class="quiz-question-text">${q.question}</div>
+
+        ${q.image ? `
+          <div style="text-align: center; margin: 14px 0 18px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 10px;">
+            <img src="${q.image}" alt="Ilustração da Questão" style="max-height: 250px; max-width: 100%; object-fit: contain; border-radius: var(--radius-sm); box-shadow: 0 4px 14px rgba(0,0,0,0.4); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${q.image}')" title="Clique para ampliar imagem">
+          </div>
+        ` : ''}
 
         <div class="quiz-options-list">
           ${q.options.map((opt, idx) => `
@@ -3524,13 +3575,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     quizSubmissionDetails.push({
       question: q.question,
+      image: q.image || '',
       options: q.options,
       selectedIndex: optionIndex,
       selectedText: q.options[optionIndex],
       correctIndex: q.correctIndex,
       correctText: q.options[q.correctIndex],
-      isCorrect,
-      explanation: q.explanation
+      isCorrect
     });
 
     q.options.forEach((_, idx) => {
@@ -3549,10 +3600,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (feedbackArea) {
       feedbackArea.innerHTML = `
         <div class="quiz-feedback-box" style="border-left: 4px solid ${isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">
-          <div style="font-weight: 700; color: ${isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; margin-bottom: 4px;">
+          <div style="font-weight: 700; color: ${isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; font-size: 0.95rem;">
             ${isCorrect ? '✓ Resposta Correta!' : '✗ Resposta Incorreta'}
           </div>
-          <div style="color: #94A3B8;">${q.explanation}</div>
+          ${!isCorrect ? `
+            <div style="color: #6EE7B7; font-size: 0.88rem; font-weight: 600; margin-top: 4px;">
+              Resposta correta: ${q.options[q.correctIndex]}
+            </div>
+          ` : ''}
         </div>
       `;
     }
@@ -3768,6 +3823,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      quizModalTempImage = q.image || '';
+
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
       const currentCorrectText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
@@ -3777,7 +3834,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditQuizQuestion('${q.id}');" style="display: flex; flex-direction: column; gap: 14px;">
           <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
-            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite o enunciado e a <strong>resposta correta oficial</strong>. O sistema atualizará o simulado imediatamente.
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite o enunciado, anexe uma imagem ilustrativa (se desejar) e a <strong>resposta correta oficial</strong>.
           </div>
 
           <div class="form-group">
@@ -3789,16 +3846,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito Oficial):
+              <i class="fas fa-image" style="color: var(--accent-gold); margin-right: 6px;"></i> Imagem Ilustrativa (Opcional):
             </label>
-            <input type="text" id="editQuizCorrectAnswerInput" class="form-input" value="${currentCorrectText.replace(/"/g, '&quot;')}" required style="font-size: 0.9rem; font-weight: 600; color: #6EE7B7;">
+            
+            <div id="quizModalImagePreviewBox" style="${quizModalTempImage ? 'display: block;' : 'display: none;'} margin-bottom: 10px; background: rgba(0,0,0,0.35); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 10px; text-align: center;">
+              <img id="quizModalImagePreview" src="${quizModalTempImage}" style="max-height: 150px; max-width: 100%; object-fit: contain; border-radius: 4px; margin-bottom: 8px;">
+              <div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeQuizModalImage()" style="font-size: 0.75rem; padding: 4px 10px;">
+                  <i class="fas fa-trash"></i> Remover Imagem
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <label class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-camera"></i> Escolher ou Tirar Foto
+                <input type="file" accept="image/*" id="quizModalFileInput" style="display: none;" onchange="window.TKST_APP.handleQuizModalImageUpload(this)">
+              </label>
+              <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou cole o link da imagem (https://...)" value="${(quizModalTempImage && !quizModalTempImage.startsWith('data:')) ? quizModalTempImage : ''}" oninput="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; min-width: 180px; font-size: 0.82rem;">
+            </div>
           </div>
 
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-lightbulb" style="color: var(--accent-gold); margin-right: 6px;"></i> Explicação Técnica / Justificativa (Opcional):
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito Oficial):
             </label>
-            <textarea id="editQuizExplanationInput" class="form-input" rows="2" style="resize: vertical; font-size: 0.85rem;">${q.explanation || ''}</textarea>
+            <input type="text" id="editQuizCorrectAnswerInput" class="form-input" value="${currentCorrectText.replace(/"/g, '&quot;')}" required style="font-size: 0.9rem; font-weight: 600; color: #6EE7B7;">
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 8px;">
@@ -3822,7 +3895,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const questionText = document.getElementById('editQuizQuestionInput').value.trim();
       const correctAnswer = document.getElementById('editQuizCorrectAnswerInput').value.trim();
-      const explanationText = document.getElementById('editQuizExplanationInput').value.trim();
 
       if (!questionText || !correctAnswer) {
         alert('Por favor, preencha a pergunta e a resposta correta.');
@@ -3830,6 +3902,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       q.question = questionText;
+      q.image = quizModalTempImage || '';
       if (!Array.isArray(q.options) || q.options.length === 0) {
         q.options = [correctAnswer, "Alternativa B (Incorreta)", "Alternativa C (Incorreta)", "Alternativa D (Incorreta)"];
         q.correctIndex = 0;
@@ -3838,7 +3911,7 @@ document.addEventListener('DOMContentLoaded', () => {
         q.options[cIdx] = correctAnswer;
         q.correctIndex = cIdx;
       }
-      q.explanation = explanationText;
+      delete q.explanation;
 
       window.TKST_AUTH.saveCustomQuizBank(bank);
       detailModal.classList.remove('active');
@@ -3847,6 +3920,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     openAddQuizQuestionModal: (kyu) => {
+      quizModalTempImage = '';
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
       const beltName = getBeltNameFromKyu(kyu);
@@ -3856,7 +3930,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddQuizQuestion(${kyu});" style="display: flex; flex-direction: column; gap: 14px;">
           <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
-            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite a pergunta e a <strong>resposta correta</strong> para a graduação <strong>${beltName}</strong>.
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite a pergunta, anexe uma imagem ilustrativa (se desejar) e a <strong>resposta correta</strong> para <strong>${beltName}</strong>.
           </div>
 
           <div class="form-group">
@@ -3868,16 +3942,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito):
+              <i class="fas fa-image" style="color: var(--accent-gold); margin-right: 6px;"></i> Imagem Ilustrativa (Opcional):
             </label>
-            <input type="text" id="newQuizCorrectAnswerInput" class="form-input" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.9rem; font-weight: 600; color: #6EE7B7;">
+            
+            <div id="quizModalImagePreviewBox" style="display: none; margin-bottom: 10px; background: rgba(0,0,0,0.35); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 10px; text-align: center;">
+              <img id="quizModalImagePreview" src="" style="max-height: 150px; max-width: 100%; object-fit: contain; border-radius: 4px; margin-bottom: 8px;">
+              <div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeQuizModalImage()" style="font-size: 0.75rem; padding: 4px 10px;">
+                  <i class="fas fa-trash"></i> Remover Imagem
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <label class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-camera"></i> Escolher ou Tirar Foto
+                <input type="file" accept="image/*" id="quizModalFileInput" style="display: none;" onchange="window.TKST_APP.handleQuizModalImageUpload(this)">
+              </label>
+              <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou cole o link da imagem (https://...)" oninput="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; min-width: 180px; font-size: 0.82rem;">
+            </div>
           </div>
 
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-lightbulb" style="color: var(--accent-gold); margin-right: 6px;"></i> Explicação Técnica / Justificativa:
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito):
             </label>
-            <textarea id="newQuizExplanationInput" class="form-input" rows="2" placeholder="Explicação que aparece após o aluno responder..." style="resize: vertical; font-size: 0.85rem;"></textarea>
+            <input type="text" id="newQuizCorrectAnswerInput" class="form-input" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.9rem; font-weight: 600; color: #6EE7B7;">
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 8px;">
@@ -3898,7 +3988,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const bank = window.TKST_QUIZ_BANK || [];
       const questionText = document.getElementById('newQuizQuestionInput').value.trim();
       const correctAnswer = document.getElementById('newQuizCorrectAnswerInput').value.trim();
-      const explanationText = document.getElementById('newQuizExplanationInput').value.trim();
 
       if (!questionText || !correctAnswer) {
         alert('Por favor, preencha a pergunta e a resposta correta.');
@@ -3911,9 +4000,9 @@ document.addEventListener('DOMContentLoaded', () => {
         kyuNumber: kyu,
         beltName: beltName,
         question: questionText,
+        image: quizModalTempImage || '',
         options: [correctAnswer, "Alternativa B (Incorreta)", "Alternativa C (Incorreta)", "Alternativa D (Incorreta)"],
-        correctIndex: 0,
-        explanation: explanationText || correctAnswer
+        correctIndex: 0
       };
 
       bank.push(newQuestion);
@@ -3921,6 +4010,60 @@ document.addEventListener('DOMContentLoaded', () => {
       detailModal.classList.remove('active');
       alert('Nova questão cadastrada com sucesso e sincronizada na nuvem!');
       renderAdminMaster();
+    },
+
+    handleQuizModalImageUpload: (input) => {
+      if (input.files && input.files[0]) {
+        compressQuizImage(input.files[0], (dataUrl) => {
+          quizModalTempImage = dataUrl;
+          const previewBox = document.getElementById('quizModalImagePreviewBox');
+          const previewImg = document.getElementById('quizModalImagePreview');
+          if (previewBox && previewImg) {
+            previewImg.src = dataUrl;
+            previewBox.style.display = 'block';
+          }
+        });
+      }
+    },
+
+    handleQuizModalImageUrl: (url) => {
+      const trimmed = url.trim();
+      quizModalTempImage = trimmed;
+      const previewBox = document.getElementById('quizModalImagePreviewBox');
+      const previewImg = document.getElementById('quizModalImagePreview');
+      if (previewBox && previewImg) {
+        if (trimmed) {
+          previewImg.src = trimmed;
+          previewBox.style.display = 'block';
+        } else {
+          previewBox.style.display = 'none';
+        }
+      }
+    },
+
+    removeQuizModalImage: () => {
+      quizModalTempImage = '';
+      const previewBox = document.getElementById('quizModalImagePreviewBox');
+      const previewImg = document.getElementById('quizModalImagePreview');
+      const fileInput = document.getElementById('quizModalFileInput');
+      const urlInput = document.getElementById('quizModalUrlInput');
+      if (previewBox) previewBox.style.display = 'none';
+      if (previewImg) previewImg.src = '';
+      if (fileInput) fileInput.value = '';
+      if (urlInput) urlInput.value = '';
+    },
+
+    openImagePreview: (imgSrc) => {
+      if (!imgSrc) return;
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      modalTitle.innerHTML = `<span><i class="fas fa-image" style="color: var(--accent-gold);"></i> Visualização da Imagem</span>`;
+      modalBody.innerHTML = `
+        <div style="text-align: center; padding: 10px;">
+          <img src="${imgSrc}" alt="Imagem Ampliada" style="max-width: 100%; max-height: 75vh; object-fit: contain; border-radius: var(--radius-md); box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        </div>
+      `;
+      detailModal.classList.add('active');
     },
 
     deleteQuizQuestion: (qId) => {
@@ -3979,17 +4122,19 @@ document.addEventListener('DOMContentLoaded', () => {
                   ${det.isCorrect ? '✓ Acerto' : '✗ Erro'}
                 </span>
               </div>
+              ${det.image ? `
+                <div style="margin: 6px 0;">
+                  <img src="${det.image}" alt="Ilustração" style="max-height: 90px; max-width: 100%; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${det.image}')">
+                </div>
+              ` : ''}
               <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">
                 Marcou: <strong style="color: ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">${det.selectedText || (det.options && det.options[det.selectedIndex]) || '-'}</strong>
               </div>
               ${!det.isCorrect ? `
-                <div style="font-size: 0.84rem; color: #6EE7B7; margin-bottom: 4px;">
+                <div style="font-size: 0.84rem; color: #6EE7B7;">
                   Correta: <strong>${det.correctText || (det.options && det.options[det.correctIndex]) || '-'}</strong>
                 </div>
               ` : ''}
-              <div style="font-size: 0.78rem; color: #94A3B8; font-style: italic; margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 6px;">
-                💡 ${det.explanation || ''}
-              </div>
             </div>
           `).join('')}
         </div>
