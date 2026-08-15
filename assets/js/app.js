@@ -1897,12 +1897,32 @@ document.addEventListener('DOMContentLoaded', () => {
           <p>Selecione a faixa desejada para estudar o conteúdo programático completo da TKST 2026</p>
         </div>
 
-        <div class="filter-chips">
-          ${window.TKST_CURRICULUM.map(c => `
-            <button class="chip-btn ${c.kyuNumber === selectedBeltKyu ? 'active' : ''}" onclick="window.TKST_APP.selectBelt(${c.kyuNumber})">
-              ${c.beltName}
-            </button>
-          `).join('')}
+        <div class="belt-transition-chips">
+          ${window.TKST_CURRICULUM.map(c => {
+            const transMap = {
+              6: { label: "Branca para Amarela", fromColor: "#FFFFFF", toColor: "#F5BE00", textColor: "#0F172A", isDark: true },
+              5: { label: "Amarela para Vermelha", fromColor: "#F5BE00", toColor: "#E63946", textColor: "#FFFFFF", isDark: false },
+              4: { label: "Vermelha para Laranja", fromColor: "#E63946", toColor: "#FF7700", textColor: "#FFFFFF", isDark: false },
+              3: { label: "Laranja para Verde", fromColor: "#FF7700", toColor: "#10B981", textColor: "#FFFFFF", isDark: false },
+              2: { label: "Verde para Roxa", fromColor: "#10B981", toColor: "#8B5CF6", textColor: "#FFFFFF", isDark: false },
+              1: { label: "Roxa para Marrom", fromColor: "#8B5CF6", toColor: "#78350F", textColor: "#FFFFFF", isDark: false },
+              0: { label: "Marrom para Preta", fromColor: "#78350F", toColor: "#0A0A0A", textColor: "#FFFFFF", isDark: false }
+            };
+            const trans = transMap[c.kyuNumber] || { label: c.beltName, fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
+            const isActive = c.kyuNumber === selectedBeltKyu;
+            return `
+              <button 
+                class="belt-trans-btn ${trans.isDark ? 'text-dark' : ''} ${isActive ? 'active' : ''}" 
+                onclick="window.TKST_APP.selectBelt(${c.kyuNumber})"
+                style="background: linear-gradient(135deg, ${trans.fromColor} 0%, ${trans.toColor} 100%); color: ${trans.textColor};"
+                title="Estudar conteúdo de ${trans.label}"
+              >
+                <span class="belt-trans-swatch" style="background: linear-gradient(90deg, ${trans.fromColor}, ${trans.toColor});"></span>
+                <span>${trans.label}</span>
+                ${isActive ? '<i class="fas fa-check-circle" style="font-size: 0.82rem; margin-left: 2px;"></i>' : ''}
+              </button>
+            `;
+          }).join('')}
         </div>
       </div>
 

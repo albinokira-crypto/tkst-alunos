@@ -442,6 +442,57 @@ body.login-view-active .content-body {
   box-shadow: 0 2px 10px rgba(230, 57, 70, 0.35);
 }
 
+/* Belt Transition Buttons (Gradient from previous belt to target belt) */
+.belt-transition-chips {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.belt-trans-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  opacity: 0.85;
+}
+
+.belt-trans-btn.text-dark {
+  text-shadow: none;
+}
+
+.belt-trans-btn:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.belt-trans-btn.active {
+  opacity: 1;
+  transform: scale(1.05);
+  border-color: #FFF;
+  box-shadow: 0 0 0 3px var(--accent-gold), 0 8px 22px rgba(0, 0, 0, 0.6);
+}
+
+.belt-trans-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
 .search-input-wrapper {
   position: relative;
   min-width: 260px;
