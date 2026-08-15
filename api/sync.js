@@ -89,14 +89,27 @@ module.exports = async (req, res) => {
         });
       }
 
+      // Merge deleted Quiz IDs
+      let deletedQuizSet = new Set(inMemoryData.deletedQuizIds || []);
+      if (Array.isArray(incoming.deletedQuizIds)) {
+        incoming.deletedQuizIds.forEach(id => deletedQuizSet.add(id));
+      }
+      const allDeletedQuizzes = Array.from(deletedQuizSet);
+
+      let customQuizBank = Array.isArray(incoming.custom_quiz_bank) ? incoming.custom_quiz_bank : inMemoryData.custom_quiz_bank;
+      if (Array.isArray(customQuizBank)) {
+        customQuizBank = customQuizBank.filter(q => !deletedQuizSet.has(q.id));
+      }
+
       inMemoryData = {
         dojos: Array.isArray(incoming.dojos) && incoming.dojos.length > 0 ? incoming.dojos : inMemoryData.dojos,
         students: studentsList,
         custom_videos: incoming.custom_videos ? { ...inMemoryData.custom_videos, ...incoming.custom_videos } : inMemoryData.custom_videos,
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
         quiz_submissions: Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []),
-        custom_quiz_bank: Array.isArray(incoming.custom_quiz_bank) ? incoming.custom_quiz_bank : inMemoryData.custom_quiz_bank,
+        custom_quiz_bank: customQuizBank,
         deletedStudentIds: allDeleted,
+        deletedQuizIds: allDeletedQuizzes,
         lastSync: new Date().toISOString()
       };
 

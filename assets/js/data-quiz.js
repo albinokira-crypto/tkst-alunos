@@ -1,4 +1,4 @@
-window.TKST_QUIZ_BANK = [
+window.TKST_DEFAULT_QUIZ_BANK = [
   // =========================================================================
   // 7º KYU - FAIXA BRANCA (Exame de Branca para Amarela - 6º Kyu)
   // =========================================================================
@@ -848,5 +848,18 @@ window.TKST_QUIZ_BANK = [
   }
 ];
 
-// Fallback legacy support
-window.TKST_QUIZ = window.TKST_QUIZ_BANK;
+// Initialize Bank taking into account custom edits and deleted question tombstones
+(function() {
+  try {
+    const deletedIds = JSON.parse(localStorage.getItem('tkst_deleted_quiz_ids')) || [];
+    const customBank = JSON.parse(localStorage.getItem('tkst_custom_quiz_bank'));
+    if (Array.isArray(customBank) && customBank.length > 0) {
+      window.TKST_QUIZ_BANK = customBank.filter(q => !deletedIds.includes(q.id));
+    } else {
+      window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK.filter(q => !deletedIds.includes(q.id));
+    }
+  } catch(e) {
+    window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK;
+  }
+  window.TKST_QUIZ = window.TKST_QUIZ_BANK;
+})();

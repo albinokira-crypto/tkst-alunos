@@ -978,14 +978,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="font-weight: 700; color: #FFF; font-size: 0.95rem;">
                       ${idx + 1}. ${k.name} <span style="font-family: var(--font-kanji); color: var(--accent-gold); font-size: 0.85rem;">(${k.kanji})</span>
                     </div>
-                    <span class="badge ${hasVideo ? 'badge-verde' : 'badge-status-pending'}" style="font-size: 0.7rem;">
+                    <span id="kata_vid_badge_${k.id}" class="badge ${hasVideo ? 'badge-verde' : 'badge-status-pending'}" style="font-size: 0.7rem;">
                       ${hasVideo ? 'Vídeo Configurado' : 'Sem Link'}
                     </span>
                   </div>
 
                   <div class="form-group" style="margin-bottom: 10px;">
                     <label style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; display: block;">Link do Vídeo (YouTube / Vimeo / MP4):</label>
-                    <input type="text" id="kata_vid_input_${k.id}" class="form-input" placeholder="ex: https://www.youtube.com/watch?v=..." value="${currentUrl}" style="font-size: 0.85rem; padding: 8px 12px;">
+                    <input type="text" id="kata_vid_input_${k.id}" class="form-input" placeholder="ex: https://www.youtube.com/watch?v=..." value="${currentUrl}" style="font-size: 0.85rem; padding: 8px 12px;" onchange="window.TKST_APP.saveKataVideo('${k.id}')">
                   </div>
 
                   <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -4068,9 +4068,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     deleteQuizQuestion: (qId) => {
       if (confirm('Deseja realmente excluir esta questão do simulado?')) {
-        let bank = window.TKST_QUIZ_BANK || [];
-        bank = bank.filter(item => item.id !== qId);
-        window.TKST_AUTH.saveCustomQuizBank(bank);
+        if (window.TKST_AUTH && window.TKST_AUTH.deleteQuizQuestion) {
+          window.TKST_AUTH.deleteQuizQuestion(qId);
+        } else {
+          let bank = window.TKST_QUIZ_BANK || [];
+          bank = bank.filter(item => item.id !== qId);
+          window.TKST_AUTH.saveCustomQuizBank(bank);
+        }
         renderAdminMaster();
       }
     },
@@ -4710,7 +4714,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.TKST_AUTH && window.TKST_AUTH.saveKataVideo) {
         window.TKST_AUTH.saveKataVideo(kataId, url);
       }
-      alert('Link do vídeo salvo e sincronizado na Nuvem com sucesso!');
+      const badge = document.getElementById(`kata_vid_badge_${kataId}`);
+      if (badge) {
+        badge.className = url ? 'badge badge-verde' : 'badge badge-status-pending';
+        badge.textContent = url ? 'Vídeo Configurado' : 'Sem Link';
+      }
+      alert('Link do vídeo salvo e sincronizado com sucesso!');
       renderAdminMaster();
     },
 
