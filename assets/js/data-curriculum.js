@@ -566,16 +566,13 @@ window.TKST_CURRICULUM = [
     "kata": {
       "required": [
         "Heian Godan",
-        "Tekki Shodan"
-      ],
-      "senteiOptions": [
         "Bassai Dai",
         "Kanku Dai",
         "Jion",
         "Jitte",
         "Empi"
       ],
-      "description": "Execução obrigatória de Heian Godan e Tekki Shodan, mais um Kata Superior escolhido pela banca (Bassai Dai, Kanku Dai, Jion, Jitte ou Empi)."
+      "description": "Execução obrigatória de Heian Godan e estudo dos Katas Superiores: Bassai Dai, Kanku Dai, Jion, Jitte e Empi."
     },
     "kumite": {
       "type": "Jiyu Ippon Kumite (1ª e 2ª Forma Oficial - 8 Ataques) & Jiyu Kumite (Contra 1 e 2 oponentes)",
@@ -593,89 +590,129 @@ window.TKST_CURRICULUM = [
     "beltColor": "#6F4E37",
     "previousBelt": "Faixa Roxa",
     "targetBelt": "Faixa Marrom (1º Kyu)",
-    "description": "Pré-requisito para o exame de Faixa Preta (Shodan). Domínio de todas as formas de Kumite e aplicação (Bunkai) de todos os Heian Katas.",
+    "description": "Exame Oficial de Roxa para Marrom (1º Kyu) da TKST: domínio de Kihon Go Kai (Execução e Aplicação), Sequência de Chutes, Dachi Waza, Katas Superiores com Bunkai e Jiyu Kumite.",
     "kihon": [
       {
-        "id": "k1-1",
-        "direction": "Mae / Sagate",
-        "technique": "Age Uke Jodan / Gyaku Age Uke Jodan -> Gyaku Tsuki Chudan",
+        "id": "k1-exec-1",
+        "direction": "Mae / Sagate (Execução)",
+        "technique": "Jodan Age Uke / Gyaku Jodan Age Uke",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
-        "id": "k1-2",
-        "direction": "Mae / Sagate",
-        "technique": "Soto Uke Chudan / Gyaku Soto Uke Chudan -> Gyaku Tsuki Chudan",
+        "id": "k1-exec-2",
+        "direction": "Mae / Sagate (Execução)",
+        "technique": "Chudan Soto Uke / Gyaku Chudan Soto Uke",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
-        "id": "k1-3",
-        "direction": "Mae / Sagate",
-        "technique": "Uchi Uke Chudan / Gyaku Uchi Uke Chudan -> Gyaku Tsuki Chudan",
+        "id": "k1-exec-3",
+        "direction": "Mae / Sagate (Execução)",
+        "technique": "Chudan Uchi Uke / Gyaku Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
-        "id": "k1-4",
-        "direction": "Mae / Sagate",
-        "technique": "Shuto Uke Chudan / Gyaku Tate Shuto Chudan (Kokutsu / Zenkutsu)",
-        "stance": "Kokutsu -> Zenkutsu",
+        "id": "k1-exec-4",
+        "direction": "Mae / Sagate (Execução)",
+        "technique": "Chudan Shuto Uke / Gyaku Chudan Tate Shuto",
+        "stance": "Kokutsu Dachi",
         "count": "5 vezes"
       },
       {
-        "id": "k1-5",
-        "direction": "Mae / Sagate",
-        "technique": "Gedan Barai / Gyaku Gedan Barai -> Gyaku Tsuki Chudan",
+        "id": "k1-exec-5",
+        "direction": "Mae / Sagate (Execução)",
+        "technique": "Gedan Barai / Gyaku Gedan Barai",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
-        "id": "k1-6",
-        "direction": "Mae - Mawate (Jyu)",
-        "technique": "Mae Geri - Ushiro Geri - Gyaku Tsuki Chudan (Execução e Aplicação)",
+        "id": "k1-app-1",
+        "direction": "Mae / Sagate (Aplicação)",
+        "technique": "Jodan Age Uke / Gyaku Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes"
+      },
+      {
+        "id": "k1-app-2",
+        "direction": "Mae / Sagate (Aplicação)",
+        "technique": "Chudan Soto Uke / Gyaku Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes"
+      },
+      {
+        "id": "k1-app-3",
+        "direction": "Mae / Sagate (Aplicação)",
+        "technique": "Chudan Uchi Uke / Gyaku Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes"
+      },
+      {
+        "id": "k1-app-4",
+        "direction": "Mae / Sagate (Aplicação)",
+        "technique": "Chudan Shuto Uke / Gyaku Chudan Tate Shuto",
+        "stance": "Kokutsu Dachi / Zenkutsu Dachi",
+        "count": "5 vezes"
+      },
+      {
+        "id": "k1-app-5",
+        "direction": "Mae / Sagate (Aplicação)",
+        "technique": "Gedan Barai / Gyaku Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes"
+      },
+      {
+        "id": "k1-geri-1",
+        "direction": "Mae - Mawate (Jyu no Kamae)",
+        "technique": "Mae Geri - Ushiro Geri - Gyaku Tsuki (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "count": "Execução e Aplicação"
       },
       {
-        "id": "k1-7",
-        "direction": "Mae - Mawate (Jyu)",
+        "id": "k1-geri-2",
+        "direction": "Mae - Mawate (Jyu no Kamae)",
         "technique": "Mawashi Geri - Ura Mawashi Geri (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "count": "Execução e Aplicação"
       },
       {
-        "id": "k1-8",
-        "direction": "Mae - Mawate (Jyu)",
+        "id": "k1-geri-3",
+        "direction": "Mae - Mawate (Jyu no Kamae)",
         "technique": "Mae Tobi Geri - Ushiro Geri (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "count": "Execução e Aplicação"
       },
       {
-        "id": "k1-9",
-        "direction": "Mae - Mawate (Jyu)",
+        "id": "k1-geri-4",
+        "direction": "Mae - Mawate (Jyu no Kamae)",
         "technique": "Gyaku Mawashi Geri - Mawashi Geri (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "count": "Execução e Aplicação"
+      },
+      {
+        "id": "k1-dachi",
+        "direction": "Dachi Waza (Bases Exigidas)",
+        "technique": "Heisoku Dachi, Musubi Dachi, Heiko Dachi, Seiza, Zenkutsu Dachi, Kiba Dachi, Kokutsu Dachi, Shiko Dachi, Nekoashi Dachi, Katahiza Dachi, Moto Dachi, Renoji Dachi, Tsuru Dachi, Ashi Dachi, Fudo Dachi, Hangetsu Dachi, Sanchin Dachi, Kosa Dachi - Katahiza Dachi",
+        "stance": "18 Bases Oficiais",
+        "count": "Demonstração"
       }
     ],
     "kata": {
       "required": [
         "Tekki Shodan",
-        "Bassai Dai"
-      ],
-      "optionalOrPrevious": [
+        "Bassai Dai",
         "Kanku Dai",
         "Jion",
         "Jitte",
         "Empi"
       ],
-      "bunkai": "Aplicação prática (Bunkai) de um movimento de cada um dos 5 Heian Katas sem repetições.",
-      "description": "Execução perfeita de Tekki Shodan e Bassai Dai, além de responder a sorteio de Katas Heian e apresentar aplicações de Bunkai."
+      "bunkai": "Aplicação de um movimento de cada Heian Kata sem repetições.",
+      "description": "Execução obrigatória de Tekki Shodan e domínio dos Katas Superiores: Bassai Dai, Kanku Dai, Jion, Jitte e Empi, além da aplicação de Bunkai dos Katas Heian."
     },
     "kumite": {
-      "type": "Jiyu Ippon Kumite Completo (Tabela Oficial TKST) & Jiyu Kumite (Contra 1, 2 e 4 oponentes)",
-      "description": "Luta livre contínua demonstrando controle emocional, Zanshin, tempo de reação e condicionamento cardiovascular."
+      "type": "Jiyu Ippon Kumite (1ª, 2ª, 3ª e 4ª Forma) & Jiyu Kumite (Contra 1, 2 e 4 oponentes)",
+      "description": "Jiyu Ippon Kumite (1ª, 2ª, 3ª e 4ª forma) e Jiyu Kumite contra 1, 2 e 4 oponentes demonstrando Zanshin, De-ai e condicionamento cardiovascular."
     },
     "requirements": [
       "Mínimo de 8 meses na faixa roxa",

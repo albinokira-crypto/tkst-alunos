@@ -2439,8 +2439,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openKataDetailByName(kataName) {
-    const kata = window.TKST_KATAS.find(k => k.name.toLowerCase() === kataName.toLowerCase() || k.id.includes(kataName.toLowerCase()));
-    if (kata) openKataDetail(kata.id);
+    if (!kataName) return;
+    const clean = kataName.replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+    const normalize = str => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanNorm = normalize(clean);
+
+    let kata = (window.TKST_KATAS || []).find(k => {
+      const kNorm = normalize(k.name);
+      return kNorm === cleanNorm || k.id.toLowerCase() === cleanNorm || k.id.toLowerCase().includes(cleanNorm);
+    });
+
+    if (!kata) {
+      if (cleanNorm === 'enpi') {
+        kata = (window.TKST_KATAS || []).find(k => normalize(k.name) === 'empi' || k.id.includes('empi'));
+      } else if (cleanNorm === 'empi') {
+        kata = (window.TKST_KATAS || []).find(k => normalize(k.name) === 'enpi' || k.id.includes('enpi'));
+      }
+    }
+
+    if (kata) {
+      openKataDetail(kata.id);
+    } else {
+      // Fallback: switch to Katas tab and search
+      kataSearchQuery = clean;
+      switchTab('katas');
+    }
   }
 
   function openVideoModal(title, videoSource) {
