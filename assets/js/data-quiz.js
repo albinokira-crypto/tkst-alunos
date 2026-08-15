@@ -404,10 +404,10 @@ window.TKST_DEFAULT_QUIZ_BANK = [
   },
 
   // =========================================================================
-  // 5º KYU - FAIXA VERMELHA (Exame para Laranja)
+  // 5º KYU - FAIXA VERMELHA (Complemento de Exame para Laranja)
   // =========================================================================
   {
-    id: "q5-1",
+    id: "q5-9",
     kyuNumber: 5,
     beltName: "Faixa Vermelha (5º Kyu)",
     question: "Qual é o Kata oficial exigido para a passagem do 5º Kyu para o 4º Kyu (Faixa Laranja)?",
@@ -421,7 +421,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     explanation: "Heian Nidan é o segundo Kata da série Heian, focado em defesas duplas, chutes laterais e ataques de costas do punho (Uraken)."
   },
   {
-    id: "q5-2",
+    id: "q5-10",
     kyuNumber: 5,
     beltName: "Faixa Vermelha (5º Kyu)",
     question: "Quais técnicas combinadas são executadas simultaneamente no movimento inicial de chute do Heian Nidan?",
@@ -435,7 +435,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     explanation: "No Heian Nidan, executa-se o Yoko Geri Keage (chute lateral ascendente) junto com o Uraken Uchi (costas do punho)."
   },
   {
-    id: "q5-3",
+    id: "q5-11",
     kyuNumber: 5,
     beltName: "Faixa Vermelha (5º Kyu)",
     question: "Qual técnica de golpe penetrante com a ponta dos dedos é ensinada no Heian Nidan?",
@@ -449,7 +449,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     explanation: "Yonhon Nukite é o ataque penetrante com as quatro pontas dos dedos estendidos em Zenkutsu Dachi, acompanhado de Kiai."
   },
   {
-    id: "q5-4",
+    id: "q5-12",
     kyuNumber: 5,
     beltName: "Faixa Vermelha (5º Kyu)",
     question: "Como se chama a combinação de três socos consecutivos em avanço (1 Oi Tsuki + 2 Gyaku Tsuki)?",
@@ -463,7 +463,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     explanation: "Sanbon Tsuki (San = Três) é a sequência composta por Jodan Oi Tsuki seguido de dois Chudan Gyaku Tsuki rápidos."
   },
   {
-    id: "q5-5",
+    id: "q5-13",
     kyuNumber: 5,
     beltName: "Faixa Vermelha (5º Kyu)",
     question: "Qual o significado da expressão marcial 'Kiai' (気合)?",

@@ -975,8 +975,21 @@
     getCustomQuizBank: function() {
       const del = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+        let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
         if (Array.isArray(saved) && saved.length > 0) {
+          const seenIds = new Set();
+          let needsResave = false;
+          saved.forEach((q, idx) => {
+            if (seenIds.has(q.id)) {
+              q.id = `q_${q.kyuNumber || 5}_fixed_${idx}_${Date.now().toString(36)}`;
+              needsResave = true;
+            } else {
+              seenIds.add(q.id);
+            }
+          });
+          if (needsResave) {
+            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(saved));
+          }
           const filtered = saved.filter(q => !del.includes(q.id));
           window.TKST_QUIZ_BANK = filtered;
           return filtered;
