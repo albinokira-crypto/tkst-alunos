@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         break;
       case 'dashboard':
-        breadcrumbCurrent.textContent = 'Dashboard do Aluno';
+        breadcrumbCurrent.textContent = 'Área do Aluno';
         if (!user) { renderLogin(); return; }
         renderDashboard();
         break;
@@ -1294,15 +1294,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <h2>Oss, ${user.name}! 🥋</h2>
             <p>Bem-vindo ao seu portal oficial de estudos na <strong>Tradicional Karate-Do Shotokan Tsuyoi (TKST)</strong>.</p>
           </div>
-          <div class="hero-rank-display" onclick="window.TKST_APP.openEditProfileModal()" style="cursor: pointer;" title="Toque para editar suas informações e graduação">
+          <div class="hero-rank-display">
             <div class="hero-belt-img-wrapper">
               <img src="${getBeltImage(user.currentBelt)}" alt="${user.currentBelt}" class="hero-belt-img">
             </div>
             <div class="hero-rank-meta" style="flex: 1;">
-              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                <div class="rank-label">Graduação Atual</div>
-                <span class="hero-edit-badge"><i class="fas fa-user-edit"></i> Editar Dados</span>
-              </div>
+              <div class="rank-label">Graduação Atual</div>
               <div class="rank-name">${user.currentBelt}</div>
             </div>
           </div>
