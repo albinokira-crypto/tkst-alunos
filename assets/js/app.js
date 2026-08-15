@@ -1111,59 +1111,44 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Main Columns -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-top: 16px;">
-        
-        <!-- Left: Quick Checklist of Current Belt -->
-        <div class="stat-card" style="flex-direction: column; align-items: stretch;">
-          <div class="section-header" style="margin-bottom: 12px;">
-            <div class="section-title-group">
-              <h3><i class="fas fa-tasks" style="color: var(--accent-crimson);"></i> Treino do Dia - ${curriculum.beltName}</h3>
-              <p>Marque as técnicas conforme praticar no Dojo</p>
-            </div>
-            <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 12px;" onclick="window.TKST_APP.switchTab('my-exam')">Ver Matéria Completa</button>
+      <!-- Dojo Kun Full Card -->
+      <div class="stat-card" style="flex-direction: column; align-items: stretch; margin-top: 20px; background: linear-gradient(135deg, rgba(22, 28, 42, 0.95) 0%, rgba(10, 13, 20, 0.98) 100%); border: 1.5px solid rgba(255, 183, 3, 0.2); box-shadow: var(--shadow-subtle);">
+        <div class="section-header" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div class="section-title-group">
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px; margin: 0;">
+              <i class="fas fa-scroll" style="color: var(--accent-gold);"></i> Dojo Kun
+            </h3>
+            <p style="color: #94A3B8; font-size: 0.82rem; margin-top: 3px;">Preceitos e lema fundamentais do Karatê-Dō Shotokan</p>
           </div>
-
-          <div class="technique-list">
-            ${curriculum.kihon.slice(0, 4).map(k => {
-              const isChecked = progress.masteredItems && progress.masteredItems[k.id];
-              return `
-                <div class="technique-item ${isChecked ? 'mastered' : ''}">
-                  <div class="technique-main">
-                    <div class="technique-checkbox ${isChecked ? 'checked' : ''}" onclick="window.TKST_APP.toggleCheck('${k.id}')">
-                      <i class="fas fa-check"></i>
-                    </div>
-                    <div>
-                      <div class="technique-name">${k.technique}</div>
-                      <div class="technique-meta">
-                        <span class="stance">${k.stance}</span> • <span>${k.direction}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
+          <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 14px;" onclick="window.TKST_APP.switchTab('philosophy')">
+            <i class="fas fa-torii-gate"></i> Ver Filosofia Completa
+          </button>
         </div>
 
-        <!-- Right: Dojo Kun Principle Highlight -->
-        <div class="stat-card" style="flex-direction: column; align-items: stretch; background: linear-gradient(135deg, rgba(22, 28, 42, 0.9) 0%, rgba(10, 13, 20, 0.95) 100%);">
-          <div class="section-header" style="margin-bottom: 12px;">
-            <div class="section-title-group">
-              <h3><i class="fas fa-scroll" style="color: var(--accent-gold);"></i> Dojo Kun em Destaque</h3>
-              <p>Lema fundamental do Karatê-Dō</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
+          ${(window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun ? window.TKST_GLOSSARY.dojoKun : [
+            { number: 1, title: "Hitotsu! Jinkaku kansei ni tsutomuru koto!", translation: "Esforçar-se para a formação do caráter!", description: "O objetivo supremo do Karatê-Dō reside no aperfeiçoamento do caráter e integridade do praticante." },
+            { number: 2, title: "Hitotsu! Makoto no michi o mamoru koto!", translation: "Ser fiel com o verdadeiro caminho da razão!", description: "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio." },
+            { number: 3, title: "Hitotsu! Doryoku no seishin o yashinau koto!", translation: "Criar o espírito de esforço e perseverança!", description: "A dedicação e o treino contínuo superam qualquer obstáculo. Jamais desistir." },
+            { number: 4, title: "Hitotsu! Reigi o omonzuru koto!", translation: "Respeitar acima de tudo!", description: "O Karatê começa e termina com respeito e cortesia sincera (Rei)." },
+            { number: 5, title: "Hitotsu! Kekki no yū o imashimuru koto!", translation: "Conter o espírito de agressão!", description: "Dominar impulsos, cultivar o autocontrole e buscar sempre a serenidade e a paz." }
+          ]).map(d => `
+            <div class="dojokun-card" style="margin-top: 0; border-left: 3.5px solid var(--accent-gold); background: rgba(255, 255, 255, 0.02); padding: 14px 16px; border-radius: var(--radius-sm); display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span class="badge badge-gold" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700;">一つ Hitotsu #${d.number}</span>
+              </div>
+              <div class="dojokun-pt" style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 4px;">
+                ${d.translation}
+              </div>
+              <div class="dojokun-jp" style="font-size: 0.8rem; color: var(--accent-gold); font-style: italic; margin-bottom: 6px;">
+                ${d.title}
+              </div>
+              <div class="dojokun-desc" style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.45; margin-top: auto;">
+                ${d.description}
+              </div>
             </div>
-            <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 12px;" onclick="window.TKST_APP.switchTab('philosophy')">Ver Todos</button>
-          </div>
-
-          <div class="dojokun-card" style="margin-top: 10px; border-left-color: var(--accent-gold);">
-            <div class="dojokun-jp">一つ！人格完成に努むること！</div>
-            <div class="dojokun-pt">Hitotsu! Jinkaku kansei ni tsutomuru koto!</div>
-            <div style="color: #FFF; font-weight: 600; margin-bottom: 6px;">Esforçar-se para a formação do caráter!</div>
-            <div class="dojokun-desc">O objetivo final do Karatê não é a vitória ou a derrota nos combates, mas sim o aperfeiçoamento do caráter e da integridade moral de seus praticantes.</div>
-          </div>
+          `).join('')}
         </div>
-
       </div>
     `;
 
@@ -3658,20 +3643,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (res.success) {
-        const senseiMsg = encodeURIComponent(`Oss Sensei Diego! Solicitação de Matrícula TKST Alunos:\n\n🥋 *Dados do Aluno:*\n• Nome: ${name}\n• Nick de Login: @${nick}\n• Graduação: ${currentBelt}\n• Dojo: ${dojo}\n• WhatsApp: ${phone || 'Não informado'}\n\nAcabei de me cadastrar no sistema e aguardo sua aprovação! Oss!`);
-        const whatsappUrl = `https://wa.me/5521976077598?text=${senseiMsg}`;
-
         feedback.innerHTML = `
-          <div style="background: rgba(16, 185, 129, 0.15); border: 1.5px solid var(--accent-emerald); color: #FFF; padding: 16px; border-radius: var(--radius-md); font-size: 0.9rem; text-align: center;">
-            <div style="font-size: 1.05rem; font-weight: 700; color: #6EE7B7; margin-bottom: 8px;">
+          <div style="background: rgba(16, 185, 129, 0.15); border: 1.5px solid var(--accent-emerald); color: #FFF; padding: 18px 16px; border-radius: var(--radius-md); font-size: 0.9rem; text-align: center;">
+            <div style="font-size: 1.1rem; font-weight: 700; color: #6EE7B7; margin-bottom: 8px;">
               <i class="fas fa-check-circle"></i> Solicitação Enviada com Sucesso!
             </div>
-            <p style="font-size: 0.84rem; color: #E2E8F0; margin-bottom: 14px; line-height: 1.4;">
-              Seu cadastro com o Nick <strong>@${res.user.username}</strong> foi enviado. Para liberar o acesso mais rápido, avise o <strong>Sensei Diego</strong> no WhatsApp:
+            <p style="font-size: 0.86rem; color: #E2E8F0; margin-bottom: 14px; line-height: 1.5;">
+              Seu cadastro com o Login <strong>@${res.user.username}</strong> foi registrado no sistema. Assim que o Sensei Diego liberar seu acesso, você poderá entrar no portal.
             </p>
-            <a href="${whatsappUrl}" target="_blank" class="btn" style="background: #25D366; color: #FFF; font-weight: 700; font-size: 0.85rem; padding: 10px 16px; border-radius: var(--radius-sm); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35);">
-              <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Avisar Sensei Diego no WhatsApp
-            </a>
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('detailModal').classList.remove('active')" style="width: 100%; padding: 11px; font-weight: 700;">
+              Concluir
+            </button>
           </div>
         `;
       } else {
