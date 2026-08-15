@@ -1,9 +1,79 @@
 window.TKST_QUIZ_BANK = [
   // =========================================================================
-  // 7º KYU - FAIXA BRANCA (Iniciante para Amarela)
+  // 7º KYU - FAIXA BRANCA (Exame de Branca para Amarela - 6º Kyu)
   // =========================================================================
   {
     id: "q7-1",
+    kyuNumber: 7,
+    beltName: "Faixa Branca (7º Kyu)",
+    question: "Qual o Kata que você deve aprender e apresentar no exame de Faixa Branca para Amarela?",
+    options: [
+      "Heian Shodan",
+      "Heian Nidan",
+      "Tekki Shodan",
+      "Bassai Dai"
+    ],
+    correctIndex: 0,
+    explanation: "O Heian Shodan (Paz e Tranquilidade Nível 1) é o primeiro Kata do estilo Shotokan, exigido para a Faixa Amarela."
+  },
+  {
+    id: "q7-2",
+    kyuNumber: 7,
+    beltName: "Faixa Branca (7º Kyu)",
+    question: "Qual o nome em japonês das 3 alturas de ataque e defesa no Karatê?",
+    options: [
+      "Jodan (Alto / Rosto), Chudan (Médio / Tronco) e Gedan (Baixo / Abaixo da cintura)",
+      "Mae, Yoko e Ushiro",
+      "Ichi, Ni e San",
+      "Hidari, Migi e Chuo"
+    ],
+    correctIndex: 0,
+    explanation: "Jodan (nível alto), Chudan (nível médio do plexo/tronco) e Gedan (nível baixo do abdômen/pernas)."
+  },
+  {
+    id: "q7-3",
+    kyuNumber: 7,
+    beltName: "Faixa Branca (7º Kyu)",
+    question: "Como se realiza a contagem correta de 1 a 10 em Japonês?",
+    options: [
+      "Ichi, Ni, San, Shi (Yon), Go, Roku, Shichi (Nana), Hachi, Ku (Kyu), Ju",
+      "Ju-Ichi, Ju-Ni, Ju-San, Ju-Shi, Ju-Go, Ju-Roku, Ju-Shichi, Ju-Hachi, Ju-Ku, Ni-Ju",
+      "Hidari, Migi, Mae, Ushiro, Yoko, Age, Soto, Uchi, Gedan, Chudan",
+      "Rei, Yoi, Hajime, Yame, Kiai, Kime, Zanshin, Budo, Dojo, Obi"
+    ],
+    correctIndex: 0,
+    explanation: "1-Ichi, 2-Ni, 3-San, 4-Shi/Yon, 5-Go, 6-Roku, 7-Shichi/Nana, 8-Hachi, 9-Ku/Kyu, 10-Ju."
+  },
+  {
+    id: "q7-4",
+    kyuNumber: 7,
+    beltName: "Faixa Branca (7º Kyu)",
+    question: "Qual o nome do 8º movimento do Kata Heian Shodan (onde se desfere o primeiro Kiai)?",
+    options: [
+      "Jodan Age Uke com KIAI! (3º avanço da defesa alta)",
+      "Gedan Barai",
+      "Oi Tsuki Chudan",
+      "Shuto Uke em Kokutsu Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "O 8º movimento é o terceiro e decisivo Jodan Age Uke no corredor central com explosão de KIAI!"
+  },
+  {
+    id: "q7-5",
+    kyuNumber: 7,
+    beltName: "Faixa Branca (7º Kyu)",
+    question: "Descreva a técnica de soco direto em avanço e sua base correta:",
+    options: [
+      "Oi Tsuki executado em base Zenkutsu Dachi (70% peso na frente)",
+      "Gyaku Tsuki em base Kiba Dachi",
+      "Uraken Uchi em base Kokutsu Dachi",
+      "Nukite em base Neko Ashi Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "Oi Tsuki é o soco direto com o braço correspondente à perna que avança em Zenkutsu Dachi."
+  },
+  {
+    id: "q7-6",
     kyuNumber: 7,
     beltName: "Faixa Branca (7º Kyu)",
     question: "Qual é o significado literal da palavra 'Karatê-Dō' (空手道)?",
@@ -17,246 +87,320 @@ window.TKST_QUIZ_BANK = [
     explanation: "Kara (Vazia), Te (Mão) e Dō (Caminho / Filosofia de vida). Significa 'O Caminho das Mãos Vazias'."
   },
   {
-    id: "q7-2",
-    kyuNumber: 7,
-    beltName: "Faixa Branca (7º Kyu)",
-    question: "Qual a proporção de distribuição do peso do corpo na base Zenkutsu Dachi?",
-    options: [
-      "50% na perna da frente e 50% na perna de trás",
-      "70% na perna da frente (flexionada) e 30% na perna de trás (estendida)",
-      "30% na perna da frente e 70% na perna de trás",
-      "100% na perna de trás"
-    ],
-    correctIndex: 1,
-    explanation: "Em Zenkutsu Dachi (base frontal longa), cerca de 70% do peso fica sobre a perna dianteira flexionada e 30% na perna posterior estendida."
-  },
-  {
-    id: "q7-3",
-    kyuNumber: 7,
-    beltName: "Faixa Branca (7º Kyu)",
-    question: "Como se chama a saudação formal de respeito com arco no Karatê?",
-    options: [
-      "Kiai",
-      "Rei",
-      "Kime",
-      "Yame"
-    ],
-    correctIndex: 1,
-    explanation: "Rei (礼) significa cortesia, respeito e cumprimento. O Karatê começa e termina com Rei."
-  },
-  {
-    id: "q7-4",
-    kyuNumber: 7,
-    beltName: "Faixa Branca (7º Kyu)",
-    question: "Qual defesa básica do Shotokan é utilizada para bloquear ataques na altura da cabeça (Jodan)?",
-    options: [
-      "Gedan Barai",
-      "Age Uke",
-      "Soto Uke",
-      "Shuto Uke"
-    ],
-    correctIndex: 1,
-    explanation: "Jodan Age Uke é a defesa ascendente que desvia ataques direcionados à cabeça e ao rosto."
-  },
-  {
-    id: "q7-5",
-    kyuNumber: 7,
-    beltName: "Faixa Branca (7º Kyu)",
-    question: "Qual a defesa utilizada para varrer e defender ataques na linha baixa (Gedan)?",
-    options: [
-      "Gedan Barai",
-      "Uchi Uke",
-      "Age Uke",
-      "Morote Uke"
-    ],
-    correctIndex: 0,
-    explanation: "Gedan Barai significa 'Varredura Baixa', defendendo chutes e golpes abaixo da linha da cintura."
-  },
-  {
-    id: "q7-6",
-    kyuNumber: 7,
-    beltName: "Faixa Branca (7º Kyu)",
-    question: "Como se chama o primeiro princípio fundamental do Dojo Kun?",
-    options: [
-      "Hitotsu! Jinkaku kansei ni tsutomuru koto! (Esforçar-se para a formação do caráter)",
-      "Hitotsu! Reigi o omonzuru koto! (Respeitar acima de tudo)",
-      "Hitotsu! Kekki no yū o imashimuru koto! (Conter o espírito de agressão)",
-      "Hitotsu! Makoto no michi o mamoru koto! (Seguir o caminho da verdade)"
-    ],
-    correctIndex: 0,
-    explanation: "O primeiro lema é 'Hitotsu! Jinkaku kansei ni tsutomuru koto!', que significa esforçar-se para a formação e aperfeiçoamento do caráter."
-  },
-  {
     id: "q7-7",
     kyuNumber: 7,
     beltName: "Faixa Branca (7º Kyu)",
-    question: "Como se chama o chute frontal reto com a bola do pé (Koshi)?",
+    question: "Qual a frase oficial do mestre Gichin Funakoshi presente nas avaliações da TKST?",
     options: [
-      "Mawashi Geri",
-      "Yoko Geri",
-      "Mae Geri",
-      "Ushiro Geri"
+      "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.",
+      "Vencer a luta a qualquer custo sem importar o respeito.",
+      "O Karatê serve apenas para atacar os mais fracos.",
+      "A força bruta supera a técnica e a disciplina."
     ],
-    correctIndex: 2,
-    explanation: "Mae Geri é o chute frontal direto do Karatê."
+    correctIndex: 0,
+    explanation: "Ensinamento mestre de Gichin Funakoshi: o Karatê busca o aperfeiçoamento moral e ético do ser humano."
   },
   {
     id: "q7-8",
     kyuNumber: 7,
     beltName: "Faixa Branca (7º Kyu)",
-    question: "O que significa o comando 'Yame' pronunciado pelo Sensei durante o treino?",
+    question: "Qual a defesa básica utilizada para varrer ataques na linha baixa (Gedan)?",
     options: [
-      "Avançar rapidamente",
-      "Parar / Retornar à posição inicial",
-      "Sentar em Seiza",
-      "Começar a lutar"
+      "Gedan Barai",
+      "Age Uke",
+      "Uchi Uke",
+      "Shuto Uke"
     ],
-    correctIndex: 1,
-    explanation: "Yame significa 'Parar' imediatamente a execução e voltar à postura natural (Shizentai)."
+    correctIndex: 0,
+    explanation: "Gedan Barai é a varredura descendente de defesa para a região genital e abdômen."
   },
   {
     id: "q7-9",
     kyuNumber: 7,
     beltName: "Faixa Branca (7º Kyu)",
-    question: "Qual parte do pé deve atingir o alvo na execução correta do Mae Geri Keage?",
+    question: "Como se chama o chute frontal reto desferido com a bola do pé (Koshi)?",
     options: [
-      "O calcanhar (Kakato)",
-      "A ponta dos dedos",
-      "A bola da planta do pé (Koshi)",
-      "A lateral do tornozelo"
+      "Mae Geri",
+      "Mawashi Geri",
+      "Yoko Geri",
+      "Ushiro Geri"
     ],
-    correctIndex: 2,
-    explanation: "O impacto do Mae Geri é feito com o Koshi (a bola da planta dos pés, com os dedos recolhidos para trás para não quebrar)."
+    correctIndex: 0,
+    explanation: "Mae Geri é o chute frontal direto do Karatê-Dō."
   },
   {
     id: "q7-10",
     kyuNumber: 7,
     beltName: "Faixa Branca (7º Kyu)",
-    question: "Como se chama a postura de atenção natural com pés na largura dos ombros?",
+    question: "Qual é a primeira regra do Dojo Kun recitada em todas as aulas?",
     options: [
-      "Kiba Dachi",
-      "Kokutsu Dachi",
-      "Shizentai (Heiko Dachi / Hachiji Dachi)",
-      "Neko Ashi Dachi"
+      "Hitotsu! Jinkaku kansei ni tsutomuru koto! (Esforçar-se para a formação do caráter)",
+      "Hitotsu! Makoto no michi o mamoru koto!",
+      "Hitotsu! Doryoku no seishin o yashinau koto!",
+      "Hitotsu! Reigi o omonzuru koto!"
     ],
-    correctIndex: 2,
-    explanation: "Shizentai é a postura natural de prontidão e alerta corporal."
+    correctIndex: 0,
+    explanation: "A formação do caráter é o alicerce primordial de todo karateca."
   },
 
   // =========================================================================
-  // 6º KYU - FAIXA AMARELA (Exame para Vermelha)
+  // 6º KYU - FAIXA AMARELA (Exame de Amarela para Vermelha - 5º Kyu)
   // =========================================================================
   {
     id: "q6-1",
     kyuNumber: 6,
     beltName: "Faixa Amarela (6º Kyu)",
-    question: "Qual é a tradução e significado do nome do Kata Heian Shodan?",
+    question: "Qual é o Kata oficial exigido no exame de Faixa Amarela para Faixa Vermelha?",
     options: [
-      "Cavalo de Ferro Nível 1",
-      "Paz e Tranquilidade Nível 1 (Mente Serena)",
-      "Voo da Andorinha Real",
-      "Rompendo a Fortaleza"
+      "Heian Nidan",
+      "Heian Shodan",
+      "Heian Sandan",
+      "Tekki Shodan"
     ],
-    correctIndex: 1,
-    explanation: "Heian (平安) significa 'Paz e Tranquilidade' ou 'Mente Calma'. Shodan significa Primeiro Nível."
+    correctIndex: 0,
+    explanation: "Heian Nidan é o segundo Kata da série Heian, matéria de exame para o 5º Kyu (Faixa Vermelha)."
   },
   {
     id: "q6-2",
     kyuNumber: 6,
     beltName: "Faixa Amarela (6º Kyu)",
-    question: "Em quais passos do Kata Heian Shodan ocorrem os Kiais?",
+    question: "Qual o nome em japonês para os lados 'Esquerdo' e 'Direito'?",
     options: [
-      "No 1º e no 21º passo",
-      "No 9º passo (Age Uke) e no 17º passo (Oi Tsuki Chudan)",
-      "No 5º e no 12º passo",
-      "Apenas no último passo"
+      "Hidari (Esquerdo) e Migi (Direito)",
+      "Mae (Frente) e Ushiro (Atrás)",
+      "Jodan (Alto) e Gedan (Baixo)",
+      "Oi (Mesmo lado) e Gyaku (Contrário)"
     ],
-    correctIndex: 1,
-    explanation: "No Heian Shodan, os dois Kiais oficiais ocorrem no 9º movimento (último Age Uke) e no 17º movimento (último Oi Tsuki)."
+    correctIndex: 0,
+    explanation: "Hidari significa Esquerdo e Migi significa Direito no vocabulário oficial japonês."
   },
   {
     id: "q6-3",
     kyuNumber: 6,
     beltName: "Faixa Amarela (6º Kyu)",
-    question: "Qual a base defensiva com cerca de 70% do peso na perna posterior utilizada no Heian Shodan?",
+    question: "Como se realiza a contagem correta de 11 a 20 em Japonês?",
     options: [
-      "Zenkutsu Dachi",
-      "Kokutsu Dachi",
-      "Kiba Dachi",
-      "Sanchin Dachi"
+      "Ju-Ichi, Ju-Ni, Ju-San, Ju-Shi (Ju-Yon), Ju-Go, Ju-Roku, Ju-Shichi, Ju-Hachi, Ju-Ku, Ni-Ju",
+      "Ichi, Ni, San, Shi, Go, Roku, Shichi, Hachi, Ku, Ju",
+      "Ni-Ju-Ichi, Ni-Ju-Ni, Ni-Ju-San, Ni-Ju-Shi, Ni-Ju-Go, Ni-Ju-Roku, Ni-Ju-Nana, Ni-Ju-Hachi, Ni-Ju-Kyu, San-Ju",
+      "Ichi-Ju, Ni-Ju, San-Ju, Yon-Ju, Go-Ju, Roku-Ju, Nana-Ju, Hachi-Ju, Kyu-Ju, Hyaku"
     ],
-    correctIndex: 1,
-    explanation: "Kokutsu Dachi é a base posterior, utilizada nos quatro Shuto Uke do final do Heian Shodan."
+    correctIndex: 0,
+    explanation: "Contagem de 11 a 20: Ju (10) + número básico, finalizando em Ni-Ju (20 = 2 vezes 10)."
   },
   {
     id: "q6-4",
     kyuNumber: 6,
     beltName: "Faixa Amarela (6º Kyu)",
-    question: "Qual a diferença entre Soto Uke e Uchi Uke?",
+    question: "Qual o nome do 4º movimento do Kata Heian Nidan?",
     options: [
-      "Soto Uke vem de fora para dentro; Uchi Uke vem de dentro para fora",
-      "Soto Uke é com chute e Uchi Uke é com a mão aberta",
-      "Soto Uke é soco e Uchi Uke é cabeçada",
-      "Ambos são idênticos em trajetória"
+      "Tetsui Uchi (Golpe de martelo com a base do punho)",
+      "Oi Tsuki Chudan",
+      "Mae Geri",
+      "Gedan Barai"
     ],
     correctIndex: 0,
-    explanation: "Soto Uke (de fora para dentro) bloqueia em trajetória externa; Uchi Uke (de dentro para fora) nasce na cintura oposta e gira para fora."
+    explanation: "No Heian Nidan, após o terceiro movimento de defesa dupla, desfere-se o Tetsui Uchi descendo o punho fechado em martelo."
   },
   {
     id: "q6-5",
     kyuNumber: 6,
     beltName: "Faixa Amarela (6º Kyu)",
-    question: "Como se chama a defesa de mão em espada (faca da mão) aplicada em Kokutsu Dachi?",
+    question: "Qual a defesa de mão aberta (faca da mão) executada na base recuada Kokutsu Dachi?",
     options: [
-      "Gedan Barai",
-      "Shuto Uke",
-      "Age Uke",
-      "Empi Uchi"
+      "Shuto Uke em Kokutsu Dachi",
+      "Age Uke em Zenkutsu Dachi",
+      "Gedan Barai em Kiba Dachi",
+      "Empi Uchi em Heisoku Dachi"
     ],
-    correctIndex: 1,
-    explanation: "Shuto Uke (defesa com a faca da mão) utiliza o bordo externo da mão aberta com o polegar dobrado e tensionado."
+    correctIndex: 0,
+    explanation: "Shuto Uke em Kokutsu Dachi é a postura clássica onde 70% do peso fica na perna posterior protegendo o centro."
   },
   {
     id: "q6-6",
     kyuNumber: 6,
     beltName: "Faixa Amarela (6º Kyu)",
-    question: "No Gohon Kumite, quantos passos de ataque e defesa são realizados?",
+    question: "Qual o chute lateral introduzido no aprendizado de Faixa Amarela para Vermelha?",
     options: [
-      "1 passo",
-      "3 passos",
-      "5 passos consecutivos",
-      "10 passos"
+      "Yoko Geri (Keage - ascendente / Kekomi - penetrante)",
+      "Mae Geri Keage",
+      "Mawashi Geri",
+      "Ushiro Geri"
     ],
-    correctIndex: 2,
-    explanation: "Gohon Kumite (Go = Cinco) consiste em 5 ataques consecutivos em avanço e 5 defesas em recuo, finalizando com Gyaku Tsuki e Kiai."
+    correctIndex: 0,
+    explanation: "O Yoko Geri é o chute lateral que atinge o alvo com o gume externo do pé (Sokuto)."
   },
   {
     id: "q6-7",
     kyuNumber: 6,
     beltName: "Faixa Amarela (6º Kyu)",
-    question: "Qual a diferença mecânica entre Oi Tsuki e Gyaku Tsuki?",
+    question: "Qual a diferença entre a defesa Soto Uke e a defesa Uchi Uke?",
     options: [
-      "Oi Tsuki soco com a mão da perna da frente; Gyaku Tsuki soco reverso com a mão da perna de trás",
-      "Oi Tsuki é na cabeça e Gyaku Tsuki na costela",
-      "Oi Tsuki é de costas e Gyaku Tsuki é de frente",
+      "Soto Uke bloqueia de fora para dentro; Uchi Uke bloqueia de dentro para fora",
+      "Soto Uke é com o pé e Uchi Uke é com a mão",
+      "Soto Uke é para a cabeça e Uchi Uke é para o joelho",
       "Não há diferença"
     ],
     correctIndex: 0,
-    explanation: "Oi Tsuki é o soco perseguidor/mesmo lado. Gyaku Tsuki é o soco contrário, alavancado pela rotação máxima do quadril."
+    explanation: "Soto Uke vem do lado da orelha para o centro; Uchi Uke nasce na cintura oposta e gira para fora."
   },
   {
     id: "q6-8",
     kyuNumber: 6,
     beltName: "Faixa Amarela (6º Kyu)",
+    question: "No Gohon Kumite (combate de 5 passos), qual o contragolpe decisivo executado no 5º passo?",
+    options: [
+      "Gyaku Tsuki Chudan com KIAI!",
+      "Gedan Barai",
+      "Oi Tsuki Jodan",
+      "Mae Geri"
+    ],
+    correctIndex: 0,
+    explanation: "No 5º passo, o defensor bloqueia com firmeza e aplica o Gyaku Tsuki com rotação total do quadril e Kiai."
+  },
+  {
+    id: "q6-9",
+    kyuNumber: 6,
+    beltName: "Faixa Amarela (6º Kyu)",
+    question: "Qual o segundo princípio do Dojo Kun?",
+    options: [
+      "Hitotsu! Makoto no michi o mamoru koto! (Fidelidade para com o verdadeiro caminho da razão)",
+      "Hitotsu! Jinkaku kansei ni tsutomuru koto!",
+      "Hitotsu! Doryoku no seishin o yashinau koto!",
+      "Hitotsu! Kekki no yū o imashimuru koto!"
+    ],
+    correctIndex: 0,
+    explanation: "O segundo lema é 'Fidelidade para com o verdadeiro caminho da razão'."
+  },
+  {
+    id: "q6-10",
+    kyuNumber: 6,
+    beltName: "Faixa Amarela (6º Kyu)",
     question: "O que é 'Kime' (決め) no Karatê?",
     options: [
-      "O uniforme de treino",
       "A concentração instantânea de toda a energia física e mental no ponto focal do impacto",
-      "O nome da faixa",
-      "O salto no ar"
+      "O quimono branco",
+      "A saudação inicial",
+      "A troca de faixa"
     ],
-    correctIndex: 1,
-    explanation: "Kime é o foco, a contração explosiva terminal de todos os músculos no exato milissegundo do golpe, seguido de relaxamento."
+    correctIndex: 0,
+    explanation: "Kime é o foco máximo no instante do impacto seguido de controle postural."
+  },
+
+  // =========================================================================
+  // 5º KYU - FAIXA VERMELHA (Exame de Vermelha para Laranja - 4º Kyu)
+  // =========================================================================
+  {
+    id: "q5-1",
+    kyuNumber: 5,
+    beltName: "Faixa Vermelha (5º Kyu)",
+    question: "Qual é o Kata oficial exigido no exame de Faixa Vermelha para Faixa Laranja?",
+    options: [
+      "Heian Sandan",
+      "Heian Nidan",
+      "Heian Shodan",
+      "Heian Yondan"
+    ],
+    correctIndex: 0,
+    explanation: "Heian Sandan é o terceiro Kata da série Heian, matéria oficial para o 4º Kyu (Faixa Laranja)."
+  },
+  {
+    id: "q5-2",
+    kyuNumber: 5,
+    beltName: "Faixa Vermelha (5º Kyu)",
+    question: "Qual a postura 'do cavaleiro' com pés paralelos e peso 50% em cada perna utilizada no Heian Sandan?",
+    options: [
+      "Kiba Dachi",
+      "Zenkutsu Dachi",
+      "Kokutsu Dachi",
+      "Kosa Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "Kiba Dachi é a base do cavaleiro, de grande estabilidade lateral e fortalecimento das pernas."
+  },
+  {
+    id: "q5-3",
+    kyuNumber: 5,
+    beltName: "Faixa Vermelha (5º Kyu)",
+    question: "Como se realiza a contagem correta de 21 a 30 em Japonês?",
+    options: [
+      "Ni-Ju-Ichi, Ni-Ju-Ni, Ni-Ju-San, Ni-Ju-Shi (Ni-Ju-Yon), Ni-Ju-Go, Ni-Ju-Roku, Ni-Ju-Shichi (Ni-Ju-Nana), Ni-Ju-Hachi, Ni-Ju-Ku, San-Ju",
+      "Ju-Ichi, Ju-Ni, Ju-San, Ju-Shi, Ju-Go, Ju-Roku, Ju-Shichi, Ju-Hachi, Ju-Ku, Ni-Ju",
+      "Ichi, Ni, San, Shi, Go, Roku, Shichi, Hachi, Ku, Ju",
+      "San-Ju-Ichi, San-Ju-Ni, San-Ju-San, San-Ju-Shi, San-Ju-Go, San-Ju-Roku, San-Ju-Nana, San-Ju-Hachi, San-Ju-Kyu, Yon-Ju"
+    ],
+    correctIndex: 0,
+    explanation: "De 21 a 30: Ni-Ju (20) seguido de 1 a 9, concluindo em San-Ju (30 = 3 vezes 10)."
+  },
+  {
+    id: "q5-4",
+    kyuNumber: 5,
+    beltName: "Faixa Vermelha (5º Kyu)",
+    question: "Qual o nome do 6º movimento do Kata Heian Sandan?",
+    options: [
+      "Morote Uke (Bloqueio duplo reforçado com o punho de apoio)",
+      "Oi Tsuki Chudan",
+      "Mae Geri",
+      "Empi Uchi"
+    ],
+    correctIndex: 0,
+    explanation: "No Heian Sandan, o 6º movimento é o Morote Uke Chudan em base Kokutsu Dachi."
+  },
+  {
+    id: "q5-5",
+    kyuNumber: 5,
+    beltName: "Faixa Vermelha (5º Kyu)",
+    question: "Qual técnica de golpe penetrante com a ponta dos dedos é aplicada em avanço frontal?",
+    options: [
+      "Nukite (Chudan Yonhon Nukite com a mão aberta)",
+      "Empi Uchi",
+      "Uraken Uchi",
+      "Teisho Uchi"
+    ],
+    correctIndex: 0,
+    explanation: "Nukite utiliza as pontas dos quatro dedos estendidos em lança, com a outra mão servindo de apoio sob o cotovelo."
+  },
+  {
+    id: "q5-6",
+    kyuNumber: 5,
+    beltName: "Faixa Vermelha (5º Kyu)",
+    question: "Quais técnicas combinadas são executadas no movimento inicial de chute do Heian Nidan?",
+    options: [
+      "Yoko Geri Keage e Uraken Uchi simultâneos",
+      "Mae Geri e Gyaku Tsuki",
+      "Mawashi Geri e Gedan Barai",
+      "Ushiro Geri e Age Uke"
+    ],
+    correctIndex: 0,
+    explanation: "Executa-se o chute lateral ascendente (Yoko Geri Keage) em harmonia com o golpe de costas do punho (Uraken Uchi)."
+  },
+  {
+    id: "q5-7",
+    kyuNumber: 5,
+    beltName: "Faixa Vermelha (5º Kyu)",
+    question: "Qual a terceira regra do Dojo Kun?",
+    options: [
+      "Hitotsu! Doryoku no seishin o yashinau koto! (Criar o espírito de esforço e perseverança)",
+      "Hitotsu! Reigi o omonzuru koto!",
+      "Hitotsu! Kekki no yū o imashimuru koto!",
+      "Hitotsu! Jinkaku kansei ni tsutomuru koto!"
+    ],
+    correctIndex: 0,
+    explanation: "O terceiro princípio nos ensina a dedicação, a disciplina e o espírito de nunca desistir."
+  },
+  {
+    id: "q5-8",
+    kyuNumber: 5,
+    beltName: "Faixa Vermelha (5º Kyu)",
+    question: "Como se chama o ataque desferido com a ponta do cotovelo no Karatê?",
+    options: [
+      "Empi Uchi (Hiji Ate)",
+      "Uraken Uchi",
+      "Shuto Uchi",
+      "Haishu Uchi"
+    ],
+    correctIndex: 0,
+    explanation: "Empi (Cotovelo / Voo da Andorinha) é a cotovelada devastadora a curta distância."
   },
 
   // =========================================================================

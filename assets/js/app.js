@@ -93,18 +93,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getBeltImage(beltName) {
-    if (!beltName) return 'assets/images/faixas/faixa-branca.svg';
+    if (!beltName) return 'assets/images/faixas/quimono-branca.svg';
     const b = beltName.toLowerCase();
     if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan') || b.includes('yondan') || b.includes('godan')) {
-      return 'assets/images/faixas/faixa-preta.svg';
+      return 'assets/images/faixas/quimono-preta.svg';
     }
-    if (b.includes('marrom')) return 'assets/images/faixas/faixa-marrom.svg';
-    if (b.includes('roxa')) return 'assets/images/faixas/faixa-roxa.svg';
-    if (b.includes('verde')) return 'assets/images/faixas/faixa-verde.svg';
-    if (b.includes('laranja')) return 'assets/images/faixas/faixa-laranja.svg';
-    if (b.includes('vermelha')) return 'assets/images/faixas/faixa-vermelha.svg';
-    if (b.includes('amarela')) return 'assets/images/faixas/faixa-amarela.svg';
-    return 'assets/images/faixas/faixa-branca.svg';
+    if (b.includes('marrom')) return 'assets/images/faixas/quimono-marrom.svg';
+    if (b.includes('roxa')) return 'assets/images/faixas/quimono-roxa.svg';
+    if (b.includes('verde')) return 'assets/images/faixas/quimono-verde.svg';
+    if (b.includes('laranja')) return 'assets/images/faixas/quimono-laranja.svg';
+    if (b.includes('vermelha')) return 'assets/images/faixas/quimono-vermelha.svg';
+    if (b.includes('amarela')) return 'assets/images/faixas/quimono-amarela.svg';
+    return 'assets/images/faixas/quimono-branca.svg';
   }
 
   // Video Helpers
@@ -1143,14 +1143,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="rank-name">${user.currentBelt}</div>
             </div>
           </div>
-        </div>
-
-        <div class="belt-progress-bar-container">
-          <div class="belt-progress-bar-fill" style="width: ${percent}%;"></div>
-        </div>
-        <div class="belt-progress-meta">
-          <span>Progresso do Kihon da Próxima Faixa</span>
-          <span><strong>${masteredCount} de ${totalKihon}</strong> técnicas estudadas (${percent}%)</span>
         </div>
       </div>
 
@@ -3212,14 +3204,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. LEVEL SELECTOR SCREEN
     if (!quizActive) {
       const quizLevels = [
-        { kyu: 7, name: "Faixa Branca (7º Kyu)", color: "#FFFFFF", textColor: "#000", badge: "Iniciante", desc: "História do Karatê Shotokan, etiqueta do Dojo (Reigi), bases fundamentais e técnicas iniciais." },
-        { kyu: 6, name: "Faixa Amarela (6º Kyu)", color: "#F5BE00", textColor: "#000", badge: "6º Kyu", desc: "Heian Shodan, bases Zenkutsu e Kokutsu, 3 níveis corporais e defesas essenciais." },
-        { kyu: 5, name: "Faixa Vermelha (5º Kyu)", color: "#E63946", textColor: "#FFF", badge: "5º Kyu", desc: "Heian Nidan, chutes laterais Yoko Geri, defesas de mão aberta Shuto Uke e transições." },
-        { kyu: 4, name: "Faixa Laranja (4º Kyu)", color: "#FF7700", textColor: "#FFF", badge: "4º Kyu", desc: "Heian Sandan, base Kiba Dachi, cotoveladas Empi, golpes de costas de punho e Sanbon Kumite." },
-        { kyu: 3, name: "Faixa Verde (3º Kyu)", color: "#10B981", textColor: "#FFF", badge: "3º Kyu", desc: "Heian Yondan, chutes voadores, defesas duplas Morote Uke e Kakiwake Uke." },
-        { kyu: 2, name: "Faixa Roxa (2º Kyu)", color: "#8B5CF6", textColor: "#FFF", badge: "2º Kyu", desc: "Heian Godan, saltos acrobáticos, contragolpes de Kihon Ippon Kumite e base Kosa Dachi." },
-        { kyu: 1, name: "Faixa Marrom (1º Kyu)", color: "#78350F", textColor: "#FFF", badge: "1º Kyu", desc: "Tekki Shodan, Bassai Dai, Kanku Dai, antecipação Sen no Sen e Jiyu Ippon Kumite." },
-        { kyu: 0, name: "Faixa Preta (Shodan / Dans)", color: "#111827", textColor: "#FFF", badge: "Dan / Mestre", desc: "Filosofia Budo, 26 Kata avançados, arbitragem oficial, Mizu no Kokoro e maestria marcial." }
+        { kyu: 7, name: "Faixa Branca (7º Kyu)", color: "#FFFFFF", textColor: "#000", badge: "7º Kyu" },
+        { kyu: 6, name: "Faixa Amarela (6º Kyu)", color: "#F5BE00", textColor: "#000", badge: "6º Kyu" },
+        { kyu: 5, name: "Faixa Vermelha (5º Kyu)", color: "#E63946", textColor: "#FFF", badge: "5º Kyu" },
+        { kyu: 4, name: "Faixa Laranja (4º Kyu)", color: "#FF7700", textColor: "#FFF", badge: "4º Kyu" },
+        { kyu: 3, name: "Faixa Verde (3º Kyu)", color: "#10B981", textColor: "#FFF", badge: "3º Kyu" },
+        { kyu: 2, name: "Faixa Roxa (2º Kyu)", color: "#8B5CF6", textColor: "#FFF", badge: "2º Kyu" },
+        { kyu: 1, name: "Faixa Marrom (1º Kyu)", color: "#78350F", textColor: "#FFF", badge: "1º Kyu" },
+        { kyu: 0, name: "Faixa Preta (Shodan)", color: "#18181B", textColor: "#FFF", badge: "Shodan" }
       ];
 
       let html = `
@@ -3255,35 +3247,31 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
           ${quizLevels.map(lvl => {
             const isUnlocked = isAdmin || lvl.kyu >= userKyu || hasPerfectInOwnBelt;
             const isCurrent = lvl.kyu === userKyu;
 
             return `
-              <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px; border-top: 5px solid ${lvl.color}; background: ${isUnlocked ? 'rgba(18, 23, 34, 0.9)' : 'rgba(18, 23, 34, 0.4)'}; opacity: ${isUnlocked ? '1' : '0.65'}; position: relative;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                  <span class="badge" style="background: ${lvl.color}; color: ${lvl.textColor}; font-weight: 700; font-size: 0.76rem; border: 1px solid rgba(255,255,255,0.2);">
+              <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px; border-top: 5px solid ${lvl.color}; border-left: 1.5px solid ${lvl.color}55; background: ${isUnlocked ? 'rgba(18, 23, 34, 0.95)' : 'rgba(18, 23, 34, 0.45)'}; opacity: ${isUnlocked ? '1' : '0.65'}; gap: 14px;">
+                <!-- Linha 1: Faixa XXX (Xº Kyu) -->
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <h4 style="color: #FFF; font-size: 1.12rem; font-family: var(--font-heading); margin: 0; font-weight: 700;">
+                    ${lvl.name}
+                  </h4>
+                  <span class="badge" style="background: ${lvl.color}; color: ${lvl.textColor}; font-weight: 800; font-size: 0.76rem; border: 1px solid rgba(255,255,255,0.25);">
                     ${lvl.badge}
                   </span>
-                  ${isCurrent ? `<span class="badge badge-verde" style="font-size: 0.7rem;">Sua Faixa</span>` : ''}
-                  ${!isUnlocked ? `<span class="badge badge-status-pending" style="font-size: 0.72rem;"><i class="fas fa-lock"></i> Bloqueado</span>` : ''}
                 </div>
 
-                <h4 style="color: #FFF; font-size: 1.1rem; font-family: var(--font-heading); margin-bottom: 6px;">
-                  ${lvl.name}
-                </h4>
-                <p style="font-size: 0.82rem; color: #94A3B8; line-height: 1.5; margin-bottom: 16px; min-height: 48px;">
-                  ${lvl.desc}
-                </p>
-
+                <!-- Linha 2: Iniciar Simulado -->
                 ${isUnlocked ? `
-                  <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel(${lvl.kyu}, '${lvl.name}')" style="width: 100%; justify-content: center; font-weight: 700; padding: 10px;">
-                    <i class="fas fa-play"></i> Iniciar Simulado (10 Questões)
+                  <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel(${lvl.kyu}, '${lvl.name}')" style="width: 100%; justify-content: center; font-weight: 700; padding: 12px; font-size: 0.95rem;">
+                    <i class="fas fa-play" style="font-size: 0.85rem; margin-right: 6px;"></i> Iniciar Simulado
                   </button>
                 ` : `
-                  <button class="btn btn-secondary" disabled style="width: 100%; justify-content: center; opacity: 0.5; cursor: not-allowed; padding: 10px; font-size: 0.82rem;">
-                    <i class="fas fa-lock"></i> Bloqueado (Requer 10/10)
+                  <button class="btn btn-secondary" disabled style="width: 100%; justify-content: center; opacity: 0.5; cursor: not-allowed; padding: 12px; font-size: 0.86rem;">
+                    <i class="fas fa-lock" style="margin-right: 6px;"></i> Bloqueado (Requer 10/10)
                   </button>
                 `}
               </div>
