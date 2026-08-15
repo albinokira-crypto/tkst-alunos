@@ -1,16 +1,16 @@
-const CACHE_NAME = 'tkst-alunos-v58';
+const CACHE_NAME = 'tkst-alunos-v59';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './assets/css/main.css?v=58',
-  './assets/css/components.css?v=58',
-  './assets/js/auth.js?v=58',
-  './assets/js/data-curriculum.js?v=58',
-  './assets/js/data-katas.js?v=58',
-  './assets/js/data-kumite.js?v=58',
-  './assets/js/data-glossary.js?v=58',
-  './assets/js/data-quiz.js?v=58',
-  './assets/js/app.js?v=58',
+  './assets/css/main.css?v=59',
+  './assets/css/components.css?v=59',
+  './assets/js/auth.js?v=59',
+  './assets/js/data-curriculum.js?v=59',
+  './assets/js/data-katas.js?v=59',
+  './assets/js/data-kumite.js?v=59',
+  './assets/js/data-glossary.js?v=59',
+  './assets/js/data-quiz.js?v=59',
+  './assets/js/app.js?v=59',
   './assets/images/logo-tkst.png',
   './assets/images/icon-192.png',
   './assets/images/icon-512.png',
@@ -35,7 +35,6 @@ self.addEventListener('install', (event) => {
       });
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -50,7 +49,6 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {

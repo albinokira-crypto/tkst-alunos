@@ -244,21 +244,19 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/auth.js?v=58"></script>
-  <script src="assets/js/data-curriculum.js?v=58"></script>
-  <script src="assets/js/data-katas.js?v=58"></script>
-  <script src="assets/js/data-kumite.js?v=58"></script>
-  <script src="assets/js/data-glossary.js?v=58"></script>
-  <script src="assets/js/data-quiz.js?v=58"></script>
-  <script src="assets/js/app.js?v=58"></script>
+  <script src="assets/js/auth.js?v=59"></script>
+  <script src="assets/js/data-curriculum.js?v=59"></script>
+  <script src="assets/js/data-katas.js?v=59"></script>
+  <script src="assets/js/data-kumite.js?v=59"></script>
+  <script src="assets/js/data-glossary.js?v=59"></script>
+  <script src="assets/js/data-quiz.js?v=59"></script>
+  <script src="assets/js/app.js?v=59"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then((reg) => {
-          reg.update();
-        }).catch(err => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
           console.log('SW registration note:', err);
         });
       });

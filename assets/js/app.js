@@ -278,27 +278,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUserDisplay();
     setupGlobalEvents();
 
-    // Listen to real-time background cloud sync events from auth.js
-    window.addEventListener('tkst_cloud_synced', () => {
-      renderView(currentTab);
-      setupUserDisplay();
-    });
-    window.addEventListener('tkst_user_changed', () => {
-      renderView(currentTab);
-      setupUserDisplay();
-    });
-
-    // Register Service Worker for PWA desktop/mobile installation
+    // Register Service Worker passively for PWA desktop/mobile installation (no auto-reloads)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').then((reg) => {
-        reg.update(); // auto check for updates
-      }).catch((err) => {
+      navigator.serviceWorker.register('./sw.js').catch((err) => {
         console.log('SW registration note:', err);
-      });
-
-      // Auto-reload when service worker updates to apply changes in real-time
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
       });
     }
 
@@ -437,12 +420,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupGlobalEvents() {
+    function shouldSkipRerender() {
+      // NEVER interrupt if user is actively taking a quiz or if a modal is open
+      if (currentTab === 'quiz' && quizActive) return true;
+      const detailModal = document.getElementById('detailModal');
+      if (detailModal && detailModal.classList.contains('active')) return true;
+      const videoModal = document.getElementById('videoModal');
+      if (videoModal && videoModal.classList.contains('active')) return true;
+      return false;
+    }
+
     window.addEventListener('tkst_user_changed', () => {
       setupUserDisplay();
-      renderView(currentTab);
+      if (!shouldSkipRerender()) {
+        renderView(currentTab);
+      }
     });
 
     window.addEventListener('tkst_progress_updated', () => {
+      if (shouldSkipRerender()) return;
       if (currentTab === 'dashboard' || currentTab === 'my-exam') {
         renderView(currentTab);
       }
@@ -450,11 +446,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('tkst_cloud_synced', () => {
       setupUserDisplay();
-      renderView(currentTab);
+      if (!shouldSkipRerender()) {
+        renderView(currentTab);
+      }
     });
 
     window.addEventListener('tkst_videos_updated', () => {
-      renderView(currentTab);
+      if (!shouldSkipRerender() && currentTab === 'katas') {
+        renderView(currentTab);
+      }
     });
   }
 
