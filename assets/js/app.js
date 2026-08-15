@@ -474,6 +474,21 @@ document.addEventListener('DOMContentLoaded', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function openAdminPanel(subTab) {
+    if (subTab) {
+      adminSubTab = subTab;
+    }
+    switchTab('admin');
+  }
+
+  function openUserAccountOrAdmin() {
+    if (window.TKST_AUTH.isAdmin()) {
+      openAdminPanel();
+    } else {
+      switchTab('login');
+    }
+  }
+
   function setupUserDisplay() {
     const user = window.TKST_AUTH.getCurrentUser();
     const userNames = document.querySelectorAll('.user-name-display');
@@ -507,8 +522,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const pendingCount = students.filter(s => s.status === 'pending').length;
 
     adminNavItems.forEach(el => {
-      el.style.display = isAdmin ? 'block' : 'none';
-      const link = el.querySelector('a');
+      el.style.display = isAdmin ? (el.tagName.toLowerCase() === 'a' ? 'flex' : 'block') : 'none';
+      const link = el.tagName.toLowerCase() === 'a' ? el : el.querySelector('a');
       if (link) {
         let badge = link.querySelector('.admin-pending-badge');
         if (pendingCount > 0) {
@@ -518,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
             badge.style.cssText = 'background: #E63946; color: #FFF; font-weight: 800; animation: pulse 2s infinite; margin-left: 6px;';
             link.appendChild(badge);
           }
-          badge.textContent = `${pendingCount} Pendente${pendingCount > 1 ? 's' : ''}`;
+          badge.textContent = `${pendingCount}`;
         } else if (badge) {
           badge.remove();
         }
@@ -532,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (headerUserArea) {
       headerUserArea.innerHTML = `
         ${isAdmin ? `
-          <button class="btn btn-gold" onclick="window.TKST_APP.setAdminSubTab('pending'); window.TKST_APP.switchTab('admin')" style="font-size: 0.78rem; padding: 6px 12px; white-space: nowrap; position: relative;" title="Painel Master Sensei Diego">
+          <button class="btn btn-gold" onclick="window.TKST_APP.openAdminPanel()" style="font-size: 0.78rem; padding: 6px 12px; white-space: nowrap; position: relative; font-weight: 700;" title="Painel Master Sensei Diego">
             <i class="fas fa-crown"></i> Painel Admin
             ${pendingCount > 0 ? `<span class="header-notification-pill" title="${pendingCount} cadastro(s) pendente(s)">${pendingCount}</span>` : ''}
           </button>
@@ -653,6 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else renderDashboard();
     }
 
+    setupUserDisplay();
     updateInstallPromptsVisibility();
   }
 
@@ -3832,6 +3848,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   window.TKST_APP = {
     switchTab,
+    openAdminPanel,
+    openAdmin: (subTab) => openAdminPanel(subTab),
+    openUserAccountOrAdmin,
     setAuthMode: (mode) => {
       authMode = mode;
       renderLogin();
