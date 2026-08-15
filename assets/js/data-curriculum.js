@@ -686,51 +686,173 @@ window.TKST_CURRICULUM = [
     "id": "dan-1",
     "kyuNumber": 0,
     "beltName": "Faixa Preta (Shodan)",
-    "beltColor": "#1A1A1A",
+    "beltColor": "#0A0A0A",
     "previousBelt": "Faixa Marrom",
-    "targetBelt": "Faixa Preta (1º Dan - Shodan)",
-    "description": "O início do verdadeiro caminho do Karatê-Dō. Demonstração de excelência técnica, força mental, filosofia e liderança.",
+    "targetBelt": "Faixa Preta (Shodan - 1º Dan)",
+    "description": "Exame oficial de graduação para Faixa Preta (Shodan) da TKST: domínio completo de Te Waza, Uke Waza, Ashi Waza, Dachi Waza, Katas com Bunkai e Kumite múltiplo.",
+    "shodanProgram": {
+      "teWaza": [
+        { "name": "Oi Tsuki Jodan", "direction": "Mae", "arrow": "➡" },
+        { "name": "Oi Tsuki Chudan", "direction": "Mae", "arrow": "➡" },
+        { "name": "Oi Tsuki Gedan", "direction": "Mae", "arrow": "➡" },
+        { "name": "Gyaku Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Nihon Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Sanbon Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Gyaku Sanbon Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Tate Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Mawashi Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Ura Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Age Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Otoshi Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Morote Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Awase Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Yama Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Yumi Tsuki", "direction": "Mae", "arrow": "➡" },
+        { "name": "Shihon Nukite", "direction": "Mae", "arrow": "➡" },
+        { "name": "Nihon Nukite", "direction": "Mae", "arrow": "➡" },
+        { "name": "Ippon Nukite", "direction": "Mae", "arrow": "➡" },
+        { "name": "Hiraken", "direction": "Mae", "arrow": "➡" },
+        { "name": "Teisho Uchi Jodan", "direction": "Mae", "arrow": "➡" },
+        { "name": "Teisho Uchi Chudan", "direction": "Mae", "arrow": "➡" },
+        { "name": "Haito Uchi", "direction": "Mae", "arrow": "➡" },
+        { "name": "Ura Haito Uchi", "direction": "Mae", "arrow": "➡" },
+        { "name": "Washide", "direction": "Mae", "arrow": "➡" },
+        { "name": "Keito Uchi", "direction": "Mae", "arrow": "➡" },
+        { "name": "Haishu Uchi", "direction": "Mae", "arrow": "➡" },
+        { "name": "Tettsui Uchi", "direction": "Mae", "arrow": "➡" }
+      ],
+      "ukeWaza": [
+        { "name": "Jodan Age Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Chudan Soto Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Chudan Uchi Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Chudan Shuto Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Gedan Barai", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Juji Uke Jodan", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Juji Uke Gedan", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Manji Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Morote Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Gedan Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Sochin Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Nagashi Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Haishu Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Harai Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Seiryuto Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Haiwan Sokumen Jodan Age Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Haiwan Sokumen Jodan Shuto Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Hirate Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Osae Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Kake Wake Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Sukui Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Haiwan Uke Jodan", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Haiwan Uke Chudan", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Mawashi Uke", "direction": "Sagate", "arrow": "⬅" },
+        { "name": "Teisho Uke", "direction": "Sagate", "arrow": "⬅" }
+      ],
+      "ashiWaza": [
+        { "name": "Mae Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Mawashi Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Yoko Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Ura Mawashi Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Mae Tobi Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Yoko Tobi Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Nidan Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Tobi Mawashi Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Ushiro Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Ushiro Ura Mawashi", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Mikazuki Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Kakuto Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Fumikomi Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Kin Geri", "direction": "Mae / Mawate", "arrow": "🔄" },
+        { "name": "Hiza Geri", "direction": "Mae / Mawate", "arrow": "🔄" }
+      ],
+      "dachiWaza": [
+        { "name": "Heisoku Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Musubi Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Heiko Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Hachiji Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Zenkutsu Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Moto Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Kokutsu Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Renoji Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Kiba Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Fudo Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Nekoashi Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Shiko Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Katahiza Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Kosa Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Tsuru Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Ashi Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Hangetsu Dachi", "movement": "Mae / Sagate (1 movimento)" },
+        { "name": "Sanchin Dachi", "movement": "Mae / Sagate (1 movimento)" }
+      ],
+      "kataList": [
+        { "name": "Heian Shodan", "note": "1 Bunkai" },
+        { "name": "Heian Nidan", "note": "1 Bunkai" },
+        { "name": "Heian Sandan", "note": "1 Bunkai" },
+        { "name": "Heian Yondan", "note": "1 Bunkai" },
+        { "name": "Heian Godan", "note": "1 Bunkai" },
+        { "name": "Tekki Shodan", "note": "Kata Oficial" },
+        { "name": "Bassai Dai", "note": "Kata Oficial" },
+        { "name": "Kanku Dai", "note": "Kata Oficial" },
+        { "name": "Jion", "note": "Kata Oficial" }
+      ],
+      "kumiteList": [
+        { "name": "Contra 1", "description": "Combate livre contínuo (Jiyu Kumite) individual com foco em De-ai, esquiva e contra-ataque decisivo." },
+        { "name": "Contra 2", "description": "Combate livre simultâneo contra 2 oponentes demonstrando visão periférica e posicionamento espacial." },
+        { "name": "Contra 4", "description": "Combate livre contra 4 oponentes testando Zanshin absoluto, estratégia, condicionamento e espírito de luta." }
+      ]
+    },
     "kihon": [
       {
-        "id": "d1-1",
-        "direction": "Kihon Ippon no Kata (It Ban)",
-        "technique": "Sequência completa de 10 movimentos de transição entre Zenkutsu, Kokutsu e Kiba Dachi com Tsuriashi e giros de 90° e 180°",
-        "stance": "Múltiplas Bases",
-        "count": "Execução Completa"
+        "id": "shodan-te",
+        "direction": "Mae (➡ Avanço)",
+        "technique": "Te Waza (28 Técnicas): Oi Tsuki (Jodan, Chudan, Gedan), Gyaku Tsuki, Nihon/Sanbon Tsuki, Gyaku Sanbon, Tate/Mawashi/Ura/Age/Otoshi/Morote/Awase/Yama/Yumi Tsuki, Shihon/Nihon/Ippon Nukite, Hiraken, Teisho (Jodan/Chudan), Haito, Ura Haito, Washide, Keito, Haishu, Tettsui Uchi",
+        "stance": "Zenkutsu / Kiba Dachi",
+        "count": "28 Técnicas"
       },
       {
-        "id": "d1-2",
-        "direction": "Kihon Ippon no Kata (Ni Ban)",
-        "technique": "Sequência completa de 15 movimentos com Sokumen Uke, Juji Gedan, Ushiro Gedan Barai e Heiko Shuto em Kiba Dachi",
-        "stance": "Múltiplas Bases",
-        "count": "Execução Completa"
+        "id": "shodan-uke",
+        "direction": "Sagate (⬅ Recuo)",
+        "technique": "Uke Waza (25 Técnicas): Age Uke, Soto Uke, Uchi Uke, Shuto Uke, Gedan Barai, Juji Uke (Jodan/Gedan), Manji Uke, Morote Uke, Gedan Uke, Sochin Uke, Nagashi Uke, Haishu Uke, Harai Uke, Seiryuto Uke, Haiwan Sokumen (Age/Shuto), Hirate, Osae, Kake Wake, Sukui, Haiwan (Jodan/Chudan), Mawashi, Teisho Uke",
+        "stance": "Zenkutsu / Kokutsu Dachi",
+        "count": "25 Técnicas"
       },
       {
-        "id": "d1-3",
-        "direction": "Kihon de Chutes Avançados",
-        "technique": "Mae Geri, Mawashi Geri, Yoko Geri Kekomi, Ushiro Geri, Ura Mawashi Geri, Mae Tobi Geri, Nidan Geri",
+        "id": "shodan-ashi",
+        "direction": "Mae / Mawate (🔄 Ambos os Lados)",
+        "technique": "Ashi Waza (15 Técnicas): Mae Geri, Mawashi Geri, Yoko Geri, Ura Mawashi Geri, Mae Tobi Geri, Yoko Tobi Geri, Nidan Geri, Tobi Mawashi Geri, Ushiro Geri, Ushiro Ura Mawashi, Mikazuki Geri, Kakuto Geri, Fumikomi Geri, Kin Geri, Hiza Geri",
         "stance": "Jiyu no Kamae",
-        "count": "Domínio Total"
+        "count": "15 Técnicas"
+      },
+      {
+        "id": "shodan-dachi",
+        "direction": "Mae / Sagate (1 movimento)",
+        "technique": "Dachi Waza (18 Bases): Heisoku, Musubi, Heiko, Hachiji, Zenkutsu, Moto, Kokutsu, Renoji, Kiba, Fudo, Nekoashi, Shiko, Katahiza, Kosa, Tsuru, Ashi, Hangetsu, Sanchin Dachi",
+        "stance": "Transição de 1 movimento",
+        "count": "18 Bases"
       }
     ],
     "kata": {
       "required": [
+        "Heian Shodan",
+        "Heian Nidan",
+        "Heian Sandan",
+        "Heian Yondan",
+        "Heian Godan",
+        "Tekki Shodan",
         "Bassai Dai",
         "Kanku Dai",
-        "Jion",
-        "Empi"
+        "Jion"
       ],
-      "tokuiKata": "Kata de escolha do candidato (Tokui Kata)",
-      "shiteiKata": "Kata sorteado pela banca examinadora",
-      "description": "Execução do Tokui Kata (Kata principal) e Shitei Kata sorteado pela banca, com explicação filosófica e demonstração prática de Bunkai."
+      "description": "Execução com excelência dos 5 Katas Heian (com demonstração de 1 Bunkai prático cada), além de Tekki Shodan, Bassai Dai, Kanku Dai e Jion."
     },
     "kumite": {
-      "type": "Jiyu Ippon Kumite Completo, Jiyu Kumite e Shiai Kumite",
-      "description": "Demonstração de todos os aspectos do combate: Kihon Ippon, Jiyu Ippon (todas as 6 formas) e Jiyu Kumite contra múltiplos oponentes."
+      "type": "Jiyu Kumite: Contra 1, Contra 2 e Contra 4",
+      "description": "Combates livres de alta intensidade avaliando controle emocional, Zanshin, tempo de reação e condicionamento: Contra 1, Contra 2 e Contra 4 oponentes."
     },
     "requirements": [
       "Mínimo de 1 ano como Faixa Marrom 1º Kyu",
-      "Redação/Monografia sobre a Filosofia do Karate-Dō",
+      "Domínio completo da Tabela Oficial de Shodan da TKST",
       "Aprovação unânime da banca de faixas pretas"
     ]
   }

@@ -1882,6 +1882,81 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
+    // Shodan (Faixa Preta) - Kumite Oficial: Contra 1, Contra 2 e Contra 4
+    if (kyu === 0) {
+      return `
+        <!-- GUIA OFICIAL DE KUMITE PARA SHODAN (FAIXA PRETA) -->
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge" style="background: rgba(255, 183, 3, 0.2); border-color: rgba(255, 183, 3, 0.5); color: #FBBF24;">
+              <i class="fas fa-fist-raised"></i> Guia Oficial • Jiyu Kumite de Shodan (Tabela TKST)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Exame Oficial de Graduação para Faixa Preta (1º Dan)</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            O teste de combate para a <strong>Faixa Preta (Shodan)</strong> exige a demonstração de maturidade marcial, controle técnico absoluto, leitura tática de espaço e combate contínuo contra múltiplos oponentes sem perda de postura (<em>Zanshin</em>).
+          </p>
+
+          <!-- Modalidades Oficiais de Combate -->
+          <div class="gohon-series-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+            <!-- 1. Contra 1 -->
+            <div class="gohon-series-card" style="border-left: 4px solid #3B82F6;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">Contra 1 Oponente</strong>
+                <span class="shodan-arrow-badge mae">Individual</span>
+              </div>
+              <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6; margin-top: 6px;">
+                Combate livre contínuo (Jiyu Kumite) avaliando tempo de reação, antecipação (<em>De-ai</em>), esquivas circulares e aplicação de combinações livres de chutes e socos com controle e <strong>KIAI!</strong>
+              </p>
+            </div>
+
+            <!-- 2. Contra 2 -->
+            <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">Contra 2 Oponentes</strong>
+                <span class="shodan-arrow-badge sagate">Simultâneo</span>
+              </div>
+              <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6; margin-top: 6px;">
+                Luta livre simultânea testando posicionamento geométrico para não ser cercado, uso de um oponente como escudo contra o outro e transição rápida de foco.
+              </p>
+            </div>
+
+            <!-- 3. Contra 4 -->
+            <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">Contra 4 Oponentes</strong>
+                <span class="shodan-arrow-badge mawate">Múltiplo / Resistência</span>
+              </div>
+              <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6; margin-top: 6px;">
+                O ápice do teste marcial: combate contínuo contra 4 oponentes consecutivos/múltiplos, avaliando espírito inquebrantável (<em>Fudoshin</em>), resistência física extrema e calma mental.
+              </p>
+            </div>
+          </div>
+
+          <!-- Princípios da Banca Examinadora -->
+          <div class="gohon-principles-grid">
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-eye"></i> Visão Periférica 360°</div>
+              <div class="gohon-principle-desc">Consciência espacial completa ao lidar com múltiplos atacantes sem perder o centro.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin Absoluto</div>
+              <div class="gohon-principle-desc">Manutenção permanente da postura marcial antes, durante e após o término dos combates.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-heartbeat"></i> Fudoshin & Resistência</div>
+              <div class="gohon-principle-desc">Mente imperturbável mesmo sob exaustão física e pressão real de múltiplos adversários.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-medal"></i> Espírito de Faixa Preta</div>
+              <div class="gohon-principle-desc">Humildade, respeito aos parceiros de tatame e fidelidade inegociável aos princípios do Karatê-Dō.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     return '';
   }
 
@@ -1944,35 +2019,124 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- Curriculum Sections as Accordion Buttons -->
       <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 16px;">
         
-        <!-- 1. KIHON -->
+        <!-- 1. KIHON / TABELA OFICIAL -->
         <div class="study-accordion-card" id="studyCard_kihon">
           <button type="button" class="study-accordion-header" id="studyHeader_kihon" onclick="window.TKST_APP.toggleStudyAccordion('kihon')">
             <div class="study-accordion-title">
               <i class="fas fa-fist-raised" style="color: var(--accent-crimson); font-size: 1.25rem;"></i>
               <div>
-                <h3>1. Kihon (Técnicas Fundamentais)</h3>
-                <div style="font-size: 0.78rem; color: #94A3B8;">${curr.kihon.length} técnicas exigidas em avanço (Mae) e recuo (Sagate) • Toque para abrir/fechar</div>
+                <h3>1. Kihon (Técnicas Fundamentais${curr.kyuNumber === 0 ? ' • Tabela Oficial' : ''})</h3>
+                <div style="font-size: 0.78rem; color: #94A3B8;">
+                  ${curr.kyuNumber === 0 ? '86 técnicas e bases oficiais divididas em 4 pilares • Toque para abrir/fechar' : `${curr.kihon.length} técnicas exigidas em avanço (Mae) e recuo (Sagate) • Toque para abrir/fechar`}
+                </div>
               </div>
             </div>
             <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kihon"></i>
           </button>
 
           <div class="study-accordion-body" id="studyBody_kihon">
-            <div class="technique-list">
-              ${curr.kihon.map(k => `
-                <div class="technique-item">
-                  <div class="technique-main" style="align-items: center;">
-                    <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-crimson); margin-right: 10px; flex-shrink: 0;"></div>
-                    <div>
-                      <div class="technique-name">${k.technique}</div>
-                      <div class="technique-meta">
-                        <span class="stance">${k.stance}</span> • <span>${k.direction}</span> • <span style="color: #64748B;">${k.count}</span>
+            ${curr.shodanProgram ? `
+              <!-- LEGENDA OFICIAL SHODAN -->
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(10,13,20,0.8); padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-gold);"><i class="fas fa-compass"></i> Legenda Oficial de Movimentação:</span>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8rem;">
+                  <span style="display: flex; align-items: center; gap: 4px;"><span class="shodan-arrow-badge mae">➡</span> <strong>Mae</strong> (Avanço)</span>
+                  <span style="display: flex; align-items: center; gap: 4px;"><span class="shodan-arrow-badge sagate">⬅</span> <strong>Sagate</strong> (Recuo)</span>
+                  <span style="display: flex; align-items: center; gap: 4px;"><span class="shodan-arrow-badge mawate">🔄</span> <strong>Mae / Mawate</strong> (Avanço e Giro)</span>
+                </div>
+              </div>
+
+              <!-- AS 4 COLUNAS OFICIAIS DO EXAME DE SHODAN -->
+              <div class="shodan-program-grid">
+                <!-- Coluna 1: Te Waza (28 Técnicas) -->
+                <div class="shodan-col-card" style="border-top: 3px solid #3B82F6;">
+                  <div class="shodan-col-header">
+                    <div class="shodan-col-title">
+                      <i class="fas fa-hand-paper" style="color: #3B82F6;"></i> Te Waza
+                    </div>
+                    <span class="shodan-arrow-badge mae">28 Golpes • ➡ Mae</span>
+                  </div>
+                  <div class="shodan-item-list">
+                    ${curr.shodanProgram.teWaza.map((t, idx) => `
+                      <div class="shodan-tech-item">
+                        <span><strong>${idx + 1}.</strong> ${t.name}</span>
+                        <span class="shodan-arrow-badge mae">${t.arrow}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Coluna 2: Uke Waza (25 Técnicas) -->
+                <div class="shodan-col-card" style="border-top: 3px solid #10B981;">
+                  <div class="shodan-col-header">
+                    <div class="shodan-col-title">
+                      <i class="fas fa-shield-alt" style="color: #10B981;"></i> Uke Waza
+                    </div>
+                    <span class="shodan-arrow-badge sagate">25 Defesas • ⬅ Sagate</span>
+                  </div>
+                  <div class="shodan-item-list">
+                    ${curr.shodanProgram.ukeWaza.map((t, idx) => `
+                      <div class="shodan-tech-item">
+                        <span><strong>${idx + 1}.</strong> ${t.name}</span>
+                        <span class="shodan-arrow-badge sagate">${t.arrow}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Coluna 3: Ashi Waza (15 Técnicas) -->
+                <div class="shodan-col-card" style="border-top: 3px solid #F5BE00;">
+                  <div class="shodan-col-header">
+                    <div class="shodan-col-title">
+                      <i class="fas fa-shoe-prints" style="color: #F5BE00;"></i> Ashi Waza
+                    </div>
+                    <span class="shodan-arrow-badge mawate">15 Chutes • 🔄 Giro</span>
+                  </div>
+                  <div class="shodan-item-list">
+                    ${curr.shodanProgram.ashiWaza.map((t, idx) => `
+                      <div class="shodan-tech-item">
+                        <span><strong>${idx + 1}.</strong> ${t.name}</span>
+                        <span class="shodan-arrow-badge mawate">${t.arrow}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Coluna 4: Dachi Waza (18 Bases) -->
+                <div class="shodan-col-card" style="border-top: 3px solid #8B5CF6;">
+                  <div class="shodan-col-header">
+                    <div class="shodan-col-title">
+                      <i class="fas fa-layer-group" style="color: #8B5CF6;"></i> Dachi Waza
+                    </div>
+                    <span class="shodan-arrow-badge dachi">18 Bases • 1 Movimento</span>
+                  </div>
+                  <div class="shodan-item-list">
+                    ${curr.shodanProgram.dachiWaza.map((t, idx) => `
+                      <div class="shodan-tech-item">
+                        <span><strong>${idx + 1}.</strong> ${t.name}</span>
+                        <span style="font-size: 0.72rem; color: #94A3B8;">Mae / Sagate</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            ` : `
+              <div class="technique-list">
+                ${curr.kihon.map(k => `
+                  <div class="technique-item">
+                    <div class="technique-main" style="align-items: center;">
+                      <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-crimson); margin-right: 10px; flex-shrink: 0;"></div>
+                      <div>
+                        <div class="technique-name">${k.technique}</div>
+                        <div class="technique-meta">
+                          <span class="stance">${k.stance}</span> • <span>${k.direction}</span> • <span style="color: #64748B;">${k.count}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              `).join('')}
-            </div>
+                `).join('')}
+              </div>
+            `}
           </div>
         </div>
 
@@ -1983,7 +2147,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fas fa-book-open" style="color: var(--accent-gold); font-size: 1.25rem;"></i>
               <div>
                 <h3>2. Kata Exigido</h3>
-                <div style="font-size: 0.78rem; color: #94A3B8;">${curr.kata.required.join(', ')} • Toque para ver detalhes</div>
+                <div style="font-size: 0.78rem; color: #94A3B8;">
+                  ${curr.shodanProgram ? '9 Katas Oficiais (5 Heian com Bunkai + 4 Superiores) • Toque para ver detalhes' : `${curr.kata.required.join(', ')} • Toque para ver detalhes`}
+                </div>
               </div>
             </div>
             <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kata"></i>
@@ -1991,7 +2157,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div class="study-accordion-body" id="studyBody_kata">
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-              ${curr.kata.required.map(kt => `
+              ${curr.shodanProgram ? curr.shodanProgram.kataList.map(kt => `
+                <span class="badge badge-amarela" style="font-size: 0.85rem; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="window.TKST_APP.openKataDetailByName('${kt.name}')">
+                  🥋 <strong>${kt.name}</strong> <span style="font-size: 0.72rem; color: #F5BE00; opacity: 0.9; font-weight: 600;">(${kt.note})</span> <i class="fas fa-external-link-alt" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                </span>
+              `).join('') : curr.kata.required.map(kt => `
                 <span class="badge badge-amarela" style="font-size: 0.85rem; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="window.TKST_APP.openKataDetailByName('${kt}')">
                   🥋 ${kt} <i class="fas fa-external-link-alt" style="font-size: 0.7rem; opacity: 0.7;"></i>
                 </span>
@@ -2550,6 +2720,46 @@ document.addEventListener('DOMContentLoaded', () => {
             <ol style="padding-left: 18px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
               ${kumite.kihonIpponNoKata.niBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
             </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. JIYU KUMITE (EXAME DE SHODAN) -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px; margin-top: 30px; border-left: 4px solid var(--accent-gold);">
+        <div class="section-title-group" style="margin-bottom: 16px;">
+          <h3><i class="fas fa-medal" style="color: var(--accent-gold);"></i> Jiyu Kumite (Exame de Faixa Preta / Shodan)</h3>
+          <p>Combate livre de alta intensidade com avaliação de Zanshin, De-ai, condicionamento e domínio marcial pleno.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+          <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid #3B82F6;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #FFF; font-size: 1rem;">Contra 1 Oponente</strong>
+              <span class="shodan-arrow-badge mae">Individual</span>
+            </div>
+            <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6;">
+              Combate livre contínuo individual com foco em <em>De-ai</em> (antecipação), esquivas rápidas e contra-ataques decisivos com <strong>KIAI!</strong>
+            </p>
+          </div>
+
+          <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid #10B981;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #FFF; font-size: 1rem;">Contra 2 Oponentes</strong>
+              <span class="shodan-arrow-badge sagate">Simultâneo</span>
+            </div>
+            <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6;">
+              Combate simultâneo testando posicionamento espacial, movimentação para evitar cerco e alternância fluida de alvos.
+            </p>
+          </div>
+
+          <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid #F5BE00;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #FFF; font-size: 1rem;">Contra 4 Oponentes</strong>
+              <span class="shodan-arrow-badge mawate">Múltiplo / Resistência</span>
+            </div>
+            <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6;">
+              Combate contra 4 oponentes consecutivos, avaliando espírito inquebrantável (<em>Fudoshin</em>), resistência extrema e serenidade sob exaustão.
+            </p>
           </div>
         </div>
       </div>

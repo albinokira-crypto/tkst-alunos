@@ -405,5 +405,26 @@ window.TKST_KUMITE = {
       "14. Sagate: Heiko Shuto (Kiba Dachi) / Yoko Empi Omote (Kiba Dachi)",
       "15. Migi Tsuriashi Naname: Soto Uke Jodan (Kokutsu) / Kizame Geri / Gyaku Tsuki Chudan (Zenkutsu)"
     ]
+  },
+  "shodanKumite": {
+    "title": "Jiyu Kumite (Combate Livre - Exame de Shodan)",
+    "description": "Combates livres de alta intensidade avaliando controle emocional, Zanshin, tempo de reação e condicionamento: Contra 1, Contra 2 e Contra 4 oponentes.",
+    "modalities": [
+      {
+        "name": "Contra 1 Oponente",
+        "badge": "Individual",
+        "description": "Combate livre contínuo (Jiyu Kumite) individual com foco em De-ai, esquiva, distância (Ma-ai) e contra-ataque decisivo com Kiai."
+      },
+      {
+        "name": "Contra 2 Oponentes",
+        "badge": "Simultâneo",
+        "description": "Combate livre simultâneo contra 2 oponentes demonstrando visão periférica e posicionamento geométrico para não ser cercado."
+      },
+      {
+        "name": "Contra 4 Oponentes",
+        "badge": "Múltiplo / Resistência",
+        "description": "Combate livre contra 4 oponentes testando Zanshin absoluto, estratégia, condicionamento extremo e espírito inquebrantável (Fudoshin)."
+      }
+    ]
   }
 };
