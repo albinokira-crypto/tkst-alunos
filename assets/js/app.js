@@ -1298,7 +1298,9 @@ document.addEventListener('DOMContentLoaded', () => {
               { kyu: 3, label: "3º Kyu Verde", color: "#10B981" },
               { kyu: 2, label: "2º Kyu Roxa", color: "#8B5CF6" },
               { kyu: 1, label: "1º Kyu Marrom", color: "#78350F" },
-              { kyu: 0, label: "Shodan Preta", color: "#18181B" }
+              { kyu: 0, label: "Shodan (1º Dan)", color: "#18181B" },
+              { kyu: -1, label: "Nidan (2º Dan)", color: "#1E293B" },
+              { kyu: -2, label: "Sandan (3º Dan)", color: "#020617" }
             ].map(b => `
               <button 
                 class="btn ${adminQuizSelectedKyu === b.kyu ? 'btn-gold' : 'btn-secondary'}" 
@@ -1463,15 +1465,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <!-- Quick Stats -->
       <div class="stats-grid">
-        <div class="stat-card" onclick="window.TKST_APP.switchTab('my-exam')" style="cursor: pointer;">
-          <div class="stat-icon-box">
-            <i class="fas fa-medal"></i>
+        ${!isAdmin ? `
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('my-exam')" style="cursor: pointer;">
+            <div class="stat-icon-box">
+              <i class="fas fa-medal"></i>
+            </div>
+            <div>
+              <div class="stat-value">${curriculum.targetBelt.split(' ')[1] || 'Amarela'}</div>
+              <div class="stat-label">Matéria de Exame</div>
+            </div>
           </div>
-          <div>
-            <div class="stat-value">${curriculum.targetBelt.split(' ')[1] || 'Amarela'}</div>
-            <div class="stat-label">Matéria de Exame</div>
+        ` : `
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('admin'); window.TKST_APP.setAdminSubTab('students');" style="cursor: pointer;">
+            <div class="stat-icon-box crimson">
+              <i class="fas fa-users"></i>
+            </div>
+            <div>
+              <div class="stat-value">${students.length}</div>
+              <div class="stat-label">Alunos Matriculados</div>
+            </div>
           </div>
-        </div>
+        `}
 
         <div class="stat-card" onclick="window.TKST_APP.switchTab('katas')" style="cursor: pointer;">
           <div class="stat-icon-box gold">
@@ -1483,15 +1497,27 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <div class="stat-card" onclick="window.TKST_APP.switchTab('kumite')" style="cursor: pointer;">
-          <div class="stat-icon-box blue">
-            <i class="fas fa-fist-raised"></i>
+        ${!isAdmin ? `
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('kumite')" style="cursor: pointer;">
+            <div class="stat-icon-box blue">
+              <i class="fas fa-fist-raised"></i>
+            </div>
+            <div>
+              <div class="stat-value">5 Modalidades</div>
+              <div class="stat-label">Sanbon, Kihon Ippon & Jiyu</div>
+            </div>
           </div>
-          <div>
-            <div class="stat-value">5 Modalidades</div>
-            <div class="stat-label">Sanbon, Kihon Ippon & Jiyu</div>
+        ` : `
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('admin'); window.TKST_APP.setAdminSubTab('questions');" style="cursor: pointer;">
+            <div class="stat-icon-box purple">
+              <i class="fas fa-question-circle"></i>
+            </div>
+            <div>
+              <div class="stat-value">${(window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank().length : (window.TKST_DEFAULT_QUIZ_BANK ? window.TKST_DEFAULT_QUIZ_BANK.length : 138))}</div>
+              <div class="stat-label">Banco de Questões</div>
+            </div>
           </div>
-        </div>
+        `}
 
         <div class="stat-card" onclick="window.TKST_APP.switchTab('quiz')" style="cursor: pointer;">
           <div class="stat-icon-box emerald">
@@ -3650,12 +3676,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startQuiz(kyuNumber, beltName) {
     const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || window.TKST_QUIZ || []);
-    let pool = bank.filter(q => q.kyuNumber === kyuNumber);
-    if (pool.length === 0) {
-      pool = bank.filter(q => q.kyuNumber <= kyuNumber);
-    }
-    if (pool.length === 0) {
+    let pool;
+    let questionCount = 10;
+
+    if (kyuNumber === 'all' || kyuNumber === -99) {
       pool = [...bank];
+      questionCount = 30;
+      beltName = "Mega Simulado Geral (30 Questões - Todas as Faixas)";
+    } else {
+      const parsedKyu = parseInt(kyuNumber);
+      pool = bank.filter(q => q.kyuNumber === parsedKyu);
+      if (pool.length === 0) {
+        pool = bank.filter(q => q.kyuNumber <= parsedKyu);
+      }
+      if (pool.length === 0) {
+        pool = [...bank];
+      }
+      questionCount = 10;
     }
 
     // Ensure all questions have smart contextual options without any placeholder text
@@ -3664,7 +3701,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Shuffle pool
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
 
-    currentQuizQuestions = shuffled.slice(0, 10);
+    currentQuizQuestions = shuffled.slice(0, Math.min(questionCount, shuffled.length));
     currentQuizIndex = 0;
     quizScore = 0;
     quizAnswered = false;
@@ -3701,8 +3738,22 @@ document.addEventListener('DOMContentLoaded', () => {
         { kyu: 3, name: "Faixa Verde 3º Kyu", color: "#10B981", textColor: "#FFF" },
         { kyu: 2, name: "Faixa Roxa 2º Kyu", color: "#8B5CF6", textColor: "#FFF" },
         { kyu: 1, name: "Faixa Marrom 1º Kyu", color: "#78350F", textColor: "#FFF" },
-        { kyu: 0, name: "Faixa Preta Shodan", color: "#18181B", textColor: "#FFF" }
+        { kyu: 0, name: "Faixa Preta Shodan (1º Dan)", color: "#18181B", textColor: "#FFF" },
+        { kyu: -1, name: "Faixa Preta Nidan (2º Dan)", color: "#1E293B", textColor: "#FFF" },
+        { kyu: -2, name: "Faixa Preta Sandan (3º Dan)", color: "#020617", textColor: "#FFF" }
       ];
+
+      const isLevelUnlocked = (lvlKyu) => {
+        if (isAdmin) return true;
+        if (hasPerfectInOwnBelt) return true;
+        if (lvlKyu >= 0 && userKyu >= 0) {
+          return lvlKyu >= userKyu;
+        }
+        if (userKyu <= 0) {
+          return lvlKyu >= userKyu;
+        }
+        return false;
+      };
 
       let html = `
         <div class="section-header" style="margin-bottom: 20px;">
@@ -3711,12 +3762,37 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
+        <!-- MEGA SIMULADO GERAL (30 QUESTÕES - TODAS AS GRADUAÇÕES) -->
+        <div class="stat-card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(255, 183, 3, 0.12) 0%, rgba(18, 23, 34, 0.98) 100%); border: 2px solid var(--accent-gold); padding: 22px; flex-direction: column; align-items: stretch; gap: 14px; box-shadow: 0 4px 20px rgba(255, 183, 3, 0.15); border-radius: var(--radius-md);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="width: 52px; height: 52px; border-radius: var(--radius-sm); background: linear-gradient(135deg, rgba(255,183,3,0.25) 0%, rgba(217,119,6,0.25) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--accent-gold); border: 1.5px solid var(--accent-gold); flex-shrink: 0;">
+                🏆
+              </div>
+              <div>
+                <span class="badge badge-amarela" style="font-size: 0.72rem; margin-bottom: 4px; font-weight: 800;">
+                  <i class="fas fa-unlock"></i> Aberto a Todos os Alunos
+                </span>
+                <h3 style="color: #FFF; font-family: var(--font-heading); font-size: 1.3rem; margin: 0; font-weight: 700;">
+                  Mega Simulado Geral (30 Questões Aleatórias)
+                </h3>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('all', 'Mega Simulado Geral (Todas as Graduações)')" style="padding: 12px 22px; font-weight: 800; font-size: 0.95rem; background: linear-gradient(135deg, #FFB703 0%, #D97706 100%); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); cursor: pointer;">
+              <i class="fas fa-bolt" style="margin-right: 6px;"></i> Iniciar Desafio (30 Questões)
+            </button>
+          </div>
+          <p style="color: #CBD5E1; font-size: 0.88rem; line-height: 1.6; margin: 0;">
+            Desafio teórico completo com <strong>30 perguntas sorteadas aleatoriamente</strong> entre todas as faixas (Branca, Amarela, Vermelha, Laranja, Verde, Roxa, Marrom, Shodan, Nidan e Sandan). Qualquer aluno de qualquer faixa pode praticar este simulado a qualquer momento!
+          </p>
+        </div>
+
         <div class="dashboard-hero" style="margin-bottom: 24px; padding: 20px 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div>
               <span class="badge badge-amarela" style="margin-bottom: 6px;">Sua Graduação Atual: ${user ? user.currentBelt : 'Faixa Branca'}</span>
               <h3 style="color: #FFF; font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: 4px;">
-                Desafio dos Níveis de Graduação
+                Desafio dos Níveis de Graduação (10 Questões por Faixa)
               </h3>
               <p style="color: #94A3B8; font-size: 0.86rem; max-width: 680px; margin: 0;">
                 O simulador da sua graduação (e anteriores) está liberado. Para liberar o simulado das graduações superiores, <strong>acerte 10 de 10 perguntas (100% de acertos)</strong> no simulado da sua faixa atual!
@@ -3738,11 +3814,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
           ${quizLevels.map(lvl => {
-            const isUnlocked = isAdmin || lvl.kyu >= userKyu || hasPerfectInOwnBelt;
+            const isUnlocked = isLevelUnlocked(lvl.kyu);
 
             return `
               <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px; border-top: 5px solid ${lvl.color}; border-left: 1.5px solid ${lvl.color}55; background: ${isUnlocked ? 'rgba(18, 23, 34, 0.95)' : 'rgba(18, 23, 34, 0.45)'}; opacity: ${isUnlocked ? '1' : '0.65'}; gap: 14px;">
-                <!-- Linha 1: Faixa XXX Xº Kyu (sem parenteses e sem quebra de linha) -->
+                <!-- Linha 1: Faixa XXX Xº Kyu -->
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;">
                   <h4 style="color: #FFF; font-size: 1.15rem; font-family: var(--font-heading); margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     ${lvl.name}
@@ -3796,8 +3872,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel(${currentQuizKyu}, '${currentQuizBelt}')" style="padding: 10px 20px; font-weight: 700;">
-              <i class="fas fa-redo"></i> Refazer Este Nível (Novas Perguntas)
+            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('${currentQuizKyu}', '${currentQuizBelt}')" style="padding: 10px 20px; font-weight: 700;">
+              <i class="fas fa-redo"></i> Refazer Este Simulado (Novas Perguntas)
             </button>
             <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="padding: 10px 20px;">
               <i class="fas fa-list"></i> Escolher Outro Nível

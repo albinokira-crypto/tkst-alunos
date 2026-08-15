@@ -1545,6 +1545,434 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     ],
     correctIndex: 0,
     explanation: "De 61 a 100 utiliza-se as dezenas Roku-Ju (60), Nana-Ju (70), Hachi-Ju (80), Kyu-Ju (90) e atinge-se Hyaku (100)."
+  },
+
+  // =========================================================================
+  // FAIXA PRETA NIDAN (2º DAN)
+  // =========================================================================
+  {
+    id: "q-nid-1",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "No exame de Kihon para Nidan (2º Dan), qual a base exigida ao executar a defesa Gedan Barai na transição lateral?",
+    options: [
+      "Nekoashi Dachi (Base do Gato)",
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Kokutsu Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "No Kihon oficial de Nidan da TKST, o Gedan Barai na movimentação lateral é executado na postura Nekoashi Dachi."
+  },
+  {
+    id: "q-nid-2",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Qual técnica com base Fudo Dachi é exigida no avanço (Mae) do Kihon de Nidan?",
+    options: [
+      "Oi Tsuki Chudan em Fudo Dachi",
+      "Gedan Barai em Zenkutsu Dachi",
+      "Yoko Tsuki Jodan em Kiba Dachi",
+      "Mae Geri em Kokutsu Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "O Oi Tsuki Chudan em Fudo Dachi (Base Inabalável) exige estabilidade profunda e centro de gravidade firme."
+  },
+  {
+    id: "q-nid-3",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Ao recuar (Sagate) em Kiba Dachi no Kihon de Nidan, qual técnica de ataque com punho é desferida?",
+    options: [
+      "Yoko Tsuki Jodan em Kiba Dachi",
+      "Gyaku Tsuki Chudan",
+      "Uraken Uchi",
+      "Nukite Jodan"
+    ],
+    correctIndex: 0,
+    explanation: "O recuo em Kiba Dachi é acompanhado de um potente Yoko Tsuki no nível Jodan."
+  },
+  {
+    id: "q-nid-4",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Nas viradas pela costa em Kiba Dachi do exame de Nidan, qual golpe de cotovelo é executado?",
+    options: [
+      "Yoko Empi Uchi (Cotovelada Lateral)",
+      "Mawashi Empi",
+      "Tate Empi",
+      "Otoshi Empi"
+    ],
+    correctIndex: 0,
+    explanation: "As viradas pela costa são executadas com Yoko Empi em Kiba Dachi com rotação explosiva de quadril."
+  },
+  {
+    id: "q-nid-5",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Qual técnica circular dupla em Sanchin Dachi é realizada no avanço do exame de Nidan?",
+    options: [
+      "Migi Mawashi Uke e Hidari Mawashi Uke em Sanchin Dachi",
+      "Juji Uke e Kake Wake Uke",
+      "Morote Uke e Gedan Barai",
+      "Manji Uke e Shuto Uke"
+    ],
+    correctIndex: 0,
+    explanation: "Mawashi Uke em Sanchin Dachi trabalha respiração Ibuki, concentração abdominal e tensão dinâmica circular."
+  },
+  {
+    id: "q-nid-6",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Qual é a sequência de 4 chutes contínuos em direções distintas exigida no teste de Geri de Nidan?",
+    options: [
+      "Mae Geri (Frente) / Yoko Geri (Lateral) / Ushiro Geri (Trás) / Mawashi Geri (Frente)",
+      "Mae Geri / Kizami Geri / Mawashi Geri / Hiza Geri",
+      "Mikazuki Geri / Kakuto Geri / Fumikomi Geri / Kin Geri",
+      "Tobi Geri / Nidan Geri / Ura Mawashi / Ushiro Geri"
+    ],
+    correctIndex: 0,
+    explanation: "A sequência avalia equilíbrio, controle de quadril e transição vetorial fluida sem tocar o pé no solo."
+  },
+  {
+    id: "q-nid-7",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Qual combinação com chute voador é cobrada no exame de chutes de Nidan?",
+    options: [
+      "Mae Tobi Geri seguido de Kizami Mawashi Geri (ou Ushiro Geri)",
+      "Yoko Tobi Geri seguido de Nidan Geri",
+      "Tobi Mawashi seguido de Kin Geri",
+      "Nidan Geri seguido de Hiza Geri"
+    ],
+    correctIndex: 0,
+    explanation: "As combinações aéreas de Nidan exigem Mae Tobi Geri em impulsão com finalização imediata de contra-ataque."
+  },
+  {
+    id: "q-nid-8",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Quais são as 4 formas de amortecimento e queda (Ukemi) exigidas no exame de 2º Dan?",
+    options: [
+      "Mae Ukemi, Yoko Ukemi, Ushiro Ukemi e Zempo Kaiten Ukemi",
+      "Kihon Ukemi, Jiyu Ukemi, Shiai Ukemi e Sanbon Ukemi",
+      "Seiza Ukemi, Dachi Ukemi, Geri Ukemi e Tsuki Ukemi",
+      "Tate Ukemi, Yoko Ukemi, Gedan Ukemi e Jodan Ukemi"
+    ],
+    correctIndex: 0,
+    explanation: "O praticante de 2º Dan deve dominar quedas frontais, laterais, dorsais e o rolamento projetado Zempo Kaiten."
+  },
+  {
+    id: "q-nid-9",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Quais são os 4 Katas Obrigatórios para o exame de Faixa Preta Nidan (2º Dan)?",
+    options: [
+      "Tekki Nidan, Bassai Dai, Kanku Dai e Jion",
+      "Heian Shodan, Heian Nidan, Heian Sandan e Heian Yondan",
+      "Tekki Shodan, Tekki Sandan, Bassai Sho e Kanku Sho",
+      "Meikyo, Wankan, Jiin e Nijushiho"
+    ],
+    correctIndex: 0,
+    explanation: "Tekki Nidan é o kata específico da graduação, somado aos grandes clássicos Bassai Dai, Kanku Dai e Jion."
+  },
+  {
+    id: "q-nid-10",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Dentre as opções de Katas de Escolha para Nidan, qual grupo é aceito pela banca examinadora?",
+    options: [
+      "Hangetsu, Jitte, Gankaku e Empi",
+      "Heian Godan e Tekki Shodan",
+      "Gojushiho Dai e Sochin",
+      "Unsu e Chinte"
+    ],
+    correctIndex: 0,
+    explanation: "O candidato escolhe entre Hangetsu, Jitte, Gankaku ou Empi para demonstrar especialização técnica."
+  },
+  {
+    id: "q-nid-11",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Como é estruturada a prova de Kumite no exame de Nidan?",
+    options: [
+      "Jiyu Ippon Kumite (3 formas) e Kumite Múltiplo contra 1, 2 e 4 oponentes",
+      "Apenas Gohon Kumite de 5 passos",
+      "Apenas Sanbon Kumite",
+      "Luta de solo com finalização"
+    ],
+    correctIndex: 0,
+    explanation: "Avalia-se a precisão do Jiyu Ippon Kumite e o teste de resistência marcial contra múltiplos adversários."
+  },
+  {
+    id: "q-nid-12",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "No contexto de Nidan, o que significa o conceito 'Tai Sabaki' (体捌き)?",
+    options: [
+      "Esquiva e manipulação corporal para sair da linha de ataque do adversário sem perder a capacidade de contra-golpe",
+      "Bloquear com força máxima quebrando o membro do rival",
+      "Recuar 5 metros em linha reta",
+      "Atacar antes de fazer a saudação"
+    ],
+    correctIndex: 0,
+    explanation: "Tai Sabaki é a esquiva circular ou angular com reposicionamento do corpo mantendo o centro de equilíbrio."
+  },
+  {
+    id: "q-nid-13",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Qual característica marcante do Tekki Nidan o diferencia do Tekki Shodan?",
+    options: [
+      "Uso de Kosa Dachi em transições rápidas, defesas abertas com Torite, Kagi Tsuki e Uraken em Kiba Dachi",
+      "Não possui chutes ou defesas",
+      "É executado em Zenkutsu Dachi",
+      "Possui salto de 360 graus"
+    ],
+    correctIndex: 0,
+    explanation: "O Tekki Nidan aprofunda defesas de agarre, torções articulares e percussão curta na postura do cavaleiro."
+  },
+  {
+    id: "q-nid-14",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Qual é o tempo mínimo de carência e treinamento exigido entre Shodan (1º Dan) e o exame de Nidan (2º Dan)?",
+    options: [
+      "Mínimo de 2 anos de prática constante e participação ativa em cursos e arbitragem",
+      "3 meses",
+      "6 meses",
+      "10 anos"
+    ],
+    correctIndex: 0,
+    explanation: "A graduação de 2º Dan exige no mínimo 2 anos de maturação e dedicação como Shodan."
+  },
+  {
+    id: "q-nid-15",
+    kyuNumber: -1,
+    beltName: "Faixa Preta (Nidan - 2º Dan)",
+    question: "Qual o significado da palavra 'Nidan' (二段) na hierarquia marcial do Karate-Do?",
+    options: [
+      "Segundo Grau / Segundo Passo no caminho dos praticantes graduados",
+      "Faixa Branca iniciante",
+      "Grão-Mestre Fundador",
+      "Campeão de Torneio"
+    ],
+    correctIndex: 0,
+    explanation: "Ni (Dois) + Dan (Grau/Passo), representando o amadurecimento além do nível inicial de faixa preta."
+  },
+
+  // =========================================================================
+  // FAIXA PRETA SANDAN (3º DAN)
+  // =========================================================================
+  {
+    id: "q-san-1",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "No recuo (Sagate) do Kihon de Sandan, qual combinação complexa é executada a partir de Kokutsu Dachi?",
+    options: [
+      "Chudan Shuto Uke (Kokutsu Dachi) / Kizami Yoko Geri Kekomi / Gyaku Tsuki Chudan (Zenkutsu Dachi)",
+      "Age Uke / Mae Geri / Oi Tsuki",
+      "Gedan Barai / Mawashi Geri / Uraken",
+      "Soto Uke / Ushiro Geri / Tate Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "Combina bloqueio de mão em espada, chute lateral penetrante com a perna da frente e soco reverso potente."
+  },
+  {
+    id: "q-san-2",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Na transição para Shiko Dachi do Kihon de Sandan, qual sequência de três movimentos é desferida?",
+    options: [
+      "Gedan Barai (Shiko Dachi) / Kizami Uraken Jodan / Gyaku Tsuki Chudan (Zenkutsu Dachi)",
+      "Morote Uke / Yama Tsuki / Mae Geri",
+      "Kosa Uke / Oi Tsuki / Yoko Geri",
+      "Haiwan Uke / Teisho Uchi / Hiza Geri"
+    ],
+    correctIndex: 0,
+    explanation: "Exige transferência dinâmica da base Shiko Dachi para Zenkutsu Dachi com soco em dorso de punho e soco reverso."
+  },
+  {
+    id: "q-san-3",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Qual técnica tripla em Fudo Dachi é exigida no avanço (Mae) do Kihon de Sandan?",
+    options: [
+      "Sanbon Tsuki Chudan em Fudo Dachi",
+      "Nihon Tsuki em Zenkutsu Dachi",
+      "Gyaku Tsuki em Kiba Dachi",
+      "Oi Tsuki em Kokutsu Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "Sanbon Tsuki em Fudo Dachi testa o encadeamento rítmico de 3 socos em base profunda e inabalável."
+  },
+  {
+    id: "q-san-4",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Ao recuar em Kiba Dachi no Kihon de Sandan, qual combinação avançada com deslocamento Tsuriashi é exigida?",
+    options: [
+      "Yoko Tsuki Jodan (Kiba Dachi) / Tsuriashi Yoko Empi / Kage Tsuki",
+      "Mae Geri / Gyaku Tsuki / Gedan Barai",
+      "Shuto Uke / Nukite / Age Tsuki",
+      "Uchi Uke / Kizami Tsuki / Mawashi Geri"
+    ],
+    correctIndex: 0,
+    explanation: "Combina soco lateral, aproximação deslizante dos pés (Tsuriashi) com cotovelada e soco em gancho (Kage Tsuki)."
+  },
+  {
+    id: "q-san-5",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Nas viradas pela costa em Kiba Dachi de Sandan, qual sequência completa de 3 golpes é aplicada?",
+    options: [
+      "Yoko Empi (Kiba Dachi) / Gedan Barai / Kage Tsuki",
+      "Oi Tsuki / Age Uke / Mae Geri",
+      "Shuto Uke / Gyaku Tsuki / Mawashi Geri",
+      "Teisho Uchi / Haishu Uke / Ura Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "A rotação em Kiba Dachi engloba cotovelada lateral, varredura baixa e gancho curto."
+  },
+  {
+    id: "q-san-6",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "No deslocamento lateral em Nekoashi Dachi do Kihon de Sandan, qual combinação é exigida?",
+    options: [
+      "Gedan Barai (Nekoashi Dachi) / Kizami Geri / Gyaku Tsuki",
+      "Soto Uke / Ushiro Geri / Oi Tsuki",
+      "Age Uke / Mawashi Geri / Uraken",
+      "Manji Uke / Yoko Geri / Tate Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "A base do gato permite chute rápido com a perna da frente (Kizami Geri) seguido de soco reverso."
+  },
+  {
+    id: "q-san-7",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Qual sequência de chutes rotacionais avançados é cobrada no teste de Geri de Sandan?",
+    options: [
+      "Gyaku Mawashi Geri / Mawashi Geri / Ushiro Geri",
+      "Mae Geri / Kin Geri / Hiza Geri",
+      "Fumikomi / Kakuto Geri / Mikazuki Geri",
+      "Nidan Geri / Yoko Geri / Tobi Geri"
+    ],
+    correctIndex: 0,
+    explanation: "Exige domínio do chute circular reverso/invertido (Gyaku Mawashi) encadeado com Mawashi e Ushiro Geri."
+  },
+  {
+    id: "q-san-8",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Quais são os 4 Katas Obrigatórios para a graduação de Sandan (3º Dan)?",
+    options: [
+      "Tekki Sandan, Empi, Gankaku e Hangetsu",
+      "Heian Shodan, Heian Nidan, Heian Sandan e Heian Yondan",
+      "Tekki Shodan, Tekki Nidan, Bassai Dai e Kanku Dai",
+      "Meikyo, Wankan, Jiin e Nijushiho"
+    ],
+    correctIndex: 0,
+    explanation: "O exame de Sandan exige o domínio simultâneo de Tekki Sandan, Empi, Gankaku e Hangetsu."
+  },
+  {
+    id: "q-san-9",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Qual é o requisito obrigatório de Bunkai exigido para o Kata Opcional no exame de Sandan?",
+    options: [
+      "Apresentação prática de 2 aplicações detalhadas de Bunkai contra adversários reais",
+      "Apenas falar o nome do criador do Kata",
+      "Não há exigência de Bunkai no 3º Dan",
+      "Fazer o Kata de olhos fechados"
+    ],
+    correctIndex: 0,
+    explanation: "No 3º Dan, o praticante deve dominar e demonstrar a aplicabilidade prática (Bunkai) de pelo menos 2 sequências completas."
+  },
+  {
+    id: "q-san-10",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Quais são as 5 modalidades de Kumite que compõem a avaliação integral de Sandan?",
+    options: [
+      "Sanbon Kumite (3x), Kihon Ippon (3x), Jiyu Ippon (3x), Shiai Kumite e Jiyu Kumite",
+      "Apenas Gohon Kumite e Sanbon Kumite",
+      "Luta olímpica e Judô",
+      "Apenas sombra sem contato"
+    ],
+    correctIndex: 0,
+    explanation: "O Sandan representa a maestria de todas as formas de combate do Shotokan, desde o básico até o combate de torneio e luta livre total."
+  },
+  {
+    id: "q-san-11",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "O que significa o conceito avançado 'Sen no Sen' (先の先) no Kumite de alto nível?",
+    options: [
+      "Atacar exatamente no instante em que o adversário inicia a intenção do ataque, interceptando-o antes do golpe dele atingir o alvo",
+      "Esperar o golpe acertar e depois bater",
+      "Fugir do tatame",
+      "Atacar pelas costas"
+    ],
+    correctIndex: 0,
+    explanation: "Sen no Sen é a antecipação superior em tempo e espaço que neutraliza o golpe do rival em seu nascedouro."
+  },
+  {
+    id: "q-san-12",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Qual a base e postura icônica presente no Kata Gankaku que simboliza a garça sobre a rocha?",
+    options: [
+      "Tsuru Dachi (ou Gankaku Dachi) em equilíbrio unipodal",
+      "Kiba Dachi",
+      "Zenkutsu Dachi",
+      "Shiko Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "O Gankaku é famoso pela postura de equilíbrio sobre uma perna só (Tsuru Dachi) desferindo Yoko Geri e Uraken."
+  },
+  {
+    id: "q-san-13",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Qual é o princípio respiratório e biomecânico central desenvolvido no Kata Hangetsu?",
+    options: [
+      "Respiração sonora profunda (Ibuki), contração isométrica do Tanden e movimentação semicircular em Hangetsu Dachi",
+      "Pular corda durante o kata",
+      "Prender a respiração durante todo o percurso",
+      "Gritar em todos os movimentos"
+    ],
+    correctIndex: 0,
+    explanation: "Hangetsu é o kata interno que treina respiração, expansão pulmonar e firmeza inabalável das pernas."
+  },
+  {
+    id: "q-san-14",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Qual o período mínimo de carência e prática exigido entre Nidan (2º Dan) e o exame de Sandan (3º Dan)?",
+    options: [
+      "Mínimo de 3 anos de treinamento contínuo e maturidade como instrutor",
+      "6 meses",
+      "1 ano",
+      "15 anos"
+    ],
+    correctIndex: 0,
+    explanation: "Para o 3º Dan exige-se no mínimo 3 anos de prática e ensino após o 2º Dan."
+  },
+  {
+    id: "q-san-15",
+    kyuNumber: -2,
+    beltName: "Faixa Preta (Sandan - 3º Dan)",
+    question: "Qual a importância marcial da graduação de Sandan (3º Dan) na tradição do Karatê-Dō?",
+    options: [
+      "Marca a consolidação do nível de Sensei (Professor/Mestre Instrutor), capacitado para formar faixas pretas e transmitir a tradição",
+      "Apenas ganha uma faixa colorida diferente",
+      "Não precisa mais treinar",
+      "Pode inventar regras próprias"
+    ],
+    correctIndex: 0,
+    explanation: "O 3º Dan simboliza a transição de praticante avançado para professor habilitado com profunda compreensão do Budo."
   }
 ];
 
