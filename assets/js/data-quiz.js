@@ -550,6 +550,146 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     correctIndex: 0,
     explanation: "Em Kiba Dachi, aplica-se Empi Uchi (cotovelada na palma da mão) e Uraken Uchi por cima do ombro."
   },
+  {
+    id: "q4-6",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "No Kihon do 4º Kyu, qual combinação de golpes com o punho é executada em avanço após a defesa Soto Uke Chudan?",
+    options: [
+      "Kizami Uraken Jodan e Gyaku Tate Tsuki Chudan",
+      "Age Uke e Oi Tsuki",
+      "Mawashi Geri e Gedan Barai",
+      "Mae Geri e Shuto Uke"
+    ],
+    correctIndex: 0,
+    explanation: "Avança-se defendendo Soto Uke, aplica-se Kizami Uraken no rosto e finaliza com Gyaku Tate Tsuki (soco com punho vertical)."
+  },
+  {
+    id: "q4-7",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "O que é 'Kizami Tsuki' e qual a sua principal finalidade em combate?",
+    options: [
+      "Soco direto com a mão da frente da base, usado para antecipar ou surpreender o oponente",
+      "Soco circular com a mão de trás",
+      "Soco de cima para baixo com o cotovelo",
+      "Soco duplo com ambas as mãos ao mesmo tempo"
+    ],
+    correctIndex: 0,
+    explanation: "Kizami Tsuki é o golpe rápido desferido com o punho do mesmo lado da perna avançada, aproveitando a menor distância até o alvo."
+  },
+  {
+    id: "q4-8",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "Como se chama a técnica de pisada forte e firme no solo presente no Kata Heian Sandan para quebrar o equilíbrio ou pisar no pé do adversário?",
+    options: [
+      "Fumikomi",
+      "Tobi Geri",
+      "Mae Geri",
+      "Ashi Barai"
+    ],
+    correctIndex: 0,
+    explanation: "Fumikomi é a pisada com impacto descendente, utilizada no Heian Sandan para transição rápida para Kiba Dachi."
+  },
+  {
+    id: "q4-9",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "No Kata Heian Sandan, qual é a postura final executada com as mãos na cintura e rotação do tronco sobre o ombro?",
+    options: [
+      "Ushiro Empi Uchi em Kiba Dachi (cotovelada para trás com apoio na palma)",
+      "Gyaku Tsuki em Zenkutsu Dachi",
+      "Gedan Barai em Musubi Dachi",
+      "Shuto Uke em Kokutsu Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "Os movimentos finais do Heian Sandan são compostos por rotação de 180° em Kiba Dachi desferindo Ushiro Empi Uchi nas costelas/tronco do adversário."
+  },
+  {
+    id: "q4-10",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "Qual a quarta regra do Dojo Kun recitada nos treinamentos do Karatê-Do?",
+    options: [
+      "Hitotsu! Reigi o omonzuru koto! (Respeito acima de tudo / Respeitar a etiqueta e a cortesia)",
+      "Hitotsu! Jinkaku kansei ni tsutomuru koto!",
+      "Hitotsu! Makoto no michi o mamoru koto!",
+      "Hitotsu! Doryoku no seishin o yashinau koto!"
+    ],
+    correctIndex: 0,
+    explanation: "Reigi o omonzuru koto estabelece a cortesia, o respeito mútuo e a reverência como essência do Budo."
+  },
+  {
+    id: "q4-11",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "Como se chama a sequência de chutes executados consecutivamente com pernas alternadas ou na mesma perna (ex: Mae Geri seguido de Mawashi Geri)?",
+    options: [
+      "Ren Geri",
+      "Sanbon Tsuki",
+      "Tai Sabaki",
+      "Kihon Ippon"
+    ],
+    correctIndex: 0,
+    explanation: "Ren Geri significa 'Chutes Consecutivos' em combinação rápida sem interrupção de ritmo."
+  },
+  {
+    id: "q4-12",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "Qual a diferença postural e de distribuição de peso entre as bases Zenkutsu Dachi e Kokutsu Dachi?",
+    options: [
+      "Zenkutsu Dachi tem 60-70% do peso na perna da frente; Kokutsu Dachi tem 70% do peso na perna de trás",
+      "Ambas têm 50% de peso em cada perna",
+      "Zenkutsu Dachi é em um pé só",
+      "Kokutsu Dachi tem 90% do peso na perna da frente"
+    ],
+    correctIndex: 0,
+    explanation: "Zenkutsu Dachi é a base de avanço frontal (peso à frente), enquanto Kokutsu Dachi é a postura recuada de proteção e contra-ataque (peso atrás)."
+  },
+  {
+    id: "q4-13",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "No exame de Faixa Laranja (4º Kyu), quais formas de Sanbon Kumite são exigidas pela banca examinadora?",
+    options: [
+      "Sanbon Kumite da 3ª, 4ª e 5ª Forma (com esquivas angulares e contra-ataques simultâneos)",
+      "Apenas Gohon Kumite de 5 passos",
+      "Luta livre de MMA",
+      "Apenas defesa pessoal com armas"
+    ],
+    correctIndex: 0,
+    explanation: "O 4º Kyu aprofunda o Sanbon Kumite nas 3ª, 4ª e 5ª formas, trabalhando esquivas em 45° e 90°."
+  },
+  {
+    id: "q4-14",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "Como se chama o soco desferido com o punho na vertical (polegar para cima) em vez de rotação completa?",
+    options: [
+      "Tate Tsuki (Tate Zuki)",
+      "Ura Tsuki",
+      "Age Tsuki",
+      "Kage Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "Tate Tsuki é o soco com punho vertical (em pé), muito eficaz para passar pela guarda estreita do oponente."
+  },
+  {
+    id: "q4-15",
+    kyuNumber: 4,
+    beltName: "Faixa Laranja (4º Kyu)",
+    question: "No Karatê Shotokan, o que significa o conceito de 'Zanshin' (残心) durante e após a execução de uma técnica?",
+    options: [
+      "Estado de espírito alerta, atenção plena e prontidão constante mesmo após o golpe",
+      "O encerramento do treino para descanso",
+      "A cor da faixa preta",
+      "A força máxima do soco"
+    ],
+    correctIndex: 0,
+    explanation: "Zanshin ('mente que permanece') é o estado de vigilância contínua e controle corporal e mental antes, durante e após o combate."
+  },
 
   // =========================================================================
   // 3º KYU - FAIXA VERDE (Exame para Roxa)
