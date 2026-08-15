@@ -233,9 +233,9 @@
       students = [];
     }
 
-    // Ensure Master Admin exists with exact requested credentials
+    // Ensure Master Admin exists with requested initial credentials without overwriting custom edits
     const adminIndex = students.findIndex(s => s.username === 'irons365');
-    const masterAdmin = {
+    const masterAdminDefault = {
       id: 'admin_irons365',
       username: 'irons365',
       email: 'irons365@tkst.com.br',
@@ -249,14 +249,15 @@
       startDate: '2000-01-01',
       avatar: 'assets/images/logo-tkst.png',
       status: 'approved',
-      phone: '(21) 99999-9999',
+      phone: '(21) 97607-7598',
       notes: 'Administrador Master responsável por todo o sistema, arquivos e aprovações.'
     };
 
     if (adminIndex === -1) {
-      students.unshift(masterAdmin);
+      students.unshift(masterAdminDefault);
     } else {
-      students[adminIndex] = { ...students[adminIndex], ...masterAdmin };
+      // Keep all user edits (name, phone, belt, etc.) and only fill missing fields
+      students[adminIndex] = { ...masterAdminDefault, ...students[adminIndex] };
     }
 
     // Default sample students

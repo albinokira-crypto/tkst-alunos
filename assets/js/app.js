@@ -210,6 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
       renderView(currentTab);
       setupUserDisplay();
     });
+    window.addEventListener('tkst_user_changed', () => {
+      renderView(currentTab);
+      setupUserDisplay();
+    });
 
     // Register Service Worker for PWA desktop/mobile installation
     if ('serviceWorker' in navigator) {
