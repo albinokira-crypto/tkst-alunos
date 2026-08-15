@@ -851,16 +851,16 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div style="min-width: 0;">
             <div class="stat-value" style="font-size: 1.2rem;">${quizSubmissions.length}</div>
-            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Simulados Feitos</div>
+            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Provas Realizadas</div>
           </div>
         </div>
 
-        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('questions')" style="cursor: pointer; padding: 14px;" title="Banco de Questões dos Simulados">
-          <div class="stat-icon-box crimson" style="width: 42px; height: 42px; font-size: 1.2rem;">
+        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('questions')" style="cursor: pointer; padding: 14px;" title="Gerenciar Perguntas & Respostas do Simulado">
+          <div class="stat-icon-box gold" style="width: 42px; height: 42px; font-size: 1.2rem;">
             <i class="fas fa-question-circle"></i>
           </div>
           <div style="min-width: 0;">
-            <div class="stat-value" style="font-size: 1.2rem;">${(window.TKST_QUIZ_BANK || []).length}</div>
+            <div class="stat-value" style="font-size: 1.2rem;">${quizBankCount}</div>
             <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Banco de Questões</div>
           </div>
         </div>
@@ -895,7 +895,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <i class="fas fa-users"></i> Alunos Matriculados (${students.length})
         </button>
         <button class="chip-btn ${adminSubTab === 'questions' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('questions')" style="flex-shrink: 0; white-space: nowrap;">
-          <i class="fas fa-question-circle"></i> Banco de Questões (${(window.TKST_QUIZ_BANK || []).length})
+          <i class="fas fa-question-circle"></i> Banco de Questões (${quizBankCount})
         </button>
         <button class="chip-btn ${adminSubTab === 'quizzes' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="flex-shrink: 0; white-space: nowrap;">
           <i class="fas fa-clipboard-list"></i> Provas & Simulados (${quizSubmissions.length})
@@ -1208,12 +1208,13 @@ document.addEventListener('DOMContentLoaded', () => {
                   <th>Nível do Simulado</th>
                   <th>Desempenho</th>
                   <th>Data da Prova</th>
-                  <th style="text-align: right;">Gabarito</th>
+                  <th style="text-align: right;">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 ${quizSubmissions.map(sub => {
                   const dateStr = sub.date ? new Date(sub.date).toLocaleString('pt-BR') : '-';
+                  const safeName = (sub.studentName || '').replace(/'/g, "\\'");
                   return `
                     <tr>
                       <td>
@@ -1232,9 +1233,14 @@ document.addEventListener('DOMContentLoaded', () => {
                       </td>
                       <td style="color: #94A3B8; font-size: 0.8rem;">${dateStr}</td>
                       <td style="text-align: right;">
-                        <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openQuizDetailModal('${sub.id}')" style="font-size: 0.78rem; padding: 6px 12px;">
-                          <i class="fas fa-search"></i> Ver Prova
-                        </button>
+                        <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                          <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openQuizDetailModal('${sub.id}')" style="font-size: 0.78rem; padding: 6px 12px;" title="Ver Gabarito Completo">
+                            <i class="fas fa-search"></i> Ver Prova
+                          </button>
+                          <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteQuizSubmission('${sub.id}', '${safeName}')" style="font-size: 0.78rem; padding: 6px 10px;" title="Excluir este simulado">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   `;
@@ -3945,7 +3951,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     openEditQuizQuestionModal: (qId) => {
-      const bank = window.TKST_QUIZ_BANK || [];
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
       const q = bank.find(item => item.id === qId);
       if (!q) {
         alert('Questão não encontrada.');
@@ -4268,7 +4274,10 @@ document.addEventListener('DOMContentLoaded', () => {
           `).join('')}
         </div>
 
-        <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <button class="btn btn-danger" onclick="window.TKST_APP.deleteQuizSubmission('${sub.id}', '${(sub.studentName || '').replace(/'/g, "\\'")}', true)" style="font-size: 0.85rem; padding: 8px 16px;">
+            <i class="fas fa-trash"></i> Excluir Simulado
+          </button>
           <button class="btn btn-primary" onclick="document.getElementById('detailModal').classList.remove('active')" style="padding: 10px 24px; font-weight: 700;">
             Fechar Gabarito
           </button>
@@ -4276,6 +4285,27 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       detailModal.classList.add('active');
+    },
+
+    deleteQuizSubmission: (subId, studentName, fromModal = false) => {
+      if (!window.TKST_AUTH.isAdmin()) {
+        alert('Apenas o administrador pode excluir simulados.');
+        return;
+      }
+      const name = studentName || 'este aluno';
+      if (confirm(`Deseja realmente excluir o simulado de ${name}?\nEsta ação removerá a prova definitivamente do sistema e da nuvem.`)) {
+        const res = window.TKST_AUTH.deleteQuizSubmission(subId);
+        if (res && res.success) {
+          if (fromModal) {
+            const modal = document.getElementById('detailModal');
+            if (modal) modal.classList.remove('active');
+          }
+          alert('Simulado excluído com sucesso!');
+          renderAdminMaster();
+        } else {
+          alert((res && res.error) || 'Erro ao excluir simulado.');
+        }
+      }
     },
 
     // PWA Desktop / Mobile Installer

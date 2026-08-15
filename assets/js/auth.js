@@ -13,6 +13,7 @@
   const STORAGE_KEY_QUIZ_SUBMISSIONS = 'tkst_quiz_submissions';
   const STORAGE_KEY_QUIZ_BANK = 'tkst_custom_quiz_bank';
   const STORAGE_KEY_DELETED_QUIZZES = 'tkst_deleted_quiz_ids';
+  const STORAGE_KEY_DELETED_QUIZ_SUBS = 'tkst_deleted_quiz_sub_ids';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_TOPIC = 'tkst_karate_master_stream_2026';
@@ -76,9 +77,10 @@
       const students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
       const videos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
       const progress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
-      const quiz_submissions = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
       const deletedQuizIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
+      const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+      const quiz_submissions = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => !deletedQuizSubIds.includes(s.id));
       const custom_quiz_bank = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || (window.TKST_QUIZ_BANK || [])).filter(q => !deletedQuizIds.includes(q.id));
 
       const payload = {
@@ -90,6 +92,7 @@
         custom_quiz_bank,
         deletedStudentIds,
         deletedQuizIds,
+        deletedQuizSubIds,
         timestamp: Date.now()
       };
 
@@ -150,7 +153,18 @@
       }
     }
 
-    // 3. Sync Students (Expunge deleted & merge active)
+    // 3. Sync Deleted Quiz Submissions (Tombstones for Deleted Student Tests)
+    let localDeletedSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+    if (Array.isArray(cloudData.deletedQuizSubIds)) {
+      const mergedDelSubs = Array.from(new Set([...localDeletedSubIds, ...cloudData.deletedQuizSubIds]));
+      if (mergedDelSubs.length !== localDeletedSubIds.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED_QUIZ_SUBS, JSON.stringify(mergedDelSubs));
+        localDeletedSubIds = mergedDelSubs;
+        changed = true;
+      }
+    }
+
+    // 4. Sync Students (Expunge deleted & merge active)
     if (Array.isArray(cloudData.students)) {
       let localStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
       const studentMap = new Map();
@@ -219,12 +233,16 @@
       }
     }
 
-    // 6. Sync Quiz Submissions
+    // 6. Sync Quiz Submissions (Filter out tombstoned deleted tests)
     if (Array.isArray(cloudData.quiz_submissions)) {
       const localSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
       const subMap = new Map();
-      localSubs.forEach(s => subMap.set(s.id, s));
-      cloudData.quiz_submissions.forEach(s => subMap.set(s.id, s));
+      localSubs.forEach(s => {
+        if (!localDeletedSubIds.includes(s.id)) subMap.set(s.id, s);
+      });
+      cloudData.quiz_submissions.forEach(s => {
+        if (!localDeletedSubIds.includes(s.id)) subMap.set(s.id, s);
+      });
       const mergedSubs = Array.from(subMap.values()).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 200);
       const newSubsStr = JSON.stringify(mergedSubs);
       if (localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS) !== newSubsStr) {
@@ -932,20 +950,41 @@
 
     getAllQuizSubmissions: function() {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+        const deletedSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+        const subs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+        return subs.filter(s => !deletedSubIds.includes(s.id));
       } catch(e) {
         return [];
       }
     },
 
+    deleteQuizSubmission: function(subId) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas o administrador pode excluir simulados.' };
+
+      let deletedSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+      if (!deletedSubs.includes(subId)) deletedSubs.push(subId);
+      localStorage.setItem(STORAGE_KEY_DELETED_QUIZ_SUBS, JSON.stringify(deletedSubs));
+
+      let submissions = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => s.id !== subId);
+      localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
+
+      pushToCloud();
+      return { success: true, remaining: submissions.length };
+    },
+
     getCustomQuizBank: function() {
-      try {
-        const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
-        if (Array.isArray(saved) && saved.length > 0) return saved.filter(q => !deletedIds.includes(q.id));
-      } catch(e) {}
       const del = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
-      return (window.TKST_QUIZ_BANK || []).filter(q => !del.includes(q.id));
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+        if (Array.isArray(saved) && saved.length > 0) {
+          const filtered = saved.filter(q => !del.includes(q.id));
+          window.TKST_QUIZ_BANK = filtered;
+          return filtered;
+        }
+      } catch(e) {}
+      const fallback = (window.TKST_DEFAULT_QUIZ_BANK || window.TKST_QUIZ_BANK || []).filter(q => !del.includes(q.id));
+      window.TKST_QUIZ_BANK = fallback;
+      return fallback;
     },
 
     saveCustomQuizBank: function(bank) {
@@ -963,7 +1002,8 @@
       if (!deleted.includes(qId)) deleted.push(qId);
       localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(deleted));
 
-      let bank = (window.TKST_QUIZ_BANK || []).filter(item => item.id !== qId);
+      let current = this.getCustomQuizBank();
+      let bank = current.filter(item => item.id !== qId);
       localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(bank));
       window.TKST_QUIZ_BANK = bank;
       pushToCloud();

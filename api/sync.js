@@ -96,9 +96,21 @@ module.exports = async (req, res) => {
       }
       const allDeletedQuizzes = Array.from(deletedQuizSet);
 
+      // Merge deleted Quiz Submissions (Simulados excluídos)
+      let deletedSubSet = new Set(inMemoryData.deletedQuizSubIds || []);
+      if (Array.isArray(incoming.deletedQuizSubIds)) {
+        incoming.deletedQuizSubIds.forEach(id => deletedSubSet.add(id));
+      }
+      const allDeletedSubs = Array.from(deletedSubSet);
+
       let customQuizBank = Array.isArray(incoming.custom_quiz_bank) ? incoming.custom_quiz_bank : inMemoryData.custom_quiz_bank;
       if (Array.isArray(customQuizBank)) {
         customQuizBank = customQuizBank.filter(q => !deletedQuizSet.has(q.id));
+      }
+
+      let quizSubmissionsList = Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []);
+      if (Array.isArray(quizSubmissionsList)) {
+        quizSubmissionsList = quizSubmissionsList.filter(s => !deletedSubSet.has(s.id));
       }
 
       inMemoryData = {
@@ -106,10 +118,11 @@ module.exports = async (req, res) => {
         students: studentsList,
         custom_videos: incoming.custom_videos ? { ...inMemoryData.custom_videos, ...incoming.custom_videos } : inMemoryData.custom_videos,
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
-        quiz_submissions: Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []),
+        quiz_submissions: quizSubmissionsList,
         custom_quiz_bank: customQuizBank,
         deletedStudentIds: allDeleted,
         deletedQuizIds: allDeletedQuizzes,
+        deletedQuizSubIds: allDeletedSubs,
         lastSync: new Date().toISOString()
       };
 
