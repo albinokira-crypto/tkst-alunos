@@ -1236,8 +1236,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Bloqueio: Soto / Uchi Uke Chudan</div>
               </div>
               <div class="gohon-step-box final-step">
-                <div class="gohon-step-num">3º Passo (Decisivo)</div>
-                <div class="gohon-step-action" style="color: #FFF;">Mae Geri Chudan + Contragolpe</div>
+                <div class="gohon-step-num">3º Passo</div>
+                <div class="gohon-step-action" style="color: #FFF;">Mae Geri Chudan</div>
                 <span class="gohon-kiai-tag">KIAI!</span>
               </div>
             </div>
