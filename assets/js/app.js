@@ -1940,7 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="belt-transition-chips">
           ${window.TKST_CURRICULUM.map(c => {
             const transMap = {
-              6: { label: "Branca para Amarela", fromColor: "#FFFFFF", toColor: "#F5BE00", textColor: "#0F172A", isDark: true },
+              6: { label: "Branca para Amarela", fromColor: "#FFFFFF", toColor: "#F5BE00", textColor: "#000000", isDark: true },
               5: { label: "Amarela para Vermelha", fromColor: "#F5BE00", toColor: "#E63946", textColor: "#FFFFFF", isDark: false },
               4: { label: "Vermelha para Laranja", fromColor: "#E63946", toColor: "#FF7700", textColor: "#FFFFFF", isDark: false },
               3: { label: "Laranja para Verde", fromColor: "#FF7700", toColor: "#10B981", textColor: "#FFFFFF", isDark: false },
@@ -1954,12 +1954,11 @@ document.addEventListener('DOMContentLoaded', () => {
               <button 
                 class="belt-trans-btn ${trans.isDark ? 'text-dark' : ''} ${isActive ? 'active' : ''}" 
                 onclick="window.TKST_APP.selectBelt(${c.kyuNumber})"
-                style="background: linear-gradient(135deg, ${trans.fromColor} 0%, ${trans.toColor} 100%); color: ${trans.textColor};"
+                style="background: linear-gradient(90deg, ${trans.fromColor} 0%, ${trans.fromColor} 46%, ${trans.toColor} 54%, ${trans.toColor} 100%); color: ${trans.textColor};"
                 title="Estudar conteúdo de ${trans.label}"
               >
-                <span class="belt-trans-swatch" style="background: linear-gradient(90deg, ${trans.fromColor}, ${trans.toColor});"></span>
                 <span>${trans.label}</span>
-                ${isActive ? '<i class="fas fa-check-circle" style="font-size: 0.82rem; margin-left: 2px;"></i>' : ''}
+                ${isActive ? '<i class="fas fa-check-circle" style="font-size: 0.72rem; margin-left: 2px;"></i>' : ''}
               </button>
             `;
           }).join('')}
