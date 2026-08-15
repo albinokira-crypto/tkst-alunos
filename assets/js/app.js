@@ -1062,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
-            O <strong>Gohon Kumite</strong> é o primeiro estágio do combate tradicional Shotokan. Desenvolve a estabilidade da postura <em>Zenkutsu Dachi</em>, o ritmo sincronizado de avanço/recuo e o controle absoluto da distância (<em>Ma-ai</em>) com finalização em <em>Gyaku Tsuki</em>.
+            O <strong>Gohon Kumite</strong> é o primeiro estágio do combate tradicional Shotokan. Desenvolve a estabilidade da postura <em>Zenkutsu Dachi</em>, o ritmo sincronizado de avanço/recuo e o controle absoluto da distância (<em>Ma-ai</em>) com finalização em <em>Gyaku Tsuki Chudan</em>.
           </p>
 
           <!-- Trilha Visual dos 5 Passos -->
@@ -1097,7 +1097,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-step-box final-step">
                 <div class="gohon-step-num">5º Passo (Decisivo)</div>
-                <div class="gohon-step-action" style="color: #FFF;">Bloqueio Firme + Gyaku Tsuki</div>
+                <div class="gohon-step-action" style="color: #FFF;">Bloqueio Firme + Gyaku Tsuki Chudan</div>
                 <span class="gohon-kiai-tag">KIAI!</span>
               </div>
             </div>
@@ -1117,17 +1117,17 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div><strong>5x Jodan Oi Tsuki</strong></div>
+                <div><strong>5x Oi Tsuki Jodan</strong></div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong>5x Jodan Age Uke</strong><br>
+                  <strong>5x Age Uke Jodan</strong><br>
                   <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span>
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Age Uke</em>, firma a base e desfere <strong>Gyaku Tsuki Chudan</strong> com potente <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Age Uke Jodan</em>, firma a base e contra-ataca com <strong>Gyaku Tsuki Chudan</strong> com potente <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
 
@@ -1139,17 +1139,17 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div><strong>5x Chudan Oi Tsuki</strong></div>
+                <div><strong>5x Oi Tsuki Chudan</strong></div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong>5x Chudan Soto Uke</strong><br>
+                  <strong>5x Soto Uke Chudan</strong><br>
                   <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span>
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Soto Uke</em>, estabiliza o quadril e aplica <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Soto Uke Chudan</em>, estabiliza o quadril e contra-ataca com <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
 
@@ -1171,7 +1171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e contra-ataca com <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
           </div>
@@ -1227,17 +1227,17 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="gohon-steps-track" style="grid-template-columns: repeat(3, 1fr);">
               <div class="gohon-step-box">
                 <div class="gohon-step-num">1º Passo</div>
-                <div class="gohon-step-action">Jodan Oi Tsuki (Rosto)</div>
-                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Bloqueio: Age Uke</div>
+                <div class="gohon-step-action">Oi Tsuki Jodan (Rosto)</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Bloqueio: Age Uke Jodan</div>
               </div>
               <div class="gohon-step-box">
                 <div class="gohon-step-num">2º Passo</div>
-                <div class="gohon-step-action">Chudan Oi Tsuki (Tronco)</div>
-                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Bloqueio: Soto / Uchi Uke</div>
+                <div class="gohon-step-action">Oi Tsuki Chudan (Tronco)</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Bloqueio: Soto / Uchi Uke Chudan</div>
               </div>
               <div class="gohon-step-box final-step">
                 <div class="gohon-step-num">3º Passo (Decisivo)</div>
-                <div class="gohon-step-action" style="color: #FFF;">Mae Geri + Contragolpe</div>
+                <div class="gohon-step-action" style="color: #FFF;">Mae Geri Chudan + Contragolpe</div>
                 <span class="gohon-kiai-tag">KIAI!</span>
               </div>
             </div>
@@ -1257,21 +1257,21 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+                <div>1º Oi Tsuki Jodan ➔ 2º Oi Tsuki Chudan ➔ 3º Mae Geri Chudan</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong>1º Jodan Age Uke</strong><br>
+                  <strong>1º Age Uke Jodan</strong><br>
                   <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span><br>
-                  <strong>2º Chudan Soto Uke</strong><br>
+                  <strong>2º Soto Uke Chudan</strong><br>
                   <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span><br>
                   <strong>3º Gedan Barai</strong><br>
                   <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia em <em>Zenkutsu</em> e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia em <em>Zenkutsu</em> e desfere contra-ataque de <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
 
@@ -1279,24 +1279,27 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
                 <strong style="color: #FFF; font-size: 0.92rem;">2ª Forma de Defesa</strong>
-                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Sequência Dupla</span>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Sequência Oficial</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+                <div>1º Oi Tsuki Jodan ➔ 2º Oi Tsuki Chudan ➔ 3º Mae Geri Chudan</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong>1º Jodan Age Uke</strong><br>
+                  <strong>1º Age Uke Jodan</strong><br>
                   <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span><br>
-                  <strong>2º Chudan Uchi Uke</strong><br>
+                  <strong>2º Uchi Uke Chudan</strong><br>
                   <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de dentro para fora )</span><br>
-                  <strong>3º Gyaku Gedan Barai</strong>
+                  <strong>3º Gyaku Gedan Barai</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span><br>
+                  <strong>4º Kizame Tsuki Jodan</strong><br>
+                  <strong>5º Gyaku Tsuki Chudan</strong>
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia com <em>Gyaku Gedan Barai</em> e aplica <strong>Oi Tsuki Jodan + Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia com <em>Gyaku Gedan Barai</em> e aplica contra-ataque duplo de <strong>Kizame Tsuki Jodan + Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
           </div>
@@ -1350,18 +1353,19 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+                <div>1º Oi Tsuki Jodan ➔ 2º Oi Tsuki Chudan ➔ 3º Mae Geri Chudan</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong>1º Sokumen Jodan Haiwan Age Uke</strong> (Esquiva 45°)<br>
-                  <strong>2º Morote Uke</strong> (Bloqueio duplo reforçado)<br>
-                  <strong>3º Sukui Uke</strong> (Colher a perna no chute)
+                  <strong>1º Sokumen Haiwan Age Uke Jodan</strong> (Esquiva 45°)<br>
+                  <strong>2º Morote Uke Chudan</strong> (Bloqueio duplo reforçado)<br>
+                  <strong>3º Sukui Uke</strong> (Colher a perna no chute)<br>
+                  <strong>4º Gyaku Tsuki Chudan</strong> (Contra-ataque decisivo)
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 3º passo:</strong> Colhe a perna com <em>Sukui Uke</em> e dispara <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 3º passo:</strong> Colhe a perna com <em>Sukui Uke</em> e dispara contra-ataque de <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
 
@@ -1373,18 +1377,19 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+                <div>1º Oi Tsuki Jodan ➔ 2º Oi Tsuki Chudan ➔ 3º Mae Geri Chudan</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
                   <strong>1º Yama Uke</strong> (Bloqueio em U)<br>
-                  <strong>2º Teisho Uke</strong> (Bloqueio com a palma da mão)<br>
-                  <strong>3º Haiwan Uke</strong> com transição de base
+                  <strong>2º Teisho Uke Chudan</strong> (Bloqueio com a palma da mão)<br>
+                  <strong>3º Haiwan Uke Jodan</strong> (Transição de base)<br>
+                  <strong>4º Kage Tsuki Chudan</strong> (Contra-ataque lateral)
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 3º passo:</strong> Transiciona para <em>Kiba Dachi</em> e golpeia com <strong>Kage Tsuki</strong> potente com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 3º passo:</strong> Transiciona para <em>Kiba Dachi</em> e desfere contra-ataque de <strong>Kage Tsuki Chudan</strong> potente com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
 
@@ -1396,18 +1401,19 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+                <div>1º Oi Tsuki Jodan ➔ 2º Oi Tsuki Chudan ➔ 3º Mae Geri Chudan</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong>1º Tenchi Jodan Age Uke</strong><br>
-                  <strong>2º Tenchi Chudan Uchi Uke</strong><br>
-                  <strong>3º Tenchi Gedan Barai</strong>
+                  <strong>1º Tenchi Age Uke Jodan</strong><br>
+                  <strong>2º Tenchi Uchi Uke Chudan</strong><br>
+                  <strong>3º Tenchi Gedan Barai</strong><br>
+                  <strong>4º Gyaku Tsuki Chudan</strong> (Contra-ataque decisivo)
                 </div>
               </div>
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia firme com <em>Tenchi Gedan Barai</em> e finaliza com <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia firme com <em>Tenchi Gedan Barai</em> e finaliza com contra-ataque potente de <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
             </div>
           </div>
@@ -1453,40 +1459,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- As 3 Séries Exigidas (Jodan, Chudan, Mae Geri) -->
           <div class="gohon-series-grid">
-            <!-- Jodan Oi Tsuki -->
+            <!-- Oi Tsuki Jodan -->
             <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan Oi Tsuki</strong>
+                <strong style="color: #FFF; font-size: 0.92rem;">1. Oi Tsuki Jodan</strong>
                 <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>Anuncia <em>"Jodan!"</em> e avança em <em>Zenkutsu Dachi</em> com soco alto no queixo.</div>
+                <div>Anuncia <em>"Oi Tsuki Jodan!"</em> e avança em <em>Zenkutsu Dachi</em> com soco alto no queixo.</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Jodan Age Uke</em> ➔ <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
-                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Recua <em>Jodan Shuto Uke</em> (Kokutsu) ➔ <strong>Shuto Uchi Jodan</strong> em Zenkutsu (KIAI!)
+                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Age Uke Jodan</em> ➔ Contra-ataque de <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
+                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Recua <em>Shuto Uke Jodan</em> (Kokutsu) ➔ Contra-ataque de <strong>Shuto Uchi Jodan</strong> em Zenkutsu (KIAI!)
                 </div>
               </div>
             </div>
 
-            <!-- Chudan Oi Tsuki -->
+            <!-- Oi Tsuki Chudan -->
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan Oi Tsuki</strong>
+                <strong style="color: #FFF; font-size: 0.92rem;">2. Oi Tsuki Chudan</strong>
                 <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>Anuncia <em>"Chudan!"</em> e avança em <em>Zenkutsu Dachi</em> com soco médio penetrante.</div>
+                <div>Anuncia <em>"Oi Tsuki Chudan!"</em> e avança em <em>Zenkutsu Dachi</em> com soco médio penetrante.</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Chudan Soto Uke</em> ➔ <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
-                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Esquiva <em>Migi Soto Uke</em> (Zenkutsu) ➔ <strong>Yoko Empi</strong> em Kiba Dachi (KIAI!)
+                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Soto Uke Chudan</em> ➔ Contra-ataque de <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
+                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Esquiva <em>Migi Soto Uke Chudan</em> (Zenkutsu) ➔ Contra-ataque de <strong>Yoko Empi Chudan</strong> em Kiba Dachi (KIAI!)
                 </div>
               </div>
             </div>
@@ -1499,13 +1505,13 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>Anuncia <em>"Mae Geri!"</em> e desfere chute frontal explosivo no abdômen.</div>
+                <div>Anuncia <em>"Mae Geri Chudan!"</em> e desfere chute frontal explosivo no abdômen.</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Gedan Barai</em> ➔ <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
-                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Recua <em>Gyaku Gedan Barai</em> ➔ <strong>Kizame Tsuki Jodan + Gyaku Tsuki (KIAI!)</strong>
+                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Gedan Barai</em> ➔ Contra-ataque de <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
+                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Recua <em>Gyaku Gedan Barai</em> ➔ Contra-ataque de <strong>Kizame Tsuki Jodan + Gyaku Tsuki Chudan (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1555,7 +1561,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Jodan -->
             <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan Kizame / Oi Tsuki</strong>
+                <strong style="color: #FFF; font-size: 0.92rem;">1. Oi Tsuki Jodan / Kizame Tsuki Jodan</strong>
                 <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
               </div>
               <div class="gohon-role-row">
@@ -1565,7 +1571,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  Esquiva a 45° com <strong>Jodan Tate Shuto / Seiryuto Uke</strong> ➔ Contra-ataque de <strong>Gyaku Tsuki / Ura Tsuki (KIAI!)</strong>
+                  Esquiva a 45° com <strong>Tate Shuto Jodan / Seiryuto Uke Jodan</strong> ➔ Contra-ataque de <strong>Gyaku Tsuki Chudan / Ura Tsuki Chudan (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1573,7 +1579,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Chudan -->
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan Gyaku Tsuki</strong>
+                <strong style="color: #FFF; font-size: 0.92rem;">2. Gyaku Tsuki Chudan</strong>
                 <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
               </div>
               <div class="gohon-role-row">
@@ -1583,7 +1589,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  Desvia com <strong>Chudan Soto Uke / Gyaku Osae Uke</strong> ➔ Contra-ataque de <strong>Uraken Uchi Jodan / Osoto Gari com Gyaku Tsuki (KIAI!)</strong>
+                  Desvia com <strong>Soto Uke Chudan / Gyaku Osae Uke</strong> ➔ Contra-ataque de <strong>Uraken Uchi Jodan / Osoto Gari com Gyaku Tsuki Chudan (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1601,7 +1607,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  Esquiva a 45° com <strong>Gedan Barai / Juji Gedan</strong> ➔ Contra-ataque de <strong>Kizame Tsuki Jodan + Gyaku Tsuki Chudan (KIAI!)</strong>
+                  Esquiva a 45° com <strong>Gedan Barai / Juji Uke Gedan</strong> ➔ Contra-ataque de <strong>Kizame Tsuki Jodan + Gyaku Tsuki Chudan (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1619,7 +1625,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  Penetração curta com <strong>Haiwan Uke 90°</strong> ➔ Contra-ataque de <strong>Jodan Shuto Uchi / Mawashi Geri (KIAI!)</strong>
+                  Penetração curta com <strong>Haiwan Uke Jodan 90°</strong> ➔ Contra-ataque de <strong>Shuto Uchi Jodan / Mawashi Geri Jodan (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1674,12 +1680,12 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>Jodan Oi Tsuki & Chudan Gyaku Tsuki em avanço rápido.</div>
+                <div>Oi Tsuki Jodan & Gyaku Tsuki Chudan em avanço rápido.</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  Esquiva a 45° com <strong>Seiryuto Uke / Soto Uke</strong> ➔ <strong>De-ai Gyaku Tsuki Chudan + Uraken Uchi (KIAI!)</strong>
+                  Esquiva a 45° com <strong>Seiryuto Uke Jodan / Soto Uke Chudan</strong> ➔ Contra-ataque de <strong>De-ai Gyaku Tsuki Chudan + Uraken Uchi Jodan (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1697,7 +1703,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  Esquiva a 45° com <strong>Gedan Barai / Haiwan Uke 90°</strong> ➔ <strong>Ashi Barai (varredura) + Otoshi Gyaku Tsuki (KIAI!)</strong>
+                  Esquiva a 45° com <strong>Gedan Barai / Haiwan Uke Jodan 90°</strong> ➔ Contra-ataque de <strong>Ashi Barai + Otoshi Gyaku Tsuki Chudan (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1710,12 +1716,12 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge tori">Mae</span>
-                <div>Yoko Geri Kekomi & Ushiro Geri com penetração total.</div>
+                <div>Yoko Geri Kekomi Chudan & Ushiro Geri Chudan com penetração total.</div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  Esquiva a 90° com <strong>Sukui Uke / Ushiro Gedan Barai</strong> ➔ <strong>Kizame Yoko Geri + Yoko Empi (KIAI!)</strong>
+                  Esquiva a 90° com <strong>Sukui Uke / Ushiro Gedan Barai</strong> ➔ Contra-ataque de <strong>Kizame Yoko Geri Chudan + Yoko Empi Chudan (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1733,7 +1739,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
                 <div>
-                  Bloqueio duplo em transição de base ➔ <strong>Contragolpe composto com finalização decisiva (KIAI!)</strong>
+                  Bloqueio duplo em transição de base ➔ Contra-ataque composto de <strong>Kizame Tsuki Jodan + Gyaku Tsuki Chudan com finalização decisiva (KIAI!)</strong>
                 </div>
               </div>
             </div>
@@ -1882,46 +1888,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <p style="font-size: 0.9rem; color: #CBD5E1; line-height: 1.6; margin-bottom: 16px;">${curr.kumite.description}</p>
 
             ${renderBeltKumiteInfographic(curr)}
-          </div>
-        </div>
-
-        <!-- 4. REQUISITOS AVALIADOS PELA BANCA -->
-        <div class="study-accordion-card" id="studyCard_defesa">
-          <button type="button" class="study-accordion-header" id="studyHeader_defesa" onclick="window.TKST_APP.toggleStudyAccordion('defesa')">
-            <div class="study-accordion-title">
-              <i class="fas fa-clipboard-check" style="color: var(--accent-emerald); font-size: 1.25rem;"></i>
-              <div>
-                <h3>4. Requisitos Avaliados pela Banca</h3>
-                <div style="font-size: 0.78rem; color: #94A3B8;">Critérios avaliativos e postura exigidos • Toque para ver</div>
-              </div>
-            </div>
-            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_defesa"></i>
-          </button>
-
-          <div class="study-accordion-body" id="studyBody_defesa">
-            <ul style="padding-left: 20px; font-size: 0.88rem; color: #CBD5E1; line-height: 1.8; margin: 0;">
-              ${curr.requirements.map(r => `<li>${r}</li>`).join('')}
-            </ul>
-          </div>
-        </div>
-
-        <!-- 4. REQUISITOS AVALIADOS PELA BANCA -->
-        <div class="study-accordion-card" id="studyCard_defesa">
-          <button type="button" class="study-accordion-header" id="studyHeader_defesa" onclick="window.TKST_APP.toggleStudyAccordion('defesa')">
-            <div class="study-accordion-title">
-              <i class="fas fa-clipboard-check" style="color: var(--accent-emerald); font-size: 1.25rem;"></i>
-              <div>
-                <h3>4. Requisitos Avaliados pela Banca</h3>
-                <div style="font-size: 0.78rem; color: #94A3B8;">Critérios avaliativos e postura exigidos • Toque para ver</div>
-              </div>
-            </div>
-            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_defesa"></i>
-          </button>
-
-          <div class="study-accordion-body" id="studyBody_defesa">
-            <ul style="padding-left: 20px; font-size: 0.88rem; color: #CBD5E1; line-height: 1.8; margin: 0;">
-              ${curr.requirements.map(r => `<li>${r}</li>`).join('')}
-            </ul>
           </div>
         </div>
 

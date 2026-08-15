@@ -18,21 +18,21 @@ window.TKST_CURRICULUM = [
       {
         "id": "k6-2",
         "direction": "Sagate (Recuando)",
-        "technique": "Jodan Age Uke",
+        "technique": "Age Uke Jodan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k6-3",
         "direction": "Mae (Avançando)",
-        "technique": "Chudan Soto Uke",
+        "technique": "Soto Uke Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k6-4",
         "direction": "Sagate (Recuando)",
-        "technique": "Chudan Uchi Uke",
+        "technique": "Uchi Uke Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
@@ -46,14 +46,14 @@ window.TKST_CURRICULUM = [
       {
         "id": "k6-6",
         "direction": "Mae / Mawate",
-        "technique": "Chudan Shuto Uke",
+        "technique": "Shuto Uke Chudan",
         "stance": "Kokutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k6-7",
         "direction": "Mae (Avançando)",
-        "technique": "Gyaku Tsuki",
+        "technique": "Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
@@ -108,7 +108,7 @@ window.TKST_CURRICULUM = [
     },
     "kumite": {
       "type": "Gohon Kumite / Shiai Kumite Básico",
-      "description": "Gohon Kumite (5 passos) com ataques de Jodan Oi Tsuki, Chudan Oi Tsuki e Mae Geri. Defesas com Age Uke, Soto Uke e Gedan Barai com contra-ataque de Gyaku Tsuki."
+      "description": "Gohon Kumite (5 passos) com ataques de Oi Tsuki Jodan, Oi Tsuki Chudan e Mae Geri Chudan. Defesas com Age Uke Jodan, Soto Uke Chudan e Gedan Barai com contra-ataque de Gyaku Tsuki Chudan."
     },
     "requirements": [
       "Mínimo de 3 meses de treino",
@@ -128,35 +128,35 @@ window.TKST_CURRICULUM = [
       {
         "id": "k5-1",
         "direction": "Mae (Avançando)",
-        "technique": "Jodan Age Uke / Gyaku Tsuki",
+        "technique": "Age Uke Jodan / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k5-2",
         "direction": "Sagate (Recuando)",
-        "technique": "Chudan Soto Uke / Gyaku Tsuki",
+        "technique": "Soto Uke Chudan / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k5-3",
         "direction": "Mae (Avançando)",
-        "technique": "Chudan Uchi Uke / Gyaku Tsuki",
+        "technique": "Uchi Uke Chudan / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k5-4",
         "direction": "Sagate (Recuando)",
-        "technique": "Chudan Shuto Uke (Kokutsu) / Gyaku Shihon Nukite (Zenkutsu)",
+        "technique": "Shuto Uke Chudan (Kokutsu) / Gyaku Shihon Nukite (Zenkutsu)",
         "stance": "Kokutsu -> Zenkutsu",
         "count": "5 vezes"
       },
       {
         "id": "k5-5",
         "direction": "Mae (Avançando)",
-        "technique": "Gedan Barai / Gyaku Tsuki",
+        "technique": "Gedan Barai / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
@@ -240,28 +240,28 @@ window.TKST_CURRICULUM = [
       {
         "id": "k4-1",
         "direction": "Mae",
-        "technique": "Chudan Soto Uke / Kizame Uraken / Gyaku Tate Tsuki",
+        "technique": "Soto Uke Chudan / Kizame Uraken Jodan / Gyaku Tate Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k4-2",
         "direction": "Sagate",
-        "technique": "Chudan Uchi Uke / Kizame Tsuki Jodan / Gyaku Tsuki Chudan",
+        "technique": "Uchi Uke Chudan / Kizame Tsuki Jodan / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k4-3",
         "direction": "Mae",
-        "technique": "Chudan Shuto Uke (Kokutsu) / Kizame Geri / Gyaku Shihon Nukite (Zenkutsu)",
+        "technique": "Shuto Uke Chudan (Kokutsu) / Kizame Geri / Gyaku Shihon Nukite (Zenkutsu)",
         "stance": "Kokutsu -> Zenkutsu",
         "count": "5 vezes"
       },
       {
         "id": "k4-4",
         "direction": "Sagate",
-        "technique": "Gedan Barai / Chudan Uchi Uke / Gyaku Tsuki",
+        "technique": "Gedan Barai / Uchi Uke Chudan / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
@@ -275,7 +275,7 @@ window.TKST_CURRICULUM = [
       {
         "id": "k4-6",
         "direction": "Sagate",
-        "technique": "Sanbon Tsuki / Gyaku Sanbon Tsuki / Age Tsuki",
+        "technique": "Sanbon Tsuki / Gyaku Sanbon Tsuki / Age Tsuki Jodan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
@@ -339,56 +339,56 @@ window.TKST_CURRICULUM = [
       {
         "id": "k3-1",
         "direction": "Mae",
-        "technique": "Oi Tsuki Jodan / Gedan Barai / Gyaku Tsuki",
+        "technique": "Oi Tsuki Jodan / Gedan Barai / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k3-2",
         "direction": "Sagate",
-        "technique": "Jodan Age Uke / Mae Geri / Gyaku Chudan Soto Uke",
+        "technique": "Age Uke Jodan / Mae Geri Chudan / Gyaku Soto Uke Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k3-3",
         "direction": "Mae",
-        "technique": "Oi Tsuki Chudan / Tsuri Ashi Seiryuto Uke / Gedan Barai / Gyaku Chudan Uchi Uke",
+        "technique": "Oi Tsuki Chudan / Tsuri Ashi Seiryuto Uke / Gedan Barai / Gyaku Uchi Uke Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k3-4",
         "direction": "Sagate",
-        "technique": "Chudan Uchi Uke / Kizame Tsuki Jodan / Mae Geri / Gyaku Tsuki Chudan",
+        "technique": "Uchi Uke Chudan / Kizame Tsuki Jodan / Mae Geri Chudan / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k3-5",
         "direction": "Mae",
-        "technique": "Oi Tsuki Chudan / Gedan Haiwan Uke / Jodan Haiwan Uke / Gyaku Tsuki",
+        "technique": "Oi Tsuki Chudan / Haiwan Uke Gedan / Haiwan Uke Jodan / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k3-6",
         "direction": "Sagate",
-        "technique": "Chudan Shuto Uke / Kizame Geri / Ushiro Uraken Uchi / Chudan Shuto Uke",
+        "technique": "Shuto Uke Chudan / Kizame Geri / Ushiro Uraken Uchi Jodan / Shuto Uke Chudan",
         "stance": "Kokutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k3-7",
         "direction": "Mae",
-        "technique": "Mae Geri / Jun Tsuki / Gyaku Chudan Soto Uke / Gedan Uke",
+        "technique": "Mae Geri Chudan / Jun Tsuki Chudan / Gyaku Soto Uke Chudan / Gedan Barai",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k3-8",
         "direction": "Sagate",
-        "technique": "Gedan Barai / Suri Ashi Jodan Age Uke / Gyaku Tsuki / Age Tsuki",
+        "technique": "Gedan Barai / Suri Ashi Age Uke Jodan / Gyaku Tsuki Chudan / Age Tsuki Jodan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
@@ -481,28 +481,28 @@ window.TKST_CURRICULUM = [
       {
         "id": "k2-1",
         "direction": "Mae / Mawate",
-        "technique": "Suri Ashi Chudan Uchi Uke / Kizame Tsuki / Gyaku Tsuki / Mawashi Geri Jodan",
+        "technique": "Suri Ashi Uchi Uke Chudan / Kizame Tsuki Jodan / Gyaku Tsuki Chudan / Mawashi Geri Jodan",
         "stance": "Jiyu no Kamae / Zenkutsu",
         "count": "5 vezes"
       },
       {
         "id": "k2-2",
         "direction": "Mae / Mawate",
-        "technique": "Oi Tsuki Chudan / Suri Ashi Seiryuto Uke / Gyaku Uchi Uke / Heiko Shuto",
+        "technique": "Oi Tsuki Chudan / Suri Ashi Seiryuto Uke / Gyaku Uchi Uke Chudan / Heiko Shuto",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k2-3",
         "direction": "Mae / Mawate",
-        "technique": "Oi Tsuki Chudan / Gedan Haiwan Uke / Jodan Haiwan Uke / Gyaku Tsuki",
+        "technique": "Oi Tsuki Chudan / Haiwan Uke Gedan / Haiwan Uke Jodan / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k2-4",
         "direction": "Mae / Mawate",
-        "technique": "Chudan Shuto Uke / Kizame Geri / Ushiro Uraken Uchi / Chudan Shuto Uke",
+        "technique": "Shuto Uke Chudan / Kizame Geri / Ushiro Uraken Uchi Jodan / Shuto Uke Chudan",
         "stance": "Kokutsu Dachi",
         "count": "5 vezes"
       },
@@ -530,7 +530,7 @@ window.TKST_CURRICULUM = [
       {
         "id": "k2-8",
         "direction": "Mae / Mawate / Mae",
-        "technique": "Chudan Soto Uke / Gyaku Uchi Uke / Mae Geri / Sanbon Tsuki",
+        "technique": "Soto Uke Chudan / Gyaku Uchi Uke Chudan / Mae Geri Chudan / Sanbon Tsuki",
         "stance": "Jiyu no Kamae",
         "count": "3 vezes"
       },
@@ -598,42 +598,42 @@ window.TKST_CURRICULUM = [
       {
         "id": "k1-1",
         "direction": "Mae / Sagate",
-        "technique": "Jodan Age Uke / Gyaku Jodan Age Uke -> Gyaku Tsuki",
+        "technique": "Age Uke Jodan / Gyaku Age Uke Jodan -> Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k1-2",
         "direction": "Mae / Sagate",
-        "technique": "Chudan Soto Uke / Gyaku Chudan Soto Uke -> Gyaku Tsuki",
+        "technique": "Soto Uke Chudan / Gyaku Soto Uke Chudan -> Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k1-3",
         "direction": "Mae / Sagate",
-        "technique": "Chudan Uchi Uke / Gyaku Chudan Uchi Uke -> Gyaku Tsuki",
+        "technique": "Uchi Uke Chudan / Gyaku Uchi Uke Chudan -> Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k1-4",
         "direction": "Mae / Sagate",
-        "technique": "Chudan Shuto Uke / Gyaku Chudan Tate Shuto (Kokutsu / Zenkutsu)",
+        "technique": "Shuto Uke Chudan / Gyaku Tate Shuto Chudan (Kokutsu / Zenkutsu)",
         "stance": "Kokutsu -> Zenkutsu",
         "count": "5 vezes"
       },
       {
         "id": "k1-5",
         "direction": "Mae / Sagate",
-        "technique": "Gedan Barai / Gyaku Gedan Barai -> Gyaku Tsuki",
+        "technique": "Gedan Barai / Gyaku Gedan Barai -> Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes"
       },
       {
         "id": "k1-6",
         "direction": "Mae - Mawate (Jyu)",
-        "technique": "Mae Geri - Ushiro Geri - Gyaku Tsuki (Execução e Aplicação)",
+        "technique": "Mae Geri - Ushiro Geri - Gyaku Tsuki Chudan (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
         "count": "3 vezes"
       },
