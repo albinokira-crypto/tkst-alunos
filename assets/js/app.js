@@ -3598,7 +3598,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'defesas', name: 'Defesas (Uke)' },
       { id: 'socosGolpes', name: 'Socos e Golpes (Tsuki/Uchi)' },
       { id: 'chutes', name: 'Chutes (Geri)' },
-      { id: 'comandosEContagem', name: 'Comandos e Contagem' }
+      { id: 'comandosEContagem', name: 'Comandos e Conceitos' }
     ];
 
     let terms = [];
@@ -3608,10 +3608,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ...glossary.defesas.map(t => ({ ...t, cat: 'Defesa (Uke)' })),
         ...glossary.socosGolpes.map(t => ({ ...t, cat: 'Soco / Golpe' })),
         ...glossary.chutes.map(t => ({ ...t, cat: 'Chute (Geri)' })),
-        ...glossary.comandosEContagem.map(t => ({ ...t, cat: 'Comando / Termo' }))
+        ...glossary.comandosEContagem.map(t => ({ ...t, cat: 'Comando / Conceito' }))
       ];
     } else {
-      terms = (glossary[glossaryCategory] || []).map(t => ({ ...t, cat: glossaryCategory }));
+      terms = (glossary[glossaryCategory] || []).map(t => ({ ...t, cat: glossaryCategory === 'bases' ? 'Base (Dachi)' : glossaryCategory === 'defesas' ? 'Defesa (Uke)' : glossaryCategory === 'socosGolpes' ? 'Soco / Golpe' : glossaryCategory === 'chutes' ? 'Chute (Geri)' : 'Comando / Conceito' }));
     }
 
     if (glossarySearchQuery) {
