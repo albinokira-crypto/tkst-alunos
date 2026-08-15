@@ -1562,7 +1562,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 1. Oi Tsuki Jodan -->
             <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">1. Oi Tsuki Jodan <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Soco na altura do rosto )</span></strong>
+                <strong>1. Oi Tsuki Jodan</strong>
+                <span class="gohon-attack-desc">( Soco na altura do rosto )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1576,7 +1577,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 2. Oi Tsuki Chudan -->
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">2. Oi Tsuki Chudan <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Soco na altura do peito )</span></strong>
+                <strong>2. Oi Tsuki Chudan</strong>
+                <span class="gohon-attack-desc">( Soco na altura do peito )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1590,7 +1592,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 3. Mae Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">3. Mae Geri <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Chute frontal )</span></strong>
+                <strong>3. Mae Geri</strong>
+                <span class="gohon-attack-desc">( Chute frontal )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1604,7 +1607,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 4. Yoko Geri Kekomi -->
             <div class="gohon-series-card" style="border-left: 4px solid #00B4D8;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">4. Yoko Geri Kekomi <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Chute com a faca do pé )</span></strong>
+                <strong>4. Yoko Geri Kekomi</strong>
+                <span class="gohon-attack-desc">( Chute com a faca do pé )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1618,7 +1622,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 5. Mawashi Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">5. Mawashi Geri <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Chute semi circular )</span></strong>
+                <strong>5. Mawashi Geri</strong>
+                <span class="gohon-attack-desc">( Chute semi circular )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1632,7 +1637,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 6. Ushiro Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #EC4899;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">6. Ushiro Geri <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Chute Giratório )</span></strong>
+                <strong>6. Ushiro Geri</strong>
+                <span class="gohon-attack-desc">( Chute Giratório )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1646,7 +1652,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 7. Chudan Gyaku Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">7. Chudan Gyaku Tsuki <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Soco reverso na altura do peito )</span></strong>
+                <strong>7. Chudan Gyaku Tsuki</strong>
+                <span class="gohon-attack-desc">( Soco reverso na altura do peito )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1660,7 +1667,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 8. Jodan Kizame Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #FB923C;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">8. Jodan Kizame Tsuki <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Soco direto na altura do rosto )</span></strong>
+                <strong>8. Jodan Kizame Tsuki</strong>
+                <span class="gohon-attack-desc">( Soco direto na altura do rosto )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1716,7 +1724,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 1. Oi Tsuki Jodan -->
             <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">1. Oi Tsuki Jodan <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Soco na altura do rosto )</span></strong>
+                <strong>1. Oi Tsuki Jodan</strong>
+                <span class="gohon-attack-desc">( Soco na altura do rosto )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1734,7 +1743,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 2. Oi Tsuki Chudan -->
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">2. Oi Tsuki Chudan <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Soco na altura do peito )</span></strong>
+                <strong>2. Oi Tsuki Chudan</strong>
+                <span class="gohon-attack-desc">( Soco na altura do peito )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1752,7 +1762,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 3. Mae Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">3. Mae Geri <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Chute frontal )</span></strong>
+                <strong>3. Mae Geri</strong>
+                <span class="gohon-attack-desc">( Chute frontal )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1770,7 +1781,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 4. Yoko Geri Kekomi -->
             <div class="gohon-series-card" style="border-left: 4px solid #00B4D8;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">4. Yoko Geri Kekomi <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Chute com a faca do pé )</span></strong>
+                <strong>4. Yoko Geri Kekomi</strong>
+                <span class="gohon-attack-desc">( Chute com a faca do pé )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1785,7 +1797,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 5. Mawashi Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">5. Mawashi Geri <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Chute semi circular )</span></strong>
+                <strong>5. Mawashi Geri</strong>
+                <span class="gohon-attack-desc">( Chute semi circular )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1800,7 +1813,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 6. Ushiro Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #EC4899;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">6. Ushiro Geri <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Chute Giratório )</span></strong>
+                <strong>6. Ushiro Geri</strong>
+                <span class="gohon-attack-desc">( Chute Giratório )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1815,7 +1829,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 7. Chudan Gyaku Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">7. Chudan Gyaku Tsuki <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Soco reverso na altura do peito )</span></strong>
+                <strong>7. Chudan Gyaku Tsuki</strong>
+                <span class="gohon-attack-desc">( Soco reverso na altura do peito )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1830,7 +1845,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 8. Jodan Kizame Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #FB923C;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">8. Jodan Kizame Tsuki <span style="font-size: 0.8rem; font-weight: normal; color: #94A3B8;">( Soco direto na altura do rosto )</span></strong>
+                <strong>8. Jodan Kizame Tsuki</strong>
+                <span class="gohon-attack-desc">( Soco direto na altura do rosto )</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>

@@ -1416,17 +1416,27 @@ body.login-view-active .content-body {
 
 .gohon-series-title {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: baseline;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding-bottom: 8px;
-  white-space: nowrap;
-  gap: 8px;
+  gap: 4px 8px;
 }
 
 .gohon-series-title strong {
   white-space: nowrap;
   font-size: 0.92rem;
+  color: #FFF;
+  flex-shrink: 0;
+}
+
+.gohon-attack-desc {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: #94A3B8;
+  white-space: normal;
+  line-height: 1.3;
 }
 
 .gohon-series-tag {
