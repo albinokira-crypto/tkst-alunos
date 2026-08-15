@@ -108,6 +108,134 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // =========================================================================
+  // AUTOMATIC MARTIAL ARTS CONTEXTUAL DISTRACTOR GENERATOR FOR QUIZ
+  // =========================================================================
+  const KARATE_KNOWLEDGE_POOLS = {
+    socos: [
+      "Gyaku Tsuki", "Oi Tsuki", "Kizami Tsuki", "Tate Tsuki", "Kage Tsuki",
+      "Yama Tsuki", "Morote Tsuki", "Mawashi Tsuki", "Uraken Uchi", "Tettsui Uchi",
+      "Shuto Uchi", "Haishu Uchi", "Haito Uchi", "Nukite", "Empi Uchi", "Teisho Uchi",
+      "Ura Tsuki", "Awase Zuki", "Kage Zuki"
+    ],
+    chutes: [
+      "Mae Geri Keage", "Mae Geri Kekomi", "Mawashi Geri", "Yoko Geri Keage",
+      "Yoko Geri Kekomi", "Ushiro Geri", "Ura Mawashi Geri", "Mikazuki Geri",
+      "Fumikomi", "Tobi Geri", "Hiza Geri", "Nidan Geri", "Kakato Geri"
+    ],
+    defesas: [
+      "Gedan Barai", "Age Uke", "Soto Uke (Soto Ude Uke)", "Uchi Uke (Uchi Ude Uke)",
+      "Shuto Uke", "Morote Uke", "Juji Uke", "Manji Uke", "Haishu Uke",
+      "Kakiwake Uke", "Osae Uke", "Nagashi Uke", "Sukui Uke", "Teisho Uke", "Empi Uke"
+    ],
+    bases: [
+      "Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi (Sochin Dachi)",
+      "Neko Ashi Dachi", "Sanchin Dachi", "Hangetsu Dachi", "Musubi Dachi",
+      "Heisoku Dachi", "Shiko Dachi", "Kosa Dachi", "Renoji Dachi", "Heiko Dachi", "Tsuruashi Dachi"
+    ],
+    katas: [
+      "Heian Shodan", "Heian Nidan", "Heian Sandan", "Heian Yondan", "Heian Godan",
+      "Tekki Shodan", "Tekki Nidan", "Bassai Dai", "Bassai Sho", "Kanku Dai",
+      "Kanku Sho", "Jion", "Jitte", "Ji'in", "Enpi (Empi)", "Hangetsu", "Gankaku",
+      "Sochin", "Meikyo", "Nijushiho", "Gojushiho Dai", "Gojushiho Sho", "Chinte", "Unsu", "Wankan"
+    ],
+    kumite: [
+      "Gohon Kumite (5 Passos)", "Sanbon Kumite (3 Passos)", "Kihon Ippon Kumite",
+      "Jiyu Ippon Kumite", "Jiyu Kumite (Combate Livre)", "Kihon Ippon no Kata", "Yakusoku Kumite"
+    ],
+    alturas: [
+      "Jodan (Alto / Cabeça e Rosto)", "Chudan (Médio / Tronco e Peito)",
+      "Gedan (Baixo / Abaixo da Cintura)", "Suigetsu (Plexo Solar)", "Hizasel"
+    ],
+    comandos: [
+      "Rei (Saudação)", "Yoi (Atenção / Prontidão)", "Hajime (Começar)",
+      "Yame (Parar)", "Mokuso (Meditação)", "Kiai (Grito de Energia)",
+      "Zanshin (Estado de Alerta)", "Kime (Foco / Decisão)", "Ippon (Ponto Completo)",
+      "Waza-ari (Meio Ponto)", "Hikawake (Empate)"
+    ],
+    armas: [
+      "Seiken (Punho frontal)", "Uraken (Dorso do punho)", "Tettsui (Punho martelo)",
+      "Shuto (Faca da mão)", "Haito (Borda interna da mão)", "Teisho (Base da palma)",
+      "Nukite (Ponta dos dedos)", "Koshi / Chusoku (Bola do pé)", "Kakato (Calcanhar)",
+      "Sokuto (Faca externa do pé)", "Haisoku (Peito do pé)", "Empi / Hiji (Cotovelo)", "Hiza (Joelho)"
+    ]
+  };
+
+  function detectKarateCategory(questionText, correctAnswer) {
+    const combined = ((questionText || '') + ' ' + (correctAnswer || '')).toLowerCase();
+    
+    if (/soco|tsuki|zuki|punho|golpe de mão|seiken|uraken|socar/i.test(combined)) return 'socos';
+    if (/chute|geri|keri|chutar|perna|pé|pontapé/i.test(combined)) return 'chutes';
+    if (/defes|bloquei|uke|bloquear|defender/i.test(combined)) return 'defesas';
+    if (/base|postura|dachi|posição das pernas/i.test(combined)) return 'bases';
+    if (/kata|forma|heian|tekki|bassai|kanku|jion|jitte|jiin|empi|hangetsu|sochin/i.test(combined)) return 'katas';
+    if (/kumite|luta|combate|gohon|sanbon|ippon/i.test(combined)) return 'kumite';
+    if (/altura|nível|jodan|chudan|gedan|suigetsu/i.test(combined)) return 'alturas';
+    if (/comando|saudação|rei|yoi|hajime|yame|mokuso|kiai|dojo kun/i.test(combined)) return 'comandos';
+    if (/arma|parte do corpo|mão|cotovelo|joelho|calcanhar|dedo/i.test(combined)) return 'armas';
+    
+    return null;
+  }
+
+  function generateSmartOptions(questionText, correctAnswer) {
+    const cleanCorrect = (correctAnswer || '').trim();
+    const category = detectKarateCategory(questionText, cleanCorrect);
+    
+    let pool = [];
+    if (category && KARATE_KNOWLEDGE_POOLS[category]) {
+      pool = [...KARATE_KNOWLEDGE_POOLS[category]];
+    }
+
+    // Fallback: collect existing answers from default bank
+    if (pool.length < 4) {
+      const defaultAnswers = (window.TKST_DEFAULT_QUIZ_BANK || []).map(q => q.options ? q.options[q.correctIndex] : null).filter(Boolean);
+      pool = [...pool, ...defaultAnswers];
+    }
+
+    const normalize = str => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanNorm = normalize(cleanCorrect);
+
+    const filteredPool = pool.filter(item => {
+      if (!item) return false;
+      const iNorm = normalize(item);
+      return iNorm !== cleanNorm && !iNorm.includes(cleanNorm) && !cleanNorm.includes(iNorm);
+    });
+
+    const shuffledDistractors = [...new Set(filteredPool)].sort(() => 0.5 - Math.random());
+    const distractors = shuffledDistractors.slice(0, 3);
+
+    const genericFallbacks = ["Gyaku Tsuki", "Mae Geri", "Gedan Barai", "Zenkutsu Dachi", "Age Uke", "Oi Tsuki", "Mawashi Geri", "Kokutsu Dachi"];
+    while (distractors.length < 3) {
+      const candidate = genericFallbacks[Math.floor(Math.random() * genericFallbacks.length)];
+      if (normalize(candidate) !== cleanNorm && !distractors.includes(candidate)) {
+        distractors.push(candidate);
+      }
+    }
+
+    const allOptions = [cleanCorrect, ...distractors].sort(() => 0.5 - Math.random());
+    const correctIndex = allOptions.indexOf(cleanCorrect);
+
+    return {
+      options: allOptions,
+      correctIndex: correctIndex >= 0 ? correctIndex : 0
+    };
+  }
+
+  function ensureSmartQuestionOptions(q) {
+    if (!q) return q;
+    const hasPlaceholders = !Array.isArray(q.options) || q.options.length < 4 || q.options.some(opt => typeof opt !== 'string' || opt.toLowerCase().includes('alternativa') || opt.toLowerCase().includes('incorreta'));
+    
+    if (hasPlaceholders) {
+      const correctAnswer = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || "";
+      if (correctAnswer && !correctAnswer.toLowerCase().includes('alternativa')) {
+        const smart = generateSmartOptions(q.question, correctAnswer);
+        q.options = smart.options;
+        q.correctIndex = smart.correctIndex;
+      }
+    }
+    return q;
+  }
+
   function compressQuizImage(file, callback) {
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
@@ -1160,7 +1288,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px;">
             ${(() => {
               const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
-              const currentKyuQuestions = allBank.filter(q => q.kyuNumber === adminQuizSelectedKyu);
+              const currentKyuQuestions = allBank.map(q => ensureSmartQuestionOptions(q)).filter(q => q.kyuNumber === adminQuizSelectedKyu);
               if (currentKyuQuestions.length === 0) {
                 return `
                   <div style="padding: 30px; text-align: center; color: #64748B;">
@@ -3332,6 +3460,9 @@ document.addEventListener('DOMContentLoaded', () => {
       pool = [...bank];
     }
 
+    // Ensure all questions have smart contextual options without any placeholder text
+    pool = pool.map(q => ensureSmartQuestionOptions(q));
+
     // Shuffle pool
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
 
@@ -3887,7 +4018,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     submitEditQuizQuestion: (qId) => {
-      const bank = window.TKST_QUIZ_BANK || [];
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
       const q = bank.find(item => item.id === qId);
       if (!q) return;
 
@@ -3901,19 +4032,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       q.question = questionText;
       q.image = quizModalTempImage || '';
-      if (!Array.isArray(q.options) || q.options.length === 0) {
-        q.options = [correctAnswer, "Alternativa B (Incorreta)", "Alternativa C (Incorreta)", "Alternativa D (Incorreta)"];
-        q.correctIndex = 0;
-      } else {
-        const cIdx = (q.correctIndex !== undefined && q.correctIndex >= 0 && q.correctIndex < q.options.length) ? q.correctIndex : 0;
-        q.options[cIdx] = correctAnswer;
-        q.correctIndex = cIdx;
-      }
+      const smart = generateSmartOptions(questionText, correctAnswer);
+      q.options = smart.options;
+      q.correctIndex = smart.correctIndex;
       delete q.explanation;
 
       window.TKST_AUTH.saveCustomQuizBank(bank);
       detailModal.classList.remove('active');
-      alert('Questão atualizada com sucesso e sincronizada na nuvem!');
+      alert('Questão atualizada com sucesso e alternativas incorretas geradas automaticamente!');
       renderAdminMaster();
     },
 
@@ -3928,14 +4054,14 @@ document.addEventListener('DOMContentLoaded', () => {
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddQuizQuestion(${kyu});" style="display: flex; flex-direction: column; gap: 14px;">
           <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
-            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite a pergunta, anexe uma imagem ilustrativa (se desejar) e a <strong>resposta correta</strong> para <strong>${beltName}</strong>.
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite a pergunta, anexe uma foto ilustrativa (se desejar) e a <strong>resposta correta</strong>. As alternativas erradas serão geradas automaticamente pelo sistema!
           </div>
 
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
               <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
             </label>
-            <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite a pergunta do exame..." style="resize: vertical; font-size: 0.9rem;"></textarea>
+            <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="ex: Qual o nome do soco mostrado na ilustração?" style="resize: vertical; font-size: 0.9rem;"></textarea>
           </div>
 
           <div class="form-group">
@@ -3963,7 +4089,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito):
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito Oficial):
             </label>
             <input type="text" id="newQuizCorrectAnswerInput" class="form-input" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.9rem; font-weight: 600; color: #6EE7B7;">
           </div>
@@ -3983,7 +4109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     submitAddQuizQuestion: (kyu) => {
-      const bank = window.TKST_QUIZ_BANK || [];
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
       const questionText = document.getElementById('newQuizQuestionInput').value.trim();
       const correctAnswer = document.getElementById('newQuizCorrectAnswerInput').value.trim();
 
@@ -3993,20 +4119,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const beltName = getBeltNameFromKyu(kyu);
+      const smart = generateSmartOptions(questionText, correctAnswer);
       const newQuestion = {
         id: `q_custom_${kyu}_${Date.now()}`,
         kyuNumber: kyu,
         beltName: beltName,
         question: questionText,
         image: quizModalTempImage || '',
-        options: [correctAnswer, "Alternativa B (Incorreta)", "Alternativa C (Incorreta)", "Alternativa D (Incorreta)"],
-        correctIndex: 0
+        options: smart.options,
+        correctIndex: smart.correctIndex
       };
 
       bank.push(newQuestion);
       window.TKST_AUTH.saveCustomQuizBank(bank);
       detailModal.classList.remove('active');
-      alert('Nova questão cadastrada com sucesso e sincronizada na nuvem!');
+      alert('Nova questão cadastrada com sucesso e alternativas incorretas geradas automaticamente!');
       renderAdminMaster();
     },
 
