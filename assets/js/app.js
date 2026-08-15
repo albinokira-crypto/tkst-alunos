@@ -4,14 +4,51 @@
  */
 
 let deferredInstallPrompt = null;
+
+function isAppInstalled() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                       window.navigator.standalone === true ||
+                       document.referrer.includes('android-app://') ||
+                       window.matchMedia('(display-mode: fullscreen)').matches ||
+                       window.matchMedia('(display-mode: minimal-ui)').matches ||
+                       localStorage.getItem('tkst_pwa_installed') === 'true';
+  return isStandalone;
+}
+
+function updateInstallPromptsVisibility() {
+  const installed = isAppInstalled();
+  const installElements = document.querySelectorAll('#sidebarInstallPwa, .pwa-install-trigger, #loginInstallPwaBox');
+  installElements.forEach(el => {
+    if (el) {
+      if (installed) {
+        el.style.setProperty('display', 'none', 'important');
+      } else {
+        el.style.removeProperty('display');
+      }
+    }
+  });
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  console.log('beforeinstallprompt captured!');
+  if (!isAppInstalled()) {
+    updateInstallPromptsVisibility();
+  }
 });
+
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
+  localStorage.setItem('tkst_pwa_installed', 'true');
+  updateInstallPromptsVisibility();
   console.log('TKST Alunos app installed!');
+});
+
+window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+  if (e.matches) {
+    localStorage.setItem('tkst_pwa_installed', 'true');
+  }
+  updateInstallPromptsVisibility();
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -170,6 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       switchTab('dashboard');
     }
+
+    updateInstallPromptsVisibility();
   }
 
   // Setup Sidebar & Mobile Nav
@@ -353,6 +392,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user) renderLogin();
         else renderDashboard();
     }
+
+    updateInstallPromptsVisibility();
   }
 
   // =========================================================================
@@ -461,11 +502,13 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fas fa-sign-in-alt"></i> Entrar no Sistema
             </button>
 
-            <div style="margin-top: 14px;">
-              <button type="button" onclick="window.TKST_APP.installPwa()" class="btn btn-secondary" style="width: 100%; padding: 11px; font-size: 0.85rem; border: 1px dashed rgba(255, 183, 3, 0.4); color: var(--accent-gold); background: rgba(255, 183, 3, 0.05); font-weight: 600;">
-                <i class="fas fa-desktop"></i> Instalar App na Área de Trabalho
-              </button>
-            </div>
+            ${!isAppInstalled() ? `
+              <div id="loginInstallPwaBox" style="margin-top: 14px;">
+                <button type="button" onclick="window.TKST_APP.installPwa()" class="btn btn-secondary" style="width: 100%; padding: 11px; font-size: 0.85rem; border: 1px dashed rgba(255, 183, 3, 0.4); color: var(--accent-gold); background: rgba(255, 183, 3, 0.05); font-weight: 600;">
+                  <i class="fas fa-desktop"></i> Instalar App na Área de Trabalho
+                </button>
+              </div>
+            ` : ''}
           </form>
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 0.85rem;">
@@ -1143,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <strong style="color: var(--accent-gold); font-size: 0.86rem;">
                       <i class="fas fa-route" style="margin-right: 6px;"></i> Trilha de Execução dos 5 Passos:
                     </strong>
-                    <span style="font-size: 0.76rem; color: #94A3B8;">Tori avança ➔ Uke recua</span>
+                    <span style="font-size: 0.76rem; color: #94A3B8;">Mae avança ➔ Sagate recua</span>
                   </div>
 
                   <div class="gohon-steps-track">
@@ -1175,7 +1218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                 </div>
 
-                <!-- 3 Séries de Alvos (Jodan, Chudan, Mae Geri) -->
+                <!-- 3 Séries de Alvos (Jodan, Chudan, Gedan) -->
                 <div style="font-size: 0.86rem; font-weight: 700; color: #FFF; margin: 16px 0 10px 0; display: flex; align-items: center; gap: 8px;">
                   <i class="fas fa-crosshairs" style="color: var(--accent-crimson);"></i> As 3 Séries Oficiais de Ataque e Defesa:
                 </div>
@@ -1184,16 +1227,19 @@ document.addEventListener('DOMContentLoaded', () => {
                   <!-- Série 1: Jodan -->
                   <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
                     <div class="gohon-series-title">
-                      <strong style="color: #FFF; font-size: 0.95rem;">1. Nível Jodan (Alto)</strong>
+                      <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan (Alto)</strong>
                       <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
                     </div>
                     <div class="gohon-role-row">
-                      <span class="gohon-role-badge tori">Tori</span>
-                      <div><strong>5x Jodan Oi Tsuki</strong> (Avanço com soco no queixo/rosto)</div>
+                      <span class="gohon-role-badge tori">Mae</span>
+                      <div><strong>5x Jodan Oi Tsuki</strong></div>
                     </div>
                     <div class="gohon-role-row">
-                      <span class="gohon-role-badge uke">Uke</span>
-                      <div><strong>5x Jodan Age Uke</strong> (Recuo com defesa alta)</div>
+                      <span class="gohon-role-badge uke">Sagate</span>
+                      <div>
+                        <strong>5x Jodan Age Uke</strong><br>
+                        <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span>
+                      </div>
                     </div>
                     <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
                       ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Age Uke</em>, firma a base e desfere <strong>Gyaku Tsuki Chudan</strong> com potente <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
@@ -1203,35 +1249,42 @@ document.addEventListener('DOMContentLoaded', () => {
                   <!-- Série 2: Chudan -->
                   <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
                     <div class="gohon-series-title">
-                      <strong style="color: #FFF; font-size: 0.95rem;">2. Nível Chudan (Médio)</strong>
-                      <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo Solar</span>
+                      <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan (Médio)</strong>
+                      <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
                     </div>
                     <div class="gohon-role-row">
-                      <span class="gohon-role-badge tori">Tori</span>
-                      <div><strong>5x Chudan Oi Tsuki</strong> (Avanço com soco no tronco)</div>
+                      <span class="gohon-role-badge tori">Mae</span>
+                      <div><strong>5x Chudan Oi Tsuki</strong></div>
                     </div>
                     <div class="gohon-role-row">
-                      <span class="gohon-role-badge uke">Uke</span>
-                      <div><strong>5x Chudan Soto Uke</strong> (Recuo com defesa média)</div>
+                      <span class="gohon-role-badge uke">Sagate</span>
+                      <div>
+                        <strong>5x Chudan Soto Uke</strong><br>
+                        <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span><br>
+                        <span style="font-size: 0.75rem; color: #64748B;">*ou Chudan Uchi Uke ( Defesa de dentro para fora )</span>
+                      </div>
                     </div>
                     <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
                       ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Soto Uke</em>, estabiliza o quadril e aplica <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
                     </div>
                   </div>
 
-                  <!-- Série 3: Mae Geri -->
+                  <!-- Série 3: Gedan -->
                   <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
                     <div class="gohon-series-title">
-                      <strong style="color: #FFF; font-size: 0.95rem;">3. Nível Mae Geri (Baixo)</strong>
+                      <strong style="color: #FFF; font-size: 0.92rem;">3. Gedan (Baixo)</strong>
                       <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
                     </div>
                     <div class="gohon-role-row">
-                      <span class="gohon-role-badge tori">Tori</span>
-                      <div><strong>5x Mae Geri Chudan</strong> (Avanço com chute frontal)</div>
+                      <span class="gohon-role-badge tori">Mae</span>
+                      <div><strong>5x Mae Geri Chudan</strong></div>
                     </div>
                     <div class="gohon-role-row">
-                      <span class="gohon-role-badge uke">Uke</span>
-                      <div><strong>5x Gedan Barai</strong> (Recuo com varredura baixa)</div>
+                      <span class="gohon-role-badge uke">Sagate</span>
+                      <div>
+                        <strong>5x Gedan Barai</strong><br>
+                        <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
+                      </div>
                     </div>
                     <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
                       ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
@@ -1251,7 +1304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                   <div class="gohon-principle-item">
                     <div class="gohon-principle-title"><i class="fas fa-bolt"></i> Kiai & Kime</div>
-                    <div class="gohon-principle-desc">Explosão máxima de energia e Kiai obrigatório no 5º ataque (Tori) e no contragolpe (Uke).</div>
+                    <div class="gohon-principle-desc">Explosão máxima de energia e Kiai obrigatório no 5º ataque (Mae) e no contragolpe (Sagate).</div>
                   </div>
                   <div class="gohon-principle-item">
                     <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin (残心)</div>
@@ -1325,14 +1378,18 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="katas-grid">
-        ${katas.map(k => {
+        ${katas.map((k, idx) => {
           const videoUrl = customVideos[k.id] || (k.videoFileName ? 'videos/' + k.videoFileName : '');
           const hasVideo = !!videoUrl;
+          const moves = k.movesCount || (k.moves ? k.moves.length : null);
           return `
             <div class="kata-card" onclick="window.TKST_APP.openKataDetail('${k.id}')">
               <div class="kata-card-header">
                 <div>
-                  <div class="kata-name">${k.name}</div>
+                  <div class="kata-name" style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.78rem; background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); padding: 2px 7px; border-radius: 4px; font-weight: 800; border: 1px solid rgba(255, 183, 3, 0.3);">${idx + 1}º</span>
+                    <span>${k.name}</span>
+                  </div>
                   <div class="kata-meaning">${k.meaning}</div>
                 </div>
                 <div class="kata-kanji-stamp">${k.kanji}</div>
@@ -1343,6 +1400,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   <i class="fas fa-file-pdf" style="color: var(--accent-gold);"></i>
                   <span>Apostila PDF</span>
                 </div>
+                ${moves ? `
+                  <div class="kata-meta-item">
+                    <i class="fas fa-running" style="color: #48CAE4;"></i>
+                    <span>${moves} Movimentos</span>
+                  </div>
+                ` : ''}
                 <div class="kata-meta-item">
                   <i class="fas fa-video" style="color: ${hasVideo ? 'var(--accent-emerald)' : '#64748B'};"></i>
                   <span>${hasVideo ? 'Vídeo Integrado' : 'Apostila PDF'}</span>
@@ -1606,7 +1669,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <strong style="color: var(--accent-gold); font-size: 0.86rem;">
               <i class="fas fa-route" style="margin-right: 6px;"></i> Trilha de Execução dos 5 Passos:
             </strong>
-            <span style="font-size: 0.76rem; color: #94A3B8;">Tori avança ➔ Uke recua</span>
+            <span style="font-size: 0.76rem; color: #94A3B8;">Mae avança ➔ Sagate recua</span>
           </div>
 
           <div class="gohon-steps-track">
@@ -1638,21 +1701,24 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <!-- 3 Séries de Alvos (Jodan, Chudan, Mae Geri) -->
+        <!-- 3 Séries de Alvos (Jodan, Chudan, Gedan) -->
         <div class="gohon-series-grid">
           <!-- Série 1: Jodan -->
           <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
             <div class="gohon-series-title">
-              <strong style="color: #FFF; font-size: 0.95rem;">1. Nível Jodan (Alto)</strong>
+              <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan (Alto)</strong>
               <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
             </div>
             <div class="gohon-role-row">
-              <span class="gohon-role-badge tori">Tori</span>
-              <div><strong>5x Jodan Oi Tsuki</strong> (Avanço com soco no queixo/rosto)</div>
+              <span class="gohon-role-badge tori">Mae</span>
+              <div><strong>5x Jodan Oi Tsuki</strong></div>
             </div>
             <div class="gohon-role-row">
-              <span class="gohon-role-badge uke">Uke</span>
-              <div><strong>5x Jodan Age Uke</strong> (Recuo com defesa alta)</div>
+              <span class="gohon-role-badge uke">Sagate</span>
+              <div>
+                <strong>5x Jodan Age Uke</strong><br>
+                <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span>
+              </div>
             </div>
             <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
               ⚡ <strong>5º passo:</strong> Bloqueia com <em>Age Uke</em>, firma a base e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
@@ -1662,35 +1728,42 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Série 2: Chudan -->
           <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
             <div class="gohon-series-title">
-              <strong style="color: #FFF; font-size: 0.95rem;">2. Nível Chudan (Médio)</strong>
-              <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo Solar</span>
+              <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan (Médio)</strong>
+              <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
             </div>
             <div class="gohon-role-row">
-              <span class="gohon-role-badge tori">Tori</span>
-              <div><strong>5x Chudan Oi Tsuki</strong> (Avanço com soco no tronco)</div>
+              <span class="gohon-role-badge tori">Mae</span>
+              <div><strong>5x Chudan Oi Tsuki</strong></div>
             </div>
             <div class="gohon-role-row">
-              <span class="gohon-role-badge uke">Uke</span>
-              <div><strong>5x Chudan Soto Uke</strong> (Recuo com defesa média)</div>
+              <span class="gohon-role-badge uke">Sagate</span>
+              <div>
+                <strong>5x Chudan Soto Uke</strong><br>
+                <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span><br>
+                <span style="font-size: 0.75rem; color: #64748B;">*ou Chudan Uchi Uke ( Defesa de dentro para fora )</span>
+              </div>
             </div>
             <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
               ⚡ <strong>5º passo:</strong> Bloqueia com <em>Soto Uke</em>, estabiliza o quadril e aplica <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
             </div>
           </div>
 
-          <!-- Série 3: Mae Geri -->
+          <!-- Série 3: Gedan -->
           <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
             <div class="gohon-series-title">
-              <strong style="color: #FFF; font-size: 0.95rem;">3. Nível Mae Geri (Baixo)</strong>
+              <strong style="color: #FFF; font-size: 0.92rem;">3. Gedan (Baixo)</strong>
               <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
             </div>
             <div class="gohon-role-row">
-              <span class="gohon-role-badge tori">Tori</span>
-              <div><strong>5x Mae Geri Chudan</strong> (Avanço com chute frontal)</div>
+              <span class="gohon-role-badge tori">Mae</span>
+              <div><strong>5x Mae Geri Chudan</strong></div>
             </div>
             <div class="gohon-role-row">
-              <span class="gohon-role-badge uke">Uke</span>
-              <div><strong>5x Gedan Barai</strong> (Recuo com varredura baixa)</div>
+              <span class="gohon-role-badge uke">Sagate</span>
+              <div>
+                <strong>5x Gedan Barai</strong><br>
+                <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
+              </div>
             </div>
             <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
               ⚡ <strong>5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>

@@ -1325,13 +1325,21 @@ body.login-view-active .content-body {
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding-bottom: 8px;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.gohon-series-title strong {
+  white-space: nowrap;
+  font-size: 0.92rem;
 }
 
 .gohon-series-tag {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: var(--radius-full);
+  white-space: nowrap;
 }
 
 .gohon-role-row {
@@ -1464,3 +1472,11 @@ body.login-view-active .content-body {
   line-height: 1.4;
 }
 
+/* Ocultar opções de instalação quando o app já estiver instalado / em modo standalone */
+@media all and (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+  #sidebarInstallPwa,
+  .pwa-install-trigger,
+  #loginInstallPwaBox {
+    display: none !important;
+  }
+}

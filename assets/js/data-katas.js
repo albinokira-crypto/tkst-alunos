@@ -4,7 +4,7 @@ window.TKST_KATAS = [
     "sheetName": "1-Heian Shodan",
     "name": "Heian Shodan",
     "kanji": "平安初段",
-    "meaning": "Paz e Tranquilidade (Nível 1)",
+    "meaning": "Mente Pacífica - Primeiro Nível",
     "graduation": "6º Kyu (Faixa Branca -> Amarela)",
     "movesCount": 21,
     "videoUrl": "assets/videos/1- Heian Shodan.mp4",
@@ -145,9 +145,9 @@ window.TKST_KATAS = [
     "sheetName": "2-Heian Nidan",
     "name": "Heian Nidan",
     "kanji": "平安二段",
-    "meaning": "Paz e Tranquilidade (Nível 2)",
+    "meaning": "Mente Pacífica - Segundo Nível",
     "graduation": "5º Kyu (Faixa Amarela -> Vermelha)",
-    "movesCount": 37,
+    "movesCount": 26,
     "videoUrl": "assets/videos/2- Heian Nidan.mp4",
     "videoFileName": "2- Heian Nidan.mp4",
     "moves": [
@@ -382,9 +382,9 @@ window.TKST_KATAS = [
     "sheetName": "3-Heian Sandan",
     "name": "Heian Sandan",
     "kanji": "平安三段",
-    "meaning": "Paz e Tranquilidade (Nível 3)",
+    "meaning": "Mente Pacífica - Terceiro Nível",
     "graduation": "4º Kyu (Faixa Vermelha -> Laranja)",
-    "movesCount": 27,
+    "movesCount": 20,
     "videoUrl": "assets/videos/3- Heina Sandan.mp4",
     "videoFileName": "3- Heina Sandan.mp4",
     "moves": [
@@ -559,9 +559,9 @@ window.TKST_KATAS = [
     "sheetName": "4-Heian Yondan",
     "name": "Heian Yondan",
     "kanji": "平安四段",
-    "meaning": "Paz e Tranquilidade (Nível 4)",
+    "meaning": "Mente Pacífica - Quarto Nível",
     "graduation": "3º Kyu (Faixa Laranja -> Verde)",
-    "movesCount": 41,
+    "movesCount": 27,
     "videoUrl": "assets/videos/0- Bases.mp4",
     "videoFileName": "0- Bases.mp4",
     "moves": [
@@ -820,9 +820,9 @@ window.TKST_KATAS = [
     "sheetName": "5-Heian Godan",
     "name": "Heian Godan",
     "kanji": "平安五段",
-    "meaning": "Paz e Tranquilidade (Nível 5)",
+    "meaning": "Mente Pacífica - Quinto Nível",
     "graduation": "2º Kyu (Faixa Verde -> Roxa)",
-    "movesCount": 24,
+    "movesCount": 23,
     "videoUrl": "assets/videos/5- Heian Godan.mp4",
     "videoFileName": "5- Heian Godan.mp4",
     "moves": [
@@ -979,9 +979,9 @@ window.TKST_KATAS = [
     "sheetName": "6-Tekki Shodan",
     "name": "Tekki Shodan",
     "kanji": "鉄騎初段",
-    "meaning": "Cavalo de Ferro (Nível 1)",
+    "meaning": "Cavaleiro de Ferro - Primeiro Nível",
     "graduation": "1º Kyu (Faixa Roxa -> Marrom)",
-    "movesCount": 36,
+    "movesCount": 29,
     "videoUrl": "assets/videos/6- Tekki Shodan.mp4",
     "videoFileName": "6- Tekki Shodan.mp4",
     "moves": [
@@ -1206,923 +1206,13 @@ window.TKST_KATAS = [
     "pdfUrl": "assets/pdf/kata/6-Tekki Shodan.pdf"
   },
   {
-    "id": "7-bassai-dai",
-    "sheetName": "7-Bassai Dai",
-    "name": "Bassai Dai",
-    "kanji": "披塞大",
-    "meaning": "Rompendo a Fortaleza (Maior)",
-    "graduation": "1º Dan (Shodan - Faixa Preta)",
-    "movesCount": 42,
-    "videoUrl": "assets/videos/9- Bassai-Dai.mp4",
-    "videoFileName": "9- Bassai-Dai.mp4",
-    "moves": [
-      {
-        "step": 1,
-        "technique": "Awase Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 2,
-        "technique": "Osae Uke Omote",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 3,
-        "technique": "Kizame Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 4,
-        "technique": "Gyako Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 5,
-        "technique": "Kaiten Gedan Barai",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 6,
-        "technique": "Juji Jodan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 7,
-        "technique": "Juji Kamae",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 8,
-        "technique": "Nidan Geri/ Juji Gedan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 9,
-        "technique": "Juji Gedan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 10,
-        "technique": "Gedan Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 11,
-        "technique": "Shoto Barai",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 12,
-        "technique": "Kakiwake Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 13,
-        "technique": "Kakiwake Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 14,
-        "technique": "Morote Gedan Barai",
-        "stance": "Hachiji Dachi",
-        "kiai": false
-      },
-      {
-        "step": 15,
-        "technique": "Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 16,
-        "technique": "Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 17,
-        "technique": "Kaiten Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 18,
-        "technique": "Juji Gedan",
-        "stance": "Kataiza Dachi",
-        "kiai": false
-      },
-      {
-        "step": 19,
-        "technique": "Morote Uchi Uke",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 20,
-        "technique": "Morote Gedan Barai",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 21,
-        "technique": "Morote Koshi no Kamae",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 22,
-        "technique": "Hiji Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 23,
-        "technique": "Hiji Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 24,
-        "technique": "Morote Uchi Uke",
-        "stance": "Kosa Dachi",
-        "kiai": false
-      },
-      {
-        "step": 25,
-        "technique": "Manji Uke",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 26,
-        "technique": "Koshi no kamae",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 27,
-        "technique": "Yoko Geri Keage / Uraken",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 28,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 29,
-        "technique": "Manji Uke",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 30,
-        "technique": "Koshi no kamae",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 31,
-        "technique": "Yoko Geri Keage / Uraken",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 32,
-        "technique": "Gyako Tsuki",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 33,
-        "technique": "Manji Uke",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 34,
-        "technique": "Koshi no kamae",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 35,
-        "technique": "Yoko Geri Keage / Uraken",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 36,
-        "technique": "Gyako Tsuki",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 37,
-        "technique": "Jodan Tate Shuto",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 38,
-        "technique": "Tate Empi",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 39,
-        "technique": "Koshi Sho ni Oshi Ateru",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 40,
-        "technique": "Kaiten Koshi no Kamae",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 41,
-        "technique": "Yoko Geri Keage / Uraken",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 42,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      }
-    ],
-    "pdfFileName": "7-Bassai Dai.pdf",
-    "pdfUrl": "assets/pdf/kata/7-Bassai Dai.pdf"
-  },
-  {
-    "id": "8-kanku-dai",
-    "sheetName": "8-Kanku Dai",
-    "name": "Kanku Dai",
-    "kanji": "観空大",
-    "meaning": "Contemplando o Céu (Maior)",
-    "graduation": "1º Dan (Shodan - Faixa Preta)",
-    "movesCount": 28,
-    "videoUrl": "assets/videos/11- Kanku-Dai.mp4",
-    "videoFileName": "11- Kanku-Dai.mp4",
-    "moves": [
-      {
-        "step": 1,
-        "technique": "Awase Uke Jodan",
-        "stance": "Kosa Dachi",
-        "kiai": false
-      },
-      {
-        "step": 2,
-        "technique": "Morote Bo Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 3,
-        "technique": "Bo Dai",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 4,
-        "technique": "Haito Gedan Uke",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 5,
-        "technique": "Morote Bo Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 6,
-        "technique": "Bo Dai",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 7,
-        "technique": "Koshi no Kamae",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 8,
-        "technique": "Ura haito Uchi / Yoko Geri Keage/Tate Shuto",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 9,
-        "technique": "Nihon Choko Tsuki",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 10,
-        "technique": "Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 11,
-        "technique": "Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 12,
-        "technique": "Chudan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 13,
-        "technique": "Chudan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 14,
-        "technique": "Chudan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 15,
-        "technique": "Chudan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 16,
-        "technique": "Tsukami Uke Omote",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 17,
-        "technique": "Sakutsu Geri",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 18,
-        "technique": "Morote Uchi Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 19,
-        "technique": "Morote Ura Tsuki Jodan",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 20,
-        "technique": "Ashi Barai/ Soto Uke/ Morote Tsuki",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 21,
-        "technique": "Tetsui",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 22,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 23,
-        "technique": "Ashi Barai/ Soto Uke/ Morote Tsuki",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 24,
-        "technique": "Ashi Barai/ Soto Uke/ Morote Tsuki",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 25,
-        "technique": "Ashi Barai/ Soto Uke/ Morote Tsuki",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 26,
-        "technique": "Riosho Tate/ Tsukami Uke",
-        "stance": "Zenkutsu Dachi/NekoAshi Dachi",
-        "kiai": false
-      },
-      {
-        "step": 27,
-        "technique": "Riosho Tate",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 28,
-        "technique": "Tsukami Uke Omote",
-        "stance": "Nekoashi Dachi",
-        "kiai": false
-      }
-    ],
-    "pdfFileName": "8- Kanku Dai.pdf",
-    "pdfUrl": "assets/pdf/kata/8- Kanku Dai.pdf"
-  },
-  {
-    "id": "9-jion",
-    "sheetName": "9-Jion",
-    "name": "Jion",
-    "kanji": "慈恩",
-    "meaning": "Gratidão e Piedade (Templo Budista)",
-    "graduation": "1º Dan (Shodan - Faixa Preta)",
-    "movesCount": 41,
-    "videoUrl": "assets/videos/17- Jion.mp4",
-    "videoFileName": "17- Jion.mp4",
-    "moves": [
-      {
-        "step": 1,
-        "technique": "Morote Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 2,
-        "technique": "Morote Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 3,
-        "technique": "Morote Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 4,
-        "technique": "Oi Tsuki Chudan / Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 5,
-        "technique": "Oi Tsuki Chudan / Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 6,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 7,
-        "technique": "Gyako tsukami Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 8,
-        "technique": "Mae Geri/Tate Uraken",
-        "stance": "Kosa Dachi",
-        "kiai": false
-      },
-      {
-        "step": 9,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 10,
-        "technique": "Nihon Tsuki",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 11,
-        "technique": "Chudan Uchi Uke/ Gedan Barai",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 12,
-        "technique": "Gedan Barai",
-        "stance": "Moto Dachi",
-        "kiai": false
-      },
-      {
-        "step": 13,
-        "technique": "Gyako Tsukami Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 14,
-        "technique": "Mae Geri/Tate Uraken",
-        "stance": "Kosa Dachi",
-        "kiai": false
-      },
-      {
-        "step": 15,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 16,
-        "technique": "Nihon Tsuki",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 17,
-        "technique": "Chudan Uchi Uke/ Gedan Barai",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 18,
-        "technique": "Gedan Barai",
-        "stance": "Moto Dachi",
-        "kiai": false
-      },
-      {
-        "step": 19,
-        "technique": "Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 20,
-        "technique": "Morete Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 21,
-        "technique": "Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 22,
-        "technique": "Morote Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 23,
-        "technique": "Morote Bo Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 24,
-        "technique": "Morote Bo Uchi",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 25,
-        "technique": "Kaiten Tobi Chudan Chuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 26,
-        "technique": "Koshi no Kamae/Yoko Geri/ Uraken Uchi/ Mawashi Empi",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 27,
-        "technique": "Koshi no Kamae/Yoko Geri/ Uraken Uchi/ Mawashi Empi",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 28,
-        "technique": "Gyako tsukami Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 29,
-        "technique": "Mae Geri/Tate Uraken",
-        "stance": "Kosa Dachi",
-        "kiai": false
-      },
-      {
-        "step": 30,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 31,
-        "technique": "Nihon Tsuki",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 32,
-        "technique": "Raishu Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 33,
-        "technique": "Tobi Mikatsuki geri",
-        "stance": "Tsumasaki Dachi",
-        "kiai": false
-      },
-      {
-        "step": 34,
-        "technique": "Gedan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 35,
-        "technique": "Chudan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 36,
-        "technique": "Chudan uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 37,
-        "technique": "Oi tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 38,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 39,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 40,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 41,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      }
-    ],
-    "pdfFileName": "9-Jion.pdf",
-    "pdfUrl": "assets/pdf/kata/9-Jion.pdf"
-  },
-  {
-    "id": "10-empi",
-    "sheetName": "10-Empi",
-    "name": "Empi",
-    "kanji": "燕飛",
-    "meaning": "Voo da Andorinha",
-    "graduation": "1º Dan (Shodan - Faixa Preta)",
-    "movesCount": 37,
-    "videoUrl": "assets/videos/13- Empi.mp4",
-    "videoFileName": "13- Empi.mp4",
-    "moves": [],
-    "pdfFileName": "10- Empi.pdf",
-    "pdfUrl": "assets/pdf/kata/10- Empi.pdf"
-  },
-  {
-    "id": "11-jitte",
-    "sheetName": "11-Jitte",
-    "name": "Jitte",
-    "kanji": "十手",
-    "meaning": "Dez Mãos",
-    "graduation": "2º Dan (Nidan)",
-    "movesCount": 24,
-    "videoUrl": "assets/videos/15- Jitte.mp4",
-    "videoFileName": "15- Jitte.mp4",
-    "moves": [],
-    "pdfFileName": "11- Jitte.pdf",
-    "pdfUrl": "assets/pdf/kata/11- Jitte.pdf"
-  },
-  {
-    "id": "12-hangetsu",
-    "sheetName": "12-Hangetsu",
-    "name": "Hangetsu",
-    "kanji": "半月",
-    "meaning": "Meia Lua",
-    "graduation": "2º Dan (Nidan)",
-    "movesCount": 26,
-    "videoUrl": "assets/videos/14- Hangetsu.mp4",
-    "videoFileName": "14- Hangetsu.mp4",
-    "moves": [
-      {
-        "step": 1,
-        "technique": "Haiwan Sokumen Jodan Age uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 2,
-        "technique": "Seiryuto Uke/Ura Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 3,
-        "technique": "Kizame Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 4,
-        "technique": "Haiwan Sokumen Jodan Age uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 5,
-        "technique": "Seiryuto Uke/Ura Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 6,
-        "technique": "Kizame Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 7,
-        "technique": "Yoko Geri Keage/ UraKen Uchi",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 8,
-        "technique": "Chudan Chuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 9,
-        "technique": "Chudan Chuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 10,
-        "technique": "Chudan Chuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 11,
-        "technique": "Shihon Nukite Omote ( Kiai)",
-        "stance": "Zenkutsu Dachi",
-        "kiai": true
-      },
-      {
-        "step": 12,
-        "technique": "Chudan Chuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 13,
-        "technique": "Chudan Chuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 14,
-        "technique": "Chudan Chuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 15,
-        "technique": "Chudan Chuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 16,
-        "technique": "Gyako Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 17,
-        "technique": "Mae Geri",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 18,
-        "technique": "Gyako Tsuki",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 19,
-        "technique": "Gyako Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 20,
-        "technique": "Mae Geri",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 21,
-        "technique": "Gyako Tsuki",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 22,
-        "technique": "Morote Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 23,
-        "technique": "Gedan Barai",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 24,
-        "technique": "Jodan Age Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 25,
-        "technique": "Gedan Barai",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 26,
-        "technique": "Jodan Age Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": true
-      }
-    ],
-    "pdfFileName": "12-Hangetsu.pdf",
-    "pdfUrl": "assets/pdf/kata/12-Hangetsu.pdf"
-  },
-  {
     "id": "13-tekki-nidan",
     "sheetName": "13-Tekki Nidan",
     "name": "Tekki Nidan",
     "kanji": "鉄騎二段",
-    "meaning": "Cavalo de Ferro (Nível 2)",
+    "meaning": "Cavaleiro de Ferro - Segundo Nível",
     "graduation": "2º Dan (Nidan)",
-    "movesCount": 33,
+    "movesCount": 24,
     "videoUrl": "assets/videos/6- Tekki Shodan.mp4",
     "videoFileName": "6- Tekki Shodan.mp4",
     "moves": [
@@ -2333,9 +1423,9 @@ window.TKST_KATAS = [
     "sheetName": "14-Tekki Sandan",
     "name": "Tekki Sandan",
     "kanji": "鉄騎三段",
-    "meaning": "Cavalo de Ferro (Nível 3)",
+    "meaning": "Cavaleiro de Ferro - Terceiro Nível",
     "graduation": "3º Dan (Sandan)",
-    "movesCount": 48,
+    "movesCount": 36,
     "videoUrl": "assets/videos/Tekki Sandan.mp4",
     "videoFileName": "Tekki Sandan.mp4",
     "moves": [
@@ -2632,13 +1722,1106 @@ window.TKST_KATAS = [
     "pdfUrl": "assets/pdf/kata/14-Tekki Sandan.pdf"
   },
   {
+    "id": "7-bassai-dai",
+    "sheetName": "7-Bassai Dai",
+    "name": "Bassai Dai",
+    "kanji": "披塞大",
+    "meaning": "Romper a Fortaleza - Versão Maior",
+    "graduation": "1º Dan (Shodan - Faixa Preta)",
+    "movesCount": 42,
+    "videoUrl": "assets/videos/9- Bassai-Dai.mp4",
+    "videoFileName": "9- Bassai-Dai.mp4",
+    "moves": [
+      {
+        "step": 1,
+        "technique": "Awase Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 2,
+        "technique": "Osae Uke Omote",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 3,
+        "technique": "Kizame Tsuki",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 4,
+        "technique": "Gyako Tsuki",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 5,
+        "technique": "Kaiten Gedan Barai",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 6,
+        "technique": "Juji Jodan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 7,
+        "technique": "Juji Kamae",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 8,
+        "technique": "Nidan Geri/ Juji Gedan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 9,
+        "technique": "Juji Gedan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 10,
+        "technique": "Gedan Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 11,
+        "technique": "Shoto Barai",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 12,
+        "technique": "Kakiwake Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 13,
+        "technique": "Kakiwake Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 14,
+        "technique": "Morote Gedan Barai",
+        "stance": "Hachiji Dachi",
+        "kiai": false
+      },
+      {
+        "step": 15,
+        "technique": "Manji Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 16,
+        "technique": "Manji Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 17,
+        "technique": "Kaiten Manji Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 18,
+        "technique": "Juji Gedan",
+        "stance": "Kataiza Dachi",
+        "kiai": false
+      },
+      {
+        "step": 19,
+        "technique": "Morote Uchi Uke",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 20,
+        "technique": "Morote Gedan Barai",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 21,
+        "technique": "Morote Koshi no Kamae",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 22,
+        "technique": "Hiji Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 23,
+        "technique": "Hiji Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 24,
+        "technique": "Morote Uchi Uke",
+        "stance": "Kosa Dachi",
+        "kiai": false
+      },
+      {
+        "step": 25,
+        "technique": "Manji Uke",
+        "stance": "Tsuru Dachi",
+        "kiai": false
+      },
+      {
+        "step": 26,
+        "technique": "Koshi no kamae",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 27,
+        "technique": "Yoko Geri Keage / Uraken",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 28,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 29,
+        "technique": "Manji Uke",
+        "stance": "Tsuru Dachi",
+        "kiai": false
+      },
+      {
+        "step": 30,
+        "technique": "Koshi no kamae",
+        "stance": "Tsuru Dachi",
+        "kiai": false
+      },
+      {
+        "step": 31,
+        "technique": "Yoko Geri Keage / Uraken",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 32,
+        "technique": "Gyako Tsuki",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 33,
+        "technique": "Manji Uke",
+        "stance": "Tsuru Dachi",
+        "kiai": false
+      },
+      {
+        "step": 34,
+        "technique": "Koshi no kamae",
+        "stance": "Tsuru Dachi",
+        "kiai": false
+      },
+      {
+        "step": 35,
+        "technique": "Yoko Geri Keage / Uraken",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 36,
+        "technique": "Gyako Tsuki",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 37,
+        "technique": "Jodan Tate Shuto",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 38,
+        "technique": "Tate Empi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 39,
+        "technique": "Koshi Sho ni Oshi Ateru",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 40,
+        "technique": "Kaiten Koshi no Kamae",
+        "stance": "Tsuru Dachi",
+        "kiai": false
+      },
+      {
+        "step": 41,
+        "technique": "Yoko Geri Keage / Uraken",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 42,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      }
+    ],
+    "pdfFileName": "7-Bassai Dai.pdf",
+    "pdfUrl": "assets/pdf/kata/7-Bassai Dai.pdf"
+  },
+  {
+    "id": "16-bassai-sho",
+    "sheetName": "16-Bassai Sho",
+    "name": "Bassai Sho",
+    "kanji": "披塞小",
+    "meaning": "Romper a Fortaleza - Versão Menor",
+    "graduation": "3º Dan (Sandan)",
+    "movesCount": 27,
+    "videoUrl": "assets/videos/10- Bassai-Sho.mp4",
+    "videoFileName": "10- Bassai-Sho.mp4",
+    "moves": [
+      {
+        "step": 24,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 1,
+        "technique": "Osae Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 2,
+        "technique": "Gyako tsuki",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 3,
+        "technique": "Age Empi Uchi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 4,
+        "technique": "Morote Koshi no Kamae",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 5,
+        "technique": "Awasete Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 6,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 7,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 8,
+        "technique": "Jodan Age Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 9,
+        "technique": "Tate Empi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 10,
+        "technique": "Tate Shuto",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 11,
+        "technique": "Yoko Geri Kekomi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 12,
+        "technique": "Choko Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 13,
+        "technique": "Tate Shuto",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 14,
+        "technique": "Yoko Geri Kekomi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 15,
+        "technique": "Choko Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 16,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 17,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 18,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 19,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 20,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 21,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 22,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 23,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 24,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 25,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 26,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 27,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 28,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 29,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 30,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 31,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 32,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 33,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 34,
+        "technique": "Técnica",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      }
+    ],
+    "pdfFileName": "16- Bassai Sho.pdf",
+    "pdfUrl": "assets/pdf/kata/16- Bassai Sho.pdf"
+  },
+  {
+    "id": "8-kanku-dai",
+    "sheetName": "8-Kanku Dai",
+    "name": "Kanku Dai",
+    "kanji": "観空大",
+    "meaning": "Contemplar o Céu - Versão Maior",
+    "graduation": "1º Dan (Shodan - Faixa Preta)",
+    "movesCount": 65,
+    "videoUrl": "assets/videos/11- Kanku-Dai.mp4",
+    "videoFileName": "11- Kanku-Dai.mp4",
+    "moves": [
+      {
+        "step": 1,
+        "technique": "Awase Uke Jodan",
+        "stance": "Kosa Dachi",
+        "kiai": false
+      },
+      {
+        "step": 2,
+        "technique": "Morote Bo Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 3,
+        "technique": "Bo Dai",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 4,
+        "technique": "Haito Gedan Uke",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 5,
+        "technique": "Morote Bo Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 6,
+        "technique": "Bo Dai",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 7,
+        "technique": "Koshi no Kamae",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 8,
+        "technique": "Ura haito Uchi / Yoko Geri Keage/Tate Shuto",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 9,
+        "technique": "Nihon Choko Tsuki",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 10,
+        "technique": "Manji Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 11,
+        "technique": "Manji Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 12,
+        "technique": "Chudan Shuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 13,
+        "technique": "Chudan Shuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 14,
+        "technique": "Chudan Shuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 15,
+        "technique": "Chudan Shuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 16,
+        "technique": "Tsukami Uke Omote",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 17,
+        "technique": "Sakutsu Geri",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 18,
+        "technique": "Morote Uchi Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 19,
+        "technique": "Morote Ura Tsuki Jodan",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 20,
+        "technique": "Ashi Barai/ Soto Uke/ Morote Tsuki",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 21,
+        "technique": "Tetsui",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 22,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 23,
+        "technique": "Ashi Barai/ Soto Uke/ Morote Tsuki",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 24,
+        "technique": "Ashi Barai/ Soto Uke/ Morote Tsuki",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 25,
+        "technique": "Ashi Barai/ Soto Uke/ Morote Tsuki",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 26,
+        "technique": "Riosho Tate/ Tsukami Uke",
+        "stance": "Zenkutsu Dachi/NekoAshi Dachi",
+        "kiai": false
+      },
+      {
+        "step": 27,
+        "technique": "Riosho Tate",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 28,
+        "technique": "Tsukami Uke Omote",
+        "stance": "Nekoashi Dachi",
+        "kiai": false
+      }
+    ],
+    "pdfFileName": "8- Kanku Dai.pdf",
+    "pdfUrl": "assets/pdf/kata/8- Kanku Dai.pdf"
+  },
+  {
+    "id": "17-kanku-sho",
+    "sheetName": "17-Kanku Sho",
+    "name": "Kanku Sho",
+    "kanji": "観空小",
+    "meaning": "Contemplar o Céu - Versão Menor",
+    "graduation": "3º Dan (Sandan)",
+    "movesCount": 48,
+    "videoUrl": "assets/videos/12- Kanku-Sho.mp4",
+    "videoFileName": "12- Kanku-Sho.mp4",
+    "moves": [
+      {
+        "step": 1,
+        "technique": "Morote Koshi no Kamae",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 2,
+        "technique": "Awase Kubi Mae/Awase Kakiwake Uke",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 3,
+        "technique": "Gedan Barai",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 4,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 5,
+        "technique": "Gedan Barai",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 6,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 7,
+        "technique": "Morote Bo Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 8,
+        "technique": "Morote Bo Tsukami",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 9,
+        "technique": "Sonomama",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 10,
+        "technique": "Morote Koshi no Kamae",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 11,
+        "technique": "Chudan Uchi Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 12,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 13,
+        "technique": "Chudan Uchi Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 14,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 15,
+        "technique": "Morote Bo Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 16,
+        "technique": "Morote Bo Tsukami",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 17,
+        "technique": "Sonomama",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 18,
+        "technique": "Morote Koshi no Kamae",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 19,
+        "technique": "Jodan Age Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 20,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 21,
+        "technique": "Jodan Age Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 22,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 23,
+        "technique": "Yoko Tetsui Chudan",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 24,
+        "technique": "Mikatsuki Geri",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 25,
+        "technique": "Morote Gedan Barai",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 26,
+        "technique": "Haiwan Sokumen Jodan Age Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 27,
+        "technique": "Haiwan Sokumen Jodan Age Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 28,
+        "technique": "Morote Gedan Barai",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 29,
+        "technique": "Morote Uchi Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 30,
+        "technique": "Morote Ura tsuki Jodan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 31,
+        "technique": "Jodan Age Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 32,
+        "technique": "Sankaku Tobi Empi Uchi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 33,
+        "technique": "Chudan Shoto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 34,
+        "technique": "Chudan Shuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      }
+    ],
+    "pdfFileName": "17- Kanku Sho.pdf",
+    "pdfUrl": "assets/pdf/kata/17- Kanku Sho.pdf"
+  },
+  {
+    "id": "11-jitte",
+    "sheetName": "11-Jitte",
+    "name": "Jitte",
+    "kanji": "十手",
+    "meaning": "Dez Mãos",
+    "graduation": "2º Dan (Nidan)",
+    "movesCount": 24,
+    "videoUrl": "assets/videos/15- Jitte.mp4",
+    "videoFileName": "15- Jitte.mp4",
+    "moves": [],
+    "pdfFileName": "11- Jitte.pdf",
+    "pdfUrl": "assets/pdf/kata/11- Jitte.pdf"
+  },
+  {
+    "id": "12-hangetsu",
+    "sheetName": "12-Hangetsu",
+    "name": "Hangetsu",
+    "kanji": "半月",
+    "meaning": "Meia Lua",
+    "graduation": "2º Dan (Nidan)",
+    "movesCount": 41,
+    "videoUrl": "assets/videos/14- Hangetsu.mp4",
+    "videoFileName": "14- Hangetsu.mp4",
+    "moves": [
+      {
+        "step": 1,
+        "technique": "Haiwan Sokumen Jodan Age uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 2,
+        "technique": "Seiryuto Uke/Ura Tsuki",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 3,
+        "technique": "Kizame Tsuki",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 4,
+        "technique": "Haiwan Sokumen Jodan Age uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 5,
+        "technique": "Seiryuto Uke/Ura Tsuki",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 6,
+        "technique": "Kizame Tsuki",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 7,
+        "technique": "Yoko Geri Keage/ UraKen Uchi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 8,
+        "technique": "Chudan Chuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 9,
+        "technique": "Chudan Chuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 10,
+        "technique": "Chudan Chuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 11,
+        "technique": "Shihon Nukite Omote ( Kiai)",
+        "stance": "Zenkutsu Dachi",
+        "kiai": true
+      },
+      {
+        "step": 12,
+        "technique": "Chudan Chuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 13,
+        "technique": "Chudan Chuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 14,
+        "technique": "Chudan Chuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 15,
+        "technique": "Chudan Chuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 16,
+        "technique": "Gyako Chudan Uchi Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 17,
+        "technique": "Mae Geri",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 18,
+        "technique": "Gyako Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 19,
+        "technique": "Gyako Chudan Uchi Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 20,
+        "technique": "Mae Geri",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 21,
+        "technique": "Gyako Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 22,
+        "technique": "Morote Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 23,
+        "technique": "Gedan Barai",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 24,
+        "technique": "Jodan Age Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 25,
+        "technique": "Gedan Barai",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 26,
+        "technique": "Jodan Age Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": true
+      }
+    ],
+    "pdfFileName": "12-Hangetsu.pdf",
+    "pdfUrl": "assets/pdf/kata/12-Hangetsu.pdf"
+  },
+  {
+    "id": "10-empi",
+    "sheetName": "10-Empi",
+    "name": "Empi",
+    "kanji": "燕飛",
+    "meaning": "Voo da Andorinha",
+    "graduation": "1º Dan (Shodan - Faixa Preta)",
+    "movesCount": 37,
+    "videoUrl": "assets/videos/13- Empi.mp4",
+    "videoFileName": "13- Empi.mp4",
+    "moves": [],
+    "pdfFileName": "10- Empi.pdf",
+    "pdfUrl": "assets/pdf/kata/10- Empi.pdf"
+  },
+  {
     "id": "15-gangaku",
     "sheetName": "15-Gangaku",
     "name": "Gankaku",
     "kanji": "岩鶴",
-    "meaning": "Garça Sobre a Rocha",
+    "meaning": "Grou sobre a Rocha",
     "graduation": "3º Dan (Sandan)",
-    "movesCount": 36,
+    "movesCount": 42,
     "videoUrl": "assets/videos/0- Bases.mp4",
     "videoFileName": "0- Bases.mp4",
     "moves": [
@@ -2863,457 +3046,759 @@ window.TKST_KATAS = [
     "pdfUrl": "assets/pdf/kata/15-Gangaku.pdf"
   },
   {
-    "id": "16-bassai-sho",
-    "sheetName": "16-Bassai Sho",
-    "name": "Bassai Sho",
-    "kanji": "披塞小",
-    "meaning": "Rompendo a Fortaleza (Menor)",
-    "graduation": "3º Dan (Sandan)",
-    "movesCount": 35,
-    "videoUrl": "assets/videos/10- Bassai-Sho.mp4",
-    "videoFileName": "10- Bassai-Sho.mp4",
+    "id": "9-jion",
+    "sheetName": "9-Jion",
+    "name": "Jion",
+    "kanji": "慈恩",
+    "meaning": "Espírito de Compaixão",
+    "graduation": "1º Dan (Shodan - Faixa Preta)",
+    "movesCount": 47,
+    "videoUrl": "assets/videos/17- Jion.mp4",
+    "videoFileName": "17- Jion.mp4",
     "moves": [
       {
-        "step": 24,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
         "step": 1,
-        "technique": "Osae Uke",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Morote Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 2,
-        "technique": "Gyako tsuki",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Morote Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 3,
-        "technique": "Age Empi Uchi",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Morote Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 4,
-        "technique": "Morote Koshi no Kamae",
+        "technique": "Oi Tsuki Chudan / Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 5,
-        "technique": "Awasete Tsuki",
+        "technique": "Oi Tsuki Chudan / Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 6,
-        "technique": "Técnica",
+        "technique": "Oi Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 7,
-        "technique": "Técnica",
+        "technique": "Gyako tsukami Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 8,
-        "technique": "Jodan Age Uke",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Mae Geri/Tate Uraken",
+        "stance": "Kosa Dachi",
         "kiai": false
       },
       {
         "step": 9,
-        "technique": "Tate Empi",
+        "technique": "Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 10,
-        "technique": "Tate Shuto",
+        "technique": "Nihon Tsuki",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 11,
-        "technique": "Yoko Geri Kekomi",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Chudan Uchi Uke/ Gedan Barai",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 12,
-        "technique": "Choko Tsuki",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Gedan Barai",
+        "stance": "Moto Dachi",
         "kiai": false
       },
       {
         "step": 13,
-        "technique": "Tate Shuto",
+        "technique": "Gyako Tsukami Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 14,
-        "technique": "Yoko Geri Kekomi",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Mae Geri/Tate Uraken",
+        "stance": "Kosa Dachi",
         "kiai": false
       },
       {
         "step": 15,
-        "technique": "Choko Tsuki",
+        "technique": "Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 16,
-        "technique": "Técnica",
+        "technique": "Nihon Tsuki",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 17,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Chudan Uchi Uke/ Gedan Barai",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 18,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Gedan Barai",
+        "stance": "Moto Dachi",
         "kiai": false
       },
       {
         "step": 19,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Manji Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 20,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Morete Tsuki",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 21,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Manji Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 22,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Morote Tsuki",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 23,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Morote Bo Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 24,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Morote Bo Uchi",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 25,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Kaiten Tobi Chudan Chuto Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 26,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Koshi no Kamae/Yoko Geri/ Uraken Uchi/ Mawashi Empi",
+        "stance": "Tsuru Dachi",
         "kiai": false
       },
       {
         "step": 27,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Koshi no Kamae/Yoko Geri/ Uraken Uchi/ Mawashi Empi",
+        "stance": "Tsuru Dachi",
         "kiai": false
       },
       {
         "step": 28,
-        "technique": "Técnica",
+        "technique": "Gyako tsukami Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 29,
-        "technique": "Técnica",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Mae Geri/Tate Uraken",
+        "stance": "Kosa Dachi",
         "kiai": false
       },
       {
         "step": 30,
-        "technique": "Técnica",
+        "technique": "Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 31,
-        "technique": "Técnica",
+        "technique": "Nihon Tsuki",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 32,
-        "technique": "Técnica",
+        "technique": "Raishu Uke",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 33,
+        "technique": "Tobi Mikatsuki geri",
+        "stance": "Tsumasaki Dachi",
+        "kiai": false
+      },
+      {
+        "step": 34,
+        "technique": "Gedan Shuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 35,
+        "technique": "Chudan Shuto Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 36,
+        "technique": "Chudan uchi Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 37,
+        "technique": "Oi tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 38,
+        "technique": "Chudan Uchi Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 39,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 40,
         "technique": "Técnica",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
-        "step": 34,
+        "step": 41,
         "technique": "Técnica",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       }
     ],
-    "pdfFileName": "16- Bassai Sho.pdf",
-    "pdfUrl": "assets/pdf/kata/16- Bassai Sho.pdf"
+    "pdfFileName": "9-Jion.pdf",
+    "pdfUrl": "assets/pdf/kata/9-Jion.pdf"
   },
   {
-    "id": "17-kanku-sho",
-    "sheetName": "17-Kanku Sho",
-    "name": "Kanku Sho",
-    "kanji": "観空小",
-    "meaning": "Contemplando o Céu (Menor)",
+    "id": "20-chinte",
+    "sheetName": "20-Chinte",
+    "name": "Chinte",
+    "kanji": "珍手",
+    "meaning": "Mãos Misteriosas",
     "graduation": "3º Dan (Sandan)",
-    "movesCount": 34,
-    "videoUrl": "assets/videos/12- Kanku-Sho.mp4",
-    "videoFileName": "12- Kanku-Sho.mp4",
+    "movesCount": 32,
+    "videoUrl": "assets/videos/0- Bases.mp4",
+    "videoFileName": "0- Bases.mp4",
+    "moves": [],
+    "pdfFileName": "20- Chinte.pdf",
+    "pdfUrl": "assets/pdf/kata/20- Chinte.pdf"
+  },
+  {
+    "id": "22-sochin",
+    "sheetName": "22-Sochin",
+    "name": "Sochin",
+    "kanji": "壯鎭",
+    "meaning": "Força Tranquila",
+    "graduation": "3º Dan (Sandan)",
+    "movesCount": 41,
+    "videoUrl": "assets/videos/22- Shochin.mp4",
+    "videoFileName": "22- Shochin.mp4",
     "moves": [
       {
         "step": 1,
-        "technique": "Morote Koshi no Kamae",
-        "stance": "Kiba Dachi",
+        "technique": "Haiwan Sokumen Jodan Shuto Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 2,
-        "technique": "Awase Kubi Mae/Awase Kakiwake Uke",
-        "stance": "Kiba Dachi",
+        "technique": "Haiwan Sokumen Jodan Shuto Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 3,
-        "technique": "Gedan Barai",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Juji Gedan",
+        "stance": "Zenkutu Dachi",
         "kiai": false
       },
       {
         "step": 4,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Morote Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 5,
-        "technique": "Gedan Barai",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Koshi no Kamae",
+        "stance": "Tsuru Dachi",
         "kiai": false
       },
       {
         "step": 6,
-        "technique": "Oi Tsuki Chudan",
+        "technique": "Yoko Geri Keage/ Uraken Uchi",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 7,
-        "technique": "Morote Bo Uke",
-        "stance": "Kokutsu Dachi",
+        "technique": "Mawashi Empi",
+        "stance": "Zenkutu Dachi",
         "kiai": false
       },
       {
         "step": 8,
-        "technique": "Morote Bo Tsukami",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Koshi no Kamae",
+        "stance": "Tsuru Dachi",
         "kiai": false
       },
       {
         "step": 9,
-        "technique": "Sonomama",
+        "technique": "Yoko Geri Keage/ Uraken Uchi",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 10,
-        "technique": "Morote Koshi no Kamae",
-        "stance": "Kiba Dachi",
+        "technique": "Mawashi Empi",
+        "stance": "Zenkutu Dachi",
         "kiai": false
       },
       {
         "step": 11,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Nagashi uke+Shuto Barai/Nagashi Uke+Shuto Uchi",
+        "stance": "Zenkutu Dachi",
         "kiai": false
       },
       {
         "step": 12,
-        "technique": "Oi Tsuki Chudan",
+        "technique": "Mae geri",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 13,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
+        "technique": "Osae Uke/ Uraken uchi",
+        "stance": "Kosa Dachi",
+        "kiai": true
       },
       {
         "step": 14,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 15,
-        "technique": "Morote Bo Uke",
+        "technique": "Kakewake Uke",
         "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
-        "step": 16,
-        "technique": "Morote Bo Tsukami",
+        "step": 15,
+        "technique": "Mae geri",
         "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 16,
+        "technique": "Kizame Tsuki",
+        "stance": "Zenkutu Dachi",
         "kiai": false
       },
       {
         "step": 17,
-        "technique": "Sonomama",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Gyako Tsuki",
+        "stance": "Zenkutu Dachi",
         "kiai": false
       },
       {
         "step": 18,
-        "technique": "Morote Koshi no Kamae",
-        "stance": "Kiba Dachi",
+        "technique": "Kakewake Uke",
+        "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 19,
-        "technique": "Jodan Age Uke",
+        "technique": "Mae geri",
         "stance": "Zenkutsu Dachi",
         "kiai": false
       },
       {
         "step": 20,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Kizame Tsuki",
+        "stance": "Zenkutu Dachi",
         "kiai": false
       },
       {
         "step": 21,
-        "technique": "Jodan Age Uke",
-        "stance": "Zenkutsu Dachi",
+        "technique": "Gyako Tsuki",
+        "stance": "Zenkutu Dachi",
         "kiai": false
       },
       {
         "step": 22,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 23,
-        "technique": "Yoko Tetsui Chudan",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 24,
-        "technique": "Mikatsuki Geri",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 25,
-        "technique": "Morote Gedan Barai",
+        "technique": "Morote Uke",
         "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
+        "step": 23,
+        "technique": "Morote Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 24,
+        "technique": "Morote Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 25,
+        "technique": "Morote Tsukami Uke / Iza geri",
+        "stance": "Zenkutu Dachi",
+        "kiai": true
+      },
+      {
         "step": 26,
-        "technique": "Haiwan Sokumen Jodan Age Uke",
+        "technique": "Chudan Shuto Uke",
         "stance": "Kokutsu Dachi",
         "kiai": false
       },
       {
         "step": 27,
-        "technique": "Haiwan Sokumen Jodan Age Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 28,
-        "technique": "Morote Gedan Barai",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 29,
-        "technique": "Morote Uchi Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 30,
-        "technique": "Morote Ura tsuki Jodan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 31,
-        "technique": "Jodan Age Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 32,
-        "technique": "Sankaku Tobi Empi Uchi",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 33,
-        "technique": "Chudan Shoto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 34,
         "technique": "Chudan Shuto Uke",
         "stance": "Kokutsu Dachi",
         "kiai": false
       }
     ],
-    "pdfFileName": "17- Kanku Sho.pdf",
-    "pdfUrl": "assets/pdf/kata/17- Kanku Sho.pdf"
+    "pdfFileName": "22- Sochin.pdf",
+    "pdfUrl": "assets/pdf/kata/22- Sochin.pdf"
+  },
+  {
+    "id": "nijushiho",
+    "sheetName": "Nijushiho",
+    "name": "Nijūshiho",
+    "kanji": "二十四歩",
+    "meaning": "Vinte e Quatro Passos",
+    "graduation": "3º Dan (Sandan)",
+    "movesCount": 34,
+    "videoUrl": "assets/videos/NijuShi Ho.mp4",
+    "videoFileName": "NijuShi Ho.mp4",
+    "moves": [
+      {
+        "step": 1,
+        "technique": "Chudan Uchi Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 2,
+        "technique": "Gyako Tsuki",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 3,
+        "technique": "Kage Tsuki",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 4,
+        "technique": "Chudan Uchi Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 5,
+        "technique": "Gyako Tsuki",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 6,
+        "technique": "Kage Tsuki",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 7,
+        "technique": "Morote Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 8,
+        "technique": "Juji Gedan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 9,
+        "technique": "Juji Uchi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 10,
+        "technique": "Osae Uke Omote",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 11,
+        "technique": "Tate Shuto",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 12,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": true
+      },
+      {
+        "step": 13,
+        "technique": "Harai Uke",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 14,
+        "technique": "Raishu Uke",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 15,
+        "technique": "Mika Tsuki Geri",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 16,
+        "technique": "Mawashi Empi",
+        "stance": "Kiba Dachi",
+        "kiai": false
+      },
+      {
+        "step": 17,
+        "technique": "Morote Uke",
+        "stance": "Kosa Dachi",
+        "kiai": false
+      },
+      {
+        "step": 18,
+        "technique": "Jodan Morote Uke",
+        "stance": "Moto Dachi",
+        "kiai": false
+      },
+      {
+        "step": 19,
+        "technique": "Tobi Morote Koshi no Kamae / Juji Gedan",
+        "stance": "Kosa Dachi",
+        "kiai": true
+      },
+      {
+        "step": 20,
+        "technique": "Morote Uke",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 21,
+        "technique": "Nasashi Uke / Shuto Uchi Komi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 22,
+        "technique": "Manji Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 23,
+        "technique": "Nasashi Uke / Shuto Uchi Komi",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 24,
+        "technique": "Manji Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      }
+    ],
+    "pdfFileName": "23-Nijushiho.pdf",
+    "pdfUrl": "assets/pdf/kata/23-Nijushiho.pdf"
+  },
+  {
+    "id": "unsu",
+    "sheetName": "Unsu",
+    "name": "Unsu",
+    "kanji": "雲手",
+    "meaning": "Mãos de Nuvem",
+    "graduation": "4º Dan (Yondan)",
+    "movesCount": 48,
+    "videoUrl": "assets/videos/26- Unsu.mp4",
+    "videoFileName": "26- Unsu.mp4",
+    "moves": [
+      {
+        "step": 1,
+        "technique": "Chudan Uchi Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 2,
+        "technique": "Kosa Uke",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 3,
+        "technique": "Kosa Uke",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 4,
+        "technique": "Chudan Uchi Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 5,
+        "technique": "Kosa Uke",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 6,
+        "technique": "Kosa Uke",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 7,
+        "technique": "Morete Uke",
+        "stance": "Kokutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 8,
+        "technique": "Shihon Nukite",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 9,
+        "technique": "Ushiro Tetsui",
+        "stance": "Kibadachi",
+        "kiai": false
+      },
+      {
+        "step": 10,
+        "technique": "Oi Tsuki Chudan",
+        "stance": "Zenkutsu Dachi",
+        "kiai": true
+      },
+      {
+        "step": 11,
+        "technique": "Morote Koshi no Kamae",
+        "stance": "Heisoku Dachi",
+        "kiai": false
+      },
+      {
+        "step": 12,
+        "technique": "Mika Tsuki Geri/Hiji Uke",
+        "stance": "Kibadachi",
+        "kiai": false
+      },
+      {
+        "step": 13,
+        "technique": "Uraken Uchi",
+        "stance": "Kibadachi",
+        "kiai": false
+      },
+      {
+        "step": 14,
+        "technique": "Mika Tsuki Geri/Hiji Uke",
+        "stance": "Kibadachi",
+        "kiai": false
+      },
+      {
+        "step": 15,
+        "technique": "Uraken Uchi",
+        "stance": "Kibadachi",
+        "kiai": false
+      },
+      {
+        "step": 16,
+        "technique": "Mika Tsuki Geri/Hiji Uke",
+        "stance": "Kibadachi",
+        "kiai": false
+      },
+      {
+        "step": 17,
+        "technique": "Uraken Uchi",
+        "stance": "Kibadachi",
+        "kiai": false
+      },
+      {
+        "step": 18,
+        "technique": "Tate Shuto / Oi Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "kiai": false
+      },
+      {
+        "step": 19,
+        "technique": "Ushiro Tsuki",
+        "stance": "Kibadachi",
+        "kiai": false
+      },
+      {
+        "step": 20,
+        "technique": "Ushiro Tsuki",
+        "stance": "Kibadachi",
+        "kiai": true
+      }
+    ],
+    "pdfFileName": "21- Unsu.pdf",
+    "pdfUrl": "assets/pdf/kata/21- Unsu.pdf"
   },
   {
     "id": "18-gojushiho-dai",
     "sheetName": "18-Gojushiho Dai",
     "name": "Gojūshiho Dai",
     "kanji": "五十四歩大",
-    "meaning": "54 Passos (Maior)",
+    "meaning": "Cinquenta e Quatro Passos - Versão Maior",
     "graduation": "4º Dan (Yondan)",
-    "movesCount": 36,
+    "movesCount": 54,
     "videoUrl": "assets/videos/24- Gojushiho-Dai.mp4",
     "videoFileName": "24- Gojushiho-Dai.mp4",
     "moves": [
@@ -3542,9 +4027,9 @@ window.TKST_KATAS = [
     "sheetName": "19-Gojushiho Sho",
     "name": "Gojūshiho Sho",
     "kanji": "五十四歩小",
-    "meaning": "54 Passos (Menor)",
+    "meaning": "Cinquenta e Quatro Passos - Versão Menor",
     "graduation": "4º Dan (Yondan)",
-    "movesCount": 33,
+    "movesCount": 65,
     "videoUrl": "assets/videos/25- Gojushiho-Sho.mp4",
     "videoFileName": "25- Gojushiho-Sho.mp4",
     "moves": [
@@ -3751,498 +4236,13 @@ window.TKST_KATAS = [
     "pdfUrl": "assets/pdf/kata/19- Gojushiho Sho.pdf"
   },
   {
-    "id": "20-chinte",
-    "sheetName": "20-Chinte",
-    "name": "Chinte",
-    "kanji": "珍手",
-    "meaning": "Mãos Estranhas / Raras",
-    "graduation": "3º Dan (Sandan)",
-    "movesCount": 32,
-    "videoUrl": "assets/videos/0- Bases.mp4",
-    "videoFileName": "0- Bases.mp4",
-    "moves": [],
-    "pdfFileName": "20- Chinte.pdf",
-    "pdfUrl": "assets/pdf/kata/20- Chinte.pdf"
-  },
-  {
-    "id": "unsu",
-    "sheetName": "Unsu",
-    "name": "Unsu",
-    "kanji": "雲手",
-    "meaning": "Mãos de Nuvem",
-    "graduation": "4º Dan (Yondan)",
-    "movesCount": 20,
-    "videoUrl": "assets/videos/26- Unsu.mp4",
-    "videoFileName": "26- Unsu.mp4",
-    "moves": [
-      {
-        "step": 1,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 2,
-        "technique": "Kosa Uke",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 3,
-        "technique": "Kosa Uke",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 4,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 5,
-        "technique": "Kosa Uke",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 6,
-        "technique": "Kosa Uke",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 7,
-        "technique": "Morete Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 8,
-        "technique": "Shihon Nukite",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 9,
-        "technique": "Ushiro Tetsui",
-        "stance": "Kibadachi",
-        "kiai": false
-      },
-      {
-        "step": 10,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": true
-      },
-      {
-        "step": 11,
-        "technique": "Morote Koshi no Kamae",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 12,
-        "technique": "Mika Tsuki Geri/Hiji Uke",
-        "stance": "Kibadachi",
-        "kiai": false
-      },
-      {
-        "step": 13,
-        "technique": "Uraken Uchi",
-        "stance": "Kibadachi",
-        "kiai": false
-      },
-      {
-        "step": 14,
-        "technique": "Mika Tsuki Geri/Hiji Uke",
-        "stance": "Kibadachi",
-        "kiai": false
-      },
-      {
-        "step": 15,
-        "technique": "Uraken Uchi",
-        "stance": "Kibadachi",
-        "kiai": false
-      },
-      {
-        "step": 16,
-        "technique": "Mika Tsuki Geri/Hiji Uke",
-        "stance": "Kibadachi",
-        "kiai": false
-      },
-      {
-        "step": 17,
-        "technique": "Uraken Uchi",
-        "stance": "Kibadachi",
-        "kiai": false
-      },
-      {
-        "step": 18,
-        "technique": "Tate Shuto / Oi Tsuki",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 19,
-        "technique": "Ushiro Tsuki",
-        "stance": "Kibadachi",
-        "kiai": false
-      },
-      {
-        "step": 20,
-        "technique": "Ushiro Tsuki",
-        "stance": "Kibadachi",
-        "kiai": true
-      }
-    ],
-    "pdfFileName": "21- Unsu.pdf",
-    "pdfUrl": "assets/pdf/kata/21- Unsu.pdf"
-  },
-  {
-    "id": "22-sochin",
-    "sheetName": "22-Sochin",
-    "name": "Sochin",
-    "kanji": "壯鎭",
-    "meaning": "Espírito Inabalável / Força Tranquila",
-    "graduation": "3º Dan (Sandan)",
-    "movesCount": 27,
-    "videoUrl": "assets/videos/22- Shochin.mp4",
-    "videoFileName": "22- Shochin.mp4",
-    "moves": [
-      {
-        "step": 1,
-        "technique": "Haiwan Sokumen Jodan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 2,
-        "technique": "Haiwan Sokumen Jodan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 3,
-        "technique": "Juji Gedan",
-        "stance": "Zenkutu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 4,
-        "technique": "Morote Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 5,
-        "technique": "Koshi no Kamae",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 6,
-        "technique": "Yoko Geri Keage/ Uraken Uchi",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 7,
-        "technique": "Mawashi Empi",
-        "stance": "Zenkutu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 8,
-        "technique": "Koshi no Kamae",
-        "stance": "Tsuru Dachi",
-        "kiai": false
-      },
-      {
-        "step": 9,
-        "technique": "Yoko Geri Keage/ Uraken Uchi",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 10,
-        "technique": "Mawashi Empi",
-        "stance": "Zenkutu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 11,
-        "technique": "Nagashi uke+Shuto Barai/Nagashi Uke+Shuto Uchi",
-        "stance": "Zenkutu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 12,
-        "technique": "Mae geri",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 13,
-        "technique": "Osae Uke/ Uraken uchi",
-        "stance": "Kosa Dachi",
-        "kiai": true
-      },
-      {
-        "step": 14,
-        "technique": "Kakewake Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 15,
-        "technique": "Mae geri",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 16,
-        "technique": "Kizame Tsuki",
-        "stance": "Zenkutu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 17,
-        "technique": "Gyako Tsuki",
-        "stance": "Zenkutu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 18,
-        "technique": "Kakewake Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 19,
-        "technique": "Mae geri",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 20,
-        "technique": "Kizame Tsuki",
-        "stance": "Zenkutu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 21,
-        "technique": "Gyako Tsuki",
-        "stance": "Zenkutu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 22,
-        "technique": "Morote Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 23,
-        "technique": "Morote Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 24,
-        "technique": "Morote Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 25,
-        "technique": "Morote Tsukami Uke / Iza geri",
-        "stance": "Zenkutu Dachi",
-        "kiai": true
-      },
-      {
-        "step": 26,
-        "technique": "Chudan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 27,
-        "technique": "Chudan Shuto Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      }
-    ],
-    "pdfFileName": "22- Sochin.pdf",
-    "pdfUrl": "assets/pdf/kata/22- Sochin.pdf"
-  },
-  {
-    "id": "nijushiho",
-    "sheetName": "Nijushiho",
-    "name": "Nijūshiho",
-    "kanji": "二十四歩",
-    "meaning": "24 Passos",
-    "graduation": "3º Dan (Sandan)",
-    "movesCount": 24,
-    "videoUrl": "assets/videos/NijuShi Ho.mp4",
-    "videoFileName": "NijuShi Ho.mp4",
-    "moves": [
-      {
-        "step": 1,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 2,
-        "technique": "Gyako Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 3,
-        "technique": "Kage Tsuki",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 4,
-        "technique": "Chudan Uchi Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 5,
-        "technique": "Gyako Tsuki",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 6,
-        "technique": "Kage Tsuki",
-        "stance": "Heisoku Dachi",
-        "kiai": false
-      },
-      {
-        "step": 7,
-        "technique": "Morote Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 8,
-        "technique": "Juji Gedan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 9,
-        "technique": "Juji Uchi",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 10,
-        "technique": "Osae Uke Omote",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 11,
-        "technique": "Tate Shuto",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 12,
-        "technique": "Oi Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "kiai": true
-      },
-      {
-        "step": 13,
-        "technique": "Harai Uke",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 14,
-        "technique": "Raishu Uke",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 15,
-        "technique": "Mika Tsuki Geri",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 16,
-        "technique": "Mawashi Empi",
-        "stance": "Kiba Dachi",
-        "kiai": false
-      },
-      {
-        "step": 17,
-        "technique": "Morote Uke",
-        "stance": "Kosa Dachi",
-        "kiai": false
-      },
-      {
-        "step": 18,
-        "technique": "Jodan Morote Uke",
-        "stance": "Moto Dachi",
-        "kiai": false
-      },
-      {
-        "step": 19,
-        "technique": "Tobi Morote Koshi no Kamae / Juji Gedan",
-        "stance": "Kosa Dachi",
-        "kiai": true
-      },
-      {
-        "step": 20,
-        "technique": "Morote Uke",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 21,
-        "technique": "Nasashi Uke / Shuto Uchi Komi",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 22,
-        "technique": "Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 23,
-        "technique": "Nasashi Uke / Shuto Uchi Komi",
-        "stance": "Zenkutsu Dachi",
-        "kiai": false
-      },
-      {
-        "step": 24,
-        "technique": "Manji Uke",
-        "stance": "Kokutsu Dachi",
-        "kiai": false
-      }
-    ],
-    "pdfFileName": "23-Nijushiho.pdf",
-    "pdfUrl": "assets/pdf/kata/23-Nijushiho.pdf"
-  },
-  {
     "id": "24-meikyo",
     "sheetName": "24-Meikyo",
     "name": "Meikyō",
     "kanji": "明鏡",
-    "meaning": "Espelho Limpo da Alma",
+    "meaning": "Espelho Brilhante",
     "graduation": "3º Dan (Sandan)",
-    "movesCount": 29,
+    "movesCount": 33,
     "videoUrl": "assets/videos/20- Meikyo.mp4",
     "videoFileName": "20- Meikyo.mp4",
     "moves": [
@@ -4429,9 +4429,9 @@ window.TKST_KATAS = [
     "sheetName": "25-Jiin",
     "name": "Ji'in",
     "kanji": "慈陰",
-    "meaning": "Amor e Sombra / Terreno Sagrado",
+    "meaning": "Terreno Sagrado",
     "graduation": "3º Dan (Sandan)",
-    "movesCount": 42,
+    "movesCount": 47,
     "videoUrl": "assets/videos/18- Ji'in.mp4",
     "videoFileName": "18- Ji'in.mp4",
     "moves": [
@@ -4696,7 +4696,7 @@ window.TKST_KATAS = [
     "sheetName": "26-Wankan",
     "name": "Wankan",
     "kanji": "王冠",
-    "meaning": "Coroa Real",
+    "meaning": "Coroa do Rei",
     "graduation": "4º Dan (Yondan)",
     "movesCount": 24,
     "videoUrl": "assets/videos/21- Wankan.mp4",
