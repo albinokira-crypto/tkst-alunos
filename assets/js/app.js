@@ -2105,17 +2105,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
 
+              <!-- CONTROLE EXPANDIR / RECOLHER TODOS OS CARDS -->
+              <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.toggleAllShodanCols()" style="font-size: 0.76rem; padding: 5px 12px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-layer-group"></i> <span id="toggleAllShodanText">Expandir Todos os 4 Pilares</span>
+                </button>
+              </div>
+
               <!-- AS 4 COLUNAS OFICIAIS DO EXAME DE SHODAN -->
               <div class="shodan-program-grid">
                 <!-- Coluna 1: Te Waza (28 Técnicas) -->
-                <div class="shodan-col-card" style="border-top: 3px solid #3B82F6;">
-                  <div class="shodan-col-header">
+                <div class="shodan-col-card" id="shodanCard_teWaza" style="border-top: 3px solid #3B82F6;">
+                  <button type="button" class="shodan-col-header" id="shodanHeader_teWaza" onclick="window.TKST_APP.toggleShodanCol('teWaza')" aria-expanded="false">
                     <div class="shodan-col-title">
-                      <i class="fas fa-hand-paper" style="color: #3B82F6;"></i> Te Waza
+                      <i class="fas fa-hand-paper" style="color: #3B82F6; font-size: 1.15rem;"></i>
+                      <div>
+                        <span>Te Waza (Técnicas de Mãos)</span>
+                        <div class="shodan-col-subtitle">28 Técnicas • Toque para ver técnicas</div>
+                      </div>
                     </div>
-                    <span class="shodan-arrow-badge mae" style="font-size: 0.7rem;">28 Golpes • Mae / Sagate</span>
-                  </div>
-                  <div class="shodan-item-list">
+                    <div class="shodan-col-actions">
+                      <span class="shodan-arrow-badge mae" style="font-size: 0.7rem;">Mae / Sagate</span>
+                      <i class="fas fa-chevron-down shodan-col-chevron" id="shodanIcon_teWaza"></i>
+                    </div>
+                  </button>
+                  <div class="shodan-item-list" id="shodanBody_teWaza">
                     ${curr.shodanProgram.teWaza.map((t, idx) => `
                       <div class="shodan-tech-item">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
@@ -2126,14 +2140,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <!-- Coluna 2: Uke Waza (25 Técnicas) -->
-                <div class="shodan-col-card" style="border-top: 3px solid #10B981;">
-                  <div class="shodan-col-header">
+                <div class="shodan-col-card" id="shodanCard_ukeWaza" style="border-top: 3px solid #10B981;">
+                  <button type="button" class="shodan-col-header" id="shodanHeader_ukeWaza" onclick="window.TKST_APP.toggleShodanCol('ukeWaza')" aria-expanded="false">
                     <div class="shodan-col-title">
-                      <i class="fas fa-shield-alt" style="color: #10B981;"></i> Uke Waza
+                      <i class="fas fa-shield-alt" style="color: #10B981; font-size: 1.15rem;"></i>
+                      <div>
+                        <span>Uke Waza (Defesas)</span>
+                        <div class="shodan-col-subtitle">25 Técnicas • Toque para ver técnicas</div>
+                      </div>
                     </div>
-                    <span class="shodan-arrow-badge sagate" style="font-size: 0.7rem;">25 Defesas • Mae / Sagate</span>
-                  </div>
-                  <div class="shodan-item-list">
+                    <div class="shodan-col-actions">
+                      <span class="shodan-arrow-badge sagate" style="font-size: 0.7rem;">Mae / Sagate</span>
+                      <i class="fas fa-chevron-down shodan-col-chevron" id="shodanIcon_ukeWaza"></i>
+                    </div>
+                  </button>
+                  <div class="shodan-item-list" id="shodanBody_ukeWaza">
                     ${curr.shodanProgram.ukeWaza.map((t, idx) => `
                       <div class="shodan-tech-item">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
@@ -2144,14 +2165,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <!-- Coluna 3: Ashi Waza (15 Técnicas) -->
-                <div class="shodan-col-card" style="border-top: 3px solid #F5BE00;">
-                  <div class="shodan-col-header">
+                <div class="shodan-col-card" id="shodanCard_ashiWaza" style="border-top: 3px solid #F5BE00;">
+                  <button type="button" class="shodan-col-header" id="shodanHeader_ashiWaza" onclick="window.TKST_APP.toggleShodanCol('ashiWaza')" aria-expanded="false">
                     <div class="shodan-col-title">
-                      <i class="fas fa-shoe-prints" style="color: #F5BE00;"></i> Ashi Waza
+                      <i class="fas fa-shoe-prints" style="color: #F5BE00; font-size: 1.15rem;"></i>
+                      <div>
+                        <span>Ashi Waza (Chutes)</span>
+                        <div class="shodan-col-subtitle">15 Técnicas • Toque para ver técnicas</div>
+                      </div>
                     </div>
-                    <span class="shodan-arrow-badge mawate" style="font-size: 0.7rem;">15 Chutes • 🔄 Giro</span>
-                  </div>
-                  <div class="shodan-item-list">
+                    <div class="shodan-col-actions">
+                      <span class="shodan-arrow-badge mawate" style="font-size: 0.7rem;">🔄 Giro</span>
+                      <i class="fas fa-chevron-down shodan-col-chevron" id="shodanIcon_ashiWaza"></i>
+                    </div>
+                  </button>
+                  <div class="shodan-item-list" id="shodanBody_ashiWaza">
                     ${curr.shodanProgram.ashiWaza.map((t, idx) => `
                       <div class="shodan-tech-item">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
@@ -2162,14 +2190,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <!-- Coluna 4: Dachi Waza (18 Bases) -->
-                <div class="shodan-col-card" style="border-top: 3px solid #8B5CF6;">
-                  <div class="shodan-col-header">
+                <div class="shodan-col-card" id="shodanCard_dachiWaza" style="border-top: 3px solid #8B5CF6;">
+                  <button type="button" class="shodan-col-header" id="shodanHeader_dachiWaza" onclick="window.TKST_APP.toggleShodanCol('dachiWaza')" aria-expanded="false">
                     <div class="shodan-col-title">
-                      <i class="fas fa-layer-group" style="color: #8B5CF6;"></i> Dachi Waza
+                      <i class="fas fa-layer-group" style="color: #8B5CF6; font-size: 1.15rem;"></i>
+                      <div>
+                        <span>Dachi Waza (Bases & Movimentação)</span>
+                        <div class="shodan-col-subtitle">18 Técnicas • Toque para ver técnicas</div>
+                      </div>
                     </div>
-                    <span class="shodan-arrow-badge dachi" style="font-size: 0.7rem;">18 Bases • Mae / Sagate</span>
-                  </div>
-                  <div class="shodan-item-list">
+                    <div class="shodan-col-actions">
+                      <span class="shodan-arrow-badge dachi" style="font-size: 0.7rem;">Mae / Sagate</span>
+                      <i class="fas fa-chevron-down shodan-col-chevron" id="shodanIcon_dachiWaza"></i>
+                    </div>
+                  </button>
+                  <div class="shodan-item-list" id="shodanBody_dachiWaza">
                     ${curr.shodanProgram.dachiWaza.map((t, idx) => `
                       <div class="shodan-tech-item">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
@@ -3173,6 +3208,52 @@ document.addEventListener('DOMContentLoaded', () => {
         header?.classList.add('active');
         if (icon) icon.style.transform = 'rotate(180deg)';
       }
+    },
+    toggleShodanCol: (colKey) => {
+      const card = document.getElementById(`shodanCard_${colKey}`);
+      const body = document.getElementById(`shodanBody_${colKey}`);
+      const icon = document.getElementById(`shodanIcon_${colKey}`);
+      const header = document.getElementById(`shodanHeader_${colKey}`);
+      if (!card || !body) return;
+
+      const isOpen = card.classList.contains('active');
+      if (isOpen) {
+        card.classList.remove('active');
+        body.classList.remove('active');
+        header?.setAttribute('aria-expanded', 'false');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      } else {
+        card.classList.add('active');
+        body.classList.add('active');
+        header?.setAttribute('aria-expanded', 'true');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+    },
+    toggleAllShodanCols: () => {
+      const keys = ['teWaza', 'ukeWaza', 'ashiWaza', 'dachiWaza'];
+      const cards = keys.map(k => document.getElementById(`shodanCard_${k}`)).filter(Boolean);
+      const anyOpen = cards.some(c => c.classList.contains('active'));
+      const shouldOpen = !anyOpen;
+      keys.forEach(k => {
+        const card = document.getElementById(`shodanCard_${k}`);
+        const body = document.getElementById(`shodanBody_${k}`);
+        const icon = document.getElementById(`shodanIcon_${k}`);
+        const header = document.getElementById(`shodanHeader_${k}`);
+        if (!card || !body) return;
+        if (shouldOpen) {
+          card.classList.add('active');
+          body.classList.add('active');
+          header?.setAttribute('aria-expanded', 'true');
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+          card.classList.remove('active');
+          body.classList.remove('active');
+          header?.setAttribute('aria-expanded', 'false');
+          if (icon) icon.style.transform = 'rotate(0deg)';
+        }
+      });
+      const btnText = document.getElementById('toggleAllShodanText');
+      if (btnText) btnText.textContent = shouldOpen ? 'Recolher Todos os 4 Pilares' : 'Expandir Todos os 4 Pilares';
     },
     selectGlossaryCategory: (cat) => {
       glossaryCategory = cat;
