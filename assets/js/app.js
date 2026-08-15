@@ -1159,7 +1159,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Questions List Ordered -->
           <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px;">
             ${(() => {
-              const currentKyuQuestions = (window.TKST_QUIZ_BANK || []).filter(q => q.kyuNumber === adminQuizSelectedKyu);
+              const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+              const currentKyuQuestions = allBank.filter(q => q.kyuNumber === adminQuizSelectedKyu);
               if (currentKyuQuestions.length === 0) {
                 return `
                   <div style="padding: 30px; text-align: center; color: #64748B;">
@@ -3322,7 +3323,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function startQuiz(kyuNumber, beltName) {
-    const bank = window.TKST_QUIZ_BANK || window.TKST_QUIZ || [];
+    const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || window.TKST_QUIZ || []);
     let pool = bank.filter(q => q.kyuNumber === kyuNumber);
     if (pool.length === 0) {
       pool = bank.filter(q => q.kyuNumber <= kyuNumber);

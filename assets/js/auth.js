@@ -45,6 +45,26 @@
   // =========================================================================
   // AUTOMATIC REAL-TIME CLOUD SYNC ENGINE (PC <-> MOBILE IN REAL TIME)
   // =========================================================================
+  async function parseNtfyItem(item) {
+    if (!item) return null;
+    if (item.attachment && item.attachment.url) {
+      try {
+        const res = await fetch(item.attachment.url);
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch(e) {
+        console.warn('Failed to fetch ntfy attachment:', e);
+      }
+    }
+    if (item.message && typeof item.message === 'string') {
+      try {
+        return JSON.parse(item.message);
+      } catch(e) {}
+    }
+    return null;
+  }
+
   async function pushToCloud() {
     if (isSyncing) {
       syncPending = true;
@@ -73,10 +93,23 @@
         timestamp: Date.now()
       };
 
+      const payloadStr = JSON.stringify(payload);
+
+      // 1. Post to Vercel Serverless Sync API
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payloadStr
+      }).catch(() => {});
+
+      // 2. Post to ntfy.sh for real-time pub/sub
       await fetch(SYNC_URL, {
         method: 'POST',
-        headers: { 'Title': 'TKST_SYNC' },
-        body: JSON.stringify(payload)
+        headers: { 
+          'Title': 'TKST_SYNC',
+          'Filename': 'sync.json'
+        },
+        body: payloadStr
       });
 
       window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'push', time: new Date() } }));
@@ -221,6 +254,18 @@
 
   async function pullFromCloud() {
     try {
+      // 1. Try Vercel Serverless /api/sync if available
+      try {
+        const apiRes = await fetch('/api/sync', { cache: 'no-store' });
+        if (apiRes.ok) {
+          const apiJson = await apiRes.json();
+          if (apiJson && apiJson.success && apiJson.data) {
+            applyCloudData(apiJson.data);
+          }
+        }
+      } catch(e) {}
+
+      // 2. Poll ntfy.sh
       const res = await fetch(SYNC_URL + '/json?poll=1');
       if (res.ok) {
         const text = await res.text();
@@ -229,8 +274,8 @@
           for (let i = lines.length - 1; i >= 0; i--) {
             try {
               const item = JSON.parse(lines[i]);
-              if (item && item.message) {
-                const cloudData = JSON.parse(item.message);
+              const cloudData = await parseNtfyItem(item);
+              if (cloudData) {
                 applyCloudData(cloudData);
                 break;
               }
@@ -247,12 +292,14 @@
     try {
       if (typeof EventSource !== 'undefined') {
         const es = new EventSource(SYNC_URL + '/sse');
-        es.onmessage = function(e) {
+        es.onmessage = async function(e) {
           try {
             const parsed = JSON.parse(e.data);
-            if (parsed && parsed.event === 'message' && parsed.message) {
-              const cloudData = JSON.parse(parsed.message);
-              applyCloudData(cloudData);
+            if (parsed) {
+              const cloudData = await parseNtfyItem(parsed);
+              if (cloudData) {
+                applyCloudData(cloudData);
+              }
             }
           } catch(err) {}
         };
