@@ -25,8 +25,19 @@
   try {
     const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
     const savedBank = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+    const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
     if (Array.isArray(savedBank) && savedBank.length > 0) {
-      window.TKST_QUIZ_BANK = savedBank.filter(q => !deletedIds.includes(q.id));
+      const bankMap = new Map();
+      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
+      savedBank.forEach(q => {
+        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+      });
+      const merged = Array.from(bankMap.values());
+      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(merged));
+      window.TKST_QUIZ_BANK = merged;
+    } else if (defaultList.length > 0) {
+      window.TKST_QUIZ_BANK = defaultList;
+      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(defaultList));
     }
   } catch(e) {}
 
@@ -251,14 +262,22 @@
       }
     }
 
-    // 7. Sync Custom Quiz Bank (Filter out tombstoned deleted questions)
+    // 7. Sync Custom Quiz Bank (Filter out tombstoned deleted questions and merge with defaults)
     if (Array.isArray(cloudData.custom_quiz_bank) && cloudData.custom_quiz_bank.length > 0) {
-      const cleanBank = cloudData.custom_quiz_bank.filter(q => !localDeletedQuizzes.includes(q.id));
+      const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !localDeletedQuizzes.includes(q.id));
+      const bankMap = new Map();
+      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
+      cloudData.custom_quiz_bank.forEach(q => {
+        if (!localDeletedQuizzes.includes(q.id)) {
+          bankMap.set(q.id, q);
+        }
+      });
+      const mergedBank = Array.from(bankMap.values());
       const localBankStr = localStorage.getItem(STORAGE_KEY_QUIZ_BANK);
-      const newBankStr = JSON.stringify(cleanBank);
+      const newBankStr = JSON.stringify(mergedBank);
       if (localBankStr !== newBankStr) {
         localStorage.setItem(STORAGE_KEY_QUIZ_BANK, newBankStr);
-        window.TKST_QUIZ_BANK = cleanBank;
+        window.TKST_QUIZ_BANK = mergedBank;
         changed = true;
       }
     }
@@ -974,30 +993,32 @@
 
     getCustomQuizBank: function() {
       const del = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
+      const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || window.TKST_QUIZ || []).filter(q => !del.includes(q.id));
+      
       try {
         let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
         if (Array.isArray(saved) && saved.length > 0) {
-          const seenIds = new Set();
-          let needsResave = false;
-          saved.forEach((q, idx) => {
-            if (seenIds.has(q.id)) {
-              q.id = `q_${q.kyuNumber || 5}_fixed_${idx}_${Date.now().toString(36)}`;
-              needsResave = true;
-            } else {
-              seenIds.add(q.id);
+          const bankMap = new Map();
+          // 1. Populate current default questions
+          defaultList.forEach(q => bankMap.set(q.id, { ...q }));
+
+          // 2. Overlay custom questions and edits
+          saved.forEach(q => {
+            if (!del.includes(q.id)) {
+              bankMap.set(q.id, q);
             }
           });
-          if (needsResave) {
-            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(saved));
-          }
-          const filtered = saved.filter(q => !del.includes(q.id));
-          window.TKST_QUIZ_BANK = filtered;
-          return filtered;
+
+          const mergedBank = Array.from(bankMap.values());
+          localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(mergedBank));
+          window.TKST_QUIZ_BANK = mergedBank;
+          return mergedBank;
         }
       } catch(e) {}
-      const fallback = (window.TKST_DEFAULT_QUIZ_BANK || window.TKST_QUIZ_BANK || []).filter(q => !del.includes(q.id));
-      window.TKST_QUIZ_BANK = fallback;
-      return fallback;
+
+      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(defaultList));
+      window.TKST_QUIZ_BANK = defaultList;
+      return defaultList;
     },
 
     saveCustomQuizBank: function(bank) {

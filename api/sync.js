@@ -103,10 +103,14 @@ module.exports = async (req, res) => {
       }
       const allDeletedSubs = Array.from(deletedSubSet);
 
-      let customQuizBank = Array.isArray(incoming.custom_quiz_bank) ? incoming.custom_quiz_bank : inMemoryData.custom_quiz_bank;
-      if (Array.isArray(customQuizBank)) {
-        customQuizBank = customQuizBank.filter(q => !deletedQuizSet.has(q.id));
+      let quizBankMap = new Map();
+      if (Array.isArray(inMemoryData.custom_quiz_bank)) {
+        inMemoryData.custom_quiz_bank.forEach(q => quizBankMap.set(q.id, q));
       }
+      if (Array.isArray(incoming.custom_quiz_bank)) {
+        incoming.custom_quiz_bank.forEach(q => quizBankMap.set(q.id, q));
+      }
+      let customQuizBank = Array.from(quizBankMap.values()).filter(q => !deletedQuizSet.has(q.id));
 
       let quizSubmissionsList = Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []);
       if (Array.isArray(quizSubmissionsList)) {

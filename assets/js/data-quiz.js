@@ -993,10 +993,20 @@ window.TKST_DEFAULT_QUIZ_BANK = [
   try {
     const deletedIds = JSON.parse(localStorage.getItem('tkst_deleted_quiz_ids')) || [];
     const customBank = JSON.parse(localStorage.getItem('tkst_custom_quiz_bank'));
+    const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+
     if (Array.isArray(customBank) && customBank.length > 0) {
-      window.TKST_QUIZ_BANK = customBank.filter(q => !deletedIds.includes(q.id));
+      const bankMap = new Map();
+      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
+      customBank.forEach(q => {
+        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+      });
+      const merged = Array.from(bankMap.values());
+      localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(merged));
+      window.TKST_QUIZ_BANK = merged;
     } else {
-      window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK.filter(q => !deletedIds.includes(q.id));
+      window.TKST_QUIZ_BANK = defaultList;
+      localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(defaultList));
     }
   } catch(e) {
     window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK;
