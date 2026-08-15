@@ -1559,10 +1559,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- As 8 Séries Oficiais de Ataque (1ª e 2ª Forma) -->
           <div class="gohon-series-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-            <!-- 1. Jodan Oi Tsuki -->
+            <!-- 1. Oi Tsuki Jodan -->
             <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan Oi Tsuki</strong>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.92rem;">1. Oi Tsuki Jodan</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Soco na altura do rosto )</div>
+                </div>
                 <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Avanço Alto</span>
               </div>
               <div class="gohon-role-row">
@@ -1574,10 +1577,13 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
 
-            <!-- 2. Chudan Oi Tsuki -->
+            <!-- 2. Oi Tsuki Chudan -->
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan Oi Tsuki</strong>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.92rem;">2. Oi Tsuki Chudan</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Soco na altura do peito )</div>
+                </div>
                 <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Avanço Médio</span>
               </div>
               <div class="gohon-role-row">
@@ -1592,7 +1598,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 3. Mae Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">3. Mae Geri</strong>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.92rem;">3. Mae Geri</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Chute frontal )</div>
+                </div>
                 <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Chute Frontal</span>
               </div>
               <div class="gohon-role-row">
@@ -1607,7 +1616,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 4. Yoko Geri Kekomi -->
             <div class="gohon-series-card" style="border-left: 4px solid #00B4D8;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">4. Yoko Geri Kekomi</strong>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.92rem;">4. Yoko Geri Kekomi</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Chute com a faca do pé )</div>
+                </div>
                 <span class="gohon-series-tag" style="background: rgba(0,180,216,0.2); color: #90E0EF;">Chute Lateral</span>
               </div>
               <div class="gohon-role-row">
@@ -1622,7 +1634,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 5. Mawashi Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">5. Mawashi Geri</strong>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.92rem;">5. Mawashi Geri</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Chute semi circular )</div>
+                </div>
                 <span class="gohon-series-tag" style="background: rgba(168,85,247,0.2); color: #C084FC;">Chute Circular</span>
               </div>
               <div class="gohon-role-row">
@@ -1637,7 +1652,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 6. Ushiro Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #EC4899;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">6. Ushiro Geri</strong>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.92rem;">6. Ushiro Geri</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Chute Giratório )</div>
+                </div>
                 <span class="gohon-series-tag" style="background: rgba(236,72,153,0.2); color: #F472B6;">Chute Trás</span>
               </div>
               <div class="gohon-role-row">
@@ -1652,7 +1670,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 7. Chudan Gyaku Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">7. Chudan Gyaku Tsuki</strong>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.92rem;">7. Chudan Gyaku Tsuki</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Soco reverso na altura do peito )</div>
+                </div>
                 <span class="gohon-series-tag" style="background: rgba(16,185,129,0.2); color: #6EE7B7;">Soco Reverso</span>
               </div>
               <div class="gohon-role-row">
@@ -1667,7 +1688,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 8. Jodan Kizame Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #FB923C;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">8. Jodan Kizame Tsuki</strong>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.92rem;">8. Jodan Kizame Tsuki</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Soco direto na altura do rosto )</div>
+                </div>
                 <span class="gohon-series-tag" style="background: rgba(251,146,60,0.2); color: #FDBA74;">Soco Direto</span>
               </div>
               <div class="gohon-role-row">
@@ -1719,13 +1743,15 @@ document.addEventListener('DOMContentLoaded', () => {
             O exame de Faixa Marrom (1º Kyu) exige domínio pleno de todas as combinações da <strong>Tabela Oficial de Jiyu Ippon Kumite</strong> da TKST, abrangendo ataques retilíneos, circulares, contra-ataques duplos, projeções e varridas com foco absoluto (<em>Zanshin</em>).
           </p>
 
-          <!-- Tabela Completa dos 8 Ataques e Todas as Formas Oficiais -->
+          <!-- Tabela Completa dos 8 Ataques de Jiyu Ippon Kumite -->
           <div class="gohon-series-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-            <!-- 1. Jodan Oi Tsuki -->
+            <!-- 1. Oi Tsuki Jodan -->
             <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">1. Jodan Oi Tsuki</strong>
-                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">6 Formas Oficiais</span>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.95rem;">1. Oi Tsuki Jodan</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Soco na altura do rosto )</div>
+                </div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1740,11 +1766,13 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
 
-            <!-- 2. Chudan Oi Tsuki -->
+            <!-- 2. Oi Tsuki Chudan -->
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">2. Chudan Oi Tsuki</strong>
-                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">6 Formas Oficiais</span>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.95rem;">2. Oi Tsuki Chudan</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Soco na altura do peito )</div>
+                </div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1762,8 +1790,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 3. Mae Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">3. Mae Geri</strong>
-                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">6 Formas Oficiais</span>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.95rem;">3. Mae Geri</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Chute frontal )</div>
+                </div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1781,8 +1811,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 4. Yoko Geri Kekomi -->
             <div class="gohon-series-card" style="border-left: 4px solid #00B4D8;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">4. Yoko Geri Kekomi</strong>
-                <span class="gohon-series-tag" style="background: rgba(0,180,216,0.2); color: #90E0EF;">3 Formas Oficiais</span>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.95rem;">4. Yoko Geri Kekomi</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Chute com a faca do pé )</div>
+                </div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1797,8 +1829,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 5. Mawashi Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">5. Mawashi Geri</strong>
-                <span class="gohon-series-tag" style="background: rgba(168,85,247,0.2); color: #C084FC;">3 Formas Oficiais</span>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.95rem;">5. Mawashi Geri</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Chute semi circular )</div>
+                </div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1813,8 +1847,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 6. Ushiro Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #EC4899;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">6. Ushiro Geri</strong>
-                <span class="gohon-series-tag" style="background: rgba(236,72,153,0.2); color: #F472B6;">3 Formas Oficiais</span>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.95rem;">6. Ushiro Geri</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Chute Giratório )</div>
+                </div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1829,8 +1865,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 7. Chudan Gyaku Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">7. Chudan Gyaku Tsuki</strong>
-                <span class="gohon-series-tag" style="background: rgba(16,185,129,0.2); color: #6EE7B7;">3 Formas Oficiais</span>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.95rem;">7. Chudan Gyaku Tsuki</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Soco reverso na altura do peito )</div>
+                </div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -1845,8 +1883,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- 8. Jodan Kizame Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #FB923C;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.95rem;">8. Jodan Kizame Tsuki</strong>
-                <span class="gohon-series-tag" style="background: rgba(251,146,60,0.2); color: #FDBA74;">3 Formas Oficiais</span>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.95rem;">8. Jodan Kizame Tsuki</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">( Soco direto na altura do rosto )</div>
+                </div>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
@@ -2515,14 +2555,19 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
-          ${kumite.jiyuIpponKumite.techniques.map(t => `
+          ${kumite.jiyuIpponKumite.categories ? kumite.jiyuIpponKumite.categories.map(cat => `
             <div style="background: rgba(10,13,20,0.6); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-              <div style="font-weight: 700; color: var(--accent-crimson); margin-bottom: 4px;">Ataque: ${t.attack}</div>
-              <div style="color: #FFF; font-size: 0.9rem; margin-bottom: 4px;">Defesa: <strong>${t.defense}</strong></div>
-              <div style="color: var(--accent-gold); font-size: 0.88rem; margin-bottom: 6px;">Contragolpe: <strong>${t.counter}</strong></div>
-              <div style="font-size: 0.78rem; color: #64748B; font-style: italic;">Obs: ${t.note}</div>
+              <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.95rem;">${cat.attackName}</div>
+              <div style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 8px;">( ${cat.description || ''} )</div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                ${cat.forms.map(f => `
+                  <div style="font-size: 0.82rem; color: #E2E8F0; line-height: 1.5;">
+                    <strong style="color: var(--accent-gold);">${f.number}ª:</strong> ${f.technique}
+                  </div>
+                `).join('')}
+              </div>
             </div>
-          `).join('')}
+          `).join('') : ''}
         </div>
       </div>
 

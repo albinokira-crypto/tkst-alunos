@@ -284,7 +284,8 @@ window.TKST_KUMITE = {
     "categories": [
       {
         "id": "jodan-oi-tsuki",
-        "attackName": "Jodan Oi Tsuki",
+        "attackName": "Oi Tsuki Jodan",
+        "description": "Soco na altura do rosto",
         "forms": [
           { "number": 1, "technique": "Shuto Uke Jodan / Gyaku Tsuki Chudan" },
           { "number": 2, "technique": "Seiryuto Uke Jodan / Ura Tsuki Chudan" },
@@ -296,7 +297,8 @@ window.TKST_KUMITE = {
       },
       {
         "id": "chudan-oi-tsuki",
-        "attackName": "Chudan Oi Tsuki",
+        "attackName": "Oi Tsuki Chudan",
+        "description": "Soco na altura do peito",
         "forms": [
           { "number": 1, "technique": "Soto Uke Chudan / Gyaku Tsuki Chudan" },
           { "number": 2, "technique": "Gyaku Osae Uke / Uraken Uchi Jodan" },
@@ -309,6 +311,7 @@ window.TKST_KUMITE = {
       {
         "id": "mae-geri",
         "attackName": "Mae Geri",
+        "description": "Chute frontal",
         "forms": [
           { "number": 1, "technique": "Gedan Barai 45° / Gyaku Tsuki Chudan" },
           { "number": 2, "technique": "Migi Gedan Barai / Hikite Tate Shuto (Nekoashi Dachi) / Kizame Tsuki Jodan" },
@@ -321,6 +324,7 @@ window.TKST_KUMITE = {
       {
         "id": "yoko-geri-kekomi",
         "attackName": "Yoko Geri Kekomi",
+        "description": "Chute com a faca do pé",
         "forms": [
           { "number": 1, "technique": "Soto Uke Chudan / Gyaku Tsuki Chudan" },
           { "number": 2, "technique": "Awase Seiryuto Uke / Kizame Tsuki Jodan" },
@@ -330,6 +334,7 @@ window.TKST_KUMITE = {
       {
         "id": "mawashi-geri",
         "attackName": "Mawashi Geri",
+        "description": "Chute semi circular",
         "forms": [
           { "number": 1, "technique": "Haiwan Uke Jodan 90° / Gyaku Tsuki Chudan" },
           { "number": 2, "technique": "Kizame Gyaku Oi Tsuki / Shuto Uchi Jodan" },
@@ -339,6 +344,7 @@ window.TKST_KUMITE = {
       {
         "id": "ushiro-geri",
         "attackName": "Ushiro Geri",
+        "description": "Chute Giratório",
         "forms": [
           { "number": 1, "technique": "Gyaku Sukui Uke / Kizame Tsuki Jodan" },
           { "number": 2, "technique": "Sukui Uke segurando a perna / Ashi Barai / Otoshi Gyaku Tsuki Chudan" },
@@ -348,6 +354,7 @@ window.TKST_KUMITE = {
       {
         "id": "chudan-gyaku-tsuki",
         "attackName": "Chudan Gyaku Tsuki",
+        "description": "Soco reverso na altura do peito",
         "forms": [
           { "number": 1, "technique": "Kizame Tsuki Jodan 90° / Gyaku Tsuki Chudan" },
           { "number": 2, "technique": "Ushiro Gedan Barai / Mawashi Geri Jodan / Shuto Uchi Jodan" },
@@ -357,6 +364,7 @@ window.TKST_KUMITE = {
       {
         "id": "jodan-kizame-tsuki",
         "attackName": "Jodan Kizame Tsuki",
+        "description": "Soco direto com a mão da frente na altura do rosto",
         "forms": [
           { "number": 1, "technique": "45° Gyaku Uraken Jodan / Gyaku Tsuki Chudan" },
           { "number": 2, "technique": "Seiryuto Uke Jodan / Ashi Barai / Ura Tsuki Chudan" },
