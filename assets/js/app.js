@@ -992,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.saveKataVideo('${k.id}')" style="font-size: 0.78rem; padding: 6px 12px;">
                       <i class="fas fa-save"></i> Salvar Link
                     </button>
-                    <button class="btn btn-sm btn-gold" onclick="window.TKST_APP.testKataVideo('${k.id}', '${k.name}')" style="font-size: 0.78rem; padding: 6px 12px;">
+                    <button class="btn btn-sm btn-gold" onclick="window.TKST_APP.testKataVideo('${k.id}')" style="font-size: 0.78rem; padding: 6px 12px;">
                       <i class="fas fa-play"></i> Testar no Sistema
                     </button>
                   </div>
@@ -4724,6 +4724,8 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     testKataVideo: (kataId, kataName) => {
+      const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
+      const name = kataName || (kata ? kata.name : 'Kata');
       const input = document.getElementById(`kata_vid_input_${kataId}`);
       const url = input ? input.value.trim() : window.TKST_APP.getKataVideoUrl(kataId);
       if (!url) {
@@ -4733,7 +4735,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.TKST_AUTH && window.TKST_AUTH.saveKataVideo) {
         window.TKST_AUTH.saveKataVideo(kataId, url);
       }
-      openVideoModal(kataName, url);
+      openVideoModal(name, url);
     },
 
     playKataVideo: (kataId) => {
