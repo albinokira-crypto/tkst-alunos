@@ -3672,9 +3672,14 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.3); font-size: 1.15rem;">${t.kanji || ''}</span>
                 ${isAdmin ? `
-                  <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; line-height: 1;">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                  <div style="display: flex; gap: 4px; align-items: center;">
+                    <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openEditGlossaryTermModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Editar Termo (Admin)" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; line-height: 1;">
+                      <i class="fas fa-edit" style="color: var(--accent-gold);"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; line-height: 1;">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 ` : ''}
               </div>
             </div>
@@ -5491,6 +5496,96 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         renderGlossary();
       } else {
         alert((res && res.error) || 'Erro ao excluir termo.');
+      }
+    },
+
+    openEditGlossaryTermModal: (categoryKey, japaneseName) => {
+      const glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : window.TKST_GLOSSARY;
+      const list = (glossary && glossary[categoryKey]) || [];
+      const term = list.find(t => t.japanese.toLowerCase().trim() === japaneseName.toLowerCase().trim());
+      if (!term) {
+        alert('Termo não encontrado para edição.');
+        return;
+      }
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      modalTitle.innerHTML = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Termo: ${term.japanese}</span>`;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm('${categoryKey}', '${term.japanese.replace(/'/g, "\\'")}');" style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-folder" style="color: var(--accent-gold); margin-right: 6px;"></i> Categoria:
+            </label>
+            <select id="editGlossaryCategory" class="form-input" required style="font-size: 0.88rem;">
+              <option value="bases" ${categoryKey === 'bases' ? 'selected' : ''}>Bases (Dachi)</option>
+              <option value="defesas" ${categoryKey === 'defesas' ? 'selected' : ''}>Defesas (Uke)</option>
+              <option value="socosGolpes" ${categoryKey === 'socosGolpes' ? 'selected' : ''}>Socos e Golpes (Tsuki/Uchi)</option>
+              <option value="chutes" ${categoryKey === 'chutes' ? 'selected' : ''}>Chutes (Geri)</option>
+              <option value="comandosEContagem" ${categoryKey === 'comandosEContagem' ? 'selected' : ''}>Comandos e Conceitos</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-language" style="color: var(--accent-gold); margin-right: 6px;"></i> Termo em Japonês (Romaji):
+            </label>
+            <input type="text" id="editGlossaryJapanese" class="form-input" required value="${term.japanese.replace(/"/g, '&quot;')}" style="font-size: 0.9rem; font-weight: 600;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-pen-fancy" style="color: var(--accent-gold); margin-right: 6px;"></i> Kanji / Ideogramas (Opcional):
+            </label>
+            <input type="text" id="editGlossaryKanji" class="form-input" value="${(term.kanji || '').replace(/"/g, '&quot;')}" style="font-size: 0.9rem; font-family: var(--font-kanji);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-align-left" style="color: var(--accent-gold); margin-right: 6px;"></i> Significado / Explicação:
+            </label>
+            <textarea id="editGlossaryMeaning" class="form-input" rows="3" required style="resize: vertical; font-size: 0.88rem;">${term.meaning.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
+              <i class="fas fa-save"></i> Salvar Alterações
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    submitEditGlossaryTerm: (oldCategory, oldJapaneseName) => {
+      const newCategory = document.getElementById('editGlossaryCategory').value;
+      const japanese = document.getElementById('editGlossaryJapanese').value.trim();
+      const kanji = document.getElementById('editGlossaryKanji').value.trim();
+      const meaning = document.getElementById('editGlossaryMeaning').value.trim();
+
+      if (!newCategory || !japanese || !meaning) {
+        alert('Por favor, preencha o termo em japonês e o seu significado.');
+        return;
+      }
+
+      const res = window.TKST_AUTH.updateGlossaryTerm(oldCategory, oldJapaneseName, newCategory, {
+        japanese,
+        kanji,
+        meaning
+      });
+
+      if (res && res.success) {
+        document.getElementById('detailModal').classList.remove('active');
+        alert(`Termo "${japanese}" atualizado com sucesso no dicionário!`);
+        renderGlossary();
+      } else {
+        alert((res && res.error) || 'Erro ao atualizar termo.');
       }
     }
   };

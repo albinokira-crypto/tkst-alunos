@@ -1173,6 +1173,39 @@
       return { success: true };
     },
 
+    updateGlossaryTerm: function(oldCategory, oldJapaneseName, newCategory, newTermData) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas o administrador pode editar termos.' };
+      if (!newCategory || !newTermData || !newTermData.japanese || !newTermData.meaning) {
+        return { success: false, error: 'Preencha todos os campos obrigatórios.' };
+      }
+
+      const oldCleanKey = (oldJapaneseName || '').toLowerCase().trim();
+      const newCleanKey = newTermData.japanese.toLowerCase().trim();
+
+      let deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
+      if (oldCleanKey !== newCleanKey) {
+        if (!deletedTerms.includes(oldCleanKey)) deletedTerms.push(oldCleanKey);
+        deletedTerms = deletedTerms.filter(k => k !== newCleanKey);
+        localStorage.setItem(STORAGE_KEY_DELETED_GLOSSARY, JSON.stringify(deletedTerms));
+      }
+
+      const glossary = this.getCustomGlossary();
+
+      // Remove from old category if exists
+      if (glossary[oldCategory]) {
+        glossary[oldCategory] = glossary[oldCategory].filter(t => t.japanese.toLowerCase().trim() !== oldCleanKey);
+      }
+
+      if (!glossary[newCategory]) glossary[newCategory] = [];
+
+      // Remove any existing in new category and insert
+      glossary[newCategory] = glossary[newCategory].filter(t => t.japanese.toLowerCase().trim() !== newCleanKey);
+      glossary[newCategory].unshift({ ...newTermData });
+
+      this.saveCustomGlossary(glossary);
+      return { success: true, term: newTermData };
+    },
+
     getFirebaseUrl: function() {
       return localStorage.getItem(STORAGE_KEY_FIREBASE) || '';
     },
