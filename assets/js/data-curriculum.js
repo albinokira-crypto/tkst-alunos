@@ -578,7 +578,7 @@ window.TKST_CURRICULUM = [
       "description": "Execução obrigatória de Heian Godan e Tekki Shodan, mais um Kata Superior escolhido pela banca (Bassai Dai, Kanku Dai, Jion, Jitte ou Empi)."
     },
     "kumite": {
-      "type": "Jiyu Ippon Kumite (1ª e 2ª Forma) & Jiyu Kumite (Contra 1 e 2 oponentes)",
+      "type": "Jiyu Ippon Kumite (1ª e 2ª Forma Oficial - 8 Ataques) & Jiyu Kumite (Contra 1 e 2 oponentes)",
       "description": "Jiyu Ippon Kumite sem contato mas com controle milimétrico e velocidade real de combate."
     },
     "requirements": [
@@ -674,7 +674,7 @@ window.TKST_CURRICULUM = [
       "description": "Execução perfeita de Tekki Shodan e Bassai Dai, além de responder a sorteio de Katas Heian e apresentar aplicações de Bunkai."
     },
     "kumite": {
-      "type": "Jiyu Ippon Kumite (1ª, 2ª, 3ª e 4ª Forma) & Jiyu Kumite (Contra 1, 2 e 4 oponentes)",
+      "type": "Jiyu Ippon Kumite Completo (Tabela Oficial TKST) & Jiyu Kumite (Contra 1, 2 e 4 oponentes)",
       "description": "Luta livre contínua demonstrando controle emocional, Zanshin, tempo de reação e condicionamento cardiovascular."
     },
     "requirements": [

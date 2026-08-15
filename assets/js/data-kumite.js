@@ -279,38 +279,89 @@ window.TKST_KUMITE = {
     ]
   },
   "jiyuIpponKumite": {
-    "title": "Jiyu Ippon Kumite (Semi-Livre de 1 Passo)",
-    "description": "Realizado em Jiyu no Kamae (guarda livre). O atacante busca a distância correta (Ma-ai) antes de explodir o ataque. O defensor utiliza Tai Sabaki (esquivas corporais a 45° ou 90°), defesas abertas e contragolpes devastadores.",
-    "techniques": [
+    "title": "Jiyu Ippon Kumite (Combate Semi-Livre em 1 Passo)",
+    "description": "Realizado em Jiyu no Kamae (guarda livre). O atacante busca a distância correta (Ma-ai) antes de explodir o ataque anunciado. O defensor utiliza Tai Sabaki (esquivas corporais a 45° ou 90°), defesas abertas, projeções e contragolpes fulminantes com Kiai.",
+    "categories": [
       {
-        "attack": "Oi Tsuki Jodan / Kizame Tsuki Jodan",
-        "defense": "Tate Shuto Jodan / Seiryuto Uke Jodan",
-        "counter": "Gyaku Tsuki Chudan / Ura Tsuki Chudan / Ashi Barai",
-        "note": "Esquiva angular a 45° ou 90°"
+        "id": "jodan-oi-tsuki",
+        "attackName": "Jodan Oi Tsuki",
+        "forms": [
+          { "number": 1, "technique": "Shuto Uke Jodan / Gyaku Tsuki Chudan" },
+          { "number": 2, "technique": "Seiryuto Uke Jodan / Ura Tsuki Chudan" },
+          { "number": 3, "technique": "Sokumen Uke 45° / Mawashi Geri Jodan / Gyaku Tsuki Chudan" },
+          { "number": 4, "technique": "Hirate Uke Jodan / Teisho Uchi Jodan" },
+          { "number": 5, "technique": "Tobi Mae Geri / Uraken Uchi Jodan" },
+          { "number": 6, "technique": "90º Hidari Mawashi Geri Jodan" }
+        ]
       },
       {
-        "attack": "Gyaku Tsuki Chudan",
-        "defense": "Soto Uke Chudan / Gyaku Osae Uke",
-        "counter": "Uraken Uchi Jodan / Osoto Gari com Otoshi Gyaku Tsuki Chudan",
-        "note": "Controle de braço e desequilíbrio"
+        "id": "chudan-oi-tsuki",
+        "attackName": "Chudan Oi Tsuki",
+        "forms": [
+          { "number": 1, "technique": "Soto Uke Chudan / Gyaku Tsuki Chudan" },
+          { "number": 2, "technique": "Gyaku Osae Uke / Uraken Uchi Jodan" },
+          { "number": 3, "technique": "90° Hidari / Gyaku Tsuki Chudan" },
+          { "number": 4, "technique": "Mae Geri Chudan + Gedan Barai / Kizame Tsuki Jodan" },
+          { "number": 5, "technique": "Gyaku Gedan Barai / Ura Mawashi Geri Jodan / Osoto Gari / Otoshi Gyaku Tsuki Chudan" },
+          { "number": 6, "technique": "Nagashi Uke Chudan / Hidari Ashi Barai / Otoshi Gyaku Tsuki Chudan" }
+        ]
       },
       {
-        "attack": "Mae Geri Chudan",
-        "defense": "Gedan Barai 45° / Juji Uke Gedan",
-        "counter": "Kizame Tsuki Jodan / Gyaku Sukui Uke + Jigoku Otoshi Nage",
-        "note": "Projeção e controle no solo"
+        "id": "mae-geri",
+        "attackName": "Mae Geri",
+        "forms": [
+          { "number": 1, "technique": "Gedan Barai 45° / Gyaku Tsuki Chudan" },
+          { "number": 2, "technique": "Migi Gedan Barai / Hikite Tate Shuto (Nekoashi Dachi) / Kizame Tsuki Jodan" },
+          { "number": 3, "technique": "Juji Uke Gedan / Shuto Uchi Jodan saindo 90°" },
+          { "number": 4, "technique": "Ushiro Gedan Barai / Gyaku Tsuki Chudan" },
+          { "number": 5, "technique": "Gyaku Sukui Uke / Jigoku Otoshi Nage (Kiba Dachi)" },
+          { "number": 6, "technique": "90º Migi Yoko Geri Kekomi Jodan" }
+        ]
       },
       {
-        "attack": "Mawashi Geri Jodan",
-        "defense": "Haiwan Uke Jodan 90° / Heiko Uke (Kosa Dachi)",
-        "counter": "Gyaku Oi Tsuki Chudan / Shuto Uchi Jodan / Mawashi Geri Jodan",
-        "note": "Entrada na base do chute"
+        "id": "yoko-geri-kekomi",
+        "attackName": "Yoko Geri Kekomi",
+        "forms": [
+          { "number": 1, "technique": "Soto Uke Chudan / Gyaku Tsuki Chudan" },
+          { "number": 2, "technique": "Awase Seiryuto Uke / Kizame Tsuki Jodan" },
+          { "number": 3, "technique": "Haiwan Uke Gedan / Ushiro Empi Jodan" }
+        ]
       },
       {
-        "attack": "Ushiro Geri Chudan",
-        "defense": "Sukui Uke segurando a perna",
-        "counter": "Ashi Barai + Otoshi Gyaku Tsuki Chudan",
-        "note": "Captura da perna e varrida"
+        "id": "mawashi-geri",
+        "attackName": "Mawashi Geri",
+        "forms": [
+          { "number": 1, "technique": "Haiwan Uke Jodan 90° / Gyaku Tsuki Chudan" },
+          { "number": 2, "technique": "Kizame Gyaku Oi Tsuki / Shuto Uchi Jodan" },
+          { "number": 3, "technique": "Heiko Uke (Kosa Dachi) / Mawashi Geri Jodan" }
+        ]
+      },
+      {
+        "id": "ushiro-geri",
+        "attackName": "Ushiro Geri",
+        "forms": [
+          { "number": 1, "technique": "Gyaku Sukui Uke / Kizame Tsuki Jodan" },
+          { "number": 2, "technique": "Sukui Uke segurando a perna / Ashi Barai / Otoshi Gyaku Tsuki Chudan" },
+          { "number": 3, "technique": "Sukui Uke / Ushiro Geri Chudan" }
+        ]
+      },
+      {
+        "id": "chudan-gyaku-tsuki",
+        "attackName": "Chudan Gyaku Tsuki",
+        "forms": [
+          { "number": 1, "technique": "Kizame Tsuki Jodan 90° / Gyaku Tsuki Chudan" },
+          { "number": 2, "technique": "Ushiro Gedan Barai / Mawashi Geri Jodan / Shuto Uchi Jodan" },
+          { "number": 3, "technique": "Gedan Barai / Uraken Uchi Jodan" }
+        ]
+      },
+      {
+        "id": "jodan-kizame-tsuki",
+        "attackName": "Jodan Kizame Tsuki",
+        "forms": [
+          { "number": 1, "technique": "45° Gyaku Uraken Jodan / Gyaku Tsuki Chudan" },
+          { "number": 2, "technique": "Seiryuto Uke Jodan / Ashi Barai / Ura Tsuki Chudan" },
+          { "number": 3, "technique": "Nagashi Uke + Uraken Uchi Jodan" }
+        ]
       }
     ]
   },

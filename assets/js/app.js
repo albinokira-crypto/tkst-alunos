@@ -1541,92 +1541,140 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    // 2º Kyu (Faixa Roxa) - Jiyu Ippon Kumite (1ª e 2ª Forma)
+    // 2º Kyu (Faixa Roxa) - Jiyu Ippon Kumite (1ª e 2ª Forma Oficial)
     if (kyu === 2) {
       return `
-        <!-- ILUSTRAÇÃO DIDÁTICA DO JIYU IPPON KUMITE (1ª E 2ª FORMA) -->
+        <!-- GUIA OFICIAL DE JIYU IPPON KUMITE (1ª E 2ª FORMA) - FAIXA ROXA (2º KYU) -->
         <div class="gohon-infographic-card">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
             <span class="gohon-header-badge" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #C084FC;">
-              <i class="fas fa-running"></i> Guia Ilustrado Didático • Jiyu Ippon Kumite (自由一本組手)
+              <i class="fas fa-running"></i> Guia Oficial • Jiyu Ippon Kumite (1ª e 2ª Forma)
             </span>
-            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Combate Semi-Livre em Guarda Livre (Faixa Roxa)</span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Programa Oficial de Exame (2º Kyu - Faixa Roxa)</span>
           </div>
 
           <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
-            No <strong>Jiyu Ippon Kumite</strong>, ambos iniciam em postura de guarda livre (<em>Jiyu no Kamae</em>), em constante movimentação. Mae ajusta a distância e ataca sem telegrafar, enquanto Sagate utiliza <em>Tai Sabaki</em> (esquiva corporal a 45°/90°) e contragolpe fulminante com <strong>KIAI!</strong>
+            No <strong>Jiyu Ippon Kumite</strong>, ambos iniciam em postura de guarda livre (<em>Jiyu no Kamae</em>) com movimentação dinâmica. O atacante (Mae) anuncia a técnica e explode em velocidade real. O defensor (Sagate) executa <em>Tai Sabaki</em> (esquiva angular), bloqueio e contragolpe decisivo com <strong>KIAI!</strong>
           </p>
 
-          <!-- As 4 Técnicas Principais -->
-          <div class="gohon-series-grid">
-            <!-- Jodan -->
+          <!-- As 8 Séries Oficiais de Ataque (1ª e 2ª Forma) -->
+          <div class="gohon-series-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+            <!-- 1. Jodan Oi Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">1. Oi Tsuki Jodan / Kizame Tsuki Jodan</strong>
-                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
-              </div>
-              <div class="gohon-role-row">
-                <span class="gohon-role-badge tori">Mae</span>
-                <div>Avanço rápido em passo livre mirando o queixo do oponente.</div>
+                <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan Oi Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Avanço Alto</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
-                <div>
-                  Esquiva a 45° com <strong>Tate Shuto Jodan / Seiryuto Uke Jodan</strong> ➔ Contra-ataque de <strong>Gyaku Tsuki Chudan / Ura Tsuki Chudan (KIAI!)</strong>
+                <div style="font-size: 0.84rem; line-height: 1.6;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Shuto Uke Jodan / Gyaku Tsuki Chudan <span style="color: #FF808A; font-weight: 700;">(KIAI!)</span></div>
+                  <div style="margin-top: 4px;"><strong style="color: var(--accent-gold);">2ª:</strong> Seiryuto Uke Jodan / Ura Tsuki Chudan <span style="color: #FF808A; font-weight: 700;">(KIAI!)</span></div>
                 </div>
               </div>
             </div>
 
-            <!-- Chudan -->
+            <!-- 2. Chudan Oi Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">2. Gyaku Tsuki Chudan</strong>
-                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
-              </div>
-              <div class="gohon-role-row">
-                <span class="gohon-role-badge tori">Mae</span>
-                <div>Disparo direto de soco reverso penetrante no abdômen/tronco.</div>
+                <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan Oi Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Avanço Médio</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
-                <div>
-                  Desvia com <strong>Soto Uke Chudan / Gyaku Osae Uke</strong> ➔ Contra-ataque de <strong>Uraken Uchi Jodan / Osoto Gari com Gyaku Tsuki Chudan (KIAI!)</strong>
+                <div style="font-size: 0.84rem; line-height: 1.6;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Soto Uke Chudan / Gyaku Tsuki Chudan <span style="color: #6EE7B7; font-weight: 700;">(KIAI!)</span></div>
+                  <div style="margin-top: 4px;"><strong style="color: var(--accent-gold);">2ª:</strong> Gyaku Osae Uke / Uraken Uchi Jodan <span style="color: #6EE7B7; font-weight: 700;">(KIAI!)</span></div>
                 </div>
               </div>
             </div>
 
-            <!-- Mae Geri -->
+            <!-- 3. Mae Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">3. Mae Geri Chudan</strong>
-                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
-              </div>
-              <div class="gohon-role-row">
-                <span class="gohon-role-badge tori">Mae</span>
-                <div>Chute frontal rápido e direto com elevação imediata de joelho.</div>
+                <strong style="color: #FFF; font-size: 0.92rem;">3. Mae Geri</strong>
+                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Chute Frontal</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
-                <div>
-                  Esquiva a 45° com <strong>Gedan Barai / Juji Uke Gedan</strong> ➔ Contra-ataque de <strong>Kizame Tsuki Jodan + Gyaku Tsuki Chudan (KIAI!)</strong>
+                <div style="font-size: 0.84rem; line-height: 1.6;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Gedan Barai 45° / Gyaku Tsuki Chudan <span style="color: #FFD166; font-weight: 700;">(KIAI!)</span></div>
+                  <div style="margin-top: 4px;"><strong style="color: var(--accent-gold);">2ª:</strong> Migi Gedan Barai / Hikite Tate Shuto (Nekoashi Dachi) / Kizame Tsuki Jodan <span style="color: #FFD166; font-weight: 700;">(KIAI!)</span></div>
                 </div>
               </div>
             </div>
 
-            <!-- Mawashi Geri -->
-            <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
+            <!-- 4. Yoko Geri Kekomi -->
+            <div class="gohon-series-card" style="border-left: 4px solid #00B4D8;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">4. Mawashi Geri Jodan</strong>
-                <span class="gohon-series-tag" style="background: rgba(168,85,247,0.2); color: #C084FC;">Alvo: Têmpora/Cabeça</span>
-              </div>
-              <div class="gohon-role-row">
-                <span class="gohon-role-badge tori">Mae</span>
-                <div>Chute circular potente com rotação de quadril mirando a cabeça.</div>
+                <strong style="color: #FFF; font-size: 0.92rem;">4. Yoko Geri Kekomi</strong>
+                <span class="gohon-series-tag" style="background: rgba(0,180,216,0.2); color: #90E0EF;">Chute Lateral</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
-                <div>
-                  Penetração curta com <strong>Haiwan Uke Jodan 90°</strong> ➔ Contra-ataque de <strong>Shuto Uchi Jodan / Mawashi Geri Jodan (KIAI!)</strong>
+                <div style="font-size: 0.84rem; line-height: 1.6;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Soto Uke Chudan / Gyaku Tsuki Chudan <span style="color: #90E0EF; font-weight: 700;">(KIAI!)</span></div>
+                  <div style="margin-top: 4px;"><strong style="color: var(--accent-gold);">2ª:</strong> Awase Seiryuto Uke / Kizame Tsuki Jodan <span style="color: #90E0EF; font-weight: 700;">(KIAI!)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Mawashi Geri -->
+            <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">5. Mawashi Geri</strong>
+                <span class="gohon-series-tag" style="background: rgba(168,85,247,0.2); color: #C084FC;">Chute Circular</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div style="font-size: 0.84rem; line-height: 1.6;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Haiwan Uke Jodan 90° / Gyaku Tsuki Chudan <span style="color: #C084FC; font-weight: 700;">(KIAI!)</span></div>
+                  <div style="margin-top: 4px;"><strong style="color: var(--accent-gold);">2ª:</strong> Kizame Gyaku Oi Tsuki / Shuto Uchi Jodan <span style="color: #C084FC; font-weight: 700;">(KIAI!)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Ushiro Geri -->
+            <div class="gohon-series-card" style="border-left: 4px solid #EC4899;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">6. Ushiro Geri</strong>
+                <span class="gohon-series-tag" style="background: rgba(236,72,153,0.2); color: #F472B6;">Chute Trás</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div style="font-size: 0.84rem; line-height: 1.6;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Gyaku Sukui Uke / Kizame Tsuki Jodan <span style="color: #F472B6; font-weight: 700;">(KIAI!)</span></div>
+                  <div style="margin-top: 4px;"><strong style="color: var(--accent-gold);">2ª:</strong> Sukui Uke segurando a perna / Ashi Barai / Otoshi Gyaku Tsuki Chudan <span style="color: #F472B6; font-weight: 700;">(KIAI!)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7. Chudan Gyaku Tsuki -->
+            <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">7. Chudan Gyaku Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(16,185,129,0.2); color: #6EE7B7;">Soco Reverso</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div style="font-size: 0.84rem; line-height: 1.6;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Kizame Tsuki Jodan 90° / Gyaku Tsuki Chudan <span style="color: #6EE7B7; font-weight: 700;">(KIAI!)</span></div>
+                  <div style="margin-top: 4px;"><strong style="color: var(--accent-gold);">2ª:</strong> Ushiro Gedan Barai / Mawashi Geri Jodan / Shuto Uchi Jodan <span style="color: #6EE7B7; font-weight: 700;">(KIAI!)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 8. Jodan Kizame Tsuki -->
+            <div class="gohon-series-card" style="border-left: 4px solid #FB923C;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">8. Jodan Kizame Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(251,146,60,0.2); color: #FDBA74;">Soco Direto</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div style="font-size: 0.84rem; line-height: 1.6;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> 45° Gyaku Uraken Jodan / Gyaku Tsuki Chudan <span style="color: #FDBA74; font-weight: 700;">(KIAI!)</span></div>
+                  <div style="margin-top: 4px;"><strong style="color: var(--accent-gold);">2ª:</strong> Seiryuto Uke Jodan / Ashi Barai / Ura Tsuki Chudan <span style="color: #FDBA74; font-weight: 700;">(KIAI!)</span></div>
                 </div>
               </div>
             </div>
@@ -1655,92 +1703,157 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    // 1º Kyu (Faixa Marrom) - Jiyu Ippon Kumite Completo (1ª a 4ª Forma) & Jiyu Kumite
+    // 1º Kyu (Faixa Marrom) - Jiyu Ippon Kumite Completo (Tabela Oficial TKST) & Jiyu Kumite
     if (kyu === 1) {
       return `
-        <!-- ILUSTRAÇÃO DIDÁTICA DO JIYU IPPON KUMITE COMPLETO (FAIXA MARROM) -->
+        <!-- GUIA OFICIAL DE JIYU IPPON KUMITE COMPLETO - FAIXA MARROM (1º KYU) -->
         <div class="gohon-infographic-card">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
             <span class="gohon-header-badge" style="background: rgba(180, 83, 9, 0.2); border-color: rgba(180, 83, 9, 0.5); color: #FBBF24;">
-              <i class="fas fa-shield-alt"></i> Guia Ilustrado Didático • Jiyu Ippon Kumite Completo (1ª a 4ª Forma)
+              <i class="fas fa-shield-alt"></i> Guia Oficial • Jiyu Ippon Kumite Completo (Tabela TKST)
             </span>
-            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Nível Avançado Pré-Faixa Preta (1º Kyu)</span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Programa Avançado Pré-Faixa Preta (1º Kyu - Faixa Marrom)</span>
           </div>
 
           <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
-            O exame de Faixa Marrom (1º Kyu) exige domínio pleno de todas as 4 formas de resposta marcial contra ataques diretos, circulares e giratórios, demonstrando a transição fluida do combate técnico para o combate livre (<em>Jiyu Kumite</em>) e controle emocional supremo.
+            O exame de Faixa Marrom (1º Kyu) exige domínio pleno de todas as combinações da <strong>Tabela Oficial de Jiyu Ippon Kumite</strong> da TKST, abrangendo ataques retilíneos, circulares, contra-ataques duplos, projeções e varridas com foco absoluto (<em>Zanshin</em>).
           </p>
 
-          <!-- As 4 Formas de Aplicação Marcial -->
-          <div class="gohon-series-grid">
-            <!-- 1ª Forma -->
+          <!-- Tabela Completa dos 8 Ataques e Todas as Formas Oficiais -->
+          <div class="gohon-series-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+            <!-- 1. Jodan Oi Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">1ª Forma — Ataques Retilíneos</strong>
-                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Tsuki Waza</span>
-              </div>
-              <div class="gohon-role-row">
-                <span class="gohon-role-badge tori">Mae</span>
-                <div>Oi Tsuki Jodan & Gyaku Tsuki Chudan em avanço rápido.</div>
+                <strong style="color: #FFF; font-size: 0.95rem;">1. Jodan Oi Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">6 Formas Oficiais</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
-                <div>
-                  Esquiva a 45° com <strong>Seiryuto Uke Jodan / Soto Uke Chudan</strong> ➔ Contra-ataque de <strong>De-ai Gyaku Tsuki Chudan + Uraken Uchi Jodan (KIAI!)</strong>
+                <div style="font-size: 0.82rem; line-height: 1.7;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Shuto Uke Jodan / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">2ª:</strong> Seiryuto Uke Jodan / Ura Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">3ª:</strong> Sokumen Uke 45° / Mawashi Geri Jodan / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">4ª:</strong> Hirate Uke Jodan / Teisho Uchi Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">5ª:</strong> Tobi Mae Geri / Uraken Uchi Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">6ª:</strong> 90º Hidari Mawashi Geri Jodan <span style="color: #FF808A; font-weight: 700;">(KIAI!)</span></div>
                 </div>
               </div>
             </div>
 
-            <!-- 2ª Forma -->
+            <!-- 2. Chudan Oi Tsuki -->
             <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">2ª Forma — Chutes Frontais & Circulares</strong>
-                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Keri Waza</span>
-              </div>
-              <div class="gohon-role-row">
-                <span class="gohon-role-badge tori">Mae</span>
-                <div>Mae Geri Chudan & Mawashi Geri Jodan com máxima velocidade.</div>
+                <strong style="color: #FFF; font-size: 0.95rem;">2. Chudan Oi Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">6 Formas Oficiais</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
-                <div>
-                  Esquiva a 45° com <strong>Gedan Barai / Haiwan Uke Jodan 90°</strong> ➔ Contra-ataque de <strong>Ashi Barai + Otoshi Gyaku Tsuki Chudan (KIAI!)</strong>
+                <div style="font-size: 0.82rem; line-height: 1.7;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Soto Uke Chudan / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">2ª:</strong> Gyaku Osae Uke / Uraken Uchi Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">3ª:</strong> 90° Hidari / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">4ª:</strong> Mae Geri Chudan + Gedan Barai / Kizame Tsuki Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">5ª:</strong> Gyaku Gedan Barai / Ura Mawashi Geri Jodan / Osoto Gari / Otoshi Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">6ª:</strong> Nagashi Uke Chudan / Hidari Ashi Barai / Otoshi Gyaku Tsuki Chudan <span style="color: #6EE7B7; font-weight: 700;">(KIAI!)</span></div>
                 </div>
               </div>
             </div>
 
-            <!-- 3ª Forma -->
+            <!-- 3. Mae Geri -->
             <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">3ª Forma — Chutes Laterais & Giratórios</strong>
-                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Yoko & Ushiro</span>
-              </div>
-              <div class="gohon-role-row">
-                <span class="gohon-role-badge tori">Mae</span>
-                <div>Yoko Geri Kekomi Chudan & Ushiro Geri Chudan com penetração total.</div>
+                <strong style="color: #FFF; font-size: 0.95rem;">3. Mae Geri</strong>
+                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">6 Formas Oficiais</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
-                <div>
-                  Esquiva a 90° com <strong>Sukui Uke / Ushiro Gedan Barai</strong> ➔ Contra-ataque de <strong>Kizame Yoko Geri Chudan + Yoko Empi Chudan (KIAI!)</strong>
+                <div style="font-size: 0.82rem; line-height: 1.7;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Gedan Barai 45° / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">2ª:</strong> Migi Gedan Barai / Hikite Tate Shuto (Nekoashi Dachi) / Kizame Tsuki Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">3ª:</strong> Juji Uke Gedan / Shuto Uchi Jodan saindo 90°</div>
+                  <div><strong style="color: var(--accent-gold);">4ª:</strong> Ushiro Gedan Barai / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">5ª:</strong> Gyaku Sukui Uke / Jigoku Otoshi Nage (Kiba Dachi)</div>
+                  <div><strong style="color: var(--accent-gold);">6ª:</strong> 90º Migi Yoko Geri Kekomi Jodan <span style="color: #FFD166; font-weight: 700;">(KIAI!)</span></div>
                 </div>
               </div>
             </div>
 
-            <!-- 4ª Forma -->
-            <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
+            <!-- 4. Yoko Geri Kekomi -->
+            <div class="gohon-series-card" style="border-left: 4px solid #00B4D8;">
               <div class="gohon-series-title">
-                <strong style="color: #FFF; font-size: 0.92rem;">4ª Forma — Combinações Contínuas</strong>
-                <span class="gohon-series-tag" style="background: rgba(168,85,247,0.2); color: #C084FC;">Renzoku Waza</span>
-              </div>
-              <div class="gohon-role-row">
-                <span class="gohon-role-badge tori">Mae</span>
-                <div>Ataque duplo consecutivo (Soco + Chute em fluxo ininterrupto).</div>
+                <strong style="color: #FFF; font-size: 0.95rem;">4. Yoko Geri Kekomi</strong>
+                <span class="gohon-series-tag" style="background: rgba(0,180,216,0.2); color: #90E0EF;">3 Formas Oficiais</span>
               </div>
               <div class="gohon-role-row">
                 <span class="gohon-role-badge uke">Sagate</span>
-                <div>
-                  Bloqueio duplo em transição de base ➔ Contra-ataque composto de <strong>Kizame Tsuki Jodan + Gyaku Tsuki Chudan com finalização decisiva (KIAI!)</strong>
+                <div style="font-size: 0.82rem; line-height: 1.7;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Soto Uke Chudan / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">2ª:</strong> Awase Seiryuto Uke / Kizame Tsuki Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">3ª:</strong> Haiwan Uke Gedan / Ushiro Empi Jodan <span style="color: #90E0EF; font-weight: 700;">(KIAI!)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Mawashi Geri -->
+            <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">5. Mawashi Geri</strong>
+                <span class="gohon-series-tag" style="background: rgba(168,85,247,0.2); color: #C084FC;">3 Formas Oficiais</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div style="font-size: 0.82rem; line-height: 1.7;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Haiwan Uke Jodan 90° / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">2ª:</strong> Kizame Gyaku Oi Tsuki / Shuto Uchi Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">3ª:</strong> Heiko Uke (Kosa Dachi) / Mawashi Geri Jodan <span style="color: #C084FC; font-weight: 700;">(KIAI!)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Ushiro Geri -->
+            <div class="gohon-series-card" style="border-left: 4px solid #EC4899;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">6. Ushiro Geri</strong>
+                <span class="gohon-series-tag" style="background: rgba(236,72,153,0.2); color: #F472B6;">3 Formas Oficiais</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div style="font-size: 0.82rem; line-height: 1.7;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Gyaku Sukui Uke / Kizame Tsuki Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">2ª:</strong> Sukui Uke segurando a perna / Ashi Barai / Otoshi Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">3ª:</strong> Sukui Uke / Ushiro Geri Chudan <span style="color: #F472B6; font-weight: 700;">(KIAI!)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7. Chudan Gyaku Tsuki -->
+            <div class="gohon-series-card" style="border-left: 4px solid #10B981;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">7. Chudan Gyaku Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(16,185,129,0.2); color: #6EE7B7;">3 Formas Oficiais</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div style="font-size: 0.82rem; line-height: 1.7;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> Kizame Tsuki Jodan 90° / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">2ª:</strong> Ushiro Gedan Barai / Mawashi Geri Jodan / Shuto Uchi Jodan</div>
+                  <div><strong style="color: var(--accent-gold);">3ª:</strong> Gedan Barai / Uraken Uchi Jodan <span style="color: #6EE7B7; font-weight: 700;">(KIAI!)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 8. Jodan Kizame Tsuki -->
+            <div class="gohon-series-card" style="border-left: 4px solid #FB923C;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.95rem;">8. Jodan Kizame Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(251,146,60,0.2); color: #FDBA74;">3 Formas Oficiais</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div style="font-size: 0.82rem; line-height: 1.7;">
+                  <div><strong style="color: var(--accent-gold);">1ª:</strong> 45° Gyaku Uraken Jodan / Gyaku Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">2ª:</strong> Seiryuto Uke Jodan / Ashi Barai / Ura Tsuki Chudan</div>
+                  <div><strong style="color: var(--accent-gold);">3ª:</strong> Nagashi Uke + Uraken Uchi Jodan <span style="color: #FDBA74; font-weight: 700;">(KIAI!)</span></div>
                 </div>
               </div>
             </div>
