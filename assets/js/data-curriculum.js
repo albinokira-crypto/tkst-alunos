@@ -566,13 +566,14 @@ window.TKST_CURRICULUM = [
     "kata": {
       "required": [
         "Heian Godan",
+        "Tekki Shodan",
         "Bassai Dai",
         "Kanku Dai",
         "Jion",
         "Jitte",
         "Empi"
       ],
-      "description": "Execução obrigatória de Heian Godan e estudo dos Katas Superiores: Bassai Dai, Kanku Dai, Jion, Jitte e Empi."
+      "description": "Execução obrigatória de Heian Godan e Tekki Shodan, além do estudo dos Katas Superiores: Bassai Dai, Kanku Dai, Jion, Jitte e Empi."
     },
     "kumite": {
       "type": "Jiyu Ippon Kumite (1ª e 2ª Forma Oficial - 8 Ataques) & Jiyu Kumite (Contra 1 e 2 oponentes)",
