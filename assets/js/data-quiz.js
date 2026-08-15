@@ -764,6 +764,146 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     correctIndex: 1,
     explanation: "Juji Uke (defesa em cruz) une os punhos cruzados para amortecer e prender ataques fortes de punho ou bastão."
   },
+  {
+    id: "q3-6",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "No Kata Heian Yondan, qual técnica é executada imediatamente após a defesa Morote Uke inicial em Kokutsu Dachi?",
+    options: [
+      "Juji Uke Jodan em avanço Zenkutsu Dachi (defesa em X alta)",
+      "Gedan Barai",
+      "Mae Geri",
+      "Oi Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "Avança-se em Zenkutsu Dachi desferindo Juji Uke Jodan com as mãos abertas ou fechadas para conter um golpe descendente."
+  },
+  {
+    id: "q3-7",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "Como se chama o golpe desferido com o joelho em elevação rápida, presente no Heian Yondan?",
+    options: [
+      "Hiza Geri (Hiza Ate)",
+      "Mawashi Geri",
+      "Mae Geri",
+      "Ushiro Geri"
+    ],
+    correctIndex: 0,
+    explanation: "Hiza Geri é o golpe com o joelho, aplicado após puxar a cabeça do oponente para baixo com as duas mãos."
+  },
+  {
+    id: "q3-8",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "No Kata Heian Yondan, qual é o movimento de abertura característico realizado lentamente para os dois lados?",
+    options: [
+      "Haiwan Morote Jodan Uke em Kokutsu Dachi (bloqueio duplo lento com antebraços)",
+      "Gedan Barai rápido",
+      "Oi Tsuki Chudan",
+      "Shuto Uke saltando"
+    ],
+    correctIndex: 0,
+    explanation: "O Heian Yondan inicia com um movimento pausado e majestoso em Kokutsu Dachi com bloqueio duplo dos antebraços."
+  },
+  {
+    id: "q3-9",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "Qual a principal característica do Kihon do 3º Kyu (Faixa Verde) em relação ao uso de chutes (Geri Waza)?",
+    options: [
+      "Combinações de chutes duplos e transições entre Mae Geri, Mawashi Geri e Yoko Geri mantendo o equilíbrio",
+      "Apenas chutes rasteiros",
+      "Chutes de olhos fechados",
+      "Chutar sem dobrar o joelho"
+    ],
+    correctIndex: 0,
+    explanation: "No 3º Kyu exige-se o domínio de chutes combinados com troca de perna ou na mesma perna sem perder a postura."
+  },
+  {
+    id: "q3-10",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "Como se chama a defesa executada com ambas as mãos abertas empurrando lateralmente para abrir a guarda do adversário (usada no Heian Yondan)?",
+    options: [
+      "Kakiwake Uke",
+      "Gedan Barai",
+      "Age Uke",
+      "Soto Uke"
+    ],
+    correctIndex: 0,
+    explanation: "Kakiwake Uke é a defesa de separação em cunha executada simultaneamente com os dois antebraços para neutralizar pegadas ou estrangulamentos."
+  },
+  {
+    id: "q3-11",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "Qual a quinta regra do Dojo Kun que completa os 5 princípios filosóficos do Karatê?",
+    options: [
+      "Hitotsu! Kekki no yū o imashimuru koto! (Conter o espírito de agressão e violência)",
+      "Hitotsu! Jinkaku kansei ni tsutomuru koto!",
+      "Hitotsu! Makoto no michi o mamoru koto!",
+      "Hitotsu! Reigi o omonzuru koto!"
+    ],
+    correctIndex: 0,
+    explanation: "Kekki no yū o imashimuru koto ensina o autocontrole supremo, evitando o ímpeto violento e o uso desnecessário da força."
+  },
+  {
+    id: "q3-12",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "No Sanbon Kumite da Faixa Verde (6ª à 8ª forma), qual elemento tático é intensificado na resposta do defensor?",
+    options: [
+      "Esquivas com deslocamento lateral (Tai Sabaki), bloqueios de antebraço aberto e contra-ataques simultâneos com Kiai",
+      "Ficar parado esperando ser atingido",
+      "Apenas recuar em linha reta sem contra-atacar",
+      "Agarrar as pernas para derrubar no chão"
+    ],
+    correctIndex: 0,
+    explanation: "As formas avançadas do Sanbon Kumite exigem saída da linha de ataque (Tai Sabaki) com contra-ataques decisivos."
+  },
+  {
+    id: "q3-13",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "Como se chama o ataque em avanço desferido com a parte de trás do punho (costas do punho) no nível do rosto?",
+    options: [
+      "Uraken Uchi (Jodan Uraken)",
+      "Empi Uchi",
+      "Mae Geri",
+      "Gedan Barai"
+    ],
+    correctIndex: 0,
+    explanation: "Uraken Uchi utiliza o efeito chicote da articulação do punho e antebraço para atingir o nariz, têmpora ou mandíbula."
+  },
+  {
+    id: "q3-14",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "No Shotokan, o que significa o termo 'Maai' (間合い) durante a prática de Kihon e Kumite?",
+    options: [
+      "A distância espaço-temporal correta e dinâmica entre você e o adversário",
+      "A cor do kimono",
+      "O cumprimento ao iniciar a aula",
+      "A força máxima do soco"
+    ],
+    correctIndex: 0,
+    explanation: "Maai é a gestão perfeita da distância e do tempo necessário para atacar com alcance máximo ou esquivar com segurança."
+  },
+  {
+    id: "q3-15",
+    kyuNumber: 3,
+    beltName: "Faixa Verde (3º Kyu)",
+    question: "Qual a contagem correta em Japonês para os números de 31 a 40?",
+    options: [
+      "San-Ju-Ichi, San-Ju-Ni, San-Ju-San, San-Ju-Shi (San-Ju-Yon), San-Ju-Go, San-Ju-Roku, San-Ju-Shichi (San-Ju-Nana), San-Ju-Hachi, San-Ju-Ku, Yon-Ju",
+      "Ni-Ju-Ichi, Ni-Ju-Ni, Ni-Ju-San, Ni-Ju-Shi, Ni-Ju-Go, Ni-Ju-Roku, Ni-Ju-Shichi, Ni-Ju-Hachi, Ni-Ju-Ku, San-Ju",
+      "Ju-Ichi, Ju-Ni, Ju-San, Ju-Shi, Ju-Go, Ju-Roku, Ju-Shichi, Ju-Hachi, Ju-Ku, Ni-Ju",
+      "Ichi, Ni, San, Shi, Go, Roku, Shichi, Hachi, Ku, Ju"
+    ],
+    correctIndex: 0,
+    explanation: "De 31 a 40 soma-se San-Ju (30) de 1 a 9 e conclui-se em Yon-Ju (40)."
+  },
 
   // =========================================================================
   // 2º KYU - FAIXA ROXA (Exame para Marrom)
@@ -837,6 +977,146 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     ],
     correctIndex: 1,
     explanation: "Bunkai significa 'decompor/analisar', revelando a auto-defesa real codificada nas formas do Kata."
+  },
+  {
+    id: "q2-6",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "No Kata Heian Godan, qual técnica de chute é desferida para atingir a própria palma da mão antes da cotovelada em Kiba Dachi?",
+    options: [
+      "Mikazuki Geri (chute em meia-lua com a sola do pé atingindo a palma da mão)",
+      "Mae Geri",
+      "Yoko Geri Kekomi",
+      "Ushiro Geri"
+    ],
+    correctIndex: 0,
+    explanation: "No Heian Godan, desfere-se Mikazuki Geri na palma da mão esquerda aberta e aterrissa em Kiba Dachi aplicando Mawashi Empi Uchi."
+  },
+  {
+    id: "q2-7",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "Como se chama a base com os tornozelos e pernas cruzadas utilizada na aterrissagem do salto de Heian Godan?",
+    options: [
+      "Kosa Dachi",
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Kokutsu Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "Kosa Dachi é a base de pernas cruzadas, conferindo estabilidade dinâmica e amortecimento após saltos ou esquivas."
+  },
+  {
+    id: "q2-8",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "Qual a defesa combinada executada no Heian Godan com uma mão defendendo para baixo (Gedan Barai) e a outra para cima (Jodan Uke)?",
+    options: [
+      "Manji Uke (defesa em suástica)",
+      "Morote Uke",
+      "Juji Uke",
+      "Kakiwake Uke"
+    ],
+    correctIndex: 0,
+    explanation: "Manji Uke combina uma defesa baixa atrás e alta na frente (ou vice-versa), cobrindo ataques em direções opostas."
+  },
+  {
+    id: "q2-9",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "No Kata Tekki Shodan, como se chama o movimento de puxar o calcanhar para cima em Kiba Dachi para defender contra rasteiras?",
+    options: [
+      "Nami Gaeshi (Nami Ashi / Retorno da onda)",
+      "Mae Geri",
+      "Ashi Barai",
+      "Fumikomi"
+    ],
+    correctIndex: 0,
+    explanation: "Nami Gaeshi ('onda que retorna') é o recolhimento ágil do pé e canela para esquivar de rasteiras e bloquear chutes na virilha."
+  },
+  {
+    id: "q2-10",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "No Kihon Ippon Kumite do 2º Kyu, quais ataques são obrigatoriamente executados pelo atacante?",
+    options: [
+      "Jodan Oi Tsuki, Chudan Oi Tsuki, Mae Geri, Mawashi Geri e Ushiro Geri com contra-ataques livres precisos",
+      "Apenas 1 soco no peito",
+      "Apenas chutes no chão",
+      "Luta de solo (Jiu-Jitsu)"
+    ],
+    correctIndex: 0,
+    explanation: "O 2º Kyu expande o Kihon Ippon Kumite com a inclusão de Mawashi Geri e Ushiro Geri em velocidade de combate."
+  },
+  {
+    id: "q2-11",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "Como se chama a técnica de bloqueio duplo de mãos abertas que desvia simultaneamente um ataque frontal e prende o braço?",
+    options: [
+      "Morote Shuto Uke / Nagashi Uke",
+      "Gedan Barai",
+      "Age Uke",
+      "Oi Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "Nagashi Uke é a defesa fluida que escorre e redireciona a trajetória do golpe do adversário sem choque brusco."
+  },
+  {
+    id: "q2-12",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "Qual a tradução literal e o significado do nome do Kata 'Tekki' (鉄騎)?",
+    options: [
+      "Cavaleiro de Ferro (montar a cavalo com pernas de ferro em Kiba Dachi inabalável)",
+      "Voo da Andorinha",
+      "Paz e Tranquilidade",
+      "A Força do Tigre"
+    ],
+    correctIndex: 0,
+    explanation: "Tekki (鉄 = Ferro, 騎 = Cavaleiro) reflete a solidez incomparável da postura Kiba Dachi e a firmeza enraizada ao solo."
+  },
+  {
+    id: "q2-13",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "No Kihon do 2º Kyu, como se chama o soco em gancho circular curto desferido na lateral do corpo?",
+    options: [
+      "Kagi Tsuki (Kagi Zuki)",
+      "Ura Tsuki",
+      "Tate Tsuki",
+      "Age Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "Kagi Tsuki é o soco em gancho/chave desferido com o antebraço a 90° em Kiba Dachi (muito trabalhado no Tekki Shodan)."
+  },
+  {
+    id: "q2-14",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "O que caracteriza o conceito de 'Tai Sabaki' (体捌き) no Karatê avançado?",
+    options: [
+      "Esquiva corporal inteligente e rotação de eixo para sair da linha de ataque mantendo posição vantajosa para contra-atacar",
+      "Apenas andar para trás",
+      "Cair no tatame para fingir falta",
+      "Apertar as mãos antes da luta"
+    ],
+    correctIndex: 0,
+    explanation: "Tai Sabaki é a esquiva e reposicionamento corporal sem esforço excessivo, explorando os ângulos cegos do oponente."
+  },
+  {
+    id: "q2-15",
+    kyuNumber: 2,
+    beltName: "Faixa Roxa (2º Kyu)",
+    question: "Como se realiza a contagem correta em Japonês de 41 a 50?",
+    options: [
+      "Yon-Ju-Ichi, Yon-Ju-Ni, Yon-Ju-San, Yon-Ju-Shi (Yon-Ju-Yon), Yon-Ju-Go, Yon-Ju-Roku, Yon-Ju-Shichi (Yon-Ju-Nana), Yon-Ju-Hachi, Yon-Ju-Ku, Go-Ju",
+      "San-Ju-Ichi, San-Ju-Ni, San-Ju-San, San-Ju-Shi, San-Ju-Go, San-Ju-Roku, San-Ju-Shichi, San-Ju-Hachi, San-Ju-Ku, Yon-Ju",
+      "Ju-Ichi, Ju-Ni, Ju-San, Ju-Shi, Ju-Go, Ju-Roku, Ju-Shichi, Ju-Hachi, Ju-Ku, Ni-Ju",
+      "Ichi, Ni, San, Shi, Go, Roku, Shichi, Hachi, Ku, Ju"
+    ],
+    correctIndex: 0,
+    explanation: "De 41 a 50 utiliza-se Yon-Ju (40) somado de 1 a 9 e conclui-se em Go-Ju (50)."
   },
 
   // =========================================================================
@@ -912,6 +1192,146 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     correctIndex: 0,
     explanation: "O Kihon de Shodan exige fluidez máxima entre bases, rotação de quadril (Hanmi/Shomen) e combinações de alta velocidade com Kime."
   },
+  {
+    id: "q1-6",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "Além do Bassai Dai, quais outros Katas clássicos avançados são estudados na graduação de Faixa Marrom (1º ao 3º Kyu)?",
+    options: [
+      "Kanku Dai, Jion, Empi e Hangetsu",
+      "Apenas Heian Shodan",
+      "Taikyoku Nidan e Sandan",
+      "Nenhum outro Kata"
+    ],
+    correctIndex: 0,
+    explanation: "O currículo de Faixa Marrom prepara o aluno nos grandes Katas clássicos superiores do Shotokan."
+  },
+  {
+    id: "q1-7",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "O que é 'Jiyu Ippon Kumite' (Semi-Livre de Um Passo) praticado no 1º Kyu?",
+    options: [
+      "Combate em guarda livre e movimentação contínua onde o atacante anuncia o golpe e busca o melhor momento para atacar de surpresa",
+      "Luta de chão com finalizações",
+      "Luta combinada com armas de madeira",
+      "Treino de flexões no tatame"
+    ],
+    correctIndex: 0,
+    explanation: "No Jiyu Ippon Kumite ambos se movimentam livremente em guarda real (Jiyu no Kamae), trabalhando distância real de luta."
+  },
+  {
+    id: "q1-8",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "Como se chama a base 'do gato' com 90% do peso na perna de trás e calcanhar da frente elevado, presente no Kata Hangetsu e Bassai Sho?",
+    options: [
+      "Neko Ashi Dachi",
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Heiko Dachi"
+    ],
+    correctIndex: 0,
+    explanation: "Neko Ashi Dachi posiciona quase todo o peso no pé traseiro, deixando a perna da frente pronta para chutar ou bloquear instantaneamente."
+  },
+  {
+    id: "q1-9",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "Qual técnica de golpe com a borda interna da mão aberta (lado do polegar) é ensinada nos níveis avançados?",
+    options: [
+      "Haito Uchi (golpe com a crista da mão)",
+      "Empi Uchi",
+      "Uraken Uchi",
+      "Mae Geri"
+    ],
+    correctIndex: 0,
+    explanation: "Haito Uchi atinge têmporas, queixo ou pescoço com a borda interna da mão entre o indicador e a base do polegar."
+  },
+  {
+    id: "q1-10",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "No Bassai Dai, qual técnica de defesa com as duas mãos abertas é realizada para agarrar e puxar o adversário em Kiba Dachi?",
+    options: [
+      "Tsukami Uke (defesa com agarre e puxada)",
+      "Gedan Barai",
+      "Age Uke",
+      "Oi Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "Tsukami Uke segura o braço ou perna do atacante e traciona com rotação de quadril para desferir o contragolpe decisivo."
+  },
+  {
+    id: "q1-11",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "Qual é o terceiro nível de antecipação e iniciativa chamado 'Sen Sen no Sen'?",
+    options: [
+      "Neutralizar o adversário antes mesmo que ele inicie qualquer movimento físico, percebendo sua intenção mental de atacar",
+      "Defender após ser atingido",
+      "Fugir do combate",
+      "Esperar o juiz autorizar o golpe"
+    ],
+    correctIndex: 0,
+    explanation: "Sen Sen no Sen é o estágio supremo onde o karateca domina a mente do adversário e age no exato milissegundo de sua decisão psicológica."
+  },
+  {
+    id: "q1-12",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "No Kihon de Faixa Marrom, o que é o 'Ren Geri' de três chutes na mesma perna sem tocar o pé no chão?",
+    options: [
+      "Execução combinada de Mae Geri, Yoko Geri e Mawashi Geri em sustentação unipodal com equilíbrio perfeito",
+      "Chutar e cair no chão",
+      "Dar três passos correndo",
+      "Pular em um pé só de costas"
+    ],
+    correctIndex: 0,
+    explanation: "Exige força máxima no core, flexibilidade e controle muscular de quadril para chutar três vezes antes de aterrissar."
+  },
+  {
+    id: "q1-13",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "Como se chama o golpe de palma da mão (calcanhar da mão) com forte impacto em avanço?",
+    options: [
+      "Teisho Uchi (Teisho Tsuki)",
+      "Nukite",
+      "Empi Uchi",
+      "Kizami Tsuki"
+    ],
+    correctIndex: 0,
+    explanation: "Teisho utiliza a base carnuda da palma da mão, minimizando riscos de fratura no punho e gerando grande impacto concussivo."
+  },
+  {
+    id: "q1-14",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "O que é 'Ikken Hissatsu' (一拳必殺) na filosofia do Karatê Tradicional?",
+    options: [
+      "O conceito do 'golpe único definitivo', onde cada técnica é treinada com potência e foco para encerrar a luta se necessário",
+      "Lutar com uma mão amarrada",
+      "Bater apenas com a mão esquerda",
+      "Desferir 100 socos por minuto"
+    ],
+    correctIndex: 0,
+    explanation: "Ikken Hissatsu representa o compromisso mental de entregar 100% de concentração, Kime e energia em cada golpe."
+  },
+  {
+    id: "q1-15",
+    kyuNumber: 1,
+    beltName: "Faixa Marrom (1º Kyu)",
+    question: "Como se realiza a contagem correta em Japonês de 51 a 60?",
+    options: [
+      "Go-Ju-Ichi, Go-Ju-Ni, Go-Ju-San, Go-Ju-Shi (Go-Ju-Yon), Go-Ju-Go, Go-Ju-Roku, Go-Ju-Shichi (Go-Ju-Nana), Go-Ju-Hachi, Go-Ju-Ku, Roku-Ju",
+      "Yon-Ju-Ichi, Yon-Ju-Ni, Yon-Ju-San, Yon-Ju-Shi, Yon-Ju-Go, Yon-Ju-Roku, Yon-Ju-Shichi, Yon-Ju-Hachi, Yon-Ju-Ku, Go-Ju",
+      "San-Ju-Ichi, San-Ju-Ni, San-Ju-San, San-Ju-Shi, San-Ju-Go, San-Ju-Roku, San-Ju-Shichi, San-Ju-Hachi, San-Ju-Ku, Yon-Ju",
+      "Ichi, Ni, San, Shi, Go, Roku, Shichi, Hachi, Ku, Ju"
+    ],
+    correctIndex: 0,
+    explanation: "De 51 a 60 utiliza-se Go-Ju (50) somado de 1 a 9 e conclui-se em Roku-Ju (60)."
+  },
 
   // =========================================================================
   // FAIXA PRETA (SHODAN A GODAN & SENSEI)
@@ -985,6 +1405,146 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     ],
     correctIndex: 0,
     explanation: "Ippon representa a finalização perfeita que encerra o combate na tradição marcial (ou soma 3 pontos/pontuação máxima)."
+  },
+  {
+    id: "q0-6",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "Qual o significado da palavra 'Shotokan' e de onde surgiu esse nome?",
+    options: [
+      "'Shoto' era o pseudônimo poético de Gichin Funakoshi (significa 'Ondulação dos Pinheiros ao Vento') e 'Kan' significa edifício/escola",
+      "Significa apenas 'Golpe do Tigre'",
+      "É o nome de uma cidade no Japão",
+      "Significa 'Caminho das Mãos Fortes'"
+    ],
+    correctIndex: 0,
+    explanation: "Funakoshi assinava seus poemas com o nome Shoto. Os alunos batizaram seu dojo principal em Tóquio de Shotokan em sua homenagem."
+  },
+  {
+    id: "q0-7",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "Quantas técnicas oficiais no total compõem a Tabela Geral do Exame de Shodan da TKST dividida em 4 pilares?",
+    options: [
+      "86 técnicas oficiais (28 Te Waza, 25 Uke Waza, 20 Geri Waza e 13 Dachi Waza)",
+      "10 técnicas",
+      "50 técnicas",
+      "150 técnicas"
+    ],
+    correctIndex: 0,
+    explanation: "O programa de graduação de Faixa Preta da TKST estrutura rigorosamente 86 técnicas nos quatro pilares do Kihon."
+  },
+  {
+    id: "q0-8",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "O que estabelece o 1º princípio do Niju Kun de Gichin Funakoshi: 'Karate-do wa rei ni hajimari, rei ni owaru koto o wasuruna'?",
+    options: [
+      "O Karatê começa e termina com respeito e cortesia",
+      "O Karatê começa com o ataque mais forte",
+      "O Karatê é apenas para competições esportivas",
+      "O Karatê não necessita de cumprimentos"
+    ],
+    correctIndex: 0,
+    explanation: "O respeito é a base moral e o início de toda a prática no Karatê-Do. Sem respeito, a técnica marcial torna-se mera violência."
+  },
+  {
+    id: "q0-9",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "Qual a postura fundamental 'Fudo Dachi' (Sochin Dachi) e qual sua aplicação principal?",
+    options: [
+      "Base inabalável com 50%/50% de peso que une a solidez frontal de Zenkutsu com a estabilidade lateral de Kiba Dachi",
+      "Base em um pé só",
+      "Base deitada no chão",
+      "Base com os dois pés juntos"
+    ],
+    correctIndex: 0,
+    explanation: "Fudo Dachi ('base inamovível') é a postura mestra do Kata Sochin, ideal para absorver impactos pesados e contra-atacar."
+  },
+  {
+    id: "q0-10",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "Em arbitragem WKF/CBK de Karatê, qual a diferença entre advertências por excesso de contato (Categoria 1) e saídas de área (Categoria 2)?",
+    options: [
+      "Categoria 1 pune contato excessivo ou golpes perigosos; Categoria 2 pune saídas de tatame (Jogai), fuga de combate e fingir lesão",
+      "São a mesma coisa",
+      "Categoria 1 é para uniforme sujo; Categoria 2 é para atraso",
+      "Não existem categorias de falta no Karatê"
+    ],
+    correctIndex: 0,
+    explanation: "As regras oficiais separam infrações de integridade física (Cat. 1) de conduta tática/não combate (Cat. 2)."
+  },
+  {
+    id: "q0-11",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "O que significa o conceito de 'Shin-Gi-Tai' (心技体) para a formação de um verdadeiro Faixa Preta?",
+    options: [
+      "A união harmônica entre Mente/Espírito (Shin), Técnica apurada (Gi) e Condicionamento Corporal (Tai)",
+      "Soco, chute e defesa",
+      "Branca, marrom e preta",
+      "Apenas o treino físico muscular"
+    ],
+    correctIndex: 0,
+    explanation: "Um Faixa Preta não é apenas um atleta forte (Tai) nem apenas um teórico (Shin); os três pilares devem estar em equilíbrio absoluto."
+  },
+  {
+    id: "q0-12",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "Qual mestre de Okinawa ensinou Gichin Funakoshi e é considerado a principal raiz da linhagem Shuri-te do Shotokan?",
+    options: [
+      "Mestre Anko Itosu (Yasutsune Itosu)",
+      "Mestre Kano",
+      "Mestre Miyagi",
+      "Mestre Oyama"
+    ],
+    correctIndex: 0,
+    explanation: "Anko Itosu foi o grande reformador pedagógico que criou os 5 Kata Heian (Pinan) e treinou Gichin Funakoshi em Okinawa."
+  },
+  {
+    id: "q0-13",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "O que é 'Kime' (決め) e como ele é gerado biomecanicamente no instante do impacto?",
+    options: [
+      "Concentração total de força no ponto focal através de contração muscular explosiva no milissegundo final aliada a forte expiração abdominal",
+      "Relaxar o braço totalmente",
+      "Gritar antes de bater",
+      "Pular antes de socar"
+    ],
+    correctIndex: 0,
+    explanation: "Kime é o foco máximo no impacto seguido de relaxamento imediato para manter fluidez e prontidão de movimento."
+  },
+  {
+    id: "q0-14",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "No Kata Bassai Dai, qual técnica de percussão simultânea é executada com os dois punhos fechados em Uchi Uke e Gedan Barai?",
+    options: [
+      "Yama Tsuki / Morote Uke e Gedan Tsuki simultâneo",
+      "Dois socos para cima",
+      "Mae Geri duplo",
+      "Duas cotoveladas no chão"
+    ],
+    correctIndex: 0,
+    explanation: "No Bassai Dai executam-se técnicas duplas em Kiba Dachi para defender ataques combinados e quebrar articulações."
+  },
+  {
+    id: "q0-15",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan / Dans)",
+    question: "Como se realiza a contagem correta em Japonês de 61 a 100?",
+    options: [
+      "Roku-Ju-Ichi até Nana-Ju (70), Hachi-Ju (80), Kyu-Ju (90) e Hyaku (100)",
+      "Go-Ju até 100",
+      "Ju, Ni-Ju, San-Ju, Yon-Ju, Hyaku",
+      "Ichi, Ni, San até 100"
+    ],
+    correctIndex: 0,
+    explanation: "De 61 a 100 utiliza-se as dezenas Roku-Ju (60), Nana-Ju (70), Hachi-Ju (80), Kyu-Ju (90) e atinge-se Hyaku (100)."
   }
 ];
 
