@@ -1024,7 +1024,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="hero-content">
           <div class="hero-welcome">
             <h2>Oss, ${user.name}! 🥋</h2>
-            <p>Bem-vindo ao seu portal oficial de estudos na <strong>TKST - Tradicional Karate Shotokan</strong>.</p>
+            <p>Bem-vindo ao seu portal oficial de estudos na <strong>Tradicional Karate-Do Shotokan Tsuyoi (TKST)</strong>.</p>
           </div>
           <div class="hero-rank-display" onclick="window.TKST_APP.openEditProfileModal()" style="cursor: pointer;" title="Toque para editar suas informações e graduação">
             <div class="hero-belt-node" style="background: ${curriculum.beltColor};"></div>
@@ -3993,7 +3993,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const dojos = window.TKST_AUTH.getDojos();
       const backupData = {
         exportDate: new Date().toISOString(),
-        organization: 'TKST Tradicional Karate Shotokan',
+        organization: 'Tradicional Karate-Do Shotokan Tsuyoi',
         admin: 'irons365',
         dojos,
         students,
@@ -4021,28 +4021,15 @@ document.addEventListener('DOMContentLoaded', () => {
             Envie o convite oficial do portal <strong>TKST Alunos</strong> para novos praticantes realizarem o cadastro no sistema:
           </p>
 
-          <div class="form-group" style="margin-bottom: 12px;">
-            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">WhatsApp do Aluno (com DDD - opcional):</label>
-            <input type="tel" id="inviteStudentPhone" class="form-input" placeholder="Ex: (21) 98888-7777 ou deixe vazio para escolher o contato">
-          </div>
-
-          <div class="form-group" style="margin-bottom: 14px;">
-            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">Nome do Aluno (opcional):</label>
-            <input type="text" id="inviteStudentName" class="form-input" placeholder="Ex: Lucas">
-          </div>
-
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 18px; font-size: 0.85rem; color: #E2E8F0; line-height: 1.5;">
             <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
-              <i class="fas fa-comment-dots"></i> Mensagem formatada:
+              <i class="fas fa-comment-dots"></i> Mensagem Oficial de Convite:
             </div>
-            <div id="inviteMsgPreview" style="font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; color: #CBD5E1; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;">🥋 *CONVITE OFICIAL - TKST TRADICIONAL KARATE SHOTOKAN* 🥋
+            <div id="inviteMsgPreview" style="font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; color: #CBD5E1; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; line-height: 1.6;">OSS!!!
+O Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.
 
-Olá! O Sensei Diego convida você para se cadastrar no portal de estudos e graduações TKST Alunos.
-
-👉 Toque no link abaixo para realizar sua matrícula:
-https://tkst-alunos.vercel.app/?cadastro=1
-
-Após preencher seus dados, sua solicitação será liberada pelo Sensei. Oss!</div>
+👉 Toque no link abaixo para realizar seu cadastro:
+https://tkst-alunos.vercel.app/?cadastro=1</div>
           </div>
 
           <div id="inviteFeedback" style="margin-bottom: 12px;"></div>
@@ -4053,10 +4040,10 @@ Após preencher seus dados, sua solicitação será liberada pelo Sensei. Oss!</
             </button>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteText()" style="padding: 10px 8px; font-size: 0.82rem;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteText()" style="padding: 11px 8px; font-size: 0.84rem; font-weight: 600;">
                 <i class="fas fa-copy"></i> Copiar Mensagem
               </button>
-              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteLink()" style="padding: 10px 8px; font-size: 0.82rem;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteLink()" style="padding: 11px 8px; font-size: 0.84rem; font-weight: 600;">
                 <i class="fas fa-link"></i> Copiar Link
               </button>
             </div>
@@ -4068,29 +4055,13 @@ Após preencher seus dados, sua solicitação será liberada pelo Sensei. Oss!</
     },
 
     sendInviteWhatsApp: () => {
-      const phoneInput = document.getElementById('inviteStudentPhone');
-      const nameInput = document.getElementById('inviteStudentName');
-      const rawPhone = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
-      const studentName = nameInput && nameInput.value.trim() ? ` ${nameInput.value.trim()}` : '';
-      
-      const text = `🥋 *CONVITE OFICIAL - TKST TRADICIONAL KARATE SHOTOKAN* 🥋\n\nOlá${studentName}! O Sensei Diego convida você para se cadastrar no portal oficial de estudos e graduações TKST Alunos.\n\n👉 *Toque no link abaixo para realizar sua matrícula:*\nhttps://tkst-alunos.vercel.app/?cadastro=1\n\nApós preencher seus dados, sua solicitação será liberada pelo Sensei. Oss!`;
-      
-      let url = '';
-      if (rawPhone.length >= 10) {
-        const fullNumber = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`;
-        url = `https://wa.me/${fullNumber}?text=${encodeURIComponent(text)}`;
-      } else {
-        url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-      }
-      
+      const text = `OSS!!!\nO Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.\n\n👉 *Toque no link abaixo para realizar seu cadastro:*\nhttps://tkst-alunos.vercel.app/?cadastro=1`;
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
       window.open(url, '_blank');
     },
 
     copyInviteText: () => {
-      const nameInput = document.getElementById('inviteStudentName');
-      const studentName = nameInput && nameInput.value.trim() ? ` ${nameInput.value.trim()}` : '';
-      const text = `🥋 *CONVITE OFICIAL - TKST TRADICIONAL KARATE SHOTOKAN* 🥋\n\nOlá${studentName}! O Sensei Diego convida você para se cadastrar no portal oficial de estudos e graduações TKST Alunos.\n\n👉 *Toque no link abaixo para realizar sua matrícula:*\nhttps://tkst-alunos.vercel.app/?cadastro=1\n\nApós preencher seus dados, sua solicitação será liberada pelo Sensei. Oss!`;
-      
+      const text = `OSS!!!\nO Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.\n\n👉 Toque no link abaixo para realizar seu cadastro:\nhttps://tkst-alunos.vercel.app/?cadastro=1`;
       navigator.clipboard.writeText(text).then(() => {
         const fb = document.getElementById('inviteFeedback');
         if (fb) {

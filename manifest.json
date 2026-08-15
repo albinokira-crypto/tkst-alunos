@@ -1,6 +1,6 @@
 {
   "id": "tkst-alunos-app",
-  "name": "TKST Alunos - Portal de estudos",
+  "name": "TKST Alunos - Tradicional Karate-Do Shotokan Tsuyoi",
   "short_name": "TKST Alunos",
   "start_url": "./index.html",
   "scope": "./",
@@ -8,7 +8,7 @@
   "orientation": "any",
   "background_color": "#0A0D14",
   "theme_color": "#0A0D14",
-  "description": "Portal Oficial de Estudos e Graduações de Karatê Shotokan da TKST.",
+  "description": "Portal Oficial de Estudos e Graduações - Tradicional Karate-Do Shotokan Tsuyoi (TKST).",
   "categories": ["education", "sports"],
   "icons": [
     {

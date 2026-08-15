@@ -1,6 +1,6 @@
 # 🥋 TKST Alunos - Portal Oficial de Estudos e Graduações
 
-Aplicativo web completo para os alunos e mestres da **TKST (Tradicional Karate Shotokan)**, com todo o conteúdo programático de exames de faixa, biblioteca de Katas, guia de Kumite, dicionário japonês e simulador de exames.
+Aplicativo web completo para os alunos e mestres da **TKST (Tradicional Karate-Do Shotokan Tsuyoi)**, com todo o conteúdo programático de exames de faixa, biblioteca de Katas, guia de Kumite, dicionário japonês e simulador de exames.
 
 ---
 
