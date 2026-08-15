@@ -3672,11 +3672,11 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.3); font-size: 1.15rem;">${t.kanji || ''}</span>
                 ${isAdmin ? `
-                  <div style="display: flex; gap: 4px; align-items: center;">
-                    <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openEditGlossaryTermModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Editar Termo (Admin)" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; line-height: 1;">
-                      <i class="fas fa-edit" style="color: var(--accent-gold);"></i>
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <button class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Editar Termo (Admin)" style="padding: 5px 8px; font-size: 0.75rem; border-radius: 4px; line-height: 1; background: rgba(255, 183, 3, 0.22); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
+                      <i class="fas fa-pen"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; line-height: 1;">
+                    <button class="btn btn-sm" onclick="window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 5px 8px; font-size: 0.75rem; border-radius: 4px; line-height: 1; background: #DC2626; border: 1px solid #B91C1C; color: #FFF; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -5490,7 +5490,18 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       if (!confirm(`Tem certeza que deseja excluir o termo "${japaneseName}" do dicionário?`)) {
         return;
       }
-      const res = window.TKST_AUTH.deleteGlossaryTerm(category, japaneseName);
+      const glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : window.TKST_GLOSSARY;
+      let actualCat = category;
+      if (!actualCat || !glossary[actualCat]) {
+        const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+        for (const c of cats) {
+          if ((glossary[c] || []).some(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim())) {
+            actualCat = c;
+            break;
+          }
+        }
+      }
+      const res = window.TKST_AUTH.deleteGlossaryTerm(actualCat || category, japaneseName);
       if (res && res.success) {
         alert(`Termo "${japaneseName}" excluído com sucesso!`);
         renderGlossary();
@@ -5501,8 +5512,24 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
     openEditGlossaryTermModal: (categoryKey, japaneseName) => {
       const glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : window.TKST_GLOSSARY;
-      const list = (glossary && glossary[categoryKey]) || [];
-      const term = list.find(t => t.japanese.toLowerCase().trim() === japaneseName.toLowerCase().trim());
+      let actualCat = categoryKey;
+      let term = null;
+
+      if (categoryKey && glossary[categoryKey]) {
+        term = glossary[categoryKey].find(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim());
+      }
+      if (!term) {
+        const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+        for (const c of cats) {
+          const found = (glossary[c] || []).find(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim());
+          if (found) {
+            term = found;
+            actualCat = c;
+            break;
+          }
+        }
+      }
+
       if (!term) {
         alert('Termo não encontrado para edição.');
         return;
@@ -5514,17 +5541,17 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       modalTitle.innerHTML = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Termo: ${term.japanese}</span>`;
 
       modalBody.innerHTML = `
-        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm('${categoryKey}', '${term.japanese.replace(/'/g, "\\'")}');" style="display: flex; flex-direction: column; gap: 14px;">
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}');" style="display: flex; flex-direction: column; gap: 14px;">
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
               <i class="fas fa-folder" style="color: var(--accent-gold); margin-right: 6px;"></i> Categoria:
             </label>
             <select id="editGlossaryCategory" class="form-input" required style="font-size: 0.88rem;">
-              <option value="bases" ${categoryKey === 'bases' ? 'selected' : ''}>Bases (Dachi)</option>
-              <option value="defesas" ${categoryKey === 'defesas' ? 'selected' : ''}>Defesas (Uke)</option>
-              <option value="socosGolpes" ${categoryKey === 'socosGolpes' ? 'selected' : ''}>Socos e Golpes (Tsuki/Uchi)</option>
-              <option value="chutes" ${categoryKey === 'chutes' ? 'selected' : ''}>Chutes (Geri)</option>
-              <option value="comandosEContagem" ${categoryKey === 'comandosEContagem' ? 'selected' : ''}>Comandos e Conceitos</option>
+              <option value="bases" ${actualCat === 'bases' ? 'selected' : ''}>Bases (Dachi)</option>
+              <option value="defesas" ${actualCat === 'defesas' ? 'selected' : ''}>Defesas (Uke)</option>
+              <option value="socosGolpes" ${actualCat === 'socosGolpes' ? 'selected' : ''}>Socos e Golpes (Tsuki/Uchi)</option>
+              <option value="chutes" ${actualCat === 'chutes' ? 'selected' : ''}>Chutes (Geri)</option>
+              <option value="comandosEContagem" ${actualCat === 'comandosEContagem' ? 'selected' : ''}>Comandos e Conceitos</option>
             </select>
           </div>
 
