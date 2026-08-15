@@ -1043,8 +1043,728 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 4. RENDER MY EXAM (CURRICULUM)
+  // 4. RENDER MY EXAM (CURRICULUM) & KUMITE INFOGRAPHICS
   // =========================================================================
+  function renderBeltKumiteInfographic(curr) {
+    const kyu = curr.kyuNumber;
+    if (kyu === 0) return ''; // Shodan é diferenciado e não deve ser alterado
+
+    // 6º Kyu (Faixa Amarela) - Gohon Kumite (5 Passos)
+    if (kyu === 6 || (curr.kumite.type && curr.kumite.type.includes('Gohon'))) {
+      return `
+        <!-- ILUSTRAÇÃO DIDÁTICA DO GOHON KUMITE (5 PASSOS) -->
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge">
+              <i class="fas fa-project-diagram"></i> Guia Ilustrado Didático • Gohon Kumite (五本組手)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Combate Fundamental em 5 Passos</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            O <strong>Gohon Kumite</strong> é o primeiro estágio do combate tradicional Shotokan. Desenvolve a estabilidade da postura <em>Zenkutsu Dachi</em>, o ritmo sincronizado de avanço/recuo e o controle absoluto da distância (<em>Ma-ai</em>) com finalização em <em>Gyaku Tsuki</em>.
+          </p>
+
+          <!-- Trilha Visual dos 5 Passos -->
+          <div class="gohon-timeline">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <strong style="color: var(--accent-gold); font-size: 0.86rem;">
+                <i class="fas fa-route" style="margin-right: 6px;"></i> Trilha de Execução dos 5 Passos:
+              </strong>
+              <span style="font-size: 0.76rem; color: #94A3B8;">Mae avança ➔ Sagate recua</span>
+            </div>
+
+            <div class="gohon-steps-track">
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">1º Passo</div>
+                <div class="gohon-step-action">Ataque & Defesa em Zenkutsu</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Ajuste de distância</div>
+              </div>
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">2º Passo</div>
+                <div class="gohon-step-action">Manutenção de Altura e Base</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Ritmo contínuo</div>
+              </div>
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">3º Passo</div>
+                <div class="gohon-step-action">Aceleração com Pressão</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Foco nos olhos</div>
+              </div>
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">4º Passo</div>
+                <div class="gohon-step-action">Preparação para Fechamento</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Aproximação decisiva</div>
+              </div>
+              <div class="gohon-step-box final-step">
+                <div class="gohon-step-num">5º Passo (Decisivo)</div>
+                <div class="gohon-step-action" style="color: #FFF;">Bloqueio Firme + Gyaku Tsuki</div>
+                <span class="gohon-kiai-tag">KIAI!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 Séries de Alvos (Jodan, Chudan, Gedan) -->
+          <div style="font-size: 0.86rem; font-weight: 700; color: #FFF; margin: 16px 0 10px 0; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-crosshairs" style="color: var(--accent-crimson);"></i> As 3 Séries Oficiais de Ataque e Defesa:
+          </div>
+
+          <div class="gohon-series-grid">
+            <!-- Série 1: Jodan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan (Alto)</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div><strong>5x Jodan Oi Tsuki</strong></div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>5x Jodan Age Uke</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Age Uke</em>, firma a base e desfere <strong>Gyaku Tsuki Chudan</strong> com potente <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+
+            <!-- Série 2: Chudan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan (Médio)</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div><strong>5x Chudan Oi Tsuki</strong></div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>5x Chudan Soto Uke</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Soto Uke</em>, estabiliza o quadril e aplica <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+
+            <!-- Série 3: Gedan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">3. Gedan (Baixo)</strong>
+                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div><strong>5x Mae Geri Chudan</strong></div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>5x Gedan Barai</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Critérios Essenciais da Banca Examinadora TKST -->
+          <div class="gohon-principles-grid">
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-eye"></i> Metsuke (目付け)</div>
+              <div class="gohon-principle-desc">Olhar fixo nos olhos do parceiro em todos os passos, sem desviar para o chão ou mãos.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-ruler-combined"></i> Ma-ai & Sun-dome</div>
+              <div class="gohon-principle-desc">Distância correta sem encurtar e controle milimétrico parando o golpe a 2-3 cm do alvo.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-bolt"></i> Kiai & Kime</div>
+              <div class="gohon-principle-desc">Explosão máxima de energia e Kiai obrigatório no 5º ataque (Mae) e no contragolpe (Sagate).</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin (残心)</div>
+              <div class="gohon-principle-desc">Manter a guarda de alerta e base sólida por 2 segundos antes de retornar à postura inicial.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 5º Kyu (Faixa Vermelha) - Sanbon Kumite (1ª e 2ª Forma)
+    if (kyu === 5) {
+      return `
+        <!-- ILUSTRAÇÃO DIDÁTICA DO SANBON KUMITE (3 PASSOS - 1ª E 2ª FORMA) -->
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge" style="background: rgba(230, 57, 70, 0.2); border-color: rgba(230, 57, 70, 0.5); color: #FF808A;">
+              <i class="fas fa-project-diagram"></i> Guia Ilustrado Didático • Sanbon Kumite (三本組手)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">1ª e 2ª Forma Oficial (Faixa Vermelha)</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            O <strong>Sanbon Kumite</strong> trabalha a combinação de 3 ataques contínuos em níveis diferentes (Jodan, Chudan e Mae Geri). Sagate recua bloqueando em <em>Zenkutsu Dachi</em> e no 3º passo executa esquiva com contra-ataque decisivo e <strong>KIAI!</strong>
+          </p>
+
+          <!-- Trilha Visual dos 3 Passos -->
+          <div class="gohon-timeline">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <strong style="color: var(--accent-gold); font-size: 0.86rem;">
+                <i class="fas fa-route" style="margin-right: 6px;"></i> Sequência dos 3 Ataques Contínuos (Mae):
+              </strong>
+              <span style="font-size: 0.76rem; color: #94A3B8;">Mae avança ➔ Sagate recua</span>
+            </div>
+
+            <div class="gohon-steps-track" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">1º Passo</div>
+                <div class="gohon-step-action">Jodan Oi Tsuki (Rosto)</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Bloqueio: Age Uke</div>
+              </div>
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">2º Passo</div>
+                <div class="gohon-step-action">Chudan Oi Tsuki (Tronco)</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Bloqueio: Soto / Uchi Uke</div>
+              </div>
+              <div class="gohon-step-box final-step">
+                <div class="gohon-step-num">3º Passo (Decisivo)</div>
+                <div class="gohon-step-action" style="color: #FFF;">Mae Geri + Contragolpe</div>
+                <span class="gohon-kiai-tag">KIAI!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- As 2 Formas de Resposta Técnica (1ª e 2ª Forma) -->
+          <div style="font-size: 0.86rem; font-weight: 700; color: #FFF; margin: 16px 0 10px 0; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-shield-alt" style="color: var(--accent-gold);"></i> Formas de Defesa e Contra-Ataque (Sagate):
+          </div>
+
+          <div class="gohon-series-grid">
+            <!-- 1ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">1ª Forma de Defesa</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Zenkutsu Dachi</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>1º Jodan Age Uke</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span><br>
+                  <strong>2º Chudan Soto Uke</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span><br>
+                  <strong>3º Gedan Barai</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia em <em>Zenkutsu</em> e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+
+            <!-- 2ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">2ª Forma de Defesa</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Sequência Dupla</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>1º Jodan Age Uke</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span><br>
+                  <strong>2º Chudan Uchi Uke</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de dentro para fora )</span><br>
+                  <strong>3º Gyaku Gedan Barai</strong>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia com <em>Gyaku Gedan Barai</em> e aplica <strong>Oi Tsuki Jodan + Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Princípios da Banca -->
+          <div class="gohon-principles-grid">
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-tachometer-alt"></i> Ritmo Contínuo</div>
+              <div class="gohon-principle-desc">Os 3 passos devem fluir sem pausas intermediárias, mantendo o nível do quadril nivelado.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-crosshairs"></i> Alvo e Distância</div>
+              <div class="gohon-principle-desc">Cada ataque deve mirar com exatidão o ponto vital (rosto, plexo solar e abdômen).</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-bolt"></i> Kiai Decisivo</div>
+              <div class="gohon-principle-desc">Kiai explosivo de Mae no 3º chute e de Sagate no contra-ataque finalizador.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin & Base</div>
+              <div class="gohon-principle-desc">Base Zenkutsu Dachi imóvel e estabilizada por 2 segundos antes de retornar ao Yoi.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 4º Kyu (Faixa Laranja) - Sanbon Kumite Avançado (3ª, 4ª e 5ª Forma)
+    if (kyu === 4) {
+      return `
+        <!-- ILUSTRAÇÃO DIDÁTICA DO SANBON KUMITE AVANÇADO (3ª, 4ª E 5ª FORMA) -->
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge" style="background: rgba(245, 190, 0, 0.2); border-color: rgba(245, 190, 0, 0.5); color: #FFD166;">
+              <i class="fas fa-project-diagram"></i> Guia Ilustrado Didático • Sanbon Kumite Avançado (三本組手)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">3ª, 4ª e 5ª Forma (Faixa Laranja)</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            Na Faixa Laranja, o <strong>Sanbon Kumite</strong> introduz o trabalho de esquiva corporal angular (<em>Tai Sabaki</em> a 45°/90°), defesas com transição para <em>Kiba Dachi</em> e contra-ataques simultâneos de cotovelada (<em>Empi</em>) e punho lateral (<em>Kage Tsuki</em>).
+          </p>
+
+          <!-- As 3 Formas Avançadas (Faixa Laranja) -->
+          <div class="gohon-series-grid">
+            <!-- 3ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">3ª Forma de Defesa</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Esquiva 45°</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>1º Sokumen Jodan Haiwan Age Uke</strong> (Esquiva 45°)<br>
+                  <strong>2º Morote Uke</strong> (Bloqueio duplo reforçado)<br>
+                  <strong>3º Sukui Uke</strong> (Colher a perna no chute)
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>Finalização no 3º passo:</strong> Colhe a perna com <em>Sukui Uke</em> e dispara <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+
+            <!-- 4ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">4ª Forma de Defesa</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Kiba Dachi</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>1º Yama Uke</strong> (Bloqueio em U)<br>
+                  <strong>2º Teisho Uke</strong> (Bloqueio com a palma da mão)<br>
+                  <strong>3º Haiwan Uke</strong> com transição de base
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>Finalização no 3º passo:</strong> Transiciona para <em>Kiba Dachi</em> e golpeia com <strong>Kage Tsuki</strong> potente com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+
+            <!-- 5ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">5ª Forma de Defesa</strong>
+                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Tenchi Waza</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>1º Jodan Oi Tsuki ➔ 2º Chudan Oi Tsuki ➔ 3º Mae Geri Chudan</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>1º Tenchi Jodan Age Uke</strong><br>
+                  <strong>2º Tenchi Chudan Uchi Uke</strong><br>
+                  <strong>3º Tenchi Gedan Barai</strong>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>Finalização no 3º passo:</strong> Bloqueia firme com <em>Tenchi Gedan Barai</em> e finaliza com <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Princípios da Banca -->
+          <div class="gohon-principles-grid">
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-compass"></i> Tai Sabaki (Esquivas)</div>
+              <div class="gohon-principle-desc">Sair da linha de ataque em ângulo de 45° ou 90° mantendo o tronco ereto e o centro de gravidade baixo.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-horse"></i> Base Kiba Dachi</div>
+              <div class="gohon-principle-desc">Joelhos bem abertos e apontados para fora na transição para a postura do cavaleiro.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-bolt"></i> Sincronia de Contragolpe</div>
+              <div class="gohon-principle-desc">O contra-ataque deve ocorrer no mesmo momento em que o bloqueio se consolida.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin</div>
+              <div class="gohon-principle-desc">Atenção total e guarda defensiva mantida antes do retorno ao Yoi.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 3º Kyu (Faixa Verde) - Kihon Ippon Kumite (1ª e 2ª Forma)
+    if (kyu === 3) {
+      return `
+        <!-- ILUSTRAÇÃO DIDÁTICA DO KIHON IPPON KUMITE (1ª E 2ª FORMA) -->
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5); color: #6EE7B7;">
+              <i class="fas fa-bolt"></i> Guia Ilustrado Didático • Kihon Ippon Kumite (基本一本組手)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Combate em 1 Passo (1ª e 2ª Forma)</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            O <strong>Kihon Ippon Kumite</strong> é o combate de um único ataque anunciado com antecedência em <em>Kamae</em>. O atacante (Mae) dispara em velocidade explosiva e o defensor (Sagate) executa bloqueio sólido e contragolpe fulminante (<em>Ikken Hissatsu</em>) com Kiai imediato.
+          </p>
+
+          <!-- As 3 Séries Exigidas (Jodan, Chudan, Mae Geri) -->
+          <div class="gohon-series-grid">
+            <!-- Jodan Oi Tsuki -->
+            <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan Oi Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Anuncia <em>"Jodan!"</em> e avança em <em>Zenkutsu Dachi</em> com soco alto no queixo.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Jodan Age Uke</em> ➔ <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
+                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Recua <em>Jodan Shuto Uke</em> (Kokutsu) ➔ <strong>Shuto Uchi Jodan</strong> em Zenkutsu (KIAI!)
+                </div>
+              </div>
+            </div>
+
+            <!-- Chudan Oi Tsuki -->
+            <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan Oi Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Anuncia <em>"Chudan!"</em> e avança em <em>Zenkutsu Dachi</em> com soco médio penetrante.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Chudan Soto Uke</em> ➔ <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
+                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Esquiva <em>Migi Soto Uke</em> (Zenkutsu) ➔ <strong>Yoko Empi</strong> em Kiba Dachi (KIAI!)
+                </div>
+              </div>
+            </div>
+
+            <!-- Mae Geri Chudan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">3. Mae Geri Chudan</strong>
+                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Anuncia <em>"Mae Geri!"</em> e desfere chute frontal explosivo no abdômen.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong style="color: #FFF;">• 1ª Forma:</strong> Recua <em>Gedan Barai</em> ➔ <strong>Gyaku Tsuki Chudan (KIAI!)</strong><br>
+                  <strong style="color: #FFF; margin-top: 4px; display: inline-block;">• 2ª Forma:</strong> Recua <em>Gyaku Gedan Barai</em> ➔ <strong>Kizame Tsuki Jodan + Gyaku Tsuki (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Princípios da Banca -->
+          <div class="gohon-principles-grid">
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-volume-up"></i> Anúncio Claro</div>
+              <div class="gohon-principle-desc">O atacante deve anunciar a técnica de forma audível e aguardar a resposta antes do ataque.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-ruler"></i> Sun-dome Milimétrico</div>
+              <div class="gohon-principle-desc">O contragolpe deve parar precisamente a 2-3 cm da pele do oponente, sem toque e com foco total (Kime).</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-bolt"></i> Ikken Hissatsu</div>
+              <div class="gohon-principle-desc">Conceito do golpe decisivo único — máxima potência, explosão e Kiai ressonante.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin</div>
+              <div class="gohon-principle-desc">Manter a posição e o foco por 2 segundos antes de recuar para a postura de guarda.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2º Kyu (Faixa Roxa) - Jiyu Ippon Kumite (1ª e 2ª Forma)
+    if (kyu === 2) {
+      return `
+        <!-- ILUSTRAÇÃO DIDÁTICA DO JIYU IPPON KUMITE (1ª E 2ª FORMA) -->
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #C084FC;">
+              <i class="fas fa-running"></i> Guia Ilustrado Didático • Jiyu Ippon Kumite (自由一本組手)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Combate Semi-Livre em Guarda Livre (Faixa Roxa)</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            No <strong>Jiyu Ippon Kumite</strong>, ambos iniciam em postura de guarda livre (<em>Jiyu no Kamae</em>), em constante movimentação. Mae ajusta a distância e ataca sem telegrafar, enquanto Sagate utiliza <em>Tai Sabaki</em> (esquiva corporal a 45°/90°) e contragolpe fulminante com <strong>KIAI!</strong>
+          </p>
+
+          <!-- As 4 Técnicas Principais -->
+          <div class="gohon-series-grid">
+            <!-- Jodan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan Kizame / Oi Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Avanço rápido em passo livre mirando o queixo do oponente.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  Esquiva a 45° com <strong>Jodan Tate Shuto / Seiryuto Uke</strong> ➔ Contra-ataque de <strong>Gyaku Tsuki / Ura Tsuki (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chudan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan Gyaku Tsuki</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Disparo direto de soco reverso penetrante no abdômen/tronco.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  Desvia com <strong>Chudan Soto Uke / Gyaku Osae Uke</strong> ➔ Contra-ataque de <strong>Uraken Uchi Jodan / Osoto Gari com Gyaku Tsuki (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mae Geri -->
+            <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">3. Mae Geri Chudan</strong>
+                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Chute frontal rápido e direto com elevação imediata de joelho.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  Esquiva a 45° com <strong>Gedan Barai / Juji Gedan</strong> ➔ Contra-ataque de <strong>Kizame Tsuki Jodan + Gyaku Tsuki Chudan (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mawashi Geri -->
+            <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">4. Mawashi Geri Jodan</strong>
+                <span class="gohon-series-tag" style="background: rgba(168,85,247,0.2); color: #C084FC;">Alvo: Têmpora/Cabeça</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Chute circular potente com rotação de quadril mirando a cabeça.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  Penetração curta com <strong>Haiwan Uke 90°</strong> ➔ Contra-ataque de <strong>Jodan Shuto Uchi / Mawashi Geri (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Princípios da Banca -->
+          <div class="gohon-principles-grid">
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-shoe-prints"></i> Movimentação (Ashi Sabaki)</div>
+              <div class="gohon-principle-desc">Pernas ágeis sem cruzar a base, pés deslizando no tatame com flexibilidade.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-stopwatch"></i> De-ai (Antecipação)</div>
+              <div class="gohon-principle-desc">Interceptar o golpe no início da trajetória com contra-ataque antes do fechamento do oponente.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-brain"></i> Fudoshin (Mente Inabalável)</div>
+              <div class="gohon-principle-desc">Calma e serenidade mesmo sob pressão e velocidade real de ataque.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin Absoluto</div>
+              <div class="gohon-principle-desc">Prontidão imediata para um segundo ataque sem relaxar a guarda marcial.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 1º Kyu (Faixa Marrom) - Jiyu Ippon Kumite Completo (1ª a 4ª Forma) & Jiyu Kumite
+    if (kyu === 1) {
+      return `
+        <!-- ILUSTRAÇÃO DIDÁTICA DO JIYU IPPON KUMITE COMPLETO (FAIXA MARROM) -->
+        <div class="gohon-infographic-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="gohon-header-badge" style="background: rgba(180, 83, 9, 0.2); border-color: rgba(180, 83, 9, 0.5); color: #FBBF24;">
+              <i class="fas fa-shield-alt"></i> Guia Ilustrado Didático • Jiyu Ippon Kumite Completo (1ª a 4ª Forma)
+            </span>
+            <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Nível Avançado Pré-Faixa Preta (1º Kyu)</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
+            O exame de Faixa Marrom (1º Kyu) exige domínio pleno de todas as 4 formas de resposta marcial contra ataques diretos, circulares e giratórios, demonstrando a transição fluida do combate técnico para o combate livre (<em>Jiyu Kumite</em>) e controle emocional supremo.
+          </p>
+
+          <!-- As 4 Formas de Aplicação Marcial -->
+          <div class="gohon-series-grid">
+            <!-- 1ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">1ª Forma — Ataques Retilíneos</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Tsuki Waza</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Jodan Oi Tsuki & Chudan Gyaku Tsuki em avanço rápido.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  Esquiva a 45° com <strong>Seiryuto Uke / Soto Uke</strong> ➔ <strong>De-ai Gyaku Tsuki Chudan + Uraken Uchi (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">2ª Forma — Chutes Frontais & Circulares</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Keri Waza</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Mae Geri Chudan & Mawashi Geri Jodan com máxima velocidade.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  Esquiva a 45° com <strong>Gedan Barai / Haiwan Uke 90°</strong> ➔ <strong>Ashi Barai (varredura) + Otoshi Gyaku Tsuki (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">3ª Forma — Chutes Laterais & Giratórios</strong>
+                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Yoko & Ushiro</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Yoko Geri Kekomi & Ushiro Geri com penetração total.</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  Esquiva a 90° com <strong>Sukui Uke / Ushiro Gedan Barai</strong> ➔ <strong>Kizame Yoko Geri + Yoko Empi (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4ª Forma -->
+            <div class="gohon-series-card" style="border-left: 4px solid #A855F7;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">4ª Forma — Combinações Contínuas</strong>
+                <span class="gohon-series-tag" style="background: rgba(168,85,247,0.2); color: #C084FC;">Renzoku Waza</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div>Ataque duplo consecutivo (Soco + Chute em fluxo ininterrupto).</div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  Bloqueio duplo em transição de base ➔ <strong>Contragolpe composto com finalização decisiva (KIAI!)</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Princípios da Banca -->
+          <div class="gohon-principles-grid">
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-medal"></i> Maturidade Marcial</div>
+              <div class="gohon-principle-desc">Controle milimétrico da força, etiqueta impecável no tatame e respeito reverente ao parceiro.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-heartbeat"></i> Resistência & Ritmo</div>
+              <div class="gohon-principle-desc">Capacidade de sustentar o combate livre contínuo mantendo a respiração e a técnica puras.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-bullseye"></i> Precisão Vital</div>
+              <div class="gohon-principle-desc">Direcionamento cirúrgico para queixo, plexo solar, costelas flutuantes e têmporas.</div>
+            </div>
+            <div class="gohon-principle-item">
+              <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin Shodan</div>
+              <div class="gohon-principle-desc">Postura digna de um futuro Faixa Preta da TKST em cada movimento.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    return '';
+  }
+
   function renderMyExam() {
     const user = window.TKST_AUTH.getCurrentUser();
     const curr = window.TKST_CURRICULUM.find(c => c.kyuNumber === selectedBeltKyu) || window.TKST_CURRICULUM[0];
@@ -1161,152 +1881,27 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <p style="font-size: 0.9rem; color: #CBD5E1; line-height: 1.6; margin-bottom: 16px;">${curr.kumite.description}</p>
 
-            ${curr.kyuNumber === 6 || (curr.kumite.type && curr.kumite.type.includes('Gohon')) ? `
-              <!-- ILUSTRAÇÃO DIDÁTICA DO GOHON KUMITE (5 PASSOS) -->
-              <div class="gohon-infographic-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-                  <span class="gohon-header-badge">
-                    <i class="fas fa-project-diagram"></i> Guia Ilustrado Didático • Gohon Kumite (五本組手)
-                  </span>
-                  <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">Combate Fundamental em 5 Passos</span>
-                </div>
+            ${renderBeltKumiteInfographic(curr)}
+          </div>
+        </div>
 
-                <p style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.6; margin-bottom: 16px;">
-                  O <strong>Gohon Kumite</strong> é o primeiro estágio do combate tradicional Shotokan. Desenvolve a estabilidade da postura <em>Zenkutsu Dachi</em>, o ritmo sincronizado de avanço/recuo e o controle absoluto da distância (<em>Ma-ai</em>) com finalização em <em>Gyaku Tsuki</em>.
-                </p>
-
-                <!-- Trilha Visual dos 5 Passos -->
-                <div class="gohon-timeline">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <strong style="color: var(--accent-gold); font-size: 0.86rem;">
-                      <i class="fas fa-route" style="margin-right: 6px;"></i> Trilha de Execução dos 5 Passos:
-                    </strong>
-                    <span style="font-size: 0.76rem; color: #94A3B8;">Mae avança ➔ Sagate recua</span>
-                  </div>
-
-                  <div class="gohon-steps-track">
-                    <div class="gohon-step-box">
-                      <div class="gohon-step-num">1º Passo</div>
-                      <div class="gohon-step-action">Ataque & Defesa em Zenkutsu</div>
-                      <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Ajuste de distância</div>
-                    </div>
-                    <div class="gohon-step-box">
-                      <div class="gohon-step-num">2º Passo</div>
-                      <div class="gohon-step-action">Manutenção de Altura e Base</div>
-                      <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Ritmo contínuo</div>
-                    </div>
-                    <div class="gohon-step-box">
-                      <div class="gohon-step-num">3º Passo</div>
-                      <div class="gohon-step-action">Aceleração com Pressão</div>
-                      <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Foco nos olhos</div>
-                    </div>
-                    <div class="gohon-step-box">
-                      <div class="gohon-step-num">4º Passo</div>
-                      <div class="gohon-step-action">Preparação para Fechamento</div>
-                      <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Aproximação decisiva</div>
-                    </div>
-                    <div class="gohon-step-box final-step">
-                      <div class="gohon-step-num">5º Passo (Decisivo)</div>
-                      <div class="gohon-step-action" style="color: #FFF;">Bloqueio Firme + Gyaku Tsuki</div>
-                      <span class="gohon-kiai-tag">KIAI!</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 3 Séries de Alvos (Jodan, Chudan, Gedan) -->
-                <div style="font-size: 0.86rem; font-weight: 700; color: #FFF; margin: 16px 0 10px 0; display: flex; align-items: center; gap: 8px;">
-                  <i class="fas fa-crosshairs" style="color: var(--accent-crimson);"></i> As 3 Séries Oficiais de Ataque e Defesa:
-                </div>
-
-                <div class="gohon-series-grid">
-                  <!-- Série 1: Jodan -->
-                  <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
-                    <div class="gohon-series-title">
-                      <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan (Alto)</strong>
-                      <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
-                    </div>
-                    <div class="gohon-role-row">
-                      <span class="gohon-role-badge tori">Mae</span>
-                      <div><strong>5x Jodan Oi Tsuki</strong></div>
-                    </div>
-                    <div class="gohon-role-row">
-                      <span class="gohon-role-badge uke">Sagate</span>
-                      <div>
-                        <strong>5x Jodan Age Uke</strong><br>
-                        <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span>
-                      </div>
-                    </div>
-                    <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                      ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Age Uke</em>, firma a base e desfere <strong>Gyaku Tsuki Chudan</strong> com potente <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
-                    </div>
-                  </div>
-
-                  <!-- Série 2: Chudan -->
-                  <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
-                    <div class="gohon-series-title">
-                      <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan (Médio)</strong>
-                      <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
-                    </div>
-                    <div class="gohon-role-row">
-                      <span class="gohon-role-badge tori">Mae</span>
-                      <div><strong>5x Chudan Oi Tsuki</strong></div>
-                    </div>
-                    <div class="gohon-role-row">
-                      <span class="gohon-role-badge uke">Sagate</span>
-                      <div>
-                        <strong>5x Chudan Soto Uke</strong><br>
-                        <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span>
-                      </div>
-                    </div>
-                    <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                      ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Soto Uke</em>, estabiliza o quadril e aplica <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
-                    </div>
-                  </div>
-
-                  <!-- Série 3: Gedan -->
-                  <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
-                    <div class="gohon-series-title">
-                      <strong style="color: #FFF; font-size: 0.92rem;">3. Gedan (Baixo)</strong>
-                      <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
-                    </div>
-                    <div class="gohon-role-row">
-                      <span class="gohon-role-badge tori">Mae</span>
-                      <div><strong>5x Mae Geri Chudan</strong></div>
-                    </div>
-                    <div class="gohon-role-row">
-                      <span class="gohon-role-badge uke">Sagate</span>
-                      <div>
-                        <strong>5x Gedan Barai</strong><br>
-                        <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
-                      </div>
-                    </div>
-                    <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-                      ⚡ <strong>Finalização no 5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Critérios Essenciais da Banca Examinadora TKST -->
-                <div class="gohon-principles-grid">
-                  <div class="gohon-principle-item">
-                    <div class="gohon-principle-title"><i class="fas fa-eye"></i> Metsuke (目付け)</div>
-                    <div class="gohon-principle-desc">Olhar fixo nos olhos do parceiro em todos os passos, sem desviar para o chão ou mãos.</div>
-                  </div>
-                  <div class="gohon-principle-item">
-                    <div class="gohon-principle-title"><i class="fas fa-ruler-combined"></i> Ma-ai & Sun-dome</div>
-                    <div class="gohon-principle-desc">Distância correta sem encurtar e controle milimétrico parando o golpe a 2-3 cm do alvo.</div>
-                  </div>
-                  <div class="gohon-principle-item">
-                    <div class="gohon-principle-title"><i class="fas fa-bolt"></i> Kiai & Kime</div>
-                    <div class="gohon-principle-desc">Explosão máxima de energia e Kiai obrigatório no 5º ataque (Mae) e no contragolpe (Sagate).</div>
-                  </div>
-                  <div class="gohon-principle-item">
-                    <div class="gohon-principle-title"><i class="fas fa-shield-alt"></i> Zanshin (残心)</div>
-                    <div class="gohon-principle-desc">Manter a guarda de alerta e base sólida por 2 segundos antes de retornar à postura inicial.</div>
-                  </div>
-                </div>
+        <!-- 4. REQUISITOS AVALIADOS PELA BANCA -->
+        <div class="study-accordion-card" id="studyCard_defesa">
+          <button type="button" class="study-accordion-header" id="studyHeader_defesa" onclick="window.TKST_APP.toggleStudyAccordion('defesa')">
+            <div class="study-accordion-title">
+              <i class="fas fa-clipboard-check" style="color: var(--accent-emerald); font-size: 1.25rem;"></i>
+              <div>
+                <h3>4. Requisitos Avaliados pela Banca</h3>
+                <div style="font-size: 0.78rem; color: #94A3B8;">Critérios avaliativos e postura exigidos • Toque para ver</div>
               </div>
-            ` : ''}
+            </div>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_defesa"></i>
+          </button>
+
+          <div class="study-accordion-body" id="studyBody_defesa">
+            <ul style="padding-left: 20px; font-size: 0.88rem; color: #CBD5E1; line-height: 1.8; margin: 0;">
+              ${curr.requirements.map(r => `<li>${r}</li>`).join('')}
+            </ul>
           </div>
         </div>
 
