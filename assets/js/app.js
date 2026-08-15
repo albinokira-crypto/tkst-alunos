@@ -282,8 +282,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const isAdmin = window.TKST_AUTH.isAdmin();
+    const students = window.TKST_AUTH.getAllStudents();
+    const pendingCount = students.filter(s => s.status === 'pending').length;
+
     adminNavItems.forEach(el => {
       el.style.display = isAdmin ? 'block' : 'none';
+      const link = el.querySelector('a');
+      if (link) {
+        let badge = link.querySelector('.admin-pending-badge');
+        if (pendingCount > 0) {
+          if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'nav-badge admin-pending-badge';
+            badge.style.cssText = 'background: #E63946; color: #FFF; font-weight: 800; animation: pulse 2s infinite; margin-left: 6px;';
+            link.appendChild(badge);
+          }
+          badge.textContent = `${pendingCount} Pendente${pendingCount > 1 ? 's' : ''}`;
+        } else if (badge) {
+          badge.remove();
+        }
+      }
     });
 
     if (user.currentKyu !== undefined) {
@@ -293,12 +311,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (headerUserArea) {
       headerUserArea.innerHTML = `
         ${isAdmin ? `
-          <button class="btn btn-gold" onclick="window.TKST_APP.switchTab('admin')" style="font-size: 0.78rem; padding: 6px 12px; white-space: nowrap;">
+          <button class="btn btn-gold" onclick="window.TKST_APP.setAdminSubTab('pending'); window.TKST_APP.switchTab('admin')" style="font-size: 0.78rem; padding: 6px 12px; white-space: nowrap; position: relative;" title="Painel Master Sensei Diego">
             <i class="fas fa-crown"></i> Painel Admin
+            ${pendingCount > 0 ? `<span class="header-notification-pill" title="${pendingCount} cadastro(s) pendente(s)">${pendingCount}</span>` : ''}
           </button>
         ` : ''}
-        <button class="btn btn-secondary" onclick="window.TKST_APP.handleLogout()" style="font-size: 0.78rem; padding: 6px 12px; background: rgba(230, 57, 70, 0.15); border-color: rgba(230, 57, 70, 0.4); color: #FF808A; white-space: nowrap;" title="Sair da Conta">
-          <i class="fas fa-power-off"></i> Sair
+        <button class="btn btn-secondary" onclick="window.TKST_APP.openEditProfileModal()" style="font-size: 0.78rem; padding: 6px 10px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); white-space: nowrap;" title="Editar Perfil e Informações">
+          <i class="fas fa-user-edit"></i> <span class="hide-mobile">Perfil</span>
+        </button>
+        <button class="btn btn-secondary" onclick="window.TKST_APP.handleLogout()" style="font-size: 0.78rem; padding: 6px 10px; background: rgba(230, 57, 70, 0.15); border-color: rgba(230, 57, 70, 0.4); color: #FF808A; white-space: nowrap;" title="Sair da Conta">
+          <i class="fas fa-power-off"></i> <span class="hide-mobile">Sair</span>
         </button>
       `;
     }
@@ -914,17 +936,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const percent = Math.min(100, Math.round((masteredCount / totalKihon) * 100));
     const totalKatas = window.TKST_KATAS ? window.TKST_KATAS.length : 26;
 
+    const isAdmin = window.TKST_AUTH.isAdmin();
+    const students = window.TKST_AUTH.getAllStudents();
+    const pendingStudents = students.filter(s => s.status === 'pending');
+
     let html = `
+      ${isAdmin && pendingStudents.length > 0 ? `
+        <!-- ADMIN PENDING APPROVALS ALERT BANNER -->
+        <div class="admin-pending-alert-card" onclick="window.TKST_APP.setAdminSubTab('pending'); window.TKST_APP.switchTab('admin');" title="Toque para ir ao painel de aprovações">
+          <div class="admin-pending-alert-left">
+            <div class="admin-pending-icon-bell">
+              <i class="fas fa-bell"></i>
+            </div>
+            <div>
+              <div class="admin-pending-title">
+                <span class="badge badge-vermelha" style="font-size: 0.72rem; padding: 2px 8px; margin-right: 6px;">
+                  ${pendingStudents.length} Pendente${pendingStudents.length > 1 ? 's' : ''}
+                </span>
+                Novos Alunos Cadastrados Aguardando Aprovação!
+              </div>
+              <div class="admin-pending-subtitle">
+                Há matrículas pendentes de autorização. Toque para analisar e liberar o acesso.
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-gold" style="font-size: 0.78rem; padding: 8px 16px; white-space: nowrap; flex-shrink: 0;">
+            <i class="fas fa-user-check"></i> Aprovar Alunos
+          </button>
+        </div>
+      ` : ''}
+
       <div class="dashboard-hero">
         <div class="hero-content">
           <div class="hero-welcome">
             <h2>Oss, ${user.name}! 🥋</h2>
-            <p>Bem-vindo ao seu portal de estudos na <strong>TKST - Tradicional Karate Shotokan</strong>. Dojo: <strong>${user.dojo}</strong></p>
+            <p>Bem-vindo ao seu portal oficial de estudos na <strong>TKST - Tradicional Karate Shotokan</strong>.</p>
           </div>
-          <div class="hero-rank-display">
+          <div class="hero-rank-display" onclick="window.TKST_APP.openEditProfileModal()" style="cursor: pointer;" title="Toque para editar suas informações e graduação">
             <div class="hero-belt-node" style="background: ${curriculum.beltColor};"></div>
-            <div class="hero-rank-meta">
-              <div class="rank-label">Graduação Atual</div>
+            <div class="hero-rank-meta" style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                <div class="rank-label">Graduação Atual</div>
+                <span class="hero-edit-badge"><i class="fas fa-user-edit"></i> Editar Dados</span>
+              </div>
               <div class="rank-name">${user.currentBelt}</div>
               <div class="target-name">Meta: ${curriculum.targetBelt}</div>
             </div>
@@ -3507,18 +3561,193 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (res.success) {
+        const senseiMsg = encodeURIComponent(`Oss Sensei Diego! Acabei de me cadastrar no portal TKST Alunos.\n\n🥋 *Dados da Matrícula:*\n• Nome: ${name}\n• Nick de Login: @${nick}\n• Graduação: ${currentBelt}\n• Dojo: ${dojo}\n• WhatsApp: ${phone || 'Não informado'}\n\nAguardo sua aprovação para ter acesso aos estudos! Oss!`);
+        const whatsappUrl = `https://wa.me/5521976077598?text=${senseiMsg}`;
+
         feedback.innerHTML = `
-          <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 12px; border-radius: var(--radius-sm); font-size: 0.9rem;">
-            ✓ Solicitação de matrícula enviada! Seu Login é <strong>@${res.user.username}</strong> no Dojo <strong>${res.user.dojo}</strong>. O <strong>Sensei Diego</strong> fará a aprovação.
+          <div style="background: rgba(16, 185, 129, 0.15); border: 1.5px solid var(--accent-emerald); color: #FFF; padding: 16px; border-radius: var(--radius-md); font-size: 0.9rem; text-align: center;">
+            <div style="font-size: 1.05rem; font-weight: 700; color: #6EE7B7; margin-bottom: 8px;">
+              <i class="fas fa-check-circle"></i> Solicitação Enviada com Sucesso!
+            </div>
+            <p style="font-size: 0.84rem; color: #E2E8F0; margin-bottom: 14px; line-height: 1.4;">
+              Seu cadastro com o Nick <strong>@${res.user.username}</strong> foi enviado. Para liberar o acesso mais rápido, avise o <strong>Sensei Diego</strong> no WhatsApp:
+            </p>
+            <a href="${whatsappUrl}" target="_blank" class="btn" style="background: #25D366; color: #FFF; font-weight: 700; font-size: 0.85rem; padding: 10px 16px; border-radius: var(--radius-sm); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35);">
+              <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Avisar Sensei Diego no WhatsApp
+            </a>
           </div>
         `;
-        setTimeout(() => {
-          detailModal.classList.remove('active');
-        }, 2800);
       } else {
         feedback.innerHTML = `
           <div style="background: rgba(230, 57, 70, 0.15); border: 1px solid var(--accent-crimson); color: #FF808A; padding: 12px; border-radius: var(--radius-sm); font-size: 0.9rem;">
             ${res.message}
+          </div>
+        `;
+      }
+    },
+
+    openEditProfileModal: () => {
+      const user = window.TKST_AUTH.getCurrentUser();
+      if (!user) {
+        window.TKST_APP.switchTab('login');
+        return;
+      }
+      const dojos = window.TKST_AUTH.getDojos();
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      if (!modalTitle || !modalBody) return;
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-user-edit" style="color: var(--accent-gold);"></i>
+          <span>Editar Meu Perfil & Dados</span>
+        </div>
+      `;
+
+      const belts = [
+        { name: "Faixa Branca", kyu: 6 },
+        { name: "Faixa Amarela (6º Kyu)", kyu: 6 },
+        { name: "Faixa Vermelha (5º Kyu)", kyu: 5 },
+        { name: "Faixa Laranja (4º Kyu)", kyu: 4 },
+        { name: "Faixa Verde (3º Kyu)", kyu: 3 },
+        { name: "Faixa Roxa (2º Kyu)", kyu: 2 },
+        { name: "Faixa Marrom (1º Kyu)", kyu: 1 },
+        { name: "Faixa Preta (Shodan - 1º Dan)", kyu: 0 }
+      ];
+
+      if (user.role === 'admin' || user.username === 'irons365') {
+        belts.unshift({ name: "Faixa Preta (Sensei Master)", kyu: 0 });
+      }
+
+      modalBody.innerHTML = `
+        <form id="editProfileForm" onsubmit="event.preventDefault(); window.TKST_APP.submitEditProfile();" style="display: flex; flex-direction: column; gap: 14px; max-width: 550px; margin: 0 auto; padding: 4px 0;">
+          
+          <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;"></i>
+            <div style="font-size: 0.8rem; color: #E2E8F0; line-height: 1.4;">
+              Atualize seu nome, graduação, dojo ou senha. As alterações entram em vigor imediatamente.
+            </div>
+          </div>
+
+          <div id="profileEditFeedback"></div>
+
+          <!-- 1. Nome Completo -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-user" style="color: var(--accent-gold); margin-right: 6px;"></i> Nome Completo:
+            </label>
+            <input type="text" id="editProfName" class="form-input" value="${user.name || ''}" placeholder="Seu nome completo" required>
+          </div>
+
+          <!-- 2. Nick de Login -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-at" style="color: var(--accent-gold); margin-right: 6px;"></i> Nick de Acesso (Login):
+            </label>
+            <input type="text" id="editProfNick" class="form-input" value="${user.username || ''}" placeholder="Seu nick de acesso" required ${user.username === 'irons365' ? 'readonly style="opacity: 0.7; cursor: not-allowed;"' : ''}>
+            <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px;">Identificador único usado para entrar no sistema.</div>
+          </div>
+
+          <!-- 3. Telefone / WhatsApp -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 6px;"></i> Telefone / WhatsApp:
+            </label>
+            <input type="tel" id="editProfPhone" class="form-input" value="${user.phone || ''}" placeholder="(21) 99999-9999">
+          </div>
+
+          <!-- 4. Dojo / Unidade -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-torii-gate" style="color: var(--accent-crimson); margin-right: 6px;"></i> Dojo / Unidade de Treino:
+            </label>
+            <select id="editProfDojo" class="form-select" required>
+              ${dojos.map(d => `<option value="${d}" ${user.dojo === d ? 'selected' : ''}>${d}</option>`).join('')}
+            </select>
+          </div>
+
+          <!-- 5. Graduação Atual -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-medal" style="color: var(--accent-gold); margin-right: 6px;"></i> Graduação Atual:
+            </label>
+            <select id="editProfBelt" class="form-select" required>
+              ${belts.map(b => `<option value="${b.name}" data-kyu="${b.kyu}" ${user.currentBelt === b.name || (user.currentBelt && user.currentBelt.includes(b.name.split(' ')[1])) ? 'selected' : ''}>${b.name}</option>`).join('')}
+            </select>
+          </div>
+
+          <!-- 6. Nova Senha (Opcional) -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 4px;">
+            <div style="font-weight: 700; font-size: 0.85rem; color: #FFF; margin-bottom: 8px;">
+              <i class="fas fa-lock" style="color: var(--accent-gold); margin-right: 6px;"></i> Alterar Senha (Opcional)
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.78rem; margin-bottom: 4px;">Nova Senha:</label>
+                <input type="password" id="editProfPass" class="form-input" placeholder="Deixe vazio p/ manter">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.78rem; margin-bottom: 4px;">Confirmar Senha:</label>
+                <input type="password" id="editProfPassConfirm" class="form-input" placeholder="Repita a nova senha">
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões -->
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
+              <i class="fas fa-save"></i> Salvar Alterações
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    submitEditProfile: () => {
+      const name = document.getElementById('editProfName').value;
+      const nick = document.getElementById('editProfNick').value;
+      const phone = document.getElementById('editProfPhone').value;
+      const dojo = document.getElementById('editProfDojo').value;
+      const beltSelect = document.getElementById('editProfBelt');
+      const currentBelt = beltSelect.value;
+      const selectedOpt = beltSelect.options[beltSelect.selectedIndex];
+      const currentKyu = selectedOpt ? selectedOpt.getAttribute('data-kyu') : 6;
+      const pass = document.getElementById('editProfPass').value;
+      const passConfirm = document.getElementById('editProfPassConfirm').value;
+      const feedback = document.getElementById('profileEditFeedback');
+
+      const res = window.TKST_AUTH.updateProfile({
+        name,
+        username: nick,
+        phone,
+        dojo,
+        currentBelt,
+        currentKyu: parseInt(currentKyu),
+        password: pass,
+        passwordConfirm: passConfirm
+      });
+
+      if (res.success) {
+        feedback.innerHTML = `
+          <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.86rem;">
+            <i class="fas fa-check-circle"></i> Informações atualizadas com sucesso!
+          </div>
+        `;
+        setTimeout(() => {
+          detailModal.classList.remove('active');
+          setupUserDisplay();
+          renderView(currentTab);
+        }, 1200);
+      } else {
+        feedback.innerHTML = `
+          <div style="background: rgba(230, 57, 70, 0.15); border: 1px solid var(--accent-crimson); color: #FF808A; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.86rem;">
+            <i class="fas fa-exclamation-triangle"></i> ${res.message}
           </div>
         `;
       }

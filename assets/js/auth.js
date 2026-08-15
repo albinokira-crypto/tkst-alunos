@@ -517,6 +517,104 @@
       return isMastered;
     },
 
+    updateProfile: function(updatedData) {
+      const currentUser = this.getCurrentUser();
+      if (!currentUser) return { success: false, message: 'Nenhum usuário logado no momento.' };
+
+      let students = this.getAllStudents();
+      const userIndex = students.findIndex(s => s.id === currentUser.id || (s.username && s.username.toLowerCase() === (currentUser.username || '').toLowerCase()));
+
+      const cleanName = (updatedData.name || '').trim();
+      if (!cleanName) {
+        return { success: false, message: 'O nome completo não pode ficar vazio.' };
+      }
+
+      const cleanNick = (updatedData.username || '').trim().toLowerCase();
+      if (!cleanNick || cleanNick.length < 3) {
+        return { success: false, message: 'O Nick deve ter no mínimo 3 caracteres.' };
+      }
+
+      // Check if new nick is taken by another user
+      if (students.some(s => s.id !== currentUser.id && s.username && s.username.toLowerCase() === cleanNick)) {
+        return { success: false, message: `O Nick "${cleanNick}" já está sendo usado por outro aluno.` };
+      }
+
+      let newPassword = currentUser.password;
+      if (updatedData.password && updatedData.password.trim()) {
+        const pass = updatedData.password.trim();
+        const passRegex = /^[a-zA-Z0-9]{4,11}$/;
+        if (!passRegex.test(pass)) {
+          return { success: false, message: 'A nova senha deve ter entre 4 e 11 caracteres (somente letras e números).' };
+        }
+        if (updatedData.passwordConfirm && pass !== updatedData.passwordConfirm.trim()) {
+          return { success: false, message: 'A confirmação da nova senha não confere.' };
+        }
+        newPassword = pass;
+      }
+
+      const beltKyuMap = {
+        'Faixa Branca': 6,
+        'Faixa Amarela': 6,
+        'Faixa Amarela (6º Kyu)': 6,
+        'Faixa Vermelha': 5,
+        'Faixa Vermelha (5º Kyu)': 5,
+        'Faixa Laranja': 4,
+        'Faixa Laranja (4º Kyu)': 4,
+        'Faixa Verde': 3,
+        'Faixa Verde (3º Kyu)': 3,
+        'Faixa Roxa': 2,
+        'Faixa Roxa (2º Kyu)': 2,
+        'Faixa Marrom': 1,
+        'Faixa Marrom (1º Kyu)': 1,
+        'Faixa Preta': 0,
+        'Faixa Preta (Shodan)': 0,
+        'Faixa Preta (Shodan - 1º Dan)': 0,
+        'Faixa Preta (Sensei Master)': 0
+      };
+
+      const beltTargetMap = {
+        6: 'Faixa Amarela (6º Kyu)',
+        5: 'Faixa Vermelha (5º Kyu)',
+        4: 'Faixa Laranja (4º Kyu)',
+        3: 'Faixa Verde (3º Kyu)',
+        2: 'Faixa Roxa (2º Kyu)',
+        1: 'Faixa Marrom (1º Kyu)',
+        0: 'Faixa Preta (Shodan - 1º Dan)'
+      };
+
+      const selectedBelt = updatedData.currentBelt || currentUser.currentBelt;
+      const kyu = beltKyuMap[selectedBelt] !== undefined ? beltKyuMap[selectedBelt] : (currentUser.currentKyu || 6);
+      const targetBelt = (selectedBelt.includes('Sensei') || selectedBelt.includes('Preta')) ? 'Faixa Preta' : (beltTargetMap[kyu] || 'Faixa Preta');
+
+      const updatedUser = {
+        ...currentUser,
+        name: cleanName,
+        username: cleanNick,
+        phone: updatedData.phone !== undefined ? updatedData.phone.trim() : (currentUser.phone || ''),
+        dojo: updatedData.dojo ? updatedData.dojo.trim() : (currentUser.dojo || 'TKST Matriz - Central'),
+        currentBelt: selectedBelt,
+        currentKyu: kyu,
+        targetBelt: targetBelt,
+        password: newPassword
+      };
+
+      if (currentUser.username === 'irons365' || currentUser.role === 'admin') {
+        updatedUser.role = 'admin';
+      }
+
+      if (userIndex !== -1) {
+        students[userIndex] = { ...students[userIndex], ...updatedUser };
+      } else {
+        students.push(updatedUser);
+      }
+
+      localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+      this.setCurrentUser(updatedUser);
+      pushToCloud();
+
+      return { success: true, user: updatedUser };
+    },
+
     saveQuizResult: function(score, total, kyu) {
       const user = this.getCurrentUser();
       if (!user) return;
