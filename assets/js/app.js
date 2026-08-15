@@ -1965,6 +1965,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const curr = window.TKST_CURRICULUM.find(c => c.kyuNumber === selectedBeltKyu) || window.TKST_CURRICULUM[0];
     const progress = window.TKST_AUTH.getProgress();
 
+    const transMap = {
+      6: { label: "Branca para Amarela", fullLabel: "Faixa Branca ➔ Faixa Amarela", kyuLabel: "6º Kyu", fromColor: "#FFFFFF", toColor: "#F5BE00", textColor: "#000000", isDark: true },
+      5: { label: "Amarela para Vermelha", fullLabel: "Faixa Amarela ➔ Faixa Vermelha", kyuLabel: "5º Kyu", fromColor: "#F5BE00", toColor: "#E63946", textColor: "#FFFFFF", isDark: false },
+      4: { label: "Vermelha para Laranja", fullLabel: "Faixa Vermelha ➔ Faixa Laranja", kyuLabel: "4º Kyu", fromColor: "#E63946", toColor: "#FF7700", textColor: "#FFFFFF", isDark: false },
+      3: { label: "Laranja para Verde", fullLabel: "Faixa Laranja ➔ Faixa Verde", kyuLabel: "3º Kyu", fromColor: "#FF7700", toColor: "#10B981", textColor: "#FFFFFF", isDark: false },
+      2: { label: "Verde para Roxa", fullLabel: "Faixa Verde ➔ Faixa Roxa", kyuLabel: "2º Kyu", fromColor: "#10B981", toColor: "#8B5CF6", textColor: "#FFFFFF", isDark: false },
+      1: { label: "Roxa para Marrom", fullLabel: "Faixa Roxa ➔ Faixa Marrom", kyuLabel: "1º Kyu", fromColor: "#8B5CF6", toColor: "#78350F", textColor: "#FFFFFF", isDark: false },
+      0: { label: "Marrom para Preta", fullLabel: "Faixa Marrom ➔ Faixa Preta", kyuLabel: "Shodan (1º Dan)", fromColor: "#78350F", toColor: "#0A0A0A", textColor: "#FFFFFF", isDark: false }
+    };
+    const activeTrans = transMap[curr.kyuNumber] || { label: curr.beltName, fullLabel: curr.beltName, kyuLabel: curr.kyuNumber === 0 ? 'Shodan' : curr.kyuNumber + 'º Kyu', fromColor: '#FFFFFF', toColor: curr.beltColor, textColor: '#FFFFFF', isDark: false };
+
     let html = `
       <div class="section-header">
         <div class="section-title-group">
@@ -1972,17 +1983,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <p>Selecione a faixa desejada para estudar o conteúdo programático completo da TKST 2026</p>
         </div>
 
-        <div class="belt-transition-chips">
+        <!-- Desktop Belt Chips -->
+        <div class="belt-transition-chips desktop-only-belt-chips">
           ${window.TKST_CURRICULUM.map(c => {
-            const transMap = {
-              6: { label: "Branca para Amarela", fromColor: "#FFFFFF", toColor: "#F5BE00", textColor: "#000000", isDark: true },
-              5: { label: "Amarela para Vermelha", fromColor: "#F5BE00", toColor: "#E63946", textColor: "#FFFFFF", isDark: false },
-              4: { label: "Vermelha para Laranja", fromColor: "#E63946", toColor: "#FF7700", textColor: "#FFFFFF", isDark: false },
-              3: { label: "Laranja para Verde", fromColor: "#FF7700", toColor: "#10B981", textColor: "#FFFFFF", isDark: false },
-              2: { label: "Verde para Roxa", fromColor: "#10B981", toColor: "#8B5CF6", textColor: "#FFFFFF", isDark: false },
-              1: { label: "Roxa para Marrom", fromColor: "#8B5CF6", toColor: "#78350F", textColor: "#FFFFFF", isDark: false },
-              0: { label: "Marrom para Preta", fromColor: "#78350F", toColor: "#0A0A0A", textColor: "#FFFFFF", isDark: false }
-            };
             const trans = transMap[c.kyuNumber] || { label: c.beltName, fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
             const isActive = c.kyuNumber === selectedBeltKyu;
             return `
@@ -1997,6 +2000,62 @@ document.addEventListener('DOMContentLoaded', () => {
               </button>
             `;
           }).join('')}
+        </div>
+
+        <!-- Mobile Belt Menu Selector -->
+        <div class="belt-selector-mobile">
+          <div class="belt-mobile-menu-wrapper" id="beltMobileMenuWrapper">
+            <button type="button" class="belt-mobile-trigger" onclick="window.TKST_APP.toggleBeltMobileMenu(event)" aria-haspopup="true" aria-expanded="false">
+              <div class="belt-mobile-trigger-info">
+                <span class="belt-mobile-pill-preview" style="background: linear-gradient(90deg, ${activeTrans.fromColor} 0%, ${activeTrans.fromColor} 48%, ${activeTrans.toColor} 52%, ${activeTrans.toColor} 100%);"></span>
+                <div class="belt-mobile-trigger-text">
+                  <span class="belt-mobile-label-sub">Exame Selecionado:</span>
+                  <span class="belt-mobile-label-main">${activeTrans.fullLabel} (${activeTrans.kyuLabel})</span>
+                </div>
+              </div>
+              <div class="belt-mobile-trigger-action">
+                <span class="belt-mobile-btn-text">Trocar Faixa</span>
+                <i class="fas fa-chevron-down belt-mobile-chevron" id="beltMobileChevron"></i>
+              </div>
+            </button>
+
+            <!-- Dropdown Menu List -->
+            <div class="belt-mobile-dropdown" id="beltMobileDropdown">
+              <div class="belt-mobile-dropdown-header">
+                <div class="belt-mobile-dropdown-title">
+                  <i class="fas fa-layer-group" style="color: var(--accent-gold);"></i>
+                  <span>Selecione a Faixa / Exame:</span>
+                </div>
+                <button type="button" class="belt-mobile-dropdown-close" onclick="window.TKST_APP.toggleBeltMobileMenu(event, false)" aria-label="Fechar Menu">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <div class="belt-mobile-options-list">
+                ${window.TKST_CURRICULUM.map(c => {
+                  const trans = transMap[c.kyuNumber] || { label: c.beltName, fullLabel: c.beltName, kyuLabel: c.kyuNumber === 0 ? 'Shodan' : c.kyuNumber + 'º Kyu', fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
+                  const isActive = c.kyuNumber === selectedBeltKyu;
+                  return `
+                    <div 
+                      class="belt-mobile-option-item ${isActive ? 'active' : ''}"
+                      onclick="window.TKST_APP.selectBeltMobile(${c.kyuNumber})"
+                    >
+                      <div class="belt-mobile-option-left">
+                        <span class="belt-mobile-option-pill" style="background: linear-gradient(90deg, ${trans.fromColor} 0%, ${trans.fromColor} 48%, ${trans.toColor} 52%, ${trans.toColor} 100%);"></span>
+                        <div class="belt-mobile-option-info">
+                          <div class="belt-mobile-option-title">${trans.fullLabel}</div>
+                          <div class="belt-mobile-option-kyu">${trans.kyuLabel} • Exame Oficial TKST</div>
+                        </div>
+                      </div>
+                      <div class="belt-mobile-option-right">
+                        ${isActive ? '<span class="belt-mobile-check-badge"><i class="fas fa-check"></i> Selecionado</span>' : '<i class="fas fa-chevron-right" style="color: #64748B; font-size: 0.8rem;"></i>'}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3076,6 +3135,28 @@ document.addEventListener('DOMContentLoaded', () => {
       selectedBeltKyu = kyu;
       renderMyExam();
     },
+    toggleBeltMobileMenu: (e, forceState) => {
+      if (e) e.stopPropagation();
+      const wrapper = document.getElementById('beltMobileMenuWrapper');
+      if (!wrapper) return;
+      const isOpen = wrapper.classList.contains('open');
+      const newState = typeof forceState === 'boolean' ? forceState : !isOpen;
+      if (newState) {
+        wrapper.classList.add('open');
+      } else {
+        wrapper.classList.remove('open');
+      }
+      const trigger = wrapper.querySelector('.belt-mobile-trigger');
+      if (trigger) trigger.setAttribute('aria-expanded', String(newState));
+    },
+    selectBeltMobile: (kyu) => {
+      const wrapper = document.getElementById('beltMobileMenuWrapper');
+      if (wrapper) {
+        wrapper.classList.remove('open');
+      }
+      selectedBeltKyu = kyu;
+      renderMyExam();
+    },
     toggleStudyAccordion: (sectionId) => {
       const body = document.getElementById(`studyBody_${sectionId}`);
       const header = document.getElementById(`studyHeader_${sectionId}`);
@@ -3576,6 +3657,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (video) video.pause();
       }
     });
+  });
+
+  // Close belt mobile dropdown on outside click
+  document.addEventListener('click', (e) => {
+    const wrapper = document.getElementById('beltMobileMenuWrapper');
+    if (wrapper && wrapper.classList.contains('open')) {
+      if (!wrapper.contains(e.target)) {
+        wrapper.classList.remove('open');
+        const trigger = wrapper.querySelector('.belt-mobile-trigger');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      }
+    }
   });
 
   // Start
