@@ -10,6 +10,7 @@
   const STORAGE_KEY_DOJOS = 'tkst_all_dojos';
   const STORAGE_KEY_VIDEOS = 'tkst_custom_kata_videos';
   const STORAGE_KEY_DELETED = 'tkst_deleted_student_ids';
+  const STORAGE_KEY_FIREBASE = 'tkst_firebase_db_url';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_ENDPOINTS = [
@@ -56,6 +57,22 @@
         }
       };
 
+      // 1. Firebase Realtime Database Sync (if configured)
+      const fbUrl = localStorage.getItem(STORAGE_KEY_FIREBASE);
+      if (fbUrl) {
+        try {
+          const cleanUrl = fbUrl.replace(/\/+$/, '') + '/sync_data.json';
+          await fetch(cleanUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload.data)
+          });
+        } catch(e) {
+          console.warn('Firebase push notice:', e);
+        }
+      }
+
+      // 2. Serverless API Sync
       for (const endpoint of SYNC_ENDPOINTS) {
         try {
           const res = await fetch(endpoint, {
@@ -63,9 +80,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
-          if (res.ok) {
-            break;
-          }
+          if (res.ok) break;
         } catch(e) {
           // ignore offline / fallback
         }
@@ -86,18 +101,39 @@
 
     try {
       let cloud = null;
-      for (const endpoint of SYNC_ENDPOINTS) {
+
+      // 1. Pull from Firebase Realtime Database (if configured)
+      const fbUrl = localStorage.getItem(STORAGE_KEY_FIREBASE);
+      if (fbUrl) {
         try {
-          const res = await fetch(endpoint + '?t=' + now);
+          const cleanUrl = fbUrl.replace(/\/+$/, '') + '/sync_data.json?t=' + now;
+          const res = await fetch(cleanUrl);
           if (res.ok) {
-            const json = await res.json();
-            if (json && json.data) {
-              cloud = json.data;
-              break;
+            const fbData = await res.json();
+            if (fbData && typeof fbData === 'object') {
+              cloud = fbData;
             }
           }
         } catch(e) {
-          // fallback
+          console.warn('Firebase pull notice:', e);
+        }
+      }
+
+      // 2. Fallback to Serverless API
+      if (!cloud) {
+        for (const endpoint of SYNC_ENDPOINTS) {
+          try {
+            const res = await fetch(endpoint + '?t=' + now);
+            if (res.ok) {
+              const json = await res.json();
+              if (json && json.data) {
+                cloud = json.data;
+                break;
+              }
+            }
+          } catch(e) {
+            // fallback
+          }
         }
       }
 
@@ -722,6 +758,21 @@
       });
       localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(allProgress));
       pushToCloud();
+    },
+
+    getFirebaseUrl: function() {
+      return localStorage.getItem(STORAGE_KEY_FIREBASE) || '';
+    },
+
+    setFirebaseUrl: function(url) {
+      if (!url || !url.trim()) {
+        localStorage.removeItem(STORAGE_KEY_FIREBASE);
+      } else {
+        localStorage.setItem(STORAGE_KEY_FIREBASE, url.trim());
+      }
+      pushToCloud();
+      pullFromCloud(true);
+      return true;
     }
   };
 })();

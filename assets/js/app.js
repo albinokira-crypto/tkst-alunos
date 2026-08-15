@@ -199,8 +199,65 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  function handleUrlImports() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // 1. Full Database Sync via QR Code or Link (PC <-> Mobile)
+      if (urlParams.has('sync_state')) {
+        const raw = urlParams.get('sync_state');
+        const decoded = decodeURIComponent(escape(atob(decodeURIComponent(raw))));
+        const fullDb = JSON.parse(decoded);
+        if (fullDb && Array.isArray(fullDb.students)) {
+          localStorage.setItem('tkst_all_students', JSON.stringify(fullDb.students));
+          if (Array.isArray(fullDb.dojos)) localStorage.setItem('tkst_all_dojos', JSON.stringify(fullDb.dojos));
+          if (fullDb.custom_videos) localStorage.setItem('tkst_custom_kata_videos', JSON.stringify(fullDb.custom_videos));
+          if (fullDb.progress) localStorage.setItem('tkst_student_progress', JSON.stringify(fullDb.progress));
+          if (fullDb.deletedStudentIds) localStorage.setItem('tkst_deleted_student_ids', JSON.stringify(fullDb.deletedStudentIds));
+
+          alert('📲 Sincronização direta PC ⇄ Celular concluída com sucesso! Todos os dados e alunos foram atualizados.');
+          window.history.replaceState({}, document.title, window.location.pathname);
+          window.location.reload();
+          return;
+        }
+      }
+
+      // 2. Direct Student Registration Auto-Import Link from WhatsApp
+      if (urlParams.has('import_student')) {
+        const raw = urlParams.get('import_student');
+        const decoded = decodeURIComponent(escape(atob(decodeURIComponent(raw))));
+        const student = JSON.parse(decoded);
+        if (student && student.name && student.username) {
+          let students = window.TKST_AUTH.getAllStudents();
+          const existingIdx = students.findIndex(s => s.id === student.id || (s.username && s.username.toLowerCase() === student.username.toLowerCase()));
+          if (existingIdx === -1) {
+            students.push(student);
+          } else {
+            students[existingIdx] = { ...students[existingIdx], ...student };
+          }
+          localStorage.setItem('tkst_all_students', JSON.stringify(students));
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          setTimeout(() => {
+            const user = window.TKST_AUTH.getCurrentUser();
+            if (user && (user.username === 'irons365' || user.role === 'admin')) {
+              window.TKST_APP.setAdminSubTab('pending');
+              window.TKST_APP.switchTab('admin');
+              alert(`🥋 Matrícula de ${student.name} (@${student.username}) recebida e adicionada para aprovação!`);
+            } else {
+              alert(`🥋 Cadastro de ${student.name} (@${student.username}) importado com sucesso!`);
+            }
+          }, 800);
+        }
+      }
+    } catch(e) {
+      console.warn('URL Import notice:', e);
+    }
+  }
+
   // Initialize
   function init() {
+    handleUrlImports();
     setupNavigation();
     setupUserDisplay();
     setupGlobalEvents();
@@ -587,6 +644,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; margin-top: 8px;">
           <button class="btn btn-primary" onclick="window.TKST_APP.openManualStudentModal()" style="font-size: 0.82rem; padding: 8px 14px;">
             <i class="fas fa-user-plus"></i> Novo Aluno Manual
+          </button>
+          <button class="btn btn-gold" onclick="window.TKST_APP.openQrSyncModal()" style="font-size: 0.82rem; padding: 8px 14px;">
+            <i class="fas fa-qrcode"></i> Sincronizar PC ⇄ Celular
+          </button>
+          <button class="btn btn-secondary" onclick="window.TKST_APP.openFirebaseConfigModal()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(255, 183, 3, 0.4); color: var(--accent-gold);">
+            <i class="fas fa-fire"></i> Configurar Firebase
           </button>
           <button class="btn btn-secondary" onclick="window.TKST_APP.syncCloudNow()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(16, 185, 129, 0.4); color: #6EE7B7; background: rgba(16, 185, 129, 0.08);">
             <i class="fas fa-sync-alt"></i> Sincronizar Nuvem
@@ -3579,7 +3642,22 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (res.success) {
-        const senseiMsg = encodeURIComponent(`Oss Sensei Diego! Acabei de me cadastrar no portal TKST Alunos.\n\n🥋 *Dados da Matrícula:*\n• Nome: ${name}\n• Nick de Login: @${nick}\n• Graduação: ${currentBelt}\n• Dojo: ${dojo}\n• WhatsApp: ${phone || 'Não informado'}\n\nAguardo sua aprovação para ter acesso aos estudos! Oss!`);
+        const studentPayload = {
+          id: res.user.id,
+          name: res.user.name,
+          username: res.user.username,
+          phone: res.user.phone,
+          currentBelt: res.user.currentBelt,
+          currentKyu: res.user.currentKyu,
+          dojo: res.user.dojo,
+          password: res.user.password,
+          status: 'pending',
+          startDate: res.user.startDate
+        };
+        const encodedData = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(studentPayload)))));
+        const approvalUrl = `https://tkst-alunos.vercel.app/?import_student=${encodedData}`;
+
+        const senseiMsg = encodeURIComponent(`Oss Sensei Diego! Solicitação de Matrícula TKST Alunos:\n\n🥋 *Dados do Aluno:*\n• Nome: ${name}\n• Nick de Login: @${nick}\n• Graduação: ${currentBelt}\n• Dojo: ${dojo}\n• WhatsApp: ${phone || 'Não informado'}\n\n👉 *Link para Aprovar no Sistema:* ${approvalUrl}\n\nAguardo sua liberação! Oss!`);
         const whatsappUrl = `https://wa.me/5521976077598?text=${senseiMsg}`;
 
         feedback.innerHTML = `
@@ -3943,6 +4021,130 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('☁️ Dados sincronizados com a Nuvem com sucesso!');
         renderView(currentTab);
       }
+    },
+
+    openQrSyncModal: () => {
+      const students = window.TKST_AUTH.getAllStudents();
+      const dojos = window.TKST_AUTH.getDojos();
+      const customVideos = getCustomKataVideos();
+      const progress = window.TKST_AUTH.getProgress();
+      const deletedStudentIds = JSON.parse(localStorage.getItem('tkst_deleted_student_ids') || '[]');
+
+      const fullDb = {
+        students,
+        dojos,
+        custom_videos: customVideos,
+        progress,
+        deletedStudentIds,
+        syncedAt: new Date().toISOString()
+      };
+
+      const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(fullDb)))));
+      const syncUrl = `https://tkst-alunos.vercel.app/?sync_state=${encoded}`;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(syncUrl)}`;
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-qrcode" style="color: var(--accent-gold);"></i>
+          <span>Sincronização Instantânea PC ⇄ Celular</span>
+        </div>
+      `;
+
+      modalBody.innerHTML = `
+        <div style="text-align: center; max-width: 480px; margin: 0 auto; padding: 6px 0;">
+          <p style="font-size: 0.88rem; color: #CBD5E1; margin-bottom: 16px; line-height: 1.5;">
+            Aponte a <strong>câmera do seu celular</strong> para o QR Code abaixo. O celular abrirá o sistema e clonará <strong>instantaneamente</strong> todos os alunos, graduações e cadastros do computador!
+          </p>
+
+          <div style="background: #FFF; padding: 14px; border-radius: var(--radius-md); display: inline-block; box-shadow: 0 4px 20px rgba(0,0,0,0.5); margin-bottom: 16px;">
+            <img src="${qrApiUrl}" alt="QR Code de Sincronização" style="width: 240px; height: 240px; display: block; border-radius: 4px;">
+          </div>
+
+          <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); padding: 12px; font-size: 0.8rem; color: #E2E8F0; text-align: left; margin-bottom: 16px; line-height: 1.4;">
+            <strong style="color: var(--accent-gold);"><i class="fas fa-bolt"></i> Como funciona:</strong><br>
+            • Clona instantaneamente todos os alunos aprovados, pendentes e excluídos.<br>
+            • Funciona em qualquer celular (Android ou iPhone) com 1 toque!
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+              Fechar
+            </button>
+            <button type="button" class="btn btn-primary" onclick="navigator.clipboard.writeText('${syncUrl}').then(() => alert('Link de sincronização copiado! Você pode colar no WhatsApp do seu celular.'))" style="flex: 1.5; padding: 12px;">
+              <i class="fas fa-copy"></i> Copiar Link Direto
+            </button>
+          </div>
+        </div>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    openFirebaseConfigModal: () => {
+      const currentUrl = window.TKST_AUTH.getFirebaseUrl();
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-fire" style="color: #FF9800;"></i>
+          <span>Configurar Nuvem Realtime (Firebase)</span>
+        </div>
+      `;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.saveFirebaseUrl();" style="max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;">
+          <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); border-radius: var(--radius-sm); padding: 14px; font-size: 0.82rem; color: #E2E8F0; line-height: 1.5;">
+            <strong style="color: #FFB74D;"><i class="fas fa-info-circle"></i> Sincronização em Nuvem Global:</strong><br>
+            Ao conectar uma URL do Firebase Realtime Database, todos os aparelhos (PC e celulares de qualquer aluno ou Sensei) sincronizam instantaneamente via WebSockets em tempo real.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">URL do Banco Firebase Realtime:</label>
+            <input type="url" id="firebaseDbUrlInput" class="form-input" placeholder="https://seu-projeto-default-rtdb.firebaseio.com" value="${currentUrl}">
+            <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px;">
+              Exemplo: <code>https://tkst-alunos-default-rtdb.firebaseio.com</code> (com regras de leitura/escrita públicas)
+            </div>
+          </div>
+
+          <div id="fbConfigFeedback"></div>
+
+          <div style="display: flex; gap: 10px; margin-top: 6px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 1.5; padding: 12px; font-weight: 700; background: linear-gradient(135deg, #FF9800, #E65100); border: none;">
+              <i class="fas fa-save"></i> Salvar e Conectar
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    saveFirebaseUrl: () => {
+      const input = document.getElementById('firebaseDbUrlInput');
+      const feedback = document.getElementById('fbConfigFeedback');
+      const url = input ? input.value.trim() : '';
+
+      window.TKST_AUTH.setFirebaseUrl(url);
+
+      if (feedback) {
+        feedback.innerHTML = `
+          <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem;">
+            ✓ Configuração da Nuvem salva com sucesso! Sincronizando...
+          </div>
+        `;
+      }
+
+      setTimeout(() => {
+        detailModal.classList.remove('active');
+        renderAdminMaster();
+      }, 1200);
     },
 
     handleLogout: () => {
