@@ -9,16 +9,26 @@
   const STORAGE_KEY_PROGRESS = 'tkst_student_progress';
   const STORAGE_KEY_DOJOS = 'tkst_all_dojos';
   const STORAGE_KEY_VIDEOS = 'tkst_custom_kata_videos';
+  const STORAGE_KEY_DELETED = 'tkst_deleted_student_ids';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
-  const CLOUD_SYNC_ENDPOINT = 'https://api.restful-api.dev/objects/ff8081819ff5b110019ffcc330c714d5';
+  const SYNC_ENDPOINTS = [
+    '/api/sync'
+  ];
   let isSyncing = false;
+  let lastPullTime = 0;
 
   const DEFAULT_DOJOS = [
+    'TKST Matriz - Central',
     'TKST Santo Aleixo',
     'QG TKST ( Capela )',
     'TKST Rio do Ouro',
-    'TKST Jardim Esmeralda'
+    'TKST Jardim Esmeralda',
+    'TKST Alcântara',
+    'TKST Niterói',
+    'TKST Maricá',
+    'TKST São Gonçalo',
+    'TKST Itaboraí'
   ];
 
   // =========================================================================
@@ -32,6 +42,7 @@
       const students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
       const videos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
       const progress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
+      const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
 
       const payload = {
         name: 'TKST_KARATE_SYNC_DB',
@@ -40,15 +51,26 @@
           students,
           custom_videos: videos,
           progress,
+          deletedStudentIds,
           lastSync: new Date().toISOString()
         }
       };
 
-      await fetch(CLOUD_SYNC_ENDPOINT, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      for (const endpoint of SYNC_ENDPOINTS) {
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            break;
+          }
+        } catch(e) {
+          // ignore offline / fallback
+        }
+      }
+
       window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'push', time: new Date() } }));
     } catch(err) {
       console.warn('Cloud push sync notice:', err);
@@ -57,17 +79,45 @@
     }
   }
 
-  async function pullFromCloud(forceEvent = false) {
-    try {
-      const res = await fetch(CLOUD_SYNC_ENDPOINT);
-      if (!res.ok) return;
-      const json = await res.json();
-      if (!json || !json.data) return;
+  async function pullFromCloud(force = false) {
+    const now = Date.now();
+    if (!force && now - lastPullTime < 10000) return; // 10s debounce
+    lastPullTime = now;
 
-      const cloud = json.data;
+    try {
+      let cloud = null;
+      for (const endpoint of SYNC_ENDPOINTS) {
+        try {
+          const res = await fetch(endpoint + '?t=' + now);
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.data) {
+              cloud = json.data;
+              break;
+            }
+          }
+        } catch(e) {
+          // fallback
+        }
+      }
+
+      if (!cloud) return;
+
       let hasChanges = false;
 
-      // 1. Sync Dojos
+      // 1. Sync Deleted Student IDs (Tombstones)
+      let localDeleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+      let localDeletedSet = new Set(localDeleted);
+      if (Array.isArray(cloud.deletedStudentIds)) {
+        cloud.deletedStudentIds.forEach(id => localDeletedSet.add(id));
+      }
+      const updatedDeleted = Array.from(localDeletedSet);
+      if (updatedDeleted.length !== localDeleted.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(updatedDeleted));
+        hasChanges = true;
+      }
+
+      // 2. Sync Dojos
       if (Array.isArray(cloud.dojos) && cloud.dojos.length > 0) {
         const localDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS) || '[]');
         if (JSON.stringify(localDojos) !== JSON.stringify(cloud.dojos)) {
@@ -76,7 +126,7 @@
         }
       }
 
-      // 2. Sync Custom Kata Videos
+      // 3. Sync Custom Kata Videos
       if (cloud.custom_videos && typeof cloud.custom_videos === 'object') {
         const localVideos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS) || '{}');
         if (JSON.stringify(localVideos) !== JSON.stringify(cloud.custom_videos)) {
@@ -85,21 +135,42 @@
         }
       }
 
-      // 3. Sync Students (Preserve Super Admin)
-      if (Array.isArray(cloud.students) && cloud.students.length > 0) {
-        const localStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS) || '[]');
-        const mergedStudents = [...cloud.students];
+      // 4. Sync Students (Purging Deleted & Preserving Super Admin)
+      if (Array.isArray(cloud.students)) {
+        let localStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS) || '[]');
+        const studentMap = new Map();
+
+        // Cloud items that are not deleted
+        cloud.students.forEach(s => {
+          if (!localDeletedSet.has(s.id)) {
+            studentMap.set(s.id, s);
+          }
+        });
+
+        // Local pending items not yet in cloud and not deleted
+        localStudents.forEach(s => {
+          if (!localDeletedSet.has(s.id)) {
+            if (!studentMap.has(s.id)) {
+              studentMap.set(s.id, s);
+            }
+          }
+        });
+
+        const mergedStudents = Array.from(studentMap.values());
+
+        // Always ensure Master Admin exists
         const masterAdmin = localStudents.find(s => s.username === 'irons365');
         if (masterAdmin && !mergedStudents.some(s => s.username === 'irons365')) {
           mergedStudents.unshift(masterAdmin);
         }
+
         if (JSON.stringify(localStudents) !== JSON.stringify(mergedStudents)) {
           localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(mergedStudents));
           hasChanges = true;
         }
       }
 
-      // 4. Sync Progress
+      // 5. Sync Progress
       if (cloud.progress && typeof cloud.progress === 'object') {
         const localProgress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS) || '{}');
         if (JSON.stringify(localProgress) !== JSON.stringify(cloud.progress)) {
@@ -108,20 +179,22 @@
         }
       }
 
-      if (hasChanges || forceEvent) {
+      if (hasChanges || force) {
         window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'pull', time: new Date() } }));
+        window.dispatchEvent(new CustomEvent('tkst_user_changed'));
       }
     } catch(err) {
       console.warn('Cloud pull sync notice:', err);
     }
   }
 
-  // Periodic and Event-Driven Sync
-  setInterval(pullFromCloud, 12000);
+  // Periodic and Event-Driven Sync (Safe interval & focus)
+  setInterval(() => pullFromCloud(false), 30000);
   window.addEventListener('focus', () => pullFromCloud(false));
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') pullFromCloud(false);
   });
+  setTimeout(() => pullFromCloud(true), 800);
 
   function initStorage() {
     // Reset legacy sessions if migrating to Nick system
@@ -486,6 +559,14 @@
       if (target && target.username === 'irons365') {
         return { success: false, message: 'Não é permitido excluir o Administrador Geral Master.' };
       }
+
+      // Record tombstone so this student is never resurrected by other devices
+      let deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+      if (!deleted.includes(studentId)) {
+        deleted.push(studentId);
+        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
+      }
+
       students = students.filter(s => s.id !== studentId);
       localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
       pushToCloud();
@@ -569,6 +650,10 @@
         'Faixa Preta': 0,
         'Faixa Preta (Shodan)': 0,
         'Faixa Preta (Shodan - 1º Dan)': 0,
+        'Faixa Preta (Nidan - 2º Dan)': 0,
+        'Faixa Preta (Sandan - 3º Dan)': 0,
+        'Faixa Preta (Yondan - 4º Dan)': 0,
+        'Faixa Preta (Godan - 5º Dan)': 0,
         'Faixa Preta (Sensei Master)': 0
       };
 
@@ -579,12 +664,12 @@
         3: 'Faixa Verde (3º Kyu)',
         2: 'Faixa Roxa (2º Kyu)',
         1: 'Faixa Marrom (1º Kyu)',
-        0: 'Faixa Preta (Shodan - 1º Dan)'
+        0: 'Faixa Preta'
       };
 
       const selectedBelt = updatedData.currentBelt || currentUser.currentBelt;
       const kyu = beltKyuMap[selectedBelt] !== undefined ? beltKyuMap[selectedBelt] : (currentUser.currentKyu || 6);
-      const targetBelt = (selectedBelt.includes('Sensei') || selectedBelt.includes('Preta')) ? 'Faixa Preta' : (beltTargetMap[kyu] || 'Faixa Preta');
+      const targetBelt = (selectedBelt.includes('Sensei') || selectedBelt.includes('Preta') || selectedBelt.includes('Dan')) ? 'Faixa Preta' : (beltTargetMap[kyu] || 'Faixa Preta');
 
       const updatedUser = {
         ...currentUser,
@@ -613,6 +698,12 @@
       pushToCloud();
 
       return { success: true, user: updatedUser };
+    },
+
+    syncNow: async function() {
+      await pushToCloud();
+      await pullFromCloud(true);
+      return { success: true, timestamp: new Date() };
     },
 
     saveQuizResult: function(score, total, kyu) {

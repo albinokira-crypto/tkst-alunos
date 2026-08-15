@@ -75,6 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const videoModal = document.getElementById('videoModal');
   const sidebar = document.getElementById('sidebar');
 
+  function getBeltBadgeClass(belt) {
+    if (!belt) return 'badge-branca';
+    const b = belt.toLowerCase();
+    if (b.includes('preta') || b.includes('dan') || b.includes('sensei')) return 'badge-preta';
+    if (b.includes('marrom')) return 'badge-marrom';
+    if (b.includes('roxa')) return 'badge-roxa';
+    if (b.includes('verde')) return 'badge-verde';
+    if (b.includes('laranja')) return 'badge-laranja';
+    if (b.includes('vermelha')) return 'badge-vermelha';
+    if (b.includes('amarela')) return 'badge-amarela';
+    return 'badge-branca';
+  }
+
   // Video Helpers
   function getCustomKataVideos() {
     try {
@@ -686,7 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <span class="badge badge-amarela">@${s.username}</span>
                     </td>
                     <td>${s.phone || '-'}</td>
-                    <td><span class="badge badge-amarela">${s.currentBelt}</span></td>
+                    <td><span class="badge ${getBeltBadgeClass(s.currentBelt)}">${s.currentBelt}</span></td>
                     <td><strong style="color: var(--accent-gold);">${s.dojo}</strong></td>
                     <td style="color: #94A3B8;">${s.startDate}</td>
                     <td style="text-align: right;">
@@ -752,7 +765,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       </span>
                     </td>
                     <td>
-                      <strong style="color: #FFF;">${s.currentBelt}</strong>
+                      <span class="badge ${getBeltBadgeClass(s.currentBelt)}">${s.currentBelt}</span>
                     </td>
                     <td>${s.dojo}</td>
                     <td style="text-align: right;">
@@ -3448,14 +3461,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" style="font-size: 0.8rem; white-space: nowrap; margin-bottom: 4px;">Graduação</label>
               <select id="regModalBelt" class="form-select" required>
-                <option value="" disabled selected hidden>Selecione...</option>
+                <option value="" disabled selected hidden>Selecione sua Faixa...</option>
                 <option value="Faixa Branca" data-kyu="6">Faixa Branca</option>
-                <option value="Faixa Amarela" data-kyu="5">Faixa Amarela</option>
-                <option value="Faixa Vermelha" data-kyu="4">Faixa Vermelha</option>
-                <option value="Faixa Laranja" data-kyu="3">Faixa Laranja</option>
-                <option value="Faixa Verde" data-kyu="2">Faixa Verde</option>
-                <option value="Faixa Roxa" data-kyu="1">Faixa Roxa</option>
-                <option value="Faixa Marrom" data-kyu="0">Faixa Marrom</option>
+                <option value="Faixa Amarela (6º Kyu)" data-kyu="6">Faixa Amarela (6º Kyu)</option>
+                <option value="Faixa Vermelha (5º Kyu)" data-kyu="5">Faixa Vermelha (5º Kyu)</option>
+                <option value="Faixa Laranja (4º Kyu)" data-kyu="4">Faixa Laranja (4º Kyu)</option>
+                <option value="Faixa Verde (3º Kyu)" data-kyu="3">Faixa Verde (3º Kyu)</option>
+                <option value="Faixa Roxa (2º Kyu)" data-kyu="2">Faixa Roxa (2º Kyu)</option>
+                <option value="Faixa Marrom (1º Kyu)" data-kyu="1">Faixa Marrom (1º Kyu)</option>
+                <option value="Faixa Preta (Shodan - 1º Dan)" data-kyu="0">Faixa Preta (Shodan - 1º Dan)</option>
+                <option value="Faixa Preta (Nidan - 2º Dan)" data-kyu="0">Faixa Preta (Nidan - 2º Dan)</option>
+                <option value="Faixa Preta (Sandan - 3º Dan)" data-kyu="0">Faixa Preta (Sandan - 3º Dan)</option>
+                <option value="Faixa Preta (Yondan - 4º Dan)" data-kyu="0">Faixa Preta (Yondan - 4º Dan)</option>
+                <option value="Faixa Preta (Godan - 5º Dan)" data-kyu="0">Faixa Preta (Godan - 5º Dan)</option>
               </select>
             </div>
 
@@ -3613,7 +3631,11 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: "Faixa Verde (3º Kyu)", kyu: 3 },
         { name: "Faixa Roxa (2º Kyu)", kyu: 2 },
         { name: "Faixa Marrom (1º Kyu)", kyu: 1 },
-        { name: "Faixa Preta (Shodan - 1º Dan)", kyu: 0 }
+        { name: "Faixa Preta (Shodan - 1º Dan)", kyu: 0 },
+        { name: "Faixa Preta (Nidan - 2º Dan)", kyu: 0 },
+        { name: "Faixa Preta (Sandan - 3º Dan)", kyu: 0 },
+        { name: "Faixa Preta (Yondan - 4º Dan)", kyu: 0 },
+        { name: "Faixa Preta (Godan - 5º Dan)", kyu: 0 }
       ];
 
       if (user.role === 'admin' || user.username === 'irons365') {
