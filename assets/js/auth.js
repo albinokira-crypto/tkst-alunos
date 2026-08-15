@@ -1,6 +1,6 @@
 /**
  * TKST Alunos - Master Authentication & Student State Manager
- * Includes Super Admin (irons365), student registration by Nick, and dynamic Dojo management.
+ * Fully automated background cloud sync (PC <-> Mobile <-> All devices in real time)
  */
 
 (function() {
@@ -10,14 +10,11 @@
   const STORAGE_KEY_DOJOS = 'tkst_all_dojos';
   const STORAGE_KEY_VIDEOS = 'tkst_custom_kata_videos';
   const STORAGE_KEY_DELETED = 'tkst_deleted_student_ids';
-  const STORAGE_KEY_FIREBASE = 'tkst_firebase_db_url';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
-  const SYNC_ENDPOINTS = [
-    '/api/sync'
-  ];
+  const SYNC_TOPIC = 'tkst_karate_master_stream_2026';
+  const SYNC_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
   let isSyncing = false;
-  let lastPullTime = 0;
 
   const DEFAULT_DOJOS = [
     'TKST Matriz - Central',
@@ -33,7 +30,7 @@
   ];
 
   // =========================================================================
-  // REAL-TIME MULTI-DEVICE CLOUD SYNC ENGINE (PC <-> MOBILE <-> ALL DEVICES)
+  // AUTOMATIC REAL-TIME CLOUD SYNC ENGINE (PC <-> MOBILE IN REAL TIME)
   // =========================================================================
   async function pushToCloud() {
     if (isSyncing) return;
@@ -46,191 +43,175 @@
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
 
       const payload = {
-        name: 'TKST_KARATE_SYNC_DB',
-        data: {
-          dojos,
-          students,
-          custom_videos: videos,
-          progress,
-          deletedStudentIds,
-          lastSync: new Date().toISOString()
-        }
+        dojos,
+        students,
+        custom_videos: videos,
+        progress,
+        deletedStudentIds,
+        timestamp: Date.now()
       };
 
-      // 1. Firebase Realtime Database Sync (if configured)
-      const fbUrl = localStorage.getItem(STORAGE_KEY_FIREBASE);
-      if (fbUrl) {
-        try {
-          const cleanUrl = fbUrl.replace(/\/+$/, '') + '/sync_data.json';
-          await fetch(cleanUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload.data)
-          });
-        } catch(e) {
-          console.warn('Firebase push notice:', e);
-        }
-      }
-
-      // 2. Serverless API Sync
-      for (const endpoint of SYNC_ENDPOINTS) {
-        try {
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          if (res.ok) break;
-        } catch(e) {
-          // ignore offline / fallback
-        }
-      }
+      await fetch(SYNC_URL, {
+        method: 'POST',
+        headers: { 'Title': 'TKST_SYNC' },
+        body: JSON.stringify(payload)
+      });
 
       window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'push', time: new Date() } }));
     } catch(err) {
-      console.warn('Cloud push sync notice:', err);
+      console.warn('Cloud auto-push notice:', err);
     } finally {
       isSyncing = false;
     }
   }
 
-  async function pullFromCloud(force = false) {
-    const now = Date.now();
-    if (!force && now - lastPullTime < 10000) return; // 10s debounce
-    lastPullTime = now;
+  function applyCloudData(cloudData) {
+    if (!cloudData || typeof cloudData !== 'object') return;
+    let changed = false;
 
-    try {
-      let cloud = null;
+    // 1. Sync Deleted Student IDs (Tombstones)
+    let localDeleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
+    if (Array.isArray(cloudData.deletedStudentIds)) {
+      const mergedDeleted = Array.from(new Set([...localDeleted, ...cloudData.deletedStudentIds]));
+      if (mergedDeleted.length !== localDeleted.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(mergedDeleted));
+        localDeleted = mergedDeleted;
+        changed = true;
+      }
+    }
 
-      // 1. Pull from Firebase Realtime Database (if configured)
-      const fbUrl = localStorage.getItem(STORAGE_KEY_FIREBASE);
-      if (fbUrl) {
-        try {
-          const cleanUrl = fbUrl.replace(/\/+$/, '') + '/sync_data.json?t=' + now;
-          const res = await fetch(cleanUrl);
-          if (res.ok) {
-            const fbData = await res.json();
-            if (fbData && typeof fbData === 'object') {
-              cloud = fbData;
-            }
-          }
-        } catch(e) {
-          console.warn('Firebase pull notice:', e);
+    // 2. Sync Students (Expunge deleted & merge active)
+    if (Array.isArray(cloudData.students)) {
+      let localStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+      const studentMap = new Map();
+
+      // Keep local students not deleted
+      localStudents.forEach(s => {
+        if (!localDeleted.includes(s.id)) {
+          studentMap.set(s.id || s.username, s);
+        }
+      });
+
+      // Merge cloud students not deleted
+      cloudData.students.forEach(s => {
+        if (!localDeleted.includes(s.id)) {
+          studentMap.set(s.id || s.username, { ...(studentMap.get(s.id || s.username) || {}), ...s });
+        }
+      });
+
+      const finalStudents = Array.from(studentMap.values());
+      const localStr = localStorage.getItem(STORAGE_KEY_STUDENTS);
+      const newStr = JSON.stringify(finalStudents);
+      if (localStr !== newStr) {
+        localStorage.setItem(STORAGE_KEY_STUDENTS, newStr);
+        changed = true;
+      }
+
+      // Update logged-in user if their profile changed
+      const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEY_USER));
+      if (currentUser) {
+        const freshUser = finalStudents.find(s => s.id === currentUser.id || s.username === currentUser.username);
+        if (freshUser && JSON.stringify(freshUser) !== JSON.stringify(currentUser)) {
+          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshUser));
+          changed = true;
         }
       }
+    }
 
-      // 2. Fallback to Serverless API
-      if (!cloud) {
-        for (const endpoint of SYNC_ENDPOINTS) {
-          try {
-            const res = await fetch(endpoint + '?t=' + now);
-            if (res.ok) {
-              const json = await res.json();
-              if (json && json.data) {
-                cloud = json.data;
-                break;
-              }
-            }
-          } catch(e) {
-            // fallback
-          }
-        }
+    // 3. Sync Dojos
+    if (Array.isArray(cloudData.dojos) && cloudData.dojos.length > 0) {
+      const currentDojosStr = localStorage.getItem(STORAGE_KEY_DOJOS);
+      const newDojosStr = JSON.stringify(cloudData.dojos);
+      if (currentDojosStr !== newDojosStr) {
+        localStorage.setItem(STORAGE_KEY_DOJOS, newDojosStr);
+        changed = true;
       }
+    }
 
-      if (!cloud) return;
-
-      let hasChanges = false;
-
-      // 1. Sync Deleted Student IDs (Tombstones)
-      let localDeleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
-      let localDeletedSet = new Set(localDeleted);
-      if (Array.isArray(cloud.deletedStudentIds)) {
-        cloud.deletedStudentIds.forEach(id => localDeletedSet.add(id));
+    // 4. Sync Custom Videos & Progress
+    if (cloudData.custom_videos && typeof cloudData.custom_videos === 'object') {
+      const vStr = JSON.stringify(cloudData.custom_videos);
+      if (localStorage.getItem(STORAGE_KEY_VIDEOS) !== vStr) {
+        localStorage.setItem(STORAGE_KEY_VIDEOS, vStr);
+        changed = true;
       }
-      const updatedDeleted = Array.from(localDeletedSet);
-      if (updatedDeleted.length !== localDeleted.length) {
-        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(updatedDeleted));
-        hasChanges = true;
+    }
+
+    if (cloudData.progress && typeof cloudData.progress === 'object') {
+      const pStr = JSON.stringify(cloudData.progress);
+      if (localStorage.getItem(STORAGE_KEY_PROGRESS) !== pStr) {
+        localStorage.setItem(STORAGE_KEY_PROGRESS, pStr);
+        changed = true;
       }
+    }
 
-      // 2. Sync Dojos
-      if (Array.isArray(cloud.dojos) && cloud.dojos.length > 0) {
-        const localDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS) || '[]');
-        if (JSON.stringify(localDojos) !== JSON.stringify(cloud.dojos)) {
-          localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(cloud.dojos));
-          hasChanges = true;
-        }
-      }
-
-      // 3. Sync Custom Kata Videos
-      if (cloud.custom_videos && typeof cloud.custom_videos === 'object') {
-        const localVideos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS) || '{}');
-        if (JSON.stringify(localVideos) !== JSON.stringify(cloud.custom_videos)) {
-          localStorage.setItem(STORAGE_KEY_VIDEOS, JSON.stringify(cloud.custom_videos));
-          hasChanges = true;
-        }
-      }
-
-      // 4. Sync Students (Purging Deleted & Preserving Super Admin)
-      if (Array.isArray(cloud.students)) {
-        let localStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS) || '[]');
-        const studentMap = new Map();
-
-        // Cloud items that are not deleted
-        cloud.students.forEach(s => {
-          if (!localDeletedSet.has(s.id)) {
-            studentMap.set(s.id, s);
-          }
-        });
-
-        // Local pending items not yet in cloud and not deleted
-        localStudents.forEach(s => {
-          if (!localDeletedSet.has(s.id)) {
-            if (!studentMap.has(s.id)) {
-              studentMap.set(s.id, s);
-            }
-          }
-        });
-
-        const mergedStudents = Array.from(studentMap.values());
-
-        // Always ensure Master Admin exists
-        const masterAdmin = localStudents.find(s => s.username === 'irons365');
-        if (masterAdmin && !mergedStudents.some(s => s.username === 'irons365')) {
-          mergedStudents.unshift(masterAdmin);
-        }
-
-        if (JSON.stringify(localStudents) !== JSON.stringify(mergedStudents)) {
-          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(mergedStudents));
-          hasChanges = true;
-        }
-      }
-
-      // 5. Sync Progress
-      if (cloud.progress && typeof cloud.progress === 'object') {
-        const localProgress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS) || '{}');
-        if (JSON.stringify(localProgress) !== JSON.stringify(cloud.progress)) {
-          localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(cloud.progress));
-          hasChanges = true;
-        }
-      }
-
-      if (hasChanges || force) {
-        window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'pull', time: new Date() } }));
-        window.dispatchEvent(new CustomEvent('tkst_user_changed'));
-      }
-    } catch(err) {
-      console.warn('Cloud pull sync notice:', err);
+    if (changed) {
+      window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'pull', time: new Date() } }));
+      window.dispatchEvent(new CustomEvent('tkst_user_changed'));
     }
   }
 
-  // Periodic and Event-Driven Sync (Safe interval & focus)
-  setInterval(() => pullFromCloud(false), 30000);
-  window.addEventListener('focus', () => pullFromCloud(false));
-  window.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') pullFromCloud(false);
+  async function pullFromCloud() {
+    try {
+      const res = await fetch(SYNC_URL + '/json?poll=1');
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.trim()) {
+          const lines = text.trim().split('\n');
+          for (let i = lines.length - 1; i >= 0; i--) {
+            try {
+              const item = JSON.parse(lines[i]);
+              if (item && item.message) {
+                const cloudData = JSON.parse(item.message);
+                applyCloudData(cloudData);
+                break;
+              }
+            } catch(e) {}
+          }
+        }
+      }
+    } catch(err) {
+      console.warn('Initial cloud pull notice:', err);
+    }
+  }
+
+  function initRealtimeStream() {
+    try {
+      if (typeof EventSource !== 'undefined') {
+        const es = new EventSource(SYNC_URL + '/sse');
+        es.onmessage = function(e) {
+          try {
+            const parsed = JSON.parse(e.data);
+            if (parsed && parsed.event === 'message' && parsed.message) {
+              const cloudData = JSON.parse(parsed.message);
+              applyCloudData(cloudData);
+            }
+          } catch(err) {}
+        };
+        es.onerror = function() {
+          // EventSource auto-reconnects on disconnection
+        };
+      }
+    } catch(err) {}
+  }
+
+  // Start automatic stream & initial pull
+  pullFromCloud().then(() => {
+    // Initial bootstrap push if cloud was empty
+    const students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+    if (students.length > 0) {
+      pushToCloud();
+    }
   });
-  setTimeout(() => pullFromCloud(true), 800);
+  initRealtimeStream();
+
+  // Automatic pull on window focus / tab switch
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') pullFromCloud();
+    });
+    window.addEventListener('focus', () => pullFromCloud());
+  }
 
   function initStorage() {
     // Reset legacy sessions if migrating to Nick system
