@@ -10,6 +10,7 @@
   const STORAGE_KEY_DOJOS = 'tkst_all_dojos';
   const STORAGE_KEY_VIDEOS = 'tkst_custom_kata_videos';
   const STORAGE_KEY_DELETED = 'tkst_deleted_student_ids';
+  const STORAGE_KEY_QUIZ_SUBMISSIONS = 'tkst_quiz_submissions';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_TOPIC = 'tkst_karate_master_stream_2026';
@@ -40,6 +41,7 @@
       const students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
       const videos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
       const progress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
+      const quiz_submissions = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
 
       const payload = {
@@ -47,6 +49,7 @@
         students,
         custom_videos: videos,
         progress,
+        quiz_submissions,
         deletedStudentIds,
         timestamp: Date.now()
       };
@@ -141,6 +144,20 @@
       const pStr = JSON.stringify(cloudData.progress);
       if (localStorage.getItem(STORAGE_KEY_PROGRESS) !== pStr) {
         localStorage.setItem(STORAGE_KEY_PROGRESS, pStr);
+        changed = true;
+      }
+    }
+
+    // 5. Sync Quiz Submissions
+    if (Array.isArray(cloudData.quiz_submissions)) {
+      const localSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+      const subMap = new Map();
+      localSubs.forEach(s => subMap.set(s.id, s));
+      cloudData.quiz_submissions.forEach(s => subMap.set(s.id, s));
+      const mergedSubs = Array.from(subMap.values()).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 200);
+      const newSubsStr = JSON.stringify(mergedSubs);
+      if (localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS) !== newSubsStr) {
+        localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, newSubsStr);
         changed = true;
       }
     }
@@ -521,7 +538,8 @@
       }
 
       const beltKyuMap = {
-        'Faixa Branca': 6,
+        'Faixa Branca': 7,
+        'Faixa Branca (7º Kyu)': 7,
         'Faixa Amarela': 6,
         'Faixa Amarela (6º Kyu)': 6,
         'Faixa Vermelha': 5,
@@ -544,17 +562,17 @@
         'Faixa Preta (Sensei Master)': 0
       };
 
-      const selectedBelt = studentData.currentBelt || 'Faixa Branca';
+      const selectedBelt = studentData.currentBelt || 'Faixa Branca (7º Kyu)';
       let parsedKyu = parseInt(studentData.currentKyu);
       if (isNaN(parsedKyu) || parsedKyu === undefined) {
-        parsedKyu = beltKyuMap[selectedBelt] !== undefined ? beltKyuMap[selectedBelt] : 6;
+        parsedKyu = beltKyuMap[selectedBelt] !== undefined ? beltKyuMap[selectedBelt] : 7;
       }
       if (selectedBelt.toLowerCase().includes('preta') || selectedBelt.toLowerCase().includes('dan') || selectedBelt.toLowerCase().includes('sensei')) {
         parsedKyu = 0;
       }
 
       const isBlack = parsedKyu === 0 || selectedBelt.toLowerCase().includes('preta') || selectedBelt.toLowerCase().includes('dan');
-      const targetBelt = isBlack ? 'Faixa Preta' : (studentData.targetBelt || 'Faixa Amarela (6º Kyu)');
+      const targetBelt = isBlack ? 'Faixa Preta' : (studentData.targetBelt || (parsedKyu === 7 ? 'Faixa Amarela (6º Kyu)' : 'Faixa Preta'));
 
       const newStudent = {
         id: 'std_' + Date.now(),
@@ -761,22 +779,69 @@
       return { success: true, timestamp: new Date() };
     },
 
-    saveQuizResult: function(score, total, kyu) {
+    saveQuizSubmission: function(data) {
       const user = this.getCurrentUser();
-      if (!user) return;
+      if (!user) return null;
+
+      // 1. Update user progress in local storage
       const allProgress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
       if (!allProgress[user.id]) {
         allProgress[user.id] = { masteredItems: {}, quizScores: [] };
       }
+      if (!allProgress[user.id].quizScores) {
+        allProgress[user.id].quizScores = [];
+      }
       allProgress[user.id].quizScores.push({
         date: new Date().toISOString(),
-        score,
-        total,
-        percentage: Math.round((score / total) * 100),
-        kyu
+        score: data.score,
+        total: data.total,
+        percentage: Math.round((data.score / data.total) * 100),
+        beltLevel: data.beltLevel
       });
       localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(allProgress));
+
+      // 2. Add to global submissions for admin review
+      let submissions = [];
+      try {
+        submissions = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+      } catch(e) { submissions = []; }
+
+      const submission = {
+        id: 'quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        studentId: user.id,
+        studentName: user.name,
+        studentUsername: user.username,
+        studentBelt: user.currentBelt,
+        studentKyu: user.currentKyu !== undefined ? user.currentKyu : 7,
+        beltLevel: data.beltLevel,
+        beltKyu: data.beltKyu !== undefined ? data.beltKyu : 7,
+        score: data.score,
+        total: data.total,
+        percentage: Math.round((data.score / data.total) * 100),
+        passed: Math.round((data.score / data.total) * 100) >= 70,
+        perfect: data.score === data.total,
+        date: new Date().toISOString(),
+        details: data.details || [] // [{ question, options, selectedIndex, correctIndex, isCorrect, explanation }]
+      };
+
+      submissions.unshift(submission);
+      if (submissions.length > 200) submissions = submissions.slice(0, 200);
+      localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
+
       pushToCloud();
+      return submission;
+    },
+
+    getAllQuizSubmissions: function() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+      } catch(e) {
+        return [];
+      }
+    },
+
+    saveQuizResult: function(score, total, kyu) {
+      return this.saveQuizSubmission({ score, total, beltLevel: kyu || 'Geral' });
     },
 
     getFirebaseUrl: function() {

@@ -29,6 +29,7 @@ let inMemoryData = {
   ],
   custom_videos: {},
   progress: {},
+  quiz_submissions: [],
   deletedStudentIds: [],
   lastSync: new Date().toISOString()
 };
@@ -92,6 +93,7 @@ module.exports = async (req, res) => {
         students: studentsList,
         custom_videos: incoming.custom_videos ? { ...inMemoryData.custom_videos, ...incoming.custom_videos } : inMemoryData.custom_videos,
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
+        quiz_submissions: Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []),
         deletedStudentIds: allDeleted,
         lastSync: new Date().toISOString()
       };

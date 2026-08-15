@@ -59,13 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
   let glossaryCategory = 'all';
   let glossarySearchQuery = '';
   let authMode = 'student-login';
-  let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'files'
+  let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'quizzes', 'files'
   
   // Quiz State
   let currentQuizIndex = 0;
   let quizScore = 0;
   let quizAnswered = false;
   let currentQuizQuestions = [];
+  let currentQuizKyu = null;
+  let currentQuizBelt = '';
+  let quizActive = false;
+  let quizSubmissionDetails = [];
 
   // DOM Elements
   const mainContent = document.getElementById('mainContent');
@@ -89,18 +93,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getBeltImage(beltName) {
-    if (!beltName) return 'assets/images/faixas/faixa-branca.png';
+    if (!beltName) return 'assets/images/faixas/faixa-branca.svg';
     const b = beltName.toLowerCase();
     if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan') || b.includes('yondan') || b.includes('godan')) {
-      return 'assets/images/faixas/faixa-preta.png';
+      return 'assets/images/faixas/faixa-preta.svg';
     }
-    if (b.includes('marrom')) return 'assets/images/faixas/faixa-marrom.png';
-    if (b.includes('roxa')) return 'assets/images/faixas/faixa-roxa.png';
-    if (b.includes('verde')) return 'assets/images/faixas/faixa-verde.png';
-    if (b.includes('laranja')) return 'assets/images/faixas/faixa-laranja.png';
-    if (b.includes('vermelha')) return 'assets/images/faixas/faixa-vermelha.png';
-    if (b.includes('amarela')) return 'assets/images/faixas/faixa-amarela.png';
-    return 'assets/images/faixas/faixa-branca.png';
+    if (b.includes('marrom')) return 'assets/images/faixas/faixa-marrom.svg';
+    if (b.includes('roxa')) return 'assets/images/faixas/faixa-roxa.svg';
+    if (b.includes('verde')) return 'assets/images/faixas/faixa-verde.svg';
+    if (b.includes('laranja')) return 'assets/images/faixas/faixa-laranja.svg';
+    if (b.includes('vermelha')) return 'assets/images/faixas/faixa-vermelha.svg';
+    if (b.includes('amarela')) return 'assets/images/faixas/faixa-amarela.svg';
+    return 'assets/images/faixas/faixa-branca.svg';
   }
 
   // Video Helpers
@@ -607,6 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const approvedStudents = students.filter(s => s.status === 'approved');
     const customVideos = getCustomKataVideos();
     const dojos = window.TKST_AUTH.getDojos();
+    const quizSubmissions = window.TKST_AUTH.getAllQuizSubmissions();
 
     let html = `
       <div class="section-header" style="margin-bottom: 20px;">
@@ -620,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <h3 style="font-size: 1.3rem; margin-bottom: 4px;">Gerenciamento Completo TKST</h3>
-          <p style="font-size: 0.85rem; color: #94A3B8;">Controle de alunos, cadastros de Dojos, vídeos dos 26 Kata e arquivos com sincronização em nuvem.</p>
+          <p style="font-size: 0.85rem; color: #94A3B8;">Controle de alunos, avaliações teóricas, cadastros de Dojos, vídeos dos 26 Kata e arquivos com sincronização em nuvem.</p>
         </div>
 
         <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; margin-top: 8px;">
@@ -637,7 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- Admin Stats Grid -->
-      <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;">
+      <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;">
         <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('pending')" style="cursor: pointer; padding: 14px;">
           <div class="stat-icon-box gold" style="width: 42px; height: 42px; font-size: 1.2rem;">
             <i class="fas fa-clock"></i>
@@ -655,6 +660,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="min-width: 0;">
             <div class="stat-value" style="font-size: 1.2rem;">${approvedStudents.length}</div>
             <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Alunos Ativos</div>
+          </div>
+        </div>
+
+        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="cursor: pointer; padding: 14px;" title="Ver Simulados Realizados">
+          <div class="stat-icon-box gold" style="width: 42px; height: 42px; font-size: 1.2rem;">
+            <i class="fas fa-clipboard-check"></i>
+          </div>
+          <div style="min-width: 0;">
+            <div class="stat-value" style="font-size: 1.2rem;">${quizSubmissions.length}</div>
+            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Simulados Feitos</div>
           </div>
         </div>
 
@@ -686,6 +701,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
         <button class="chip-btn ${adminSubTab === 'students' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('students')" style="flex-shrink: 0; white-space: nowrap;">
           <i class="fas fa-users"></i> Alunos Matriculados (${students.length})
+        </button>
+        <button class="chip-btn ${adminSubTab === 'quizzes' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="flex-shrink: 0; white-space: nowrap;">
+          <i class="fas fa-clipboard-list"></i> Provas & Simulados (${quizSubmissions.length})
         </button>
         <button class="chip-btn ${adminSubTab === 'dojos' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('dojos')" style="flex-shrink: 0; white-space: nowrap;">
           <i class="fas fa-torii-gate"></i> Dojos / Unidades (${dojos.length})
@@ -963,6 +981,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
         </div>
       ` : ''}
+
+      ${adminSubTab === 'quizzes' ? `
+        <!-- QUIZ SUBMISSIONS LIST -->
+        <div class="admin-table-container">
+          <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 2px;">
+                Simulados e Avaliações Teóricas Realizadas
+              </h4>
+              <div style="font-size: 0.8rem; color: #94A3B8;">
+                Veja as respostas completas de cada aluno, acertos, erros e percentual de aprovação.
+              </div>
+            </div>
+            <span style="font-size: 0.82rem; color: var(--accent-gold); font-weight: 600;">
+              ${quizSubmissions.length} prova(s) registrada(s)
+            </span>
+          </div>
+
+          ${quizSubmissions.length === 0 ? `
+            <div style="padding: 40px; text-align: center; color: #64748B;">
+              <i class="fas fa-clipboard-list" style="font-size: 2.5rem; color: #64748B; margin-bottom: 12px; display: block;"></i>
+              Nenhum aluno realizou simulados teóricos recentemente.
+            </div>
+          ` : `
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Aluno</th>
+                  <th>Graduação do Aluno</th>
+                  <th>Nível do Simulado</th>
+                  <th>Desempenho</th>
+                  <th>Data da Prova</th>
+                  <th style="text-align: right;">Gabarito</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${quizSubmissions.map(sub => {
+                  const dateStr = sub.date ? new Date(sub.date).toLocaleString('pt-BR') : '-';
+                  return `
+                    <tr>
+                      <td>
+                        <div style="font-weight: 700; color: #FFF;">${sub.studentName || 'Aluno'}</div>
+                        <div style="font-size: 0.74rem; color: #94A3B8;">@${sub.studentUsername || ''}</div>
+                      </td>
+                      <td><span class="badge ${getBeltBadgeClass(sub.studentBelt)}">${sub.studentBelt || 'Faixa Branca'}</span></td>
+                      <td><strong style="color: var(--accent-gold);">${sub.beltLevel || 'Geral'}</strong></td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <strong style="color: ${sub.passed ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; font-size: 0.95rem;">
+                            ${sub.score} / ${sub.total} (${sub.percentage}%)
+                          </strong>
+                          ${sub.perfect ? `<span class="badge badge-gold" style="font-size: 0.68rem;">100% 🏆</span>` : (sub.passed ? `<span class="badge badge-verde" style="font-size: 0.68rem;">Aprovado</span>` : `<span class="badge badge-vermelha" style="font-size: 0.68rem;">Reprovado</span>`)}
+                        </div>
+                      </td>
+                      <td style="color: #94A3B8; font-size: 0.8rem;">${dateStr}</td>
+                      <td style="text-align: right;">
+                        <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openQuizDetailModal('${sub.id}')" style="font-size: 0.78rem; padding: 6px 12px;">
+                          <i class="fas fa-search"></i> Ver Prova
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `}
+        </div>
+      ` : ''}
     `;
 
     mainContent.innerHTML = html;
@@ -1128,14 +1214,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
           ${(window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun ? window.TKST_GLOSSARY.dojoKun : [
             { number: 1, title: "Hitotsu! Jinkaku kansei ni tsutomuru koto!", translation: "Esforçar-se para a formação do caráter!", description: "O objetivo supremo do Karatê-Dō reside no aperfeiçoamento do caráter e integridade do praticante." },
-            { number: 2, title: "Hitotsu! Makoto no michi o mamoru koto!", translation: "Ser fiel com o verdadeiro caminho da razão!", description: "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio." },
+            { number: 2, title: "Hitotsu! Makoto no michi o mamoru koto!", translation: "Fidelidade para com o verdadeiro caminho da razão!", description: "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio." },
             { number: 3, title: "Hitotsu! Doryoku no seishin o yashinau koto!", translation: "Criar o espírito de esforço e perseverança!", description: "A dedicação e o treino contínuo superam qualquer obstáculo. Jamais desistir." },
             { number: 4, title: "Hitotsu! Reigi o omonzuru koto!", translation: "Respeitar acima de tudo!", description: "O Karatê começa e termina com respeito e cortesia sincera (Rei)." },
             { number: 5, title: "Hitotsu! Kekki no yū o imashimuru koto!", translation: "Conter o espírito de agressão!", description: "Dominar impulsos, cultivar o autocontrole e buscar sempre a serenidade e a paz." }
           ]).map(d => `
             <div class="dojokun-card" style="margin-top: 0; border-left: 3.5px solid var(--accent-gold); background: rgba(255, 255, 255, 0.02); padding: 14px 16px; border-radius: var(--radius-sm); display: flex; flex-direction: column;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span class="badge badge-gold" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700;">一つ Hitotsu #${d.number}</span>
+                <span class="badge badge-gold" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 700;">一つ Hitotsu</span>
               </div>
               <div class="dojokun-pt" style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 4px;">
                 ${d.translation}
@@ -3083,57 +3169,220 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function renderQuiz() {
-    if (!currentQuizQuestions || currentQuizQuestions.length === 0) {
-      currentQuizQuestions = window.TKST_QUIZ || [];
-      currentQuizIndex = 0;
-      quizScore = 0;
-      quizAnswered = false;
+  function startQuiz(kyuNumber, beltName) {
+    const bank = window.TKST_QUIZ_BANK || window.TKST_QUIZ || [];
+    let pool = bank.filter(q => q.kyuNumber === kyuNumber);
+    if (pool.length === 0) {
+      pool = bank.filter(q => q.kyuNumber <= kyuNumber);
+    }
+    if (pool.length === 0) {
+      pool = [...bank];
     }
 
+    // Shuffle pool
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+
+    currentQuizQuestions = shuffled.slice(0, 10);
+    currentQuizIndex = 0;
+    quizScore = 0;
+    quizAnswered = false;
+    currentQuizKyu = kyuNumber;
+    currentQuizBelt = beltName;
+    quizSubmissionDetails = [];
+    quizActive = true;
+
+    renderQuiz();
+  }
+
+  function exitQuiz() {
+    quizActive = false;
+    currentQuizQuestions = [];
+    renderQuiz();
+  }
+
+  function renderQuiz() {
+    const user = window.TKST_AUTH.getCurrentUser();
+    const isAdmin = window.TKST_AUTH.isAdmin();
+    const userProgress = window.TKST_AUTH.getProgress();
+    const userKyu = user ? (user.currentKyu !== undefined ? user.currentKyu : 7) : 7;
+
+    const quizScores = (userProgress && userProgress.quizScores) || [];
+    const hasPerfectInOwnBelt = quizScores.some(s => (s.score === 10 || s.percentage === 100) && (s.beltKyu === userKyu || s.beltLevel === (user ? user.currentBelt : '')));
+
+    // 1. LEVEL SELECTOR SCREEN
+    if (!quizActive) {
+      const quizLevels = [
+        { kyu: 7, name: "Faixa Branca (7º Kyu)", color: "#FFFFFF", textColor: "#000", badge: "Iniciante", desc: "História do Karatê Shotokan, etiqueta do Dojo (Reigi), bases fundamentais e técnicas iniciais." },
+        { kyu: 6, name: "Faixa Amarela (6º Kyu)", color: "#F5BE00", textColor: "#000", badge: "6º Kyu", desc: "Heian Shodan, bases Zenkutsu e Kokutsu, 3 níveis corporais e defesas essenciais." },
+        { kyu: 5, name: "Faixa Vermelha (5º Kyu)", color: "#E63946", textColor: "#FFF", badge: "5º Kyu", desc: "Heian Nidan, chutes laterais Yoko Geri, defesas de mão aberta Shuto Uke e transições." },
+        { kyu: 4, name: "Faixa Laranja (4º Kyu)", color: "#FF7700", textColor: "#FFF", badge: "4º Kyu", desc: "Heian Sandan, base Kiba Dachi, cotoveladas Empi, golpes de costas de punho e Sanbon Kumite." },
+        { kyu: 3, name: "Faixa Verde (3º Kyu)", color: "#10B981", textColor: "#FFF", badge: "3º Kyu", desc: "Heian Yondan, chutes voadores, defesas duplas Morote Uke e Kakiwake Uke." },
+        { kyu: 2, name: "Faixa Roxa (2º Kyu)", color: "#8B5CF6", textColor: "#FFF", badge: "2º Kyu", desc: "Heian Godan, saltos acrobáticos, contragolpes de Kihon Ippon Kumite e base Kosa Dachi." },
+        { kyu: 1, name: "Faixa Marrom (1º Kyu)", color: "#78350F", textColor: "#FFF", badge: "1º Kyu", desc: "Tekki Shodan, Bassai Dai, Kanku Dai, antecipação Sen no Sen e Jiyu Ippon Kumite." },
+        { kyu: 0, name: "Faixa Preta (Shodan / Dans)", color: "#111827", textColor: "#FFF", badge: "Dan / Mestre", desc: "Filosofia Budo, 26 Kata avançados, arbitragem oficial, Mizu no Kokoro e maestria marcial." }
+      ];
+
+      let html = `
+        <div class="section-header" style="margin-bottom: 20px;">
+          <div class="section-title-group">
+            <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulador de Exame Teórico de Graduação</h3>
+            <p>Escolha o nível da graduação para realizar o teste de 10 perguntas sorteadas aleatoriamente. Todas as provas são enviadas ao Sensei Diego.</p>
+          </div>
+        </div>
+
+        <div class="dashboard-hero" style="margin-bottom: 24px; padding: 20px 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <span class="badge badge-amarela" style="margin-bottom: 6px;">Sua Graduação Atual: ${user ? user.currentBelt : 'Faixa Branca'}</span>
+              <h3 style="color: #FFF; font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: 4px;">
+                Desafio dos Níveis de Graduação
+              </h3>
+              <p style="color: #94A3B8; font-size: 0.86rem; max-width: 680px; margin: 0;">
+                O simulador da sua graduação (e anteriores) está liberado. Para liberar o simulado das graduações superiores, <strong>acerte 10 de 10 perguntas (100% de acertos)</strong> no simulado da sua faixa atual!
+              </p>
+            </div>
+            <div>
+              ${hasPerfectInOwnBelt ? `
+                <div style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 700;">
+                  <i class="fas fa-unlock"></i> 100% no seu Simulado! Níveis Avançados Liberados! 🏆
+                </div>
+              ` : `
+                <div style="background: rgba(255,183,3,0.1); border: 1px solid rgba(255,183,3,0.3); color: var(--accent-gold); padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.82rem;">
+                  <i class="fas fa-lock"></i> Acerte 10/10 no seu nível para desbloquear os superiores.
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
+          ${quizLevels.map(lvl => {
+            const isUnlocked = isAdmin || lvl.kyu >= userKyu || hasPerfectInOwnBelt;
+            const isCurrent = lvl.kyu === userKyu;
+
+            return `
+              <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px; border-top: 5px solid ${lvl.color}; background: ${isUnlocked ? 'rgba(18, 23, 34, 0.9)' : 'rgba(18, 23, 34, 0.4)'}; opacity: ${isUnlocked ? '1' : '0.65'}; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <span class="badge" style="background: ${lvl.color}; color: ${lvl.textColor}; font-weight: 700; font-size: 0.76rem; border: 1px solid rgba(255,255,255,0.2);">
+                    ${lvl.badge}
+                  </span>
+                  ${isCurrent ? `<span class="badge badge-verde" style="font-size: 0.7rem;">Sua Faixa</span>` : ''}
+                  ${!isUnlocked ? `<span class="badge badge-status-pending" style="font-size: 0.72rem;"><i class="fas fa-lock"></i> Bloqueado</span>` : ''}
+                </div>
+
+                <h4 style="color: #FFF; font-size: 1.1rem; font-family: var(--font-heading); margin-bottom: 6px;">
+                  ${lvl.name}
+                </h4>
+                <p style="font-size: 0.82rem; color: #94A3B8; line-height: 1.5; margin-bottom: 16px; min-height: 48px;">
+                  ${lvl.desc}
+                </p>
+
+                ${isUnlocked ? `
+                  <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel(${lvl.kyu}, '${lvl.name}')" style="width: 100%; justify-content: center; font-weight: 700; padding: 10px;">
+                    <i class="fas fa-play"></i> Iniciar Simulado (10 Questões)
+                  </button>
+                ` : `
+                  <button class="btn btn-secondary" disabled style="width: 100%; justify-content: center; opacity: 0.5; cursor: not-allowed; padding: 10px; font-size: 0.82rem;">
+                    <i class="fas fa-lock"></i> Bloqueado (Requer 10/10)
+                  </button>
+                `}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+      mainContent.innerHTML = html;
+      return;
+    }
+
+    // 2. DETAILED RESULTS SCREEN
     if (currentQuizIndex >= currentQuizQuestions.length) {
       const finalPercent = Math.round((quizScore / currentQuizQuestions.length) * 100);
       const isPassed = finalPercent >= 70;
-      window.TKST_AUTH.saveQuizResult(quizScore, currentQuizQuestions.length, 'Geral');
+      const isPerfect = quizScore === currentQuizQuestions.length;
 
       let resultHtml = `
-        <div class="quiz-card" style="text-align: center;">
-          <div style="font-size: 3.5rem; margin-bottom: 12px;">${isPassed ? '🥋🏆' : '📚🥋'}</div>
+        <div class="section-header" style="justify-content: center; text-align: center; margin-bottom: 20px;">
+          <div class="section-title-group">
+            <h3><i class="fas fa-trophy" style="color: var(--accent-gold);"></i> Resultado do Simulado • ${currentQuizBelt}</h3>
+            <p>Prova concluída e enviada automaticamente para o painel do Sensei Diego!</p>
+          </div>
+        </div>
+
+        <div class="quiz-card" style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 3.5rem; margin-bottom: 12px;">${isPerfect ? '🥇🏆' : (isPassed ? '🥋✨' : '📚🥋')}</div>
           <h2 style="font-family: var(--font-heading); color: #FFF; font-size: 1.8rem; margin-bottom: 8px;">
-            ${isPassed ? 'Parabéns! Exame Teórico Aprovado!' : 'Continue Treinando e Estudando!'}
+            ${isPerfect ? 'Perfeito! 100% de Acertos (Gabaritou)!' : (isPassed ? 'Parabéns! Exame Teórico Aprovado!' : 'Continue Treinando e Estudando!')}
           </h2>
-          <p style="color: #94A3B8; margin-bottom: 24px;">
-            Você acertou <strong>${quizScore} de ${currentQuizQuestions.length} questões</strong> (${finalPercent}% de acerto).
+          <p style="color: #94A3B8; margin-bottom: 20px; font-size: 1.05rem;">
+            Você acertou <strong style="color: ${isPassed ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; font-size: 1.2rem;">${quizScore} de ${currentQuizQuestions.length} questões</strong> (${finalPercent}% de aproveitamento).
           </p>
 
-          <div style="background: rgba(10,13,20,0.6); padding: 20px; border-radius: var(--radius-md); margin-bottom: 24px; border: 1px solid var(--border-color);">
-            <div style="font-size: 0.9rem; color: #E2E8F0;">
-              ${isPassed ? 'Você demonstrou excelente compreensão teórica dos nomes das técnicas, bases, significados dos Kata e princípios do Shotokan.' : 'Revise as seções de Kata, Kumite e Dicionário para reforçar o conhecimento dos termos técnicos antes do exame oficial no Dojo.'}
-            </div>
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; font-size: 0.86rem; color: #6EE7B7; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fas fa-check-double"></i> Prova detalhada gravada e sincronizada na nuvem com o Administrador.
           </div>
 
-          <button class="btn btn-primary" onclick="window.TKST_APP.restartQuiz()">
-            <i class="fas fa-redo"></i> Refazer Simulador
-          </button>
+          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel(${currentQuizKyu}, '${currentQuizBelt}')" style="padding: 10px 20px; font-weight: 700;">
+              <i class="fas fa-redo"></i> Refazer Este Nível (Novas Perguntas)
+            </button>
+            <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="padding: 10px 20px;">
+              <i class="fas fa-list"></i> Escolher Outro Nível
+            </button>
+          </div>
+        </div>
+
+        <!-- Detailed Breakdown of the Questions -->
+        <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 24px;">
+          <h4 style="color: #FFF; font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-list-check" style="color: var(--accent-gold);"></i> Gabarito Detalhado da sua Prova
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            ${quizSubmissionDetails.map((det, idx) => `
+              <div style="background: rgba(255,255,255,0.02); border-left: 4px solid ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; border-radius: var(--radius-sm); padding: 14px 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <strong style="color: #FFF; font-size: 0.92rem;">Questão ${idx + 1}: ${det.question}</strong>
+                  <span class="badge ${det.isCorrect ? 'badge-verde' : 'badge-vermelha'}" style="font-size: 0.72rem;">
+                    ${det.isCorrect ? '✓ Acertou' : '✗ Errou'}
+                  </span>
+                </div>
+                <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">
+                  Sua resposta: <strong style="color: ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">${det.selectedText}</strong>
+                </div>
+                ${!det.isCorrect ? `
+                  <div style="font-size: 0.84rem; color: #6EE7B7; margin-bottom: 4px;">
+                    Resposta correta: <strong>${det.correctText}</strong>
+                  </div>
+                ` : ''}
+                <div style="font-size: 0.78rem; color: #94A3B8; font-style: italic; margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 6px;">
+                  💡 ${det.explanation}
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       `;
       mainContent.innerHTML = resultHtml;
       return;
     }
 
+    // 3. ACTIVE QUIZ QUESTION SCREEN
     const q = currentQuizQuestions[currentQuizIndex];
 
     let html = `
-      <div class="section-header" style="justify-content: center; text-align: center; margin-bottom: 24px;">
+      <div class="section-header" style="justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div class="section-title-group">
-          <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulador de Exame de Graduação</h3>
-          <p>Avalie seus conhecimentos teóricos para o exame de faixa</p>
+          <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulado • ${currentQuizBelt}</h3>
+          <p>Responda com atenção. Suas respostas serão enviadas ao Sensei.</p>
         </div>
+        <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="font-size: 0.78rem; padding: 6px 12px;">
+          <i class="fas fa-times"></i> Cancelar / Trocar Nível
+        </button>
       </div>
 
       <div class="quiz-card">
         <div class="quiz-question-header">
-          <span class="badge badge-amarela">${q.kyu}</span>
+          <span class="badge badge-amarela">${currentQuizBelt}</span>
           <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">Questão ${currentQuizIndex + 1} de ${currentQuizQuestions.length}</span>
         </div>
 
@@ -3154,7 +3403,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
           <button id="quizNextBtn" class="btn btn-primary" style="display: none;" onclick="window.TKST_APP.nextQuizQuestion()">
-            Próxima Questão <i class="fas fa-arrow-right"></i>
+            ${currentQuizIndex + 1 === currentQuizQuestions.length ? 'Finalizar Prova e Enviar ao Sensei <i class="fas fa-paper-plane"></i>' : 'Próxima Questão <i class="fas fa-arrow-right"></i>'}
           </button>
         </div>
       </div>
@@ -3170,6 +3419,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = currentQuizQuestions[currentQuizIndex];
     const isCorrect = optionIndex === q.correctIndex;
     if (isCorrect) quizScore++;
+
+    quizSubmissionDetails.push({
+      question: q.question,
+      options: q.options,
+      selectedIndex: optionIndex,
+      selectedText: q.options[optionIndex],
+      correctIndex: q.correctIndex,
+      correctText: q.options[q.correctIndex],
+      isCorrect,
+      explanation: q.explanation
+    });
 
     q.options.forEach((_, idx) => {
       const btn = document.getElementById(`quizOpt_${idx}`);
@@ -3202,18 +3462,24 @@ document.addEventListener('DOMContentLoaded', () => {
   function nextQuizQuestion() {
     quizAnswered = false;
     currentQuizIndex++;
+    if (currentQuizIndex >= currentQuizQuestions.length) {
+      window.TKST_AUTH.saveQuizSubmission({
+        beltLevel: currentQuizBelt,
+        beltKyu: currentQuizKyu,
+        score: quizScore,
+        total: currentQuizQuestions.length,
+        details: quizSubmissionDetails
+      });
+    }
     renderQuiz();
   }
 
   function restartQuiz() {
-    currentQuizIndex = 0;
-    quizScore = 0;
-    quizAnswered = false;
-    renderQuiz();
+    startQuiz(currentQuizKyu || 7, currentQuizBelt || 'Faixa Branca');
   }
 
   function renderPhilosophy() {
-    const dojoKun = window.TKST_GLOSSARY.dojoKun || [];
+    const dojoKun = (window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun) ? window.TKST_GLOSSARY.dojoKun : [];
 
     let html = `
       <div class="section-header">
@@ -3237,6 +3503,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="dojokun-grid">
         ${dojoKun.map(d => `
           <div class="dojokun-card">
+            <div style="margin-bottom: 8px;">
+              <span class="badge badge-gold" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 700;">一つ Hitotsu</span>
+            </div>
             <div class="dojokun-jp">${d.title}</div>
             <div class="dojokun-pt">${d.translation}</div>
             <div class="dojokun-desc">${d.description}</div>
@@ -3382,6 +3651,79 @@ document.addEventListener('DOMContentLoaded', () => {
     answerQuiz,
     nextQuizQuestion,
     restartQuiz,
+    startQuizLevel: (kyu, beltName) => startQuiz(kyu, beltName),
+    exitQuiz,
+    openQuizDetailModal: (submissionId) => {
+      const submissions = window.TKST_AUTH.getAllQuizSubmissions();
+      const sub = submissions.find(s => s.id === submissionId);
+      if (!sub) {
+        alert('Prova não encontrada.');
+        return;
+      }
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      const dateStr = sub.date ? new Date(sub.date).toLocaleString('pt-BR') : '-';
+
+      modalTitle.innerHTML = `<span><i class="fas fa-file-alt" style="color: var(--accent-gold);"></i> Prova de ${sub.studentName} (@${sub.studentUsername})</span>`;
+
+      modalBody.innerHTML = `
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="font-size: 1.15rem; color: #FFF; font-weight: 700;">${sub.studentName} (@${sub.studentUsername})</div>
+              <div style="font-size: 0.85rem; color: #94A3B8; margin-top: 2px;">
+                Graduação: <span class="badge ${getBeltBadgeClass(sub.studentBelt)}" style="font-size: 0.72rem;">${sub.studentBelt}</span> • Data: ${dateStr}
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 1.4rem; font-weight: 800; color: ${sub.passed ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">
+                ${sub.score} de ${sub.total} Acertos (${sub.percentage}%)
+              </div>
+              <div style="font-size: 0.8rem; color: #94A3B8;">
+                Nível: <strong>${sub.beltLevel}</strong> • ${sub.passed ? 'Status: Aprovado' : 'Status: Reprovado'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="color: #FFF; font-family: var(--font-heading); font-size: 1.05rem; margin-bottom: 12px;">
+          <i class="fas fa-list-ol" style="color: var(--accent-gold);"></i> Gabarito Questão por Questão:
+        </h4>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 4px;">
+          ${(sub.details || []).map((det, idx) => `
+            <div style="background: rgba(10, 13, 20, 0.6); border: 1px solid var(--border-color); border-left: 4px solid ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; border-radius: var(--radius-sm); padding: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #FFF; font-size: 0.9rem;">${idx + 1}. ${det.question}</strong>
+                <span class="badge ${det.isCorrect ? 'badge-verde' : 'badge-vermelha'}" style="font-size: 0.7rem;">
+                  ${det.isCorrect ? '✓ Acerto' : '✗ Erro'}
+                </span>
+              </div>
+              <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">
+                Marcou: <strong style="color: ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">${det.selectedText || (det.options && det.options[det.selectedIndex]) || '-'}</strong>
+              </div>
+              ${!det.isCorrect ? `
+                <div style="font-size: 0.84rem; color: #6EE7B7; margin-bottom: 4px;">
+                  Correta: <strong>${det.correctText || (det.options && det.options[det.correctIndex]) || '-'}</strong>
+                </div>
+              ` : ''}
+              <div style="font-size: 0.78rem; color: #94A3B8; font-style: italic; margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 6px;">
+                💡 ${det.explanation || ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+          <button class="btn btn-primary" onclick="document.getElementById('detailModal').classList.remove('active')" style="padding: 10px 24px; font-weight: 700;">
+            Fechar Gabarito
+          </button>
+        </div>
+      `;
+
+      detailModal.classList.add('active');
+    },
 
     // PWA Desktop / Mobile Installer
     installPwa: async () => {
@@ -3523,7 +3865,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <label class="form-label" style="font-size: 0.8rem; white-space: nowrap; margin-bottom: 4px;">Graduação</label>
               <select id="regModalBelt" class="form-select" required>
                 <option value="" disabled selected hidden>Selecione sua Faixa...</option>
-                <option value="Faixa Branca" data-kyu="6">Faixa Branca</option>
+                <option value="Faixa Branca (7º Kyu)" data-kyu="7">Faixa Branca (7º Kyu)</option>
                 <option value="Faixa Amarela (6º Kyu)" data-kyu="6">Faixa Amarela (6º Kyu)</option>
                 <option value="Faixa Vermelha (5º Kyu)" data-kyu="5">Faixa Vermelha (5º Kyu)</option>
                 <option value="Faixa Laranja (4º Kyu)" data-kyu="4">Faixa Laranja (4º Kyu)</option>
@@ -3685,7 +4027,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       const belts = [
-        { name: "Faixa Branca", kyu: 6 },
+        { name: "Faixa Branca (7º Kyu)", kyu: 7 },
         { name: "Faixa Amarela (6º Kyu)", kyu: 6 },
         { name: "Faixa Vermelha (5º Kyu)", kyu: 5 },
         { name: "Faixa Laranja (4º Kyu)", kyu: 4 },

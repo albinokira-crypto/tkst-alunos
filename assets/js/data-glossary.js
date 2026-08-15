@@ -334,7 +334,7 @@ window.TKST_GLOSSARY = {
     {
       "number": 2,
       "title": "Hitotsu! Makoto no michi o mamoru koto!",
-      "translation": "Ser fiel com o verdadeiro caminho da razão!",
+      "translation": "Fidelidade para com o verdadeiro caminho da razão!",
       "description": "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio."
     },
     {
