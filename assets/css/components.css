@@ -1205,6 +1205,172 @@ body.login-view-active .content-body {
   display: block;
 }
 
+/* ==========================================================================
+   Guia de Kumite - Accordions Interativos por Modalidade
+   ========================================================================== */
+.kumite-accordion-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: 18px;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+
+.kumite-accordion-card:hover {
+  border-color: rgba(255, 183, 3, 0.4);
+}
+
+.kumite-accordion-card.active {
+  border-color: rgba(255, 183, 3, 0.5);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.kumite-accordion-header {
+  width: 100%;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  gap: 16px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.kumite-accordion-header:hover {
+  background: rgba(255, 183, 3, 0.08);
+}
+
+.kumite-accordion-header.active {
+  background: rgba(255, 183, 3, 0.1);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.kumite-accordion-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.kumite-accordion-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kumite-accordion-title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.kumite-accordion-title-group h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #FFF;
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kumite-accordion-title-group p {
+  font-size: 0.84rem;
+  color: #94A3B8;
+  margin: 0;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.kumite-accordion-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.kumite-accordion-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.kumite-accordion-chevron {
+  font-size: 1rem;
+  color: var(--accent-gold);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.kumite-accordion-body {
+  display: none;
+  padding: 24px;
+  animation: fadeIn 0.25s ease;
+}
+
+.kumite-accordion-body.active {
+  display: block;
+}
+
+.kumite-quick-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+}
+
+@media (max-width: 768px) {
+  .kumite-accordion-header {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .kumite-accordion-icon-box {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+  .kumite-accordion-title-group h3 {
+    font-size: 1.02rem;
+  }
+  .kumite-accordion-title-group p {
+    font-size: 0.78rem;
+  }
+  .kumite-accordion-body {
+    padding: 16px 14px;
+  }
+}
+
+
 /* 9. Modals & Video Player */
 .modal-overlay {
   position: fixed;

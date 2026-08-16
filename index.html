@@ -23,8 +23,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=51">
-  <link rel="stylesheet" href="assets/css/components.css?v=51">
+  <link rel="stylesheet" href="assets/css/main.css?v=85">
+  <link rel="stylesheet" href="assets/css/components.css?v=85">
 </head>
 <body class="login-view-active">
 
@@ -201,9 +201,9 @@
         <i class="fas fa-fist-raised"></i>
         <span>Kumite</span>
       </a>
-      <a class="mobile-nav-item admin-only-nav" data-tab="admin" style="display: none;" onclick="window.TKST_APP.openAdminPanel()">
-        <i class="fas fa-crown" style="color: var(--accent-gold);"></i>
-        <span>Admin</span>
+      <a class="mobile-nav-item" data-tab="quiz">
+        <i class="fas fa-brain"></i>
+        <span>Simulador</span>
       </a>
       <a class="mobile-nav-item active" data-tab="login">
         <i class="fas fa-user-lock"></i>
@@ -255,21 +255,26 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/auth.js?v=82"></script>
-  <script src="assets/js/data-curriculum.js?v=82"></script>
-  <script src="assets/js/data-katas.js?v=82"></script>
-  <script src="assets/js/data-kumite.js?v=82"></script>
-  <script src="assets/js/data-glossary.js?v=82"></script>
-  <script src="assets/js/data-quiz.js?v=82"></script>
-  <script src="assets/js/app.js?v=82"></script>
+  <script src="assets/js/auth.js?v=85"></script>
+  <script src="assets/js/data-curriculum.js?v=85"></script>
+  <script src="assets/js/data-katas.js?v=85"></script>
+  <script src="assets/js/data-kumite.js?v=85"></script>
+  <script src="assets/js/data-glossary.js?v=85"></script>
+  <script src="assets/js/data-quiz.js?v=85"></script>
+  <script src="assets/js/app.js?v=85"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          reg.update();
+        }).catch(err => {
           console.log('SW registration note:', err);
         });
+      });
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
       });
     }
   </script>

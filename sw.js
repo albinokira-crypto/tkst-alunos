@@ -1,16 +1,16 @@
-const CACHE_NAME = 'tkst-alunos-v82';
+const CACHE_NAME = 'tkst-alunos-v85';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './assets/css/main.css?v=82',
-  './assets/css/components.css?v=82',
-  './assets/js/auth.js?v=82',
-  './assets/js/data-curriculum.js?v=82',
-  './assets/js/data-katas.js?v=82',
-  './assets/js/data-kumite.js?v=82',
-  './assets/js/data-glossary.js?v=82',
-  './assets/js/data-quiz.js?v=82',
-  './assets/js/app.js?v=82',
+  './assets/css/main.css?v=85',
+  './assets/css/components.css?v=85',
+  './assets/js/auth.js?v=85',
+  './assets/js/data-curriculum.js?v=85',
+  './assets/js/data-katas.js?v=85',
+  './assets/js/data-kumite.js?v=85',
+  './assets/js/data-glossary.js?v=85',
+  './assets/js/data-quiz.js?v=85',
+  './assets/js/app.js?v=85',
   './assets/images/logo-tkst.png',
   './assets/images/icon-192.png',
   './assets/images/icon-512.png',
@@ -38,6 +38,7 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE).catch(err => {
@@ -57,7 +58,7 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 

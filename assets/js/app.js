@@ -3317,269 +3317,371 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="section-header">
         <div class="section-title-group">
           <h3><i class="fas fa-fist-raised" style="color: var(--accent-crimson);"></i> Guia Completo de Kumite TKST</h3>
-          <p>Gohon Kumite, Sanbon Kumite, Kihon Ippon Kumite, Jiyu Ippon Kumite e Kihon Ippon no Kata</p>
+          <p>Explore as modalidades oficiais do Karatê Shotokan. Toque em cada card para expandir o guia técnico completo.</p>
         </div>
+      </div>
+
+      <!-- Barra de Ações Rápidas -->
+      <div class="kumite-quick-controls">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.86rem; color: #CBD5E1;">
+          <i class="fas fa-layer-group" style="color: var(--accent-gold);"></i>
+          <span><strong>5 Modalidades</strong> estruturadas do básico ao avançado</span>
+        </div>
+        <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 7px 14px;" onclick="window.TKST_APP.toggleAllKumiteAccordions()">
+          <span id="toggleAllKumiteText"><i class="fas fa-expand-alt"></i> Expandir Todos</span>
+        </button>
       </div>
 
       <!-- 1. GOHON KUMITE (5 PASSOS) -->
-      <div class="dashboard-hero" style="margin-bottom: 30px; border-left: 6px solid var(--accent-gold);">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-          <span class="gohon-header-badge">
-            <i class="fas fa-project-diagram"></i> ${kumite.gohonKumite ? kumite.gohonKumite.title : 'Gohon Kumite (5 Passos)'}
-          </span>
-          <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 700;">五本組手</span>
-        </div>
-        <p style="color: #94A3B8; margin-bottom: 20px;">${kumite.gohonKumite ? kumite.gohonKumite.description : 'Combate fundamental de cinco passos com finalização em Gyaku Tsuki.'}</p>
-
-        <!-- Trilha Visual dos 5 Passos -->
-        <div class="gohon-timeline">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <strong style="color: var(--accent-gold); font-size: 0.86rem;">
-              <i class="fas fa-route" style="margin-right: 6px;"></i> Trilha de Execução dos 5 Passos:
-            </strong>
-            <span style="font-size: 0.76rem; color: #94A3B8;">Mae avança ➔ Sagate recua</span>
-          </div>
-
-          <div class="gohon-steps-track">
-            <div class="gohon-step-box">
-              <div class="gohon-step-num">1º Passo</div>
-              <div class="gohon-step-action">Ataque & Defesa em Zenkutsu</div>
-              <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Ajuste de distância</div>
+      <div class="kumite-accordion-card" id="kumiteCard_gohon" style="border-left: 4px solid var(--accent-gold);">
+        <button type="button" class="kumite-accordion-header" id="kumiteHeader_gohon" onclick="window.TKST_APP.toggleKumiteAccordion('gohon')" aria-expanded="false">
+          <div class="kumite-accordion-left">
+            <div class="kumite-accordion-icon-box" style="background: rgba(245, 190, 0, 0.15); color: var(--accent-gold);">
+              <i class="fas fa-project-diagram"></i>
             </div>
-            <div class="gohon-step-box">
-              <div class="gohon-step-num">2º Passo</div>
-              <div class="gohon-step-action">Manutenção de Altura e Base</div>
-              <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Ritmo contínuo</div>
-            </div>
-            <div class="gohon-step-box">
-              <div class="gohon-step-num">3º Passo</div>
-              <div class="gohon-step-action">Aceleração com Pressão</div>
-              <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Foco nos olhos</div>
-            </div>
-            <div class="gohon-step-box">
-              <div class="gohon-step-num">4º Passo</div>
-              <div class="gohon-step-action">Preparação para Fechamento</div>
-              <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Aproximação decisiva</div>
-            </div>
-            <div class="gohon-step-box final-step">
-              <div class="gohon-step-num">5º Passo (Decisivo)</div>
-              <div class="gohon-step-action" style="color: #FFF;">Bloqueio Firme + Gyaku Tsuki</div>
-              <span class="gohon-kiai-tag">KIAI!</span>
+            <div class="kumite-accordion-title-group">
+              <h3>
+                1. Gohon Kumite (5 Passos)
+                <span class="kumite-accordion-badge" style="background: rgba(255, 183, 3, 0.15); color: #FFD166; border: 1px solid rgba(255, 183, 3, 0.3);">五本組手</span>
+              </h3>
+              <p>Combate básico em cinco passos • Mae (ataque) & Sagate (defesa) • Finalização em Gyaku Tsuki com Kiai</p>
             </div>
           </div>
-        </div>
+          <div class="kumite-accordion-right">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_gohon">
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+        </button>
 
-        <!-- 3 Séries de Alvos (Jodan, Chudan, Gedan) -->
-        <div class="gohon-series-grid">
-          <!-- Série 1: Jodan -->
-          <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
-            <div class="gohon-series-title">
-              <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan (Alto)</strong>
-              <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
+        <div class="kumite-accordion-body" id="kumiteBody_gohon">
+          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+            ${kumite.gohonKumite ? kumite.gohonKumite.description : 'Combate fundamental de cinco passos com finalização em Gyaku Tsuki.'}
+          </p>
+
+          <!-- Trilha Visual dos 5 Passos -->
+          <div class="gohon-timeline">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <strong style="color: var(--accent-gold); font-size: 0.86rem;">
+                <i class="fas fa-route" style="margin-right: 6px;"></i> Trilha de Execução dos 5 Passos:
+              </strong>
+              <span style="font-size: 0.76rem; color: #94A3B8;">Mae avança ➔ Sagate recua</span>
             </div>
-            <div class="gohon-role-row">
-              <span class="gohon-role-badge tori">Mae</span>
-              <div><strong>5x Jodan Oi Tsuki</strong></div>
-            </div>
-            <div class="gohon-role-row">
-              <span class="gohon-role-badge uke">Sagate</span>
-              <div>
-                <strong>5x Jodan Age Uke</strong><br>
-                <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span>
+
+            <div class="gohon-steps-track">
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">1º Passo</div>
+                <div class="gohon-step-action">Ataque & Defesa em Zenkutsu</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Ajuste de distância</div>
+              </div>
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">2º Passo</div>
+                <div class="gohon-step-action">Manutenção de Altura e Base</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Ritmo contínuo</div>
+              </div>
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">3º Passo</div>
+                <div class="gohon-step-action">Aceleração com Pressão</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Foco nos olhos</div>
+              </div>
+              <div class="gohon-step-box">
+                <div class="gohon-step-num">4º Passo</div>
+                <div class="gohon-step-action">Preparação para Fechamento</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 4px;">Aproximação decisiva</div>
+              </div>
+              <div class="gohon-step-box final-step">
+                <div class="gohon-step-num">5º Passo (Decisivo)</div>
+                <div class="gohon-step-action" style="color: #FFF;">Bloqueio Firme + Gyaku Tsuki</div>
+                <span class="gohon-kiai-tag">KIAI!</span>
               </div>
             </div>
-            <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-              ⚡ <strong>5º passo:</strong> Bloqueia com <em>Age Uke</em>, firma a base e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+          </div>
+
+          <!-- 3 Séries de Alvos (Jodan, Chudan, Gedan) -->
+          <div class="gohon-series-grid" style="margin-top: 20px;">
+            <!-- Série 1: Jodan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #E63946;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">1. Jodan (Alto)</strong>
+                <span class="gohon-series-tag" style="background: rgba(230,57,70,0.2); color: #FF808A;">Alvo: Rosto</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div><strong>5x Jodan Oi Tsuki</strong></div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>5x Jodan Age Uke</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa na altura do rosto )</span>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>5º passo:</strong> Bloqueia com <em>Age Uke</em>, firma a base e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+
+            <!-- Série 2: Chudan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan (Médio)</strong>
+                <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div><strong>5x Chudan Oi Tsuki</strong></div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>5x Chudan Soto Uke</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>5º passo:</strong> Bloqueia com <em>Soto Uke</em>, estabiliza o quadril e aplica <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
+            </div>
+
+            <!-- Série 3: Gedan -->
+            <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
+              <div class="gohon-series-title">
+                <strong style="color: #FFF; font-size: 0.92rem;">3. Gedan (Baixo)</strong>
+                <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge tori">Mae</span>
+                <div><strong>5x Mae Geri Chudan</strong></div>
+              </div>
+              <div class="gohon-role-row">
+                <span class="gohon-role-badge uke">Sagate</span>
+                <div>
+                  <strong>5x Gedan Barai</strong><br>
+                  <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
+                </div>
+              </div>
+              <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
+                ⚡ <strong>5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
+              </div>
             </div>
           </div>
 
-          <!-- Série 2: Chudan -->
-          <div class="gohon-series-card" style="border-left: 4px solid #2A9D8F;">
-            <div class="gohon-series-title">
-              <strong style="color: #FFF; font-size: 0.92rem;">2. Chudan (Médio)</strong>
-              <span class="gohon-series-tag" style="background: rgba(42,157,143,0.2); color: #6EE7B7;">Alvo: Plexo</span>
-            </div>
-            <div class="gohon-role-row">
-              <span class="gohon-role-badge tori">Mae</span>
-              <div><strong>5x Chudan Oi Tsuki</strong></div>
-            </div>
-            <div class="gohon-role-row">
-              <span class="gohon-role-badge uke">Sagate</span>
-              <div>
-                <strong>5x Chudan Soto Uke</strong><br>
-                <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa de fora para dentro )</span>
+          <!-- Princípios Fundamentais -->
+          ${kumite.gohonKumite && kumite.gohonKumite.principles ? `
+            <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-color);">
+              <div style="font-weight: 700; color: var(--accent-gold); font-size: 0.88rem; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-balance-scale"></i> Princípios Fundamentais do Gohon Kumite:
+              </div>
+              <div class="gohon-principles-grid">
+                ${kumite.gohonKumite.principles.map(p => `
+                  <div class="gohon-principle-item">
+                    <div class="gohon-principle-title">
+                      <span style="color: var(--accent-gold); font-weight: 700;">${p.name}</span>
+                      <span style="font-size: 0.74rem; color: #94A3B8; font-weight: 400;">(${p.meaning})</span>
+                    </div>
+                    <div class="gohon-principle-desc">${p.desc}</div>
+                  </div>
+                `).join('')}
               </div>
             </div>
-            <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-              ⚡ <strong>5º passo:</strong> Bloqueia com <em>Soto Uke</em>, estabiliza o quadril e aplica <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
-            </div>
-          </div>
-
-          <!-- Série 3: Gedan -->
-          <div class="gohon-series-card" style="border-left: 4px solid #F5BE00;">
-            <div class="gohon-series-title">
-              <strong style="color: #FFF; font-size: 0.92rem;">3. Gedan (Baixo)</strong>
-              <span class="gohon-series-tag" style="background: rgba(255,183,3,0.2); color: #FFD166;">Alvo: Abdômen</span>
-            </div>
-            <div class="gohon-role-row">
-              <span class="gohon-role-badge tori">Mae</span>
-              <div><strong>5x Mae Geri Chudan</strong></div>
-            </div>
-            <div class="gohon-role-row">
-              <span class="gohon-role-badge uke">Sagate</span>
-              <div>
-                <strong>5x Gedan Barai</strong><br>
-                <span style="font-size: 0.78rem; color: #94A3B8;">( Defesa Abaixo da cintura )</span>
-              </div>
-            </div>
-            <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
-              ⚡ <strong>5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
-            </div>
-          </div>
+          ` : ''}
         </div>
       </div>
 
-      <!-- 2. SANBON KUMITE -->
-      <div class="dashboard-hero" style="margin-bottom: 30px;">
-        <h3 style="font-family: var(--font-heading); color: #FFF; font-size: 1.4rem; margin-bottom: 8px;">
-          ${kumite.sanbonKumite.title}
-        </h3>
-        <p style="color: #94A3B8; margin-bottom: 20px;">${kumite.sanbonKumite.description}</p>
-
-        <div style="background: rgba(10, 13, 20, 0.6); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
-          <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px;">
-            Ataques Consecutivos (Avanço):
+      <!-- 2. SANBON KUMITE (3 PASSOS) -->
+      <div class="kumite-accordion-card" id="kumiteCard_sanbon" style="border-left: 4px solid var(--accent-crimson);">
+        <button type="button" class="kumite-accordion-header" id="kumiteHeader_sanbon" onclick="window.TKST_APP.toggleKumiteAccordion('sanbon')" aria-expanded="false">
+          <div class="kumite-accordion-left">
+            <div class="kumite-accordion-icon-box" style="background: rgba(230, 57, 70, 0.15); color: var(--accent-crimson);">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <div class="kumite-accordion-title-group">
+              <h3>
+                2. Sanbon Kumite (3 Passos)
+                <span class="kumite-accordion-badge" style="background: rgba(230, 57, 70, 0.15); color: #FF808A; border: 1px solid rgba(230, 57, 70, 0.3);">三本組手</span>
+              </h3>
+              <p>Ataques consecutivos em 3 níveis (Jodan, Chudan, Gedan) • 5 Formas completas de defesa e contragolpe</p>
+            </div>
           </div>
-          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            ${kumite.sanbonKumite.attacks.map(a => `
-              <div style="background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                <span style="color: var(--accent-gold); font-weight: 700;">${a.step}º:</span> <strong>${a.technique}</strong> (${a.target})
+          <div class="kumite-accordion-right">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_sanbon">
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+        </button>
+
+        <div class="kumite-accordion-body" id="kumiteBody_sanbon">
+          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+            ${kumite.sanbonKumite.description}
+          </p>
+
+          <div style="background: rgba(10, 13, 20, 0.6); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+            <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-forward"></i> Ataques Consecutivos do Atacante (Avanço em Zenkutsu):
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              ${kumite.sanbonKumite.attacks.map(a => `
+                <div style="background: rgba(255,255,255,0.05); padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); flex: 1; min-width: 180px;">
+                  <span style="color: var(--accent-gold); font-weight: 700;">${a.step}º Passo:</span> <strong>${a.technique}</strong>
+                  <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">Alvo: ${a.target}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div style="font-weight: 700; color: var(--accent-gold); font-size: 0.88rem; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-shield-alt"></i> 5 Formas Tradicionais de Defesa & Contra-Ataque:
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            ${kumite.sanbonKumite.defenses.map(d => `
+              <div class="stat-card" style="flex-direction: column; align-items: flex-start; padding: 18px;">
+                <div style="color: var(--accent-gold); font-weight: 700; font-size: 0.98rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-check-circle" style="color: var(--accent-emerald); font-size: 0.85rem;"></i> ${d.title}
+                </div>
+                <div style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.5;">${d.sequence}</div>
               </div>
             `).join('')}
           </div>
         </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
-          ${kumite.sanbonKumite.defenses.map(d => `
-            <div class="stat-card" style="flex-direction: column; align-items: flex-start; padding: 16px;">
-              <div style="color: var(--accent-gold); font-weight: 700; font-size: 0.95rem; margin-bottom: 6px;">
-                ${d.title}
-              </div>
-              <div style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.4;">${d.sequence}</div>
-            </div>
-          `).join('')}
-        </div>
       </div>
 
-      <!-- 2. KIHON IPPON KUMITE -->
-      <div style="margin-bottom: 30px;">
-        <div class="section-title-group" style="margin-bottom: 16px;">
-          <h3><i class="fas fa-shield-alt" style="color: var(--accent-blue);"></i> ${kumite.kihonIpponKumite.title}</h3>
-          <p>${kumite.kihonIpponKumite.description}</p>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-          ${kumite.kihonIpponKumite.categories.map(cat => `
-            <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px;">
-              <div style="font-family: var(--font-heading); color: #FFF; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-                🥋 Ataque: ${cat.attackName}
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                ${cat.variations.map(v => `
-                  <div style="background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-crimson); font-size: 0.85rem;">
-                    <strong style="color: var(--accent-gold);">${v.number}ª Forma:</strong> Defesa: <span style="color: #FFF;">${v.defense}</span> ➔ Contragolpe: <strong style="color: #48CAE4;">${v.counter}</strong>
-                  </div>
-                `).join('')}
-              </div>
+      <!-- 3. KIHON IPPON KUMITE (1 PASSO FUNDAMENTAL) -->
+      <div class="kumite-accordion-card" id="kumiteCard_kihonIppon" style="border-left: 4px solid var(--accent-blue);">
+        <button type="button" class="kumite-accordion-header" id="kumiteHeader_kihonIppon" onclick="window.TKST_APP.toggleKumiteAccordion('kihonIppon')" aria-expanded="false">
+          <div class="kumite-accordion-left">
+            <div class="kumite-accordion-icon-box" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue);">
+              <i class="fas fa-shield-alt"></i>
             </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- 3. JIYU IPPON KUMITE -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 30px;">
-        <div class="section-title-group" style="margin-bottom: 16px;">
-          <h3><i class="fas fa-running" style="color: var(--accent-emerald);"></i> ${kumite.jiyuIpponKumite.title}</h3>
-          <p>${kumite.jiyuIpponKumite.description}</p>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
-          ${kumite.jiyuIpponKumite.categories ? kumite.jiyuIpponKumite.categories.map(cat => `
-            <div style="background: rgba(10,13,20,0.6); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-              <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.95rem;">${cat.attackName}</div>
-              <div style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 8px;">( ${cat.description || ''} )</div>
-              <div style="display: flex; flex-direction: column; gap: 6px;">
-                ${cat.forms.map(f => `
-                  <div style="font-size: 0.82rem; color: #E2E8F0; line-height: 1.5;">
-                    <strong style="color: var(--accent-gold);">${f.number}ª:</strong> ${f.technique}
-                  </div>
-                `).join('')}
-              </div>
+            <div class="kumite-accordion-title-group">
+              <h3>
+                3. Kihon Ippon Kumite (1 Passo Fundamental)
+                <span class="kumite-accordion-badge" style="background: rgba(59, 130, 246, 0.15); color: #93C5FD; border: 1px solid rgba(59, 130, 246, 0.3);">基本一本組手</span>
+              </h3>
+              <p>Ataques anunciados em Kamae • Esquivas em ângulo, bloqueios firmes e contragolpes decisivos</p>
             </div>
-          `).join('') : ''}
-        </div>
-      </div>
-
-      <!-- 4. KIHON IPPON NO KATA -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px;">
-        <div class="section-title-group" style="margin-bottom: 16px;">
-          <h3><i class="fas fa-scroll" style="color: var(--accent-gold);"></i> ${kumite.kihonIpponNoKata.title}</h3>
-          <p>${kumite.kihonIpponNoKata.description}</p>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-          <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-            <h4 style="color: var(--accent-gold); font-size: 1.1rem; margin-bottom: 12px;">It Ban (1ª Sequência)</h4>
-            <ol style="padding-left: 18px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
-              ${kumite.kihonIpponNoKata.itBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
-            </ol>
           </div>
+          <div class="kumite-accordion-right">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_kihonIppon">
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+        </button>
 
-          <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-            <h4 style="color: var(--accent-gold); font-size: 1.1rem; margin-bottom: 12px;">Ni Ban (2ª Sequência)</h4>
-            <ol style="padding-left: 18px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
-              ${kumite.kihonIpponNoKata.niBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
-            </ol>
+        <div class="kumite-accordion-body" id="kumiteBody_kihonIppon">
+          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+            ${kumite.kihonIpponKumite.description}
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            ${kumite.kihonIpponKumite.categories.map(cat => `
+              <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px;">
+                <div style="font-family: var(--font-heading); color: #FFF; font-weight: 700; font-size: 1.05rem; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                  <span style="color: var(--accent-gold);">🥋</span> ${cat.attackName}
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  ${cat.variations.map(v => `
+                    <div style="background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-crimson); font-size: 0.85rem;">
+                      <div style="color: var(--accent-gold); font-weight: 700; margin-bottom: 2px;">${v.number}ª Forma:</div>
+                      <div>Defesa: <span style="color: #FFF;">${v.defense}</span> ➔ Contragolpe: <strong style="color: #48CAE4;">${v.counter}</strong></div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
           </div>
         </div>
       </div>
 
-      <!-- 5. JIYU KUMITE (EXAME DE SHODAN) -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px; margin-top: 30px; border-left: 4px solid var(--accent-gold);">
-        <div class="section-title-group" style="margin-bottom: 16px;">
-          <h3><i class="fas fa-medal" style="color: var(--accent-gold);"></i> Jiyu Kumite (Exame de Faixa Preta / Shodan)</h3>
-          <p>Combate livre de alta intensidade com avaliação de Zanshin, De-ai, condicionamento e domínio marcial pleno.</p>
+      <!-- 4. JIYU IPPON KUMITE (1 PASSO SEMI-LIVRE) -->
+      <div class="kumite-accordion-card" id="kumiteCard_jiyuIppon" style="border-left: 4px solid var(--accent-emerald);">
+        <button type="button" class="kumite-accordion-header" id="kumiteHeader_jiyuIppon" onclick="window.TKST_APP.toggleKumiteAccordion('jiyuIppon')" aria-expanded="false">
+          <div class="kumite-accordion-left">
+            <div class="kumite-accordion-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">
+              <i class="fas fa-running"></i>
+            </div>
+            <div class="kumite-accordion-title-group">
+              <h3>
+                4. Jiyu Ippon Kumite (1 Passo Semi-Livre)
+                <span class="kumite-accordion-badge" style="background: rgba(16, 185, 129, 0.15); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3);">自由一本組手</span>
+              </h3>
+              <p>Postura de combate livre (Jiyu no Kamae) • Tai Sabaki, esquivas corporais a 45°/90° e contra-ataques velozes</p>
+            </div>
+          </div>
+          <div class="kumite-accordion-right">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_jiyuIppon">
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+        </button>
+
+        <div class="kumite-accordion-body" id="kumiteBody_jiyuIppon">
+          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+            ${kumite.jiyuIpponKumite.description}
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            ${kumite.jiyuIpponKumite.categories ? kumite.jiyuIpponKumite.categories.map(cat => `
+              <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid var(--accent-emerald);">
+                <div style="font-weight: 700; color: #FFF; font-size: 1rem; margin-bottom: 2px;">${cat.attackName}</div>
+                <div style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 12px;">( ${cat.description || ''} )</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${cat.forms.map(f => `
+                    <div style="font-size: 0.84rem; color: #E2E8F0; line-height: 1.5; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 4px;">
+                      <strong style="color: var(--accent-gold);">${f.number}ª:</strong> ${f.technique}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('') : ''}
+          </div>
         </div>
+      </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
-          <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid #3B82F6;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <strong style="color: #FFF; font-size: 1rem;">Contra 1 Oponente</strong>
-              <span class="shodan-arrow-badge mae">Individual</span>
+      <!-- 5. KIHON IPPON NO KATA -->
+      <div class="kumite-accordion-card" id="kumiteCard_kihonIpponKata" style="border-left: 4px solid var(--accent-gold);">
+        <button type="button" class="kumite-accordion-header" id="kumiteHeader_kihonIpponKata" onclick="window.TKST_APP.toggleKumiteAccordion('kihonIpponKata')" aria-expanded="false">
+          <div class="kumite-accordion-left">
+            <div class="kumite-accordion-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">
+              <i class="fas fa-scroll"></i>
             </div>
-            <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6;">
-              Combate livre contínuo individual com foco em <em>De-ai</em> (antecipação), esquivas rápidas e contra-ataques decisivos com <strong>KIAI!</strong>
-            </p>
+            <div class="kumite-accordion-title-group">
+              <h3>
+                5. Kihon Ippon no Kata (Formas Tradicionais)
+                <span class="kumite-accordion-badge" style="background: rgba(245, 158, 11, 0.15); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.3);">基本一本の形</span>
+              </h3>
+              <p>Sequências codificadas tradicionais • Formas completas It Ban (1ª) e Ni Ban (2ª)</p>
+            </div>
           </div>
-
-          <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid #10B981;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <strong style="color: #FFF; font-size: 1rem;">Contra 2 Oponentes</strong>
-              <span class="shodan-arrow-badge sagate">Simultâneo</span>
+          <div class="kumite-accordion-right">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_kihonIpponKata">
+              <i class="fas fa-chevron-down"></i>
             </div>
-            <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6;">
-              Combate simultâneo testando posicionamento espacial, movimentação para evitar cerco e alternância fluida de alvos.
-            </p>
           </div>
+        </button>
 
-          <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid #F5BE00;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <strong style="color: #FFF; font-size: 1rem;">Contra 4 Oponentes</strong>
-              <span class="shodan-arrow-badge mawate">Múltiplo / Resistência</span>
+        <div class="kumite-accordion-body" id="kumiteBody_kihonIpponKata">
+          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+            ${kumite.kihonIpponNoKata.description}
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid var(--accent-gold);">
+              <h4 style="color: var(--accent-gold); font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-scroll"></i> It Ban (1ª Sequência)
+              </h4>
+              <ol style="padding-left: 18px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
+                ${kumite.kihonIpponNoKata.itBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
+              </ol>
             </div>
-            <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.6;">
-              Combate contra 4 oponentes consecutivos, avaliando espírito inquebrantável (<em>Fudoshin</em>), resistência extrema e serenidade sob exaustão.
-            </p>
+
+            <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid var(--accent-blue);">
+              <h4 style="color: var(--accent-gold); font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-scroll"></i> Ni Ban (2ª Sequência)
+              </h4>
+              <ol style="padding-left: 18px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
+                ${kumite.kihonIpponNoKata.niBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
+              </ol>
+            </div>
           </div>
         </div>
       </div>
@@ -4195,6 +4297,61 @@ document.addEventListener('DOMContentLoaded', () => {
         body.classList.add('active');
         header?.classList.add('active');
         if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+    },
+    toggleKumiteAccordion: (sectionId) => {
+      const card = document.getElementById(`kumiteCard_${sectionId}`);
+      const body = document.getElementById(`kumiteBody_${sectionId}`);
+      const header = document.getElementById(`kumiteHeader_${sectionId}`);
+      const icon = document.getElementById(`kumiteIcon_${sectionId}`);
+      if (!card || !body) return;
+
+      const isOpen = card.classList.contains('active') || body.classList.contains('active');
+      if (isOpen) {
+        card.classList.remove('active');
+        body.classList.remove('active');
+        header?.classList.remove('active');
+        header?.setAttribute('aria-expanded', 'false');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      } else {
+        card.classList.add('active');
+        body.classList.add('active');
+        header?.classList.add('active');
+        header?.setAttribute('aria-expanded', 'true');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+    },
+    toggleAllKumiteAccordions: () => {
+      const sections = ['gohon', 'sanbon', 'kihonIppon', 'jiyuIppon', 'kihonIpponKata'];
+      const cards = sections.map(s => document.getElementById(`kumiteCard_${s}`)).filter(Boolean);
+      const anyOpen = cards.some(c => c.classList.contains('active'));
+      const shouldOpen = !anyOpen;
+
+      sections.forEach(s => {
+        const card = document.getElementById(`kumiteCard_${s}`);
+        const body = document.getElementById(`kumiteBody_${s}`);
+        const header = document.getElementById(`kumiteHeader_${s}`);
+        const icon = document.getElementById(`kumiteIcon_${s}`);
+        if (!card || !body) return;
+
+        if (shouldOpen) {
+          card.classList.add('active');
+          body.classList.add('active');
+          header?.classList.add('active');
+          header?.setAttribute('aria-expanded', 'true');
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+          card.classList.remove('active');
+          body.classList.remove('active');
+          header?.classList.remove('active');
+          header?.setAttribute('aria-expanded', 'false');
+          if (icon) icon.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      const btnText = document.getElementById('toggleAllKumiteText');
+      if (btnText) {
+        btnText.innerHTML = shouldOpen ? '<i class="fas fa-compress-alt"></i> Recolher Todos' : '<i class="fas fa-expand-alt"></i> Expandir Todos';
       }
     },
     toggleShodanCol: (colKey) => {
