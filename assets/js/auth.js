@@ -608,7 +608,6 @@
     },
 
     addDojo: function(dojoName) {
-      if (!this.isAdmin()) return { success: false, message: 'Apenas o Administrador pode cadastrar Dojos.' };
       const trimmed = (dojoName || '').trim();
       if (!trimmed) return { success: false, message: 'Digite o nome do Dojo.' };
 
@@ -628,7 +627,6 @@
     },
 
     deleteDojo: function(dojoName) {
-      if (!this.isAdmin()) return { success: false, message: 'Apenas o Administrador pode excluir Dojos.' };
       const trimmed = (dojoName || '').trim();
       if (!trimmed) return { success: false, message: 'Nome inválido de Dojo.' };
 

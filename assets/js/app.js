@@ -1070,16 +1070,16 @@ document.addEventListener('DOMContentLoaded', () => {
               Os Dojos cadastrados aqui serão exibidos automaticamente na lista para os novos alunos escolherem durante a matrícula.
             </p>
 
-            <form onsubmit="event.preventDefault(); window.TKST_APP.submitNewDojo();">
+            <div>
               <div class="form-group" style="margin-bottom: 14px;">
                 <label class="form-label" style="font-size: 0.85rem; margin-bottom: 6px;">Nome do Dojo / Unidade</label>
-                <input type="text" id="newDojoNameInput" class="form-input" placeholder="ex: TKST Barra da Tijuca" required>
+                <input type="text" id="newDojoNameInput" class="form-input" placeholder="ex: TKST Barra da Tijuca" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); window.TKST_APP.submitNewDojo(); }">
               </div>
               <div id="dojoFeedback" style="margin-bottom: 12px;"></div>
-              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">
+              <button type="button" class="btn btn-primary" onclick="window.TKST_APP.submitNewDojo()" style="width: 100%; padding: 12px; font-weight: 700; cursor: pointer;">
                 <i class="fas fa-torii-gate"></i> Cadastrar Dojo
               </button>
-            </form>
+            </div>
           </div>
 
           <!-- Existing Dojos List Card -->
