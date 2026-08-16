@@ -1071,10 +1071,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </p>
 
             <form onsubmit="event.preventDefault(); window.TKST_APP.submitNewDojo();">
-              <div class="form-group">
-                <label class="form-label">Nome do Dojo / Unidade</label>
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label" style="font-size: 0.85rem; margin-bottom: 6px;">Nome do Dojo / Unidade</label>
                 <input type="text" id="newDojoNameInput" class="form-input" placeholder="ex: TKST Barra da Tijuca" required>
               </div>
+              <div id="dojoFeedback" style="margin-bottom: 12px;"></div>
               <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">
                 <i class="fas fa-torii-gate"></i> Cadastrar Dojo
               </button>
@@ -5213,28 +5214,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Dojo Handlers
     submitNewDojo: () => {
-      const input = document.getElementById('newDojoInput');
+      const input = document.getElementById('newDojoNameInput') || document.getElementById('newDojoInput');
       const feedback = document.getElementById('dojoFeedback');
       if (!input) return;
       const name = input.value.trim();
+      if (!name) {
+        alert('Digite o nome do Dojo.');
+        return;
+      }
       const res = window.TKST_AUTH.addDojo(name);
-      if (res.success) {
+      if (res && res.success) {
         input.value = '';
         if (feedback) {
           feedback.innerHTML = `
             <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem;">
-              ✓ Dojo "${name}" cadastrado e sincronizado na Nuvem!
+              ✓ Dojo "${name}" cadastrado com sucesso!
             </div>
           `;
+          setTimeout(() => {
+            if (feedback) feedback.innerHTML = '';
+            renderAdminMaster();
+          }, 800);
+        } else {
+          alert(`Dojo "${name}" cadastrado com sucesso!`);
+          renderAdminMaster();
         }
-        setTimeout(() => renderAdminMaster(), 1000);
       } else {
+        const errorMsg = (res && res.message) || 'Erro ao cadastrar Dojo.';
         if (feedback) {
           feedback.innerHTML = `
             <div style="background: rgba(230, 57, 70, 0.15); border: 1px solid var(--accent-crimson); color: #FF808A; padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem;">
-              ${res.message}
+              ${errorMsg}
             </div>
           `;
+        } else {
+          alert(errorMsg);
         }
       }
     },
