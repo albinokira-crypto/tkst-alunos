@@ -698,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <img src="${user.avatar || 'assets/images/tigre.png'}" alt="Avatar" class="user-avatar" style="width: 60px; height: 60px;">
             <div>
               <h3 style="color: #FFF; font-size: 1.15rem; font-weight: 700; margin-bottom: 2px;">${user.name}</h3>
-              <div style="color: var(--accent-gold); font-size: 0.85rem; font-weight: 600;">@${user.username}</div>
+              <div style="color: var(--accent-gold); font-size: 0.85rem; font-weight: 600;">Login: ${user.username}</div>
             </div>
           </div>
 
@@ -953,7 +953,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <thead>
                 <tr>
                   <th>Aluno</th>
-                  <th>Nick de Acesso</th>
+                  <th>Login (Matrícula)</th>
+                  <th>Presença</th>
                   <th>Contato</th>
                   <th>Faixa</th>
                   <th>Dojo Escolhido</th>
@@ -962,13 +963,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
               </thead>
               <tbody>
-                ${pendingStudents.map(s => `
+                ${pendingStudents.map(s => {
+                  const online = window.TKST_AUTH.isOnline(s);
+                  const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+                  return `
                   <tr>
                     <td>
                       <div style="font-weight: 700; color: #FFF;">${s.name}</div>
                     </td>
                     <td>
-                      <span class="badge badge-amarela">@${s.username}</span>
+                      <span class="badge badge-amarela">${s.username}</span>
+                    </td>
+                    <td>
+                      ${online ? `
+                        <span class="presence-badge-online">
+                          <span class="presence-dot-online"></span>
+                          Online
+                        </span>
+                      ` : `
+                        <span class="presence-badge-offline">
+                          <span class="presence-dot-offline"></span>
+                          ${lastSeen}
+                        </span>
+                      `}
                     </td>
                     <td>${s.phone || '-'}</td>
                     <td><span class="badge ${getBeltBadgeClass(s.currentBelt)}">${s.currentBelt}</span></td>
@@ -985,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       </div>
                     </td>
                   </tr>
-                `).join('')}
+                `;}).join('')}
               </tbody>
             </table>
           `}
@@ -1006,7 +1023,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <thead>
               <tr>
                 <th>Aluno</th>
-                <th>Nick (Matrícula)</th>
+                <th>Login (Matrícula)</th>
+                <th>Presença</th>
                 <th>Status</th>
                 <th>Faixa</th>
                 <th>Dojo / Unidade</th>
@@ -1016,11 +1034,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <tbody>
               ${students.map(s => {
                 const isMaster = s.username === 'irons365';
+                const online = window.TKST_AUTH.isOnline(s);
+                const lastSeen = window.TKST_AUTH.getLastSeenText(s);
                 return `
                   <tr>
                     <td>
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <img src="${s.avatar || 'assets/images/tigre.png'}" style="width: 36px; height: 36px; border-radius: var(--radius-full); object-fit: cover; border: 1px solid var(--border-color);">
+                        <div class="presence-avatar-wrapper">
+                          <img src="${s.avatar || 'assets/images/tigre.png'}" style="width: 36px; height: 36px; border-radius: var(--radius-full); object-fit: cover; border: 1px solid var(--border-color);">
+                          <span class="presence-avatar-dot ${online ? 'online' : 'offline'}" title="${online ? 'Online agora' : lastSeen}"></span>
+                        </div>
                         <div>
                           <div style="font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 6px;">
                             ${s.name} ${isMaster ? '<i class="fas fa-crown" style="color: var(--accent-gold); font-size: 0.8rem;"></i>' : ''}
@@ -1029,7 +1052,20 @@ document.addEventListener('DOMContentLoaded', () => {
                       </div>
                     </td>
                     <td>
-                      <strong style="color: var(--accent-gold);">@${s.username}</strong>
+                      <strong style="color: var(--accent-gold);">${s.username}</strong>
+                    </td>
+                    <td>
+                      ${online ? `
+                        <span class="presence-badge-online">
+                          <span class="presence-dot-online"></span>
+                          Online
+                        </span>
+                      ` : `
+                        <span class="presence-badge-offline" title="${s.lastActive ? new Date(s.lastActive).toLocaleString('pt-BR') : 'Sem histórico recente'}">
+                          <span class="presence-dot-offline"></span>
+                          ${lastSeen}
+                        </span>
+                      `}
                     </td>
                     <td>
                       <span class="badge ${s.status === 'approved' ? 'badge-status-approved' : s.status === 'pending' ? 'badge-status-pending' : 'badge-status-rejected'}">
@@ -1240,7 +1276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <tr>
                       <td>
                         <div style="font-weight: 700; color: #FFF;">${sub.studentName || 'Aluno'}</div>
-                        <div style="font-size: 0.74rem; color: #94A3B8;">@${sub.studentUsername || ''}</div>
+                        <div style="font-size: 0.74rem; color: #94A3B8;">Login: ${sub.studentUsername || ''}</div>
                       </td>
                       <td><span class="badge ${getBeltBadgeClass(sub.studentBelt)}">${sub.studentBelt || 'Faixa Branca'}</span></td>
                       <td><strong style="color: var(--accent-gold);">${sub.beltLevel || 'Geral'}</strong></td>
@@ -5040,7 +5076,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (res.success) {
         const senseiPhone = '5521972114674';
-        const msg = `🥋 *SOLICITAÇÃO DE MATRÍCULA - TKST KARATÊ SHOTOKAN*\n\nOlá Sensei Diego! Acabei de realizar meu cadastro no Portal Oficial TKST e gostaria da liberação do meu acesso aos estudos:\n\n👤 *Nome:* ${name}\n🆔 *Login:* @${res.user.username}\n🥋 *Graduação:* ${currentBelt}\n🏯 *Dojo / Unidade:* ${dojo}\n📱 *WhatsApp do Aluno:* ${phone || 'Não informado'}\n\nPor favor, libere meu acesso no sistema. Oss!`;
+        const msg = `🥋 *SOLICITAÇÃO DE MATRÍCULA - TKST KARATÊ SHOTOKAN*\n\nOlá Sensei Diego! Acabei de realizar meu cadastro no Portal Oficial TKST e gostaria da liberação do meu acesso aos estudos:\n\n👤 *Nome:* ${name}\n🆔 *Login:* ${res.user.username}\n🥋 *Graduação:* ${currentBelt}\n🏯 *Dojo / Unidade:* ${dojo}\n📱 *WhatsApp do Aluno:* ${phone || 'Não informado'}\n\nPor favor, libere meu acesso no sistema. Oss!`;
         const whatsappUrl = `https://wa.me/${senseiPhone}?text=${encodeURIComponent(msg)}`;
 
         // Automatically trigger WhatsApp in a new tab
@@ -5054,7 +5090,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fas fa-check-circle"></i> Solicitação Enviada com Sucesso!
             </div>
             <p style="font-size: 0.86rem; color: #E2E8F0; margin-bottom: 16px; line-height: 1.5;">
-              Seu cadastro com o Login <strong>@${res.user.username}</strong> foi salvo no sistema. Para liberar seu acesso imediatamente, envie a notificação para o WhatsApp do <strong>Sensei Diego (21 97211-4674)</strong>.
+              Seu cadastro com o Login <strong>${res.user.username}</strong> foi salvo no sistema. Para liberar seu acesso imediatamente, envie a notificação para o WhatsApp do <strong>Sensei Diego (21 97211-4674)</strong>.
             </p>
 
             <a href="${whatsappUrl}" target="_blank" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; font-size: 0.95rem; font-weight: 700; background: #25D366; color: #FFF; border-radius: var(--radius-sm); margin-bottom: 10px; text-decoration: none; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);">
@@ -5260,11 +5296,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    // Admin Handlers
     approveStudent: (studentId) => {
       const res = window.TKST_AUTH.approveStudent(studentId);
       if (res.success) {
-        alert(`Aluno ${res.student.name} (@${res.student.username}) aprovado com sucesso!`);
+        alert(`Aluno ${res.student.name} (Login: ${res.student.username}) aprovado com sucesso!`);
         renderAdminMaster();
       } else {
         alert(res.message);
@@ -5313,7 +5348,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (res.success) {
-        alert(`Aluno cadastrado e ativado com sucesso! Nick: @${nick}`);
+        alert(`Aluno cadastrado e ativado com sucesso! Login: ${nick}`);
         renderAdminMaster();
       } else {
         alert(res.message);
@@ -6086,6 +6121,13 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         const trigger = wrapper.querySelector('.belt-mobile-trigger');
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
       }
+    }
+  });
+
+  // Live presence auto-update when cloud syncs
+  window.addEventListener('tkst_cloud_synced', () => {
+    if (currentTab === 'admin') {
+      renderAdminMaster();
     }
   });
 

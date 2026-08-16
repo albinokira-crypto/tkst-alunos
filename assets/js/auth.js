@@ -193,7 +193,15 @@
       // Merge cloud students not deleted
       cloudData.students.forEach(s => {
         if (!localDeleted.includes(s.id)) {
-          studentMap.set(s.id || s.username, { ...(studentMap.get(s.id || s.username) || {}), ...s });
+          const key = s.id || s.username;
+          const existing = studentMap.get(key);
+          const merged = { ...(existing || {}), ...s };
+          if (existing && existing.lastActive && s.lastActive) {
+            merged.lastActive = Math.max(new Date(existing.lastActive).getTime(), new Date(s.lastActive).getTime());
+          } else if (existing && existing.lastActive && !s.lastActive) {
+            merged.lastActive = existing.lastActive;
+          }
+          studentMap.set(key, merged);
         }
       });
 
@@ -672,6 +680,62 @@
     },
 
     // ==========================================
+    // PRESENCE & ONLINE STATUS TRACKING
+    // ==========================================
+    isOnline: function(studentOrTimestamp) {
+      if (!studentOrTimestamp) return false;
+      let timestamp = studentOrTimestamp;
+      if (typeof studentOrTimestamp === 'object') {
+        const currentUser = this.getCurrentUser();
+        if (currentUser && (currentUser.id === studentOrTimestamp.id || currentUser.username === studentOrTimestamp.username)) {
+          return true;
+        }
+        timestamp = studentOrTimestamp.lastActive;
+      }
+      if (!timestamp) return false;
+      const time = typeof timestamp === 'number' ? timestamp : new Date(timestamp).getTime();
+      if (isNaN(time) || time <= 0) return false;
+      const diff = Date.now() - time;
+      return diff >= 0 && diff <= 4 * 60 * 1000;
+    },
+
+    getLastSeenText: function(studentOrTimestamp) {
+      if (this.isOnline(studentOrTimestamp)) return 'Online agora';
+      let timestamp = studentOrTimestamp;
+      if (typeof studentOrTimestamp === 'object') {
+        timestamp = studentOrTimestamp.lastActive;
+      }
+      if (!timestamp) return 'Nunca acessou';
+      const time = typeof timestamp === 'number' ? timestamp : new Date(timestamp).getTime();
+      if (isNaN(time) || time <= 0) return 'Nunca acessou';
+      const diffMin = Math.max(0, Math.floor((Date.now() - time) / (1000 * 60)));
+      if (diffMin < 1) return 'Online há instantes';
+      if (diffMin < 60) return `Visto há ${diffMin}m`;
+      const diffHours = Math.floor(diffMin / 60);
+      if (diffHours < 24) return `Visto há ${diffHours}h`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `Visto há ${diffDays}d`;
+    },
+
+    recordHeartbeat: function() {
+      const user = this.getCurrentUser();
+      if (!user) return;
+      const now = Date.now();
+      const students = this.getAllStudents();
+      const idx = students.findIndex(s => s.id === user.id || s.username === user.username);
+      if (idx !== -1) {
+        const prev = students[idx].lastActive ? new Date(students[idx].lastActive).getTime() : 0;
+        if (now - prev >= 30000) {
+          students[idx].lastActive = now;
+          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+          user.lastActive = now;
+          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+          pushToCloud();
+        }
+      }
+    },
+
+    // ==========================================
     // AUTHENTICATION (BY NICK OR USERNAME)
     // ==========================================
     setCurrentUser: function(user) {
@@ -703,6 +767,13 @@
           initStorage();
           admin = this.getAllStudents().find(s => s.username === 'irons365');
         }
+        admin.lastActive = Date.now();
+        const aIdx = students.findIndex(s => s.username === 'irons365');
+        if (aIdx !== -1) {
+          students[aIdx].lastActive = admin.lastActive;
+          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+          pushToCloud();
+        }
         this.setCurrentUser(admin);
         return { success: true, user: admin };
       }
@@ -733,6 +804,14 @@
           success: false, 
           message: 'Seu cadastro não foi aprovado pela coordenação. Entre em contato com seu Sensei.' 
         };
+      }
+
+      found.lastActive = Date.now();
+      const fIdx = students.findIndex(s => s.id === found.id || s.username === found.username);
+      if (fIdx !== -1) {
+        students[fIdx].lastActive = found.lastActive;
+        localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+        pushToCloud();
       }
 
       this.setCurrentUser(found);
@@ -1269,4 +1348,25 @@
       return true;
     }
   };
+
+  // Background Heartbeat Engine (Keeps presence updated while using app)
+  setInterval(() => {
+    try {
+      if (window.TKST_AUTH && window.TKST_AUTH.getCurrentUser()) {
+        window.TKST_AUTH.recordHeartbeat();
+      }
+    } catch(e) {}
+  }, 40000);
+
+  if (typeof window !== 'undefined') {
+    ['focus', 'click', 'touchstart'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        try {
+          if (window.TKST_AUTH && window.TKST_AUTH.getCurrentUser()) {
+            window.TKST_AUTH.recordHeartbeat();
+          }
+        } catch(e) {}
+      }, { passive: true });
+    });
+  }
 })();

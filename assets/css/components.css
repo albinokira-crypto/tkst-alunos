@@ -2401,3 +2401,82 @@ body.login-view-active .content-body {
     margin-top: 6px;
   }
 }
+
+/* ==========================================================================
+   Presence / Online Status Indicators
+   ========================================================================== */
+.presence-badge-online {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #10B981 !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.76rem !important;
+  padding: 4px 10px !important;
+  border-radius: var(--radius-full) !important;
+}
+
+.presence-dot-online {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  display: inline-block;
+  box-shadow: 0 0 8px #10B981;
+  animation: pulseOnline 2s infinite ease-in-out;
+}
+
+.presence-badge-offline {
+  background: rgba(148, 163, 184, 0.1) !important;
+  color: #94A3B8 !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.76rem !important;
+  padding: 4px 10px !important;
+  border-radius: var(--radius-full) !important;
+}
+
+.presence-dot-offline {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748B;
+  display: inline-block;
+}
+
+.presence-avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.presence-avatar-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid #0B0E14;
+}
+
+.presence-avatar-dot.online {
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
+}
+
+.presence-avatar-dot.offline {
+  background: #64748B;
+}
+
+@keyframes pulseOnline {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 10px #10B981; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
