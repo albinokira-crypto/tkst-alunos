@@ -5216,28 +5216,30 @@ document.addEventListener('DOMContentLoaded', () => {
     submitNewDojo: () => {
       const input = document.getElementById('newDojoNameInput') || document.getElementById('newDojoInput');
       const feedback = document.getElementById('dojoFeedback');
-      if (!input) return;
+      if (!input) {
+        alert('Campo de nome do Dojo não encontrado.');
+        return;
+      }
       const name = input.value.trim();
       if (!name) {
-        alert('Digite o nome do Dojo.');
+        alert('Por favor, digite o nome do Dojo.');
+        input.focus();
         return;
       }
       const res = window.TKST_AUTH.addDojo(name);
       if (res && res.success) {
         input.value = '';
-        if (feedback) {
-          feedback.innerHTML = `
-            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem;">
+        renderAdminMaster();
+        const freshFeedback = document.getElementById('dojoFeedback');
+        if (freshFeedback) {
+          freshFeedback.innerHTML = `
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 12px;">
               ✓ Dojo "${name}" cadastrado com sucesso!
             </div>
           `;
-          setTimeout(() => {
-            if (feedback) feedback.innerHTML = '';
-            renderAdminMaster();
-          }, 800);
+          setTimeout(() => { if (freshFeedback) freshFeedback.innerHTML = ''; }, 3500);
         } else {
           alert(`Dojo "${name}" cadastrado com sucesso!`);
-          renderAdminMaster();
         }
       } else {
         const errorMsg = (res && res.message) || 'Erro ao cadastrar Dojo.';

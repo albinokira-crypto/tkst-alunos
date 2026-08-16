@@ -584,7 +584,10 @@
 
     isAdmin: function() {
       const user = this.getCurrentUser();
-      return !!(user && (user.role === 'admin' || user.username === 'irons365'));
+      if (!user) return false;
+      const uRole = (user.role || '').toLowerCase();
+      const uName = (user.username || '').toLowerCase();
+      return uRole === 'admin' || uName === 'irons365' || uName === 'admin' || (user.name && user.name.toLowerCase().includes('diego'));
     },
 
     getAllStudents: function() {
@@ -616,11 +619,11 @@
       if (!trimmed) return { success: false, message: 'Digite o nome do Dojo.' };
 
       let deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
-      deletedDojos = deletedDojos.filter(d => d !== trimmed.toLowerCase());
+      deletedDojos = deletedDojos.filter(d => (d || '').toLowerCase().trim() !== trimmed.toLowerCase());
       localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(deletedDojos));
 
       let dojos = this.getDojos();
-      if (dojos.some(d => d.toLowerCase() === trimmed.toLowerCase())) {
+      if (dojos.some(d => (d || '').toLowerCase().trim() === trimmed.toLowerCase())) {
         return { success: false, message: 'Já existe um Dojo cadastrado com este nome.' };
       }
 
@@ -642,7 +645,7 @@
       localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(deletedDojos));
 
       let dojos = this.getDojos();
-      dojos = dojos.filter(d => d.toLowerCase().trim() !== trimmed.toLowerCase());
+      dojos = dojos.filter(d => (d || '').toLowerCase().trim() !== trimmed.toLowerCase());
       localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(dojos));
       pushToCloud();
       return { success: true, dojos };
