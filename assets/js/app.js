@@ -4330,6 +4330,19 @@ document.addEventListener('DOMContentLoaded', () => {
         header?.classList.remove('active');
         if (icon) icon.style.transform = 'rotate(0deg)';
       } else {
+        // Exclusivo: fecha as outras seções do plano de estudos para focar na clicada
+        const sections = ['kihon', 'kata', 'kumite'];
+        sections.forEach(s => {
+          if (s !== sectionId) {
+            const b = document.getElementById(`studyBody_${s}`);
+            const h = document.getElementById(`studyHeader_${s}`);
+            const i = document.getElementById(`studyIcon_${s}`);
+            if (b) b.classList.remove('active');
+            if (h) h.classList.remove('active');
+            if (i) i.style.transform = 'rotate(0deg)';
+          }
+        });
+
         body.classList.add('active');
         header?.classList.add('active');
         if (icon) icon.style.transform = 'rotate(180deg)';
@@ -4350,6 +4363,24 @@ document.addEventListener('DOMContentLoaded', () => {
         header?.setAttribute('aria-expanded', 'false');
         if (icon) icon.style.transform = 'rotate(0deg)';
       } else {
+        // Exclusivo: fecha as outras modalidades de kumite para abrir apenas a clicada
+        const sections = ['gohon', 'sanbon', 'kihonIppon', 'jiyuIppon', 'kihonIpponKata'];
+        sections.forEach(s => {
+          if (s !== sectionId) {
+            const c = document.getElementById(`kumiteCard_${s}`);
+            const b = document.getElementById(`kumiteBody_${s}`);
+            const h = document.getElementById(`kumiteHeader_${s}`);
+            const i = document.getElementById(`kumiteIcon_${s}`);
+            if (c) c.classList.remove('active');
+            if (b) b.classList.remove('active');
+            if (h) {
+              h.classList.remove('active');
+              h.setAttribute('aria-expanded', 'false');
+            }
+            if (i) i.style.transform = 'rotate(0deg)';
+          }
+        });
+
         card.classList.add('active');
         body.classList.add('active');
         header?.classList.add('active');
@@ -4397,13 +4428,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const header = document.getElementById(`shodanHeader_${colKey}`);
       if (!card || !body) return;
 
-      const isOpen = card.classList.contains('active');
+      const isOpen = card.classList.contains('active') || body.classList.contains('active');
       if (isOpen) {
         card.classList.remove('active');
         body.classList.remove('active');
         header?.setAttribute('aria-expanded', 'false');
         if (icon) icon.style.transform = 'rotate(0deg)';
       } else {
+        // Exclusivo: fecha as outras colunas de Shodan para abrir apenas a clicada
+        const keys = ['teWaza', 'ukeWaza', 'ashiWaza', 'dachiWaza'];
+        keys.forEach(k => {
+          if (k !== colKey) {
+            const c = document.getElementById(`shodanCard_${k}`);
+            const b = document.getElementById(`shodanBody_${k}`);
+            const i = document.getElementById(`shodanIcon_${k}`);
+            const h = document.getElementById(`shodanHeader_${k}`);
+            if (c) c.classList.remove('active');
+            if (b) b.classList.remove('active');
+            if (h) h.setAttribute('aria-expanded', 'false');
+            if (i) i.style.transform = 'rotate(0deg)';
+          }
+        });
+
         card.classList.add('active');
         body.classList.add('active');
         header?.setAttribute('aria-expanded', 'true');
