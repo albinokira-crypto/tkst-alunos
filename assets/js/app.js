@@ -3842,8 +3842,8 @@ document.addEventListener('DOMContentLoaded', () => {
             Nenhum termo encontrado para a busca selecionada.
           </div>
         ` : terms.map(t => `
-          <div class="stat-card glossary-card-hoverable" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="flex-direction: column; align-items: flex-start; padding: 20px; position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 6px; gap: 8px;">
+          <div class="stat-card glossary-card-hoverable" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="flex-direction: column; align-items: flex-start; padding: 18px; position: relative; cursor: pointer;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 8px; gap: 8px;">
               <span class="badge badge-amarela" style="font-size: 0.68rem;">${t.cat || 'Termo'}</span>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.35); font-size: 1.15rem;">${t.kanji || ''}</span>
@@ -3859,19 +3859,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 ` : ''}
               </div>
             </div>
+
             <div style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
               ${t.japanese}
             </div>
-            <div style="font-size: 0.88rem; color: #94A3B8; line-height: 1.4; margin-bottom: 12px;">
+
+            <div style="font-size: 0.88rem; color: #94A3B8; line-height: 1.45; margin-bottom: 14px; flex: 1;">
               ${t.meaning}
             </div>
-            <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--accent-gold); font-weight: 600;">
-              <span style="display: inline-flex; align-items: center; gap: 6px;">
-                <i class="fas fa-play-circle" style="color: var(--accent-crimson);"></i>
-                <i class="fas fa-image" style="color: var(--accent-blue);"></i>
-                Ver Movimento & Vídeo
-              </span>
-              <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.7;"></i>
+
+            <!-- Botões Rápidos de Vídeo e Áudio no Card -->
+            <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px;" onclick="event.stopPropagation();">
+                <button type="button" class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openGlossaryVideo('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.78rem; padding: 6px 12px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; background: #DC2626; border: none; color: #FFF; box-shadow: 0 2px 10px rgba(220, 38, 38, 0.4); cursor: pointer;" title="Assistir vídeo oficial da técnica">
+                  <i class="fas fa-play"></i> Vídeo
+                </button>
+
+                <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); window.TKST_APP.speakJapanese('${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.78rem; padding: 6px 9px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; color: var(--accent-gold); border-color: rgba(255,183,3,0.3); background: rgba(255,183,3,0.06);" title="Ouvir pronúncia em Japonês">
+                  <i class="fas fa-volume-up"></i>
+                </button>
+              </div>
+
+              <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                <span>Ver Detalhes</span>
+                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+              </div>
             </div>
           </div>
         `).join('')}
@@ -5498,12 +5510,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Video & Media Handlers
     getKataVideoUrl: (kataId) => {
       const custom = window.TKST_AUTH ? window.TKST_AUTH.getCustomKataVideos() : {};
-      if (custom[kataId]) return custom[kataId];
+      if (custom[kataId] && custom[kataId].trim()) return custom[kataId].trim();
       const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
       if (kata) {
-        if (kata.youtubeUrl) return kata.youtubeUrl;
-        if (kata.videoUrl) return kata.videoUrl;
-        if (kata.videoFileName) return 'videos/' + kata.videoFileName;
+        if (kata.youtubeUrl && kata.youtubeUrl.trim()) return kata.youtubeUrl.trim();
+        if (kata.videoUrl && !kata.videoUrl.startsWith('assets/videos/')) return kata.videoUrl.trim();
+        return `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent('karate shotokan kata ' + kata.name)}&rel=0&playsinline=1&modestbranding=1`;
       }
       return '';
     },
@@ -5520,7 +5532,7 @@ document.addEventListener('DOMContentLoaded', () => {
         badge.className = url ? 'badge badge-verde' : 'badge badge-status-pending';
         badge.textContent = url ? 'Vídeo Configurado' : 'Sem Link';
       }
-      alert('Link do vídeo salvo e sincronizado com sucesso!');
+      alert('Link do vídeo salvo e sincronizado com sucesso na nuvem!');
       renderAdminMaster();
     },
 
@@ -5548,6 +5560,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       openVideoModal(name, url);
+    },
+
+    openGlossaryVideo: (categoryKey, japaneseName) => {
+      const glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : window.TKST_GLOSSARY;
+      let term = null;
+      if (categoryKey && glossary[categoryKey]) {
+        term = glossary[categoryKey].find(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim());
+      }
+      if (!term) {
+        const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+        for (const c of cats) {
+          const found = (glossary[c] || []).find(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim());
+          if (found) {
+            term = found;
+            break;
+          }
+        }
+      }
+      const title = term ? `${term.japanese} - ${term.meaning}` : japaneseName;
+      const effectiveVideoSource = (term && term.videoUrl) ? term.videoUrl : `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent('karate shotokan ' + (term ? term.japanese : japaneseName))}&rel=0&playsinline=1&modestbranding=1`;
+      openVideoModal(title, effectiveVideoSource);
     },
 
     // Dojo Handlers

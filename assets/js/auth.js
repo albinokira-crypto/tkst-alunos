@@ -257,13 +257,14 @@
       }
     }
 
-    // 5. Sync Custom Videos (MERGE without losing local video links)
+    // 5. Sync Custom Videos (Incoming cloud updates take precedence over stale local storage)
     if (cloudData.custom_videos && typeof cloudData.custom_videos === 'object') {
       let localVideos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
-      const mergedVideos = { ...cloudData.custom_videos, ...localVideos };
+      const mergedVideos = { ...localVideos, ...cloudData.custom_videos };
       const vStr = JSON.stringify(mergedVideos);
       if (localStorage.getItem(STORAGE_KEY_VIDEOS) !== vStr) {
         localStorage.setItem(STORAGE_KEY_VIDEOS, vStr);
+        window.dispatchEvent(new CustomEvent('tkst_videos_updated', { detail: mergedVideos }));
         changed = true;
       }
     }
