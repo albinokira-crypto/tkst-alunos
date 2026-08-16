@@ -3608,19 +3608,28 @@ document.addEventListener('DOMContentLoaded', () => {
             ${kumite.kihonIpponKumite.description}
           </p>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            ${kumite.kihonIpponKumite.categories.map(cat => `
-              <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px;">
-                <div style="font-family: var(--font-heading); color: #FFF; font-weight: 700; font-size: 1.05rem; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                  <span style="color: var(--accent-gold);">🥋</span> ${cat.attackName}
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                  ${cat.variations.map(v => `
-                    <div style="background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-crimson); font-size: 0.85rem;">
-                      <div style="color: var(--accent-gold); font-weight: 700; margin-bottom: 2px;">${v.number}ª Forma:</div>
-                      <div>Defesa: <span style="color: #FFF;">${v.defense}</span> ➔ Contragolpe: <strong style="color: #48CAE4;">${v.counter}</strong></div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${kumite.kihonIpponKumite.categories.map((cat, idx) => `
+              <div class="kumite-sub-accordion-card" id="subCard_kihonIppon_${idx}" data-subgroup="kihonIppon">
+                <button type="button" class="kumite-sub-header" id="subHeader_kihonIppon_${idx}" onclick="window.TKST_APP.toggleKumiteSubAccordion('kihonIppon_${idx}', 'kihonIppon')" aria-expanded="false">
+                  <div class="kumite-sub-title-wrap">
+                    <span style="color: var(--accent-gold); font-size: 1.1rem;">🥋</span>
+                    <div>
+                      <strong>${cat.attackName}</strong>
+                      <div style="font-size: 0.76rem; color: #94A3B8;">${cat.variations.length} Formas de Defesa & Contra-Ataque • Toque para ver</div>
                     </div>
-                  `).join('')}
+                  </div>
+                  <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kihonIppon_${idx}"></i>
+                </button>
+                <div class="kumite-sub-body" id="subBody_kihonIppon_${idx}">
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    ${cat.variations.map(v => `
+                      <div style="background: rgba(255,255,255,0.03); padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-crimson); font-size: 0.88rem;">
+                        <div style="color: var(--accent-gold); font-weight: 700; margin-bottom: 3px;">${v.number}ª Forma (${v.stance || 'Zenkutsu Dachi'}):</div>
+                        <div>Defesa: <span style="color: #FFF; font-weight: 600;">${v.defense}</span> ➔ Contragolpe: <strong style="color: #48CAE4;">${v.counter}</strong></div>
+                      </div>
+                    `).join('')}
+                  </div>
                 </div>
               </div>
             `).join('')}
@@ -3655,17 +3664,27 @@ document.addEventListener('DOMContentLoaded', () => {
             ${kumite.jiyuIpponKumite.description}
           </p>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
-            ${kumite.jiyuIpponKumite.categories ? kumite.jiyuIpponKumite.categories.map(cat => `
-              <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid var(--accent-emerald);">
-                <div style="font-weight: 700; color: #FFF; font-size: 1rem; margin-bottom: 2px;">${cat.attackName}</div>
-                <div style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 12px;">( ${cat.description || ''} )</div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                  ${cat.forms.map(f => `
-                    <div style="font-size: 0.84rem; color: #E2E8F0; line-height: 1.5; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 4px;">
-                      <strong style="color: var(--accent-gold);">${f.number}ª:</strong> ${f.technique}
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${kumite.jiyuIpponKumite.categories ? kumite.jiyuIpponKumite.categories.map((cat, idx) => `
+              <div class="kumite-sub-accordion-card" id="subCard_jiyuIppon_${idx}" data-subgroup="jiyuIppon">
+                <button type="button" class="kumite-sub-header" id="subHeader_jiyuIppon_${idx}" onclick="window.TKST_APP.toggleKumiteSubAccordion('jiyuIppon_${idx}', 'jiyuIppon')" aria-expanded="false">
+                  <div class="kumite-sub-title-wrap">
+                    <span style="color: var(--accent-emerald); font-size: 1.1rem;"><i class="fas fa-running"></i></span>
+                    <div>
+                      <strong>${cat.attackName}</strong>
+                      <div style="font-size: 0.76rem; color: #94A3B8;">${cat.description || ''} • ${cat.forms.length} Formas de Aplicação • Toque para ver</div>
                     </div>
-                  `).join('')}
+                  </div>
+                  <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_jiyuIppon_${idx}"></i>
+                </button>
+                <div class="kumite-sub-body" id="subBody_jiyuIppon_${idx}">
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    ${cat.forms.map(f => `
+                      <div style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.5; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 4px; border-left: 3px solid var(--accent-emerald);">
+                        <strong style="color: var(--accent-gold);">${f.number}ª Forma:</strong> ${f.technique}
+                      </div>
+                    `).join('')}
+                  </div>
                 </div>
               </div>
             `).join('') : ''}
@@ -3700,23 +3719,43 @@ document.addEventListener('DOMContentLoaded', () => {
             ${kumite.kihonIpponNoKata.description}
           </p>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid var(--accent-gold);">
-              <h4 style="color: var(--accent-gold); font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-scroll"></i> It Ban (1ª Sequência)
-              </h4>
-              <ol style="padding-left: 18px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
-                ${kumite.kihonIpponNoKata.itBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
-              </ol>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- It Ban (1ª Sequência) -->
+            <div class="kumite-sub-accordion-card" id="subCard_kataForm_itBan" data-subgroup="kihonIpponKata">
+              <button type="button" class="kumite-sub-header" id="subHeader_kataForm_itBan" onclick="window.TKST_APP.toggleKumiteSubAccordion('kataForm_itBan', 'kihonIpponKata')" aria-expanded="false">
+                <div class="kumite-sub-title-wrap">
+                  <span style="color: var(--accent-gold); font-size: 1.1rem;"><i class="fas fa-scroll"></i></span>
+                  <div>
+                    <strong>It Ban (1ª Sequência Fundamental)</strong>
+                    <div style="font-size: 0.76rem; color: #94A3B8;">10 Sequências Tradicionais Codificadas • Toque para abrir/fechar</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kataForm_itBan"></i>
+              </button>
+              <div class="kumite-sub-body" id="subBody_kataForm_itBan">
+                <ol style="padding-left: 20px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.85; margin: 0;">
+                  ${kumite.kihonIpponNoKata.itBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
+                </ol>
+              </div>
             </div>
 
-            <div style="background: rgba(10,13,20,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); border-top: 3px solid var(--accent-blue);">
-              <h4 style="color: var(--accent-gold); font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-scroll"></i> Ni Ban (2ª Sequência)
-              </h4>
-              <ol style="padding-left: 18px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
-                ${kumite.kihonIpponNoKata.niBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
-              </ol>
+            <!-- Ni Ban (2ª Sequência) -->
+            <div class="kumite-sub-accordion-card" id="subCard_kataForm_niBan" data-subgroup="kihonIpponKata">
+              <button type="button" class="kumite-sub-header" id="subHeader_kataForm_niBan" onclick="window.TKST_APP.toggleKumiteSubAccordion('kataForm_niBan', 'kihonIpponKata')" aria-expanded="false">
+                <div class="kumite-sub-title-wrap">
+                  <span style="color: var(--accent-blue); font-size: 1.1rem;"><i class="fas fa-scroll"></i></span>
+                  <div>
+                    <strong>Ni Ban (2ª Sequência Avançada)</strong>
+                    <div style="font-size: 0.76rem; color: #94A3B8;">15 Sequências Tradicionais Codificadas • Toque para abrir/fechar</div>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kataForm_niBan"></i>
+              </button>
+              <div class="kumite-sub-body" id="subBody_kataForm_niBan">
+                <ol style="padding-left: 20px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.85; margin: 0;">
+                  ${kumite.kihonIpponNoKata.niBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
+                </ol>
+              </div>
             </div>
           </div>
         </div>
@@ -4380,6 +4419,47 @@ document.addEventListener('DOMContentLoaded', () => {
             if (i) i.style.transform = 'rotate(0deg)';
           }
         });
+
+        card.classList.add('active');
+        body.classList.add('active');
+        header?.classList.add('active');
+        header?.setAttribute('aria-expanded', 'true');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+    },
+    toggleKumiteSubAccordion: (subId, groupKey) => {
+      const card = document.getElementById(`subCard_${subId}`);
+      const body = document.getElementById(`subBody_${subId}`);
+      const header = document.getElementById(`subHeader_${subId}`);
+      const icon = document.getElementById(`subIcon_${subId}`);
+      if (!card || !body) return;
+
+      const isOpen = card.classList.contains('active') || body.classList.contains('active');
+      if (isOpen) {
+        card.classList.remove('active');
+        body.classList.remove('active');
+        header?.classList.remove('active');
+        header?.setAttribute('aria-expanded', 'false');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      } else {
+        // Fecha outros sub-cards do mesmo grupo para manter foco no selecionado
+        if (groupKey) {
+          const groupCards = document.querySelectorAll(`[data-subgroup="${groupKey}"]`);
+          groupCards.forEach(c => {
+            if (c.id !== `subCard_${subId}`) {
+              c.classList.remove('active');
+              const b = c.querySelector('.kumite-sub-body');
+              const h = c.querySelector('.kumite-sub-header');
+              const i = c.querySelector('.kumite-sub-chevron');
+              if (b) b.classList.remove('active');
+              if (h) {
+                h.classList.remove('active');
+                h.setAttribute('aria-expanded', 'false');
+              }
+              if (i) i.style.transform = 'rotate(0deg)';
+            }
+          });
+        }
 
         card.classList.add('active');
         body.classList.add('active');

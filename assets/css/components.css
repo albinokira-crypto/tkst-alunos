@@ -2480,3 +2480,79 @@ body.login-view-active .content-body {
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
+/* ==========================================================================
+   Kumite Sub-Accordion Cards (Inner level interactive accordions)
+   ========================================================================== */
+.kumite-sub-accordion-card {
+  background: rgba(10, 13, 20, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.kumite-sub-accordion-card:hover {
+  border-color: rgba(255, 183, 3, 0.35);
+}
+
+.kumite-sub-accordion-card.active {
+  border-color: rgba(255, 183, 3, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.kumite-sub-header {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  gap: 12px;
+  transition: background 0.2s ease;
+}
+
+.kumite-sub-header:hover {
+  background: rgba(255, 183, 3, 0.08);
+}
+
+.kumite-sub-header.active {
+  background: rgba(255, 183, 3, 0.1);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.kumite-sub-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.kumite-sub-title-wrap strong {
+  color: #FFF;
+  font-size: 0.95rem;
+  display: block;
+}
+
+.kumite-sub-chevron {
+  font-size: 0.85rem;
+  color: var(--accent-gold);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.kumite-sub-body {
+  display: none;
+  padding: 16px 18px;
+  animation: fadeIn 0.2s ease;
+}
+
+.kumite-sub-body.active {
+  display: block;
+}
+
+
