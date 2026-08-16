@@ -31,20 +31,7 @@ let inMemoryData = {
   deletedQuizIds: [],
   deletedQuizSubIds: [],
   deletedGlossaryTerms: [],
-  deletedDojos: [
-    'tkst jardim esmeralda',
-    'tkst alcântara',
-    'tkst alcantara',
-    'tkst niterói',
-    'tkst niteroi',
-    'tkst maricá',
-    'tkst marica',
-    'tkst são gonçalo',
-    'tkst sao goncalo',
-    'tkst itaboraí',
-    'tkst itaborai',
-    'tkst jardim catarina'
-  ],
+  deletedDojos: [],
   lastSync: new Date().toISOString()
 };
 
@@ -119,7 +106,16 @@ module.exports = async (req, res) => {
       // Merge deleted Dojos
       let deletedDojoSet = new Set(inMemoryData.deletedDojos || []);
       if (Array.isArray(incoming.deletedDojos)) {
-        incoming.deletedDojos.forEach(d => deletedDojoSet.add((d || '').toLowerCase().trim()));
+        incoming.deletedDojos.forEach(d => {
+          if (d) deletedDojoSet.add(d.toLowerCase().trim());
+        });
+      }
+
+      // If incoming has explicit dojos, un-tombstone them so they can be added!
+      if (Array.isArray(incoming.dojos)) {
+        incoming.dojos.forEach(d => {
+          if (d) deletedDojoSet.delete(d.toLowerCase().trim());
+        });
       }
       const allDeletedDojos = Array.from(deletedDojoSet);
 

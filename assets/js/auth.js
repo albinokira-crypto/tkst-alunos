@@ -227,9 +227,17 @@
       }
     }
 
-    // 4. Sync Dojos (Filter out tombstoned deleted dojos)
+    // 4. Sync Dojos
     if (Array.isArray(cloudData.dojos)) {
       let localDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS)) || [];
+      cloudData.dojos.forEach(d => {
+        if (d) {
+          const clean = d.toLowerCase().trim();
+          localDeletedDojos = localDeletedDojos.filter(k => k !== clean);
+        }
+      });
+      localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(localDeletedDojos));
+
       const combined = [...localDojos, ...cloudData.dojos];
       const mergedDojos = Array.from(new Set(combined))
         .filter(d => typeof d === 'string' && d.trim().length > 0 && !localDeletedDojos.includes(d.toLowerCase().trim()));
@@ -423,27 +431,13 @@
       localStorage.setItem(AUTH_VERSION_KEY, 'true');
     }
 
-    // Initialize Dojos (Enforce only the 4 official dojos requested by Sensei Diego)
+    // Initialize Dojos (Set only the 4 official dojos and reset deleted blocklists)
     try {
-      const isPruned = localStorage.getItem('tkst_dojos_pruned_v4_fixed');
+      const isPruned = localStorage.getItem('tkst_dojos_init_v5');
       if (!isPruned) {
         localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(OFFICIAL_4_DOJOS));
-        const deletedList = [
-          'tkst jardim esmeralda',
-          'tkst alcântara',
-          'tkst alcantara',
-          'tkst niterói',
-          'tkst niteroi',
-          'tkst maricá',
-          'tkst marica',
-          'tkst são gonçalo',
-          'tkst sao goncalo',
-          'tkst itaboraí',
-          'tkst itaborai',
-          'tkst jardim catarina'
-        ];
-        localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(deletedList));
-        localStorage.setItem('tkst_dojos_pruned_v4_fixed', 'true');
+        localStorage.removeItem(STORAGE_KEY_DELETED_DOJOS);
+        localStorage.setItem('tkst_dojos_init_v5', 'true');
         setTimeout(pushToCloud, 300);
       } else {
         const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
