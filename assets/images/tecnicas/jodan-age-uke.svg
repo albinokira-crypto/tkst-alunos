@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 320" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b111e"/>
+      <stop offset="100%" stop-color="#05080f"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="500" height="320" rx="12" fill="url(#bgGrad)" stroke="#1E293B" stroke-width="1.5"/>
+
+  <!-- Title Badge -->
+  <rect x="20" y="16" width="170" height="26" rx="6" fill="#1E293B" />
+  <text x="30" y="34" fill="#FFB703" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="bold">上段揚げ受け • AGE UKE</text>
+
+  <!-- Floor Grid -->
+  <line x1="40" y1="260" x2="460" y2="260" stroke="#334155" stroke-width="2" stroke-dasharray="4,4"/>
+
+  <!-- Karateka in Zenkutsu Dachi executing Jodan Age Uke -->
+  <!-- Head -->
+  <circle cx="215" cy="85" r="18" fill="#F1F5F9" stroke="#FFB703" stroke-width="2"/>
+  <circle cx="207" cy="83" r="2.5" fill="#0F172A"/>
+
+  <!-- Torso in Hanmi (45° angle) -->
+  <line x1="215" y1="103" x2="218" y2="175" stroke="#F1F5F9" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="217" cy="165" r="7" fill="#FFB703" filter="url(#glow)"/>
+
+  <!-- Ascending Arc Arrow (From hip/cross up to above forehead) -->
+  <path d="M 215,150 Q 170,100 185,45" fill="none" stroke="#EAB308" stroke-width="2.5" stroke-dasharray="4,4"/>
+  <polygon points="185,38 178,48 190,48" fill="#EAB308"/>
+  <text x="130" y="90" fill="#EAB308" font-size="9" font-family="sans-serif">Ascensão a 45°</text>
+
+  <!-- Blocking Forearm (Elevated above forehead) -->
+  <line x1="215" y1="120" x2="190" y2="45" stroke="#3B82F6" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="190" cy="45" r="8" fill="#2563EB" filter="url(#glow)"/>
+  <text x="210" y="38" fill="#93C5FD" font-size="10" font-weight="bold" font-family="sans-serif">1 punho da testa</text>
+
+  <!-- Hikite Arm (At hip) -->
+  <polyline points="215,120 250,135 230,155" fill="none" stroke="#EF4444" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="230" cy="155" r="6" fill="#DC2626"/>
+
+  <!-- Legs in Zenkutsu Dachi -->
+  <polyline points="218,175 160,205 130,250" fill="none" stroke="#60A5FA" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="218,175 285,215 340,250" fill="none" stroke="#94A3B8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="250" y="305" fill="#E2E8F0" font-size="11" font-weight="bold" font-family="sans-serif" text-anchor="middle">Defesa Ascendente Contra Ataques Jodan</text>
+</svg>

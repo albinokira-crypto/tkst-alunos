@@ -8,7 +8,8 @@ window.TKST_GLOSSARY = {
       "hikite": "Coluna vertebral perfeitamente ereta e joelho frontal flexionado alinhado verticalmente sobre os dedos do pé.",
       "breathing": "Respiração abdominal profunda, mantendo a musculatura estabilizadora do tronco ativada.",
       "technicalTips": "Largura da base igual à dos ombros, comprimento correspondente a dois passos normais. Perna de trás esticada sem dobrar o joelho.",
-      "image": "https://upload.wikimedia.org/wikipedia/commons/4/4e/ZenkutsuDachi.svg"
+      "image": "assets/images/tecnicas/zenkutsu-dachi.svg",
+      "videoUrl": "https://www.youtube.com/embed/406733vOQ7Y"
     },
     {
       "japanese": "Kokutsu Dachi",
@@ -18,7 +19,8 @@ window.TKST_GLOSSARY = {
       "hikite": "Base clássica para defesas recuando e transições de Shuto Uke.",
       "breathing": "Respiração profunda concentrada no Tanden.",
       "technicalTips": "Os dois calcanhares devem estar alinhados na mesma linha imaginária. O joelho de trás deve ser empurrado para fora.",
-      "image": "https://upload.wikimedia.org/wikipedia/commons/1/15/Koukutsudachi.svg"
+      "image": "assets/images/tecnicas/kokutsu-dachi.svg",
+      "videoUrl": "https://www.youtube.com/embed/V6W3oDk2r9A"
     },
     {
       "japanese": "Kiba Dachi",
@@ -27,7 +29,9 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Quadril encaixado (Koshi o osameru), com os joelhos pressionando para fora e os pés rigorosamente paralelos.",
       "hikite": "Excelente para desenvolver estabilidade lateral, força de adutores e golpes laterais (Empi, Yoko Geri, Uraken).",
       "breathing": "Respiração estável e baixa.",
-      "technicalTips": "Não deixe os pés abrirem para fora nem os joelhos caírem para dentro. Mantenha as costas retas sem inclinar para frente."
+      "technicalTips": "Não deixe os pés abrirem para fora nem os joelhos caírem para dentro. Mantenha as costas retas sem inclinar para frente.",
+      "image": "assets/images/tecnicas/kiba-dachi.svg",
+      "videoUrl": "https://www.youtube.com/embed/6eEfZgK98s4"
     },
     {
       "japanese": "Shiko Dachi",
@@ -118,7 +122,9 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Giro de quadril em Hanmi (45°), desviando a força do ataque para cima da cabeça.",
       "hikite": "Puxada vigorosa do punho de apoio sincronizada com a ascensão do antebraço defensor em ângulo de 45°.",
       "breathing": "Expiração curta e firme no ponto de bloqueio.",
-      "technicalTips": "O antebraço deve terminar a um punho de distância da testa, mantendo o punho ligeiramente mais alto que o cotovelo."
+      "technicalTips": "O antebraço deve terminar a um punho de distância da testa, mantendo o punho ligeiramente mais alto que o cotovelo.",
+      "image": "assets/images/tecnicas/jodan-age-uke.svg",
+      "videoUrl": "https://www.youtube.com/embed/h0c3B9qR-2Y"
     },
     {
       "japanese": "Chudan Soto Uke",
@@ -127,7 +133,8 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Torção vigorosa do quadril para fechar o corpo no momento do contato.",
       "hikite": "Hikite veloz puxado até a cintura enquanto o punho defensor desce da orelha até a altura do ombro.",
       "breathing": "Expiração no bloqueio com contração dos dorsais.",
-      "technicalTips": "O punho deve ficar na altura do ombro e o cotovelo a um punho de distância das costelas."
+      "technicalTips": "O punho deve ficar na altura do ombro e o cotovelo a um punho de distância das costelas.",
+      "videoUrl": "https://www.youtube.com/embed/aE_n2w9j19A"
     },
     {
       "japanese": "Chudan Uchi Uke",
@@ -136,7 +143,8 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Abertura de quadril para Hanmi, permitindo a deflexão lateral do golpe adversário.",
       "hikite": "O braço parte do quadril oposto cruzando por dentro e girando o punho no final.",
       "breathing": "Expiração no momento do impacto com tensão no abdômen.",
-      "technicalTips": "O cotovelo atua como pivô estável a um punho de distância da caixa torácica."
+      "technicalTips": "O cotovelo atua como pivô estável a um punho de distância da caixa torácica.",
+      "videoUrl": "https://www.youtube.com/embed/fD3u7iLp2q8"
     },
     {
       "japanese": "Gedan Barai",
@@ -145,7 +153,9 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Rotação de quadril em Hanmi a 45°, tirando o corpo da linha de ataque.",
       "hikite": "Puxada firme do punho oposto até a crista ilíaca.",
       "breathing": "Expiração potente coincidindo com o final da varredura sobre a perna dianteira.",
-      "technicalTips": "O punho defensor parte da orelha oposta e desce rente à coxa, terminando a dois punhos do joelho."
+      "technicalTips": "O punho defensor parte da orelha oposta e desce rente à coxa, terminando a dois punhos do joelho.",
+      "image": "assets/images/tecnicas/gedan-barai.svg",
+      "videoUrl": "https://www.youtube.com/embed/e_ZgLq8pPqQ"
     },
     {
       "japanese": "Chudan Shuto Uke",
@@ -154,7 +164,8 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Quadril encaixado em Hanmi na base Kokutsu Dachi.",
       "hikite": "A mão de apoio se posiciona espalmada rente ao plexo solar (Suigetsu) com a palma para cima.",
       "breathing": "Respiração controlada com foco nos dedos e borda da mão (Ulnar).",
-      "technicalTips": "A mão defensora bloqueia com a faca da mão formando um ângulo de 90° no cotovelo."
+      "technicalTips": "A mão defensora bloqueia com a faca da mão formando um ângulo de 90° no cotovelo.",
+      "videoUrl": "https://www.youtube.com/embed/cM3O9D_m8dY"
     },
     {
       "japanese": "Morote Uke",
@@ -255,7 +266,9 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Avanço contínuo com o centro de gravidade estável e fechamento do quadril em Shomen no instante exato do impacto.",
       "hikite": "Recolhimento veloz do braço oposto sincronizado com a chegada do pé frontal na base Zenkutsu Dachi.",
       "breathing": "Expiração rápida e Kiai sonoro no final do movimento.",
-      "technicalTips": "O impacto do soco e o plantio do pé dianteiro devem acontecer rigorosamente juntos para transferir toda a energia cinética."
+      "technicalTips": "O impacto do soco e o plantio do pé dianteiro devem acontecer rigorosamente juntos para transferir toda a energia cinética.",
+      "image": "assets/images/tecnicas/oi-tsuki.svg",
+      "videoUrl": "https://www.youtube.com/embed/9B88u9kK77M"
     },
     {
       "japanese": "Gyaku Tsuki",
@@ -265,7 +278,8 @@ window.TKST_GLOSSARY = {
       "hikite": "Puxada vigorosa do punho oposto até a crista ilíaca, garantindo o princípio da terceira lei de Newton (ação e reação).",
       "breathing": "Expiração curta e potente no momento do Kime (impacto), com contração do Tanden (baixo abdômen).",
       "technicalTips": "Mantenha o calcanhar da perna traseira sempre colado ao chão durante toda a extensão do golpe. Nunca projete o tronco ou a cabeça para a frente.",
-      "image": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Gyaku-tsuki.gif"
+      "image": "assets/images/tecnicas/gyaku-tsuki.png",
+      "videoUrl": "https://www.youtube.com/embed/Pj13iF-p640"
     },
     {
       "japanese": "Kizame Tsuki",
@@ -425,7 +439,9 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Elevação vertical do joelho bem alto (Hikiashi) antes do disparo em linha reta.",
       "hikite": "Guarda de combate mantida firme sem abrir os braços no momento do chute.",
       "breathing": "Expiração curta na extensão máxima e recolhimento instantâneo da perna.",
-      "technicalTips": "Ponto de impacto: almofada dos dedos do pé (Koshi). Puxe os dedos fortemente para trás para evitar lesões."
+      "technicalTips": "Ponto de impacto: almofada dos dedos do pé (Koshi). Puxe os dedos fortemente para trás para evitar lesões.",
+      "image": "assets/images/tecnicas/mae-geri.svg",
+      "videoUrl": "https://www.youtube.com/embed/mF3Qy7k8H8w"
     },
     {
       "japanese": "Mawashi Geri",
@@ -434,7 +450,9 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Giro total do quadril e pivô sobre a bola do pé de apoio girando de 90° a 180°.",
       "hikite": "Manutenção da guarda protetora sem deixar o tronco cair para trás.",
       "breathing": "Expiração forte no ápice do arco circular.",
-      "technicalTips": "Eleve o joelho dobrado lateralmente na altura do alvo antes de desdobrar a perna em chicotada."
+      "technicalTips": "Eleve o joelho dobrado lateralmente na altura do alvo antes de desdobrar a perna em chicotada.",
+      "image": "assets/images/tecnicas/mawashi-geri.svg",
+      "videoUrl": "https://www.youtube.com/embed/Ld7gXzY-fQo"
     },
     {
       "japanese": "Gyaku Mawashi Geri",
@@ -448,7 +466,9 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Abertura lateral do quadril com recolhimento rápido em chicote.",
       "hikite": "Braços equilibrando a postura lateral sem inclinar excessivamente o tronco.",
       "breathing": "Expiração explosiva e retorno imediato ao joelho alto.",
-      "technicalTips": "Ponto de impacto é a faca do pé (Sokuto), puxando o dedão para cima e os outros para baixo."
+      "technicalTips": "Ponto de impacto é a faca do pé (Sokuto), puxando o dedão para cima e os outros para baixo.",
+      "image": "assets/images/tecnicas/yoko-geri.svg",
+      "videoUrl": "https://www.youtube.com/embed/p102kE6n63M"
     },
     {
       "japanese": "Yoko Geri Kekomi",
@@ -457,7 +477,9 @@ window.TKST_GLOSSARY = {
       "hipRotation": "Empurrão profundo do quadril cravando a faca do pé com todo o peso do corpo.",
       "hikite": "Alinhamento do calcanhar com a bacia e o tronco em linha de força.",
       "breathing": "Expiração pesada e Kime firme no ponto mais profundo do alvo.",
-      "technicalTips": "Gire o pé de apoio 180 graus para permitir que o quadril entre completamente no alvo."
+      "technicalTips": "Gire o pé de apoio 180 graus para permitir que o quadril entre completamente no alvo.",
+      "image": "assets/images/tecnicas/yoko-geri.svg",
+      "videoUrl": "https://www.youtube.com/embed/Q6cT2xM2zQw"
     },
     {
       "japanese": "Ushiro Geri",

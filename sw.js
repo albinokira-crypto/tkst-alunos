@@ -1,16 +1,16 @@
-const CACHE_NAME = 'tkst-alunos-v81';
+const CACHE_NAME = 'tkst-alunos-v82';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './assets/css/main.css?v=81',
-  './assets/css/components.css?v=81',
-  './assets/js/auth.js?v=81',
-  './assets/js/data-curriculum.js?v=81',
-  './assets/js/data-katas.js?v=81',
-  './assets/js/data-kumite.js?v=81',
-  './assets/js/data-glossary.js?v=81',
-  './assets/js/data-quiz.js?v=81',
-  './assets/js/app.js?v=81',
+  './assets/css/main.css?v=82',
+  './assets/css/components.css?v=82',
+  './assets/js/auth.js?v=82',
+  './assets/js/data-curriculum.js?v=82',
+  './assets/js/data-katas.js?v=82',
+  './assets/js/data-kumite.js?v=82',
+  './assets/js/data-glossary.js?v=82',
+  './assets/js/data-quiz.js?v=82',
+  './assets/js/app.js?v=82',
   './assets/images/logo-tkst.png',
   './assets/images/icon-192.png',
   './assets/images/icon-512.png',
@@ -24,7 +24,17 @@ const ASSETS_TO_CACHE = [
   './assets/images/faixas/quimono-verde.svg',
   './assets/images/faixas/quimono-roxa.svg',
   './assets/images/faixas/quimono-marrom.svg',
-  './assets/images/faixas/quimono-preta.svg'
+  './assets/images/faixas/quimono-preta.svg',
+  './assets/images/tecnicas/gyaku-tsuki.png',
+  './assets/images/tecnicas/oi-tsuki.svg',
+  './assets/images/tecnicas/zenkutsu-dachi.svg',
+  './assets/images/tecnicas/kokutsu-dachi.svg',
+  './assets/images/tecnicas/kiba-dachi.svg',
+  './assets/images/tecnicas/gedan-barai.svg',
+  './assets/images/tecnicas/jodan-age-uke.svg',
+  './assets/images/tecnicas/mae-geri.svg',
+  './assets/images/tecnicas/mawashi-geri.svg',
+  './assets/images/tecnicas/yoko-geri.svg'
 ];
 
 self.addEventListener('install', (event) => {

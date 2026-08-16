@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 320" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b111e"/>
+      <stop offset="100%" stop-color="#05080f"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFB703"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="500" height="320" rx="12" fill="url(#bgGrad)" stroke="#1E293B" stroke-width="1.5"/>
+
+  <!-- Title Badge -->
+  <rect x="20" y="16" width="150" height="26" rx="6" fill="#1E293B" />
+  <text x="30" y="34" fill="#FFB703" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="bold">前屈立ち • ZENKUTSU</text>
+
+  <!-- Floor Grid Lines -->
+  <line x1="40" y1="260" x2="460" y2="260" stroke="#334155" stroke-width="2" stroke-dasharray="4,4"/>
+  <line x1="40" y1="280" x2="460" y2="280" stroke="#1E293B" stroke-width="1"/>
+
+  <!-- Feet Footprints -->
+  <!-- Front Foot (Left, Pointing Straight) -->
+  <g transform="translate(140, 245)">
+    <rect x="-14" y="-28" width="28" height="52" rx="12" fill="#3B82F6" opacity="0.9" stroke="#60A5FA" stroke-width="1.5"/>
+    <text x="0" y="3" fill="#FFF" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="middle">70%</text>
+    <!-- Straight arrow -->
+    <path d="M 0,-34 L -4,-28 L 4,-28 Z" fill="#60A5FA"/>
+    <line x1="0" y1="-28" x2="0" y2="-40" stroke="#60A5FA" stroke-width="2"/>
+    <text x="0" y="-45" fill="#93C5FD" font-size="9" font-family="sans-serif" text-anchor="middle">Pé Frente (Reto)</text>
+  </g>
+
+  <!-- Rear Foot (Right, 45 degrees angle) -->
+  <g transform="translate(340, 245) rotate(45)">
+    <rect x="-12" y="-26" width="24" height="48" rx="10" fill="#EF4444" opacity="0.8" stroke="#F87171" stroke-width="1.5"/>
+    <text x="0" y="3" fill="#FFF" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="middle">30%</text>
+  </g>
+  <text x="375" y="225" fill="#FCA5A5" font-size="9" font-family="sans-serif">Pé Trás (45°)</text>
+
+  <!-- Karateka Stick/Vector Figure in Zenkutsu Dachi -->
+  <!-- Head -->
+  <circle cx="210" cy="85" r="18" fill="#F1F5F9" stroke="#FFB703" stroke-width="2"/>
+  <circle cx="216" cy="82" r="3" fill="#0F172A"/> <!-- Eye looking forward -->
+
+  <!-- Torso & Center of Gravity -->
+  <line x1="210" y1="103" x2="215" y2="175" stroke="#F1F5F9" stroke-width="6" stroke-linecap="round"/>
+  <!-- Tanden / Hara Center -->
+  <circle cx="214" cy="165" r="7" fill="#FFB703" filter="url(#glow)"/>
+  <text x="235" y="169" fill="#FFB703" font-size="10" font-weight="bold" font-family="sans-serif">Tanden (Centro)</text>
+
+  <!-- Front Leg (Bent 90° over ankle) -->
+  <polyline points="214,175 160,205 140,250" fill="none" stroke="#60A5FA" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Knee 90 degree indicator -->
+  <circle cx="160" cy="205" r="5" fill="#3B82F6"/>
+  <text x="100" y="195" fill="#93C5FD" font-size="9" font-family="sans-serif">Joelho 90°</text>
+
+  <!-- Rear Leg (Extended straight) -->
+  <polyline points="214,175 285,215 340,250" fill="none" stroke="#F87171" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="290" y="200" fill="#FCA5A5" font-size="9" font-family="sans-serif">Perna Esticada</text>
+
+  <!-- Arms / Guard -->
+  <!-- Front Arm (Hikite or Kamae) -->
+  <polyline points="210,120 170,135 145,120" fill="none" stroke="#F1F5F9" stroke-width="5" stroke-linecap="round"/>
+  <!-- Rear Arm (Hikite at hip) -->
+  <polyline points="210,120 230,140 215,155" fill="none" stroke="#FFB703" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Distance Measurement Bracket -->
+  <line x1="140" y1="295" x2="340" y2="295" stroke="#94A3B8" stroke-width="1.5"/>
+  <line x1="140" y1="290" x2="140" y2="300" stroke="#94A3B8" stroke-width="1.5"/>
+  <line x1="340" y1="290" x2="340" y2="300" stroke="#94A3B8" stroke-width="1.5"/>
+  <text x="240" y="310" fill="#E2E8F0" font-size="11" font-weight="bold" font-family="sans-serif" text-anchor="middle">Comprimento: ~2 Larguras de Ombro</text>
+</svg>

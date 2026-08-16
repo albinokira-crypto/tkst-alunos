@@ -3295,14 +3295,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (footer) {
       footer.innerHTML = `
-        <p style="color: #94A3B8; font-size: 0.85rem; margin: 0;">
-          <i class="fas fa-film" style="color: var(--accent-gold); margin-right: 6px;"></i> Reprodução integrada oficial TKST Alunos.
+        <p style="color: #94A3B8; font-size: 0.85rem; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <i class="fas fa-film" style="color: var(--accent-gold);"></i> Reprodução integrada oficial TKST Karatê Shotokan (No Sistema).
         </p>
-        ${embed.rawUrl ? `
-          <a href="${embed.rawUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="font-size: 0.78rem; text-decoration: none; padding: 5px 12px; margin-left: auto;">
-            <i class="fas fa-external-link-alt"></i> Abrir em Nova Aba
-          </a>
-        ` : ''}
+        <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('videoModal').classList.remove('active'); const c = document.getElementById('videoModalContainer'); if(c) c.innerHTML = '';" style="font-size: 0.8rem; padding: 6px 14px; margin-left: auto;">
+          <i class="fas fa-times"></i> Fechar Player
+        </button>
       `;
     }
 
@@ -5495,10 +5493,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const modalBody = document.getElementById('detailModalBody');
       const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
 
-      const ytQuery = encodeURIComponent(`karate shotokan ${term.japanese}`);
-      const googleImgQuery = encodeURIComponent(`karate shotokan ${term.japanese} technique diagram illustration`);
-      const ytUrl = `https://www.youtube.com/results?search_query=${ytQuery}`;
-      const googleImgUrl = `https://www.google.com/search?tbm=isch&q=${googleImgQuery}`;
+      const effectiveVideoSource = term.videoUrl ? term.videoUrl : `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent('karate shotokan ' + term.japanese)}&rel=0&playsinline=1&modestbranding=1`;
+      const embed = getEmbedUrl(effectiveVideoSource);
 
       modalTitle.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -5527,65 +5523,67 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
             <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
               <button type="button" class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${term.japanese.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês">
-                <i class="fas fa-volume-up" style="font-size: 0.95rem;"></i> Ouvir Pronúncia
+                <i class="fas fa-volume-up" style="font-size: 0.95rem;"></i> Ouvir Pronúncia (Japonês)
               </button>
               ${isAdmin ? `
                 <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.76rem; padding: 6px 12px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703;">
-                  <i class="fas fa-edit"></i> Editar Mídias (Admin)
+                  <i class="fas fa-edit"></i> Configurar Mídias (Admin)
                 </button>
               ` : ''}
             </div>
           </div>
 
-          <!-- Media Grid: Illustrated Movement + Video Demonstration -->
+          <!-- Media Grid: Illustrated Movement + Video Demonstration (Direct In-App Players) -->
           <div class="technique-media-grid">
             
             <!-- Illustrated Movement / GIF Card -->
             <div class="technique-media-card">
-              <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                <i class="fas fa-image" style="color: var(--accent-blue);"></i> Movimento Ilustrado / Diagrama
+              <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                <span style="display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-image" style="color: var(--accent-blue);"></i> Movimento Ilustrado / Diagrama
+                </span>
+                <span style="font-size: 0.72rem; color: var(--accent-gold);">Shotokan Dō</span>
               </div>
               
-              <div class="technique-image-container">
+              <div class="technique-image-container" style="background: #080c14; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 200px;">
                 ${term.image ? `
-                  <img src="${term.image}" alt="${term.japanese}" onerror="this.onerror=null; this.src='assets/images/logo-tkst.png';">
+                  <img src="${term.image}" alt="${term.japanese}" style="max-height: 220px; width: 100%; object-fit: contain; padding: 6px;" onerror="this.onerror=null; this.src='assets/images/logo-tkst.png';">
                 ` : `
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94A3B8; padding: 20px;">
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94A3B8; padding: 20px; text-align: center;">
                     <i class="fas fa-running" style="font-size: 3rem; color: var(--accent-gold); margin-bottom: 10px; opacity: 0.85;"></i>
                     <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 4px;">${term.japanese}</div>
-                    <div style="font-size: 0.75rem; color: #64748B;">Ilustração técnica do Shotokan</div>
+                    <div style="font-size: 0.75rem; color: #64748B;">Demonstração Técnica Tradicional</div>
                   </div>
                 `}
               </div>
 
-              <a href="${googleImgUrl}" target="_blank" class="btn btn-secondary" style="width: 100%; font-size: 0.8rem; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; border-color: rgba(255,255,255,0.15);">
-                <i class="fas fa-search-plus" style="color: var(--accent-blue);"></i> Ver Mais Ilustrações no Google Imagens (Nova Aba)
-              </a>
+              <div style="font-size: 0.76rem; color: #94A3B8; text-align: center; margin-top: 8px; line-height: 1.4;">
+                <i class="fas fa-eye" style="color: var(--accent-blue); margin-right: 4px;"></i> Observe a base, o alinhamento corporal e os vetores de força.
+              </div>
             </div>
 
-            <!-- Video Demonstration Card -->
+            <!-- Video Demonstration Card (Direct in-app playback) -->
             <div class="technique-media-card">
-              <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                <i class="fas fa-video" style="color: var(--accent-crimson);"></i> Vídeo de Demonstração
+              <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                <span style="display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-video" style="color: var(--accent-crimson);"></i> Vídeo Oficial do Movimento
+                </span>
+                <span class="badge badge-amarela" style="font-size: 0.65rem; padding: 2px 6px;">Vídeo no Sistema</span>
               </div>
 
-              ${term.videoUrl ? `
-                <div class="modal-video-wrapper" style="margin-bottom: 12px; width: 100%;">
-                  <iframe src="${term.videoUrl}" title="${term.japanese}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-              ` : `
-                <div class="technique-image-container" style="background: rgba(220, 38, 38, 0.08); border: 1px dashed rgba(220, 38, 38, 0.3);">
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94A3B8; padding: 20px;">
-                    <i class="fab fa-youtube" style="font-size: 3rem; color: #EF4444; margin-bottom: 10px;"></i>
-                    <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 4px;">Vídeos Oficiais do Movimento</div>
-                    <div style="font-size: 0.75rem; color: #94A3B8; text-align: center;">Assista aos mestres demonstrando a técnica</div>
-                  </div>
-                </div>
-              `}
+              <div class="modal-video-wrapper" style="margin-bottom: 10px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
+                ${embed.type === 'video' ? `
+                  <video src="${embed.url}" controls playsinline webkit-playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
+                    Seu navegador não suporta este formato de vídeo.
+                  </video>
+                ` : `
+                  <iframe src="${embed.url}" title="${term.japanese}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                `}
+              </div>
 
-              <a href="${ytUrl}" target="_blank" class="btn" style="width: 100%; font-size: 0.8rem; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; background: #DC2626; color: #FFF; text-decoration: none; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
-                <i class="fab fa-youtube" style="font-size: 1rem;"></i> Assistir no YouTube (Nova Aba)
-              </a>
+              <button type="button" class="btn" onclick="window.TKST_APP.openVideoModal('${term.japanese.replace(/'/g, "\\'")}', '${effectiveVideoSource.replace(/'/g, "\\'")}')" style="width: 100%; font-size: 0.82rem; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; background: #DC2626; color: #FFF; font-weight: 700; border: none; border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35); cursor: pointer;">
+                <i class="fas fa-expand"></i> Assistir em Player Expandido (No Sistema)
+              </button>
             </div>
 
           </div>
@@ -5908,6 +5906,14 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         m.classList.remove('active');
         const container = m.querySelector('#videoModalContainer');
         if (container) container.innerHTML = '';
+        const iframes = m.querySelectorAll('iframe');
+        iframes.forEach(f => {
+          try {
+            const src = f.src;
+            f.src = '';
+            setTimeout(() => { f.src = src; }, 100);
+          } catch(e) {}
+        });
         const video = m.querySelector('video');
         if (video) video.pause();
       }
