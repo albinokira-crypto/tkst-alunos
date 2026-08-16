@@ -3667,17 +3667,17 @@ document.addEventListener('DOMContentLoaded', () => {
             Nenhum termo encontrado para a busca selecionada.
           </div>
         ` : terms.map(t => `
-          <div class="stat-card" style="flex-direction: column; align-items: flex-start; padding: 20px; position: relative;">
+          <div class="stat-card glossary-card-hoverable" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="flex-direction: column; align-items: flex-start; padding: 20px; position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 6px; gap: 8px;">
               <span class="badge badge-amarela" style="font-size: 0.68rem;">${t.cat || 'Termo'}</span>
               <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.3); font-size: 1.15rem;">${t.kanji || ''}</span>
+                <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.35); font-size: 1.15rem;">${t.kanji || ''}</span>
                 ${isAdmin ? `
-                  <div style="display: flex; gap: 6px; align-items: center;">
-                    <button class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Editar Termo (Admin)" style="padding: 5px 8px; font-size: 0.75rem; border-radius: 4px; line-height: 1; background: rgba(255, 183, 3, 0.22); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
+                  <div style="display: flex; gap: 6px; align-items: center;" onclick="event.stopPropagation();">
+                    <button class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openEditGlossaryTermModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Editar Termo (Admin)" style="padding: 5px 8px; font-size: 0.75rem; border-radius: 4px; line-height: 1; background: rgba(255, 183, 3, 0.22); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
                       <i class="fas fa-pen"></i>
                     </button>
-                    <button class="btn btn-sm" onclick="window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 5px 8px; font-size: 0.75rem; border-radius: 4px; line-height: 1; background: #DC2626; border: 1px solid #B91C1C; color: #FFF; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
+                    <button class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 5px 8px; font-size: 0.75rem; border-radius: 4px; line-height: 1; background: #DC2626; border: 1px solid #B91C1C; color: #FFF; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -3687,8 +3687,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
               ${t.japanese}
             </div>
-            <div style="font-size: 0.88rem; color: #94A3B8; line-height: 1.4;">
+            <div style="font-size: 0.88rem; color: #94A3B8; line-height: 1.4; margin-bottom: 12px;">
               ${t.meaning}
+            </div>
+            <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--accent-gold); font-weight: 600;">
+              <span style="display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-play-circle" style="color: var(--accent-crimson);"></i>
+                <i class="fas fa-image" style="color: var(--accent-blue);"></i>
+                Ver Movimento & Vídeo
+              </span>
+              <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.7;"></i>
             </div>
           </div>
         `).join('')}
@@ -4876,16 +4884,30 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (res.success) {
+        const senseiPhone = '5521972114674';
+        const msg = `🥋 *SOLICITAÇÃO DE MATRÍCULA - TKST KARATÊ SHOTOKAN*\n\nOlá Sensei Diego! Acabei de realizar meu cadastro no Portal Oficial TKST e gostaria da liberação do meu acesso aos estudos:\n\n👤 *Nome:* ${name}\n🆔 *Login:* @${res.user.username}\n🥋 *Graduação:* ${currentBelt}\n🏯 *Dojo / Unidade:* ${dojo}\n📱 *WhatsApp do Aluno:* ${phone || 'Não informado'}\n\nPor favor, libere meu acesso no sistema. Oss!`;
+        const whatsappUrl = `https://wa.me/${senseiPhone}?text=${encodeURIComponent(msg)}`;
+
+        // Automatically trigger WhatsApp in a new tab
+        try {
+          window.open(whatsappUrl, '_blank');
+        } catch(e) {}
+
         feedback.innerHTML = `
-          <div style="background: rgba(16, 185, 129, 0.15); border: 1.5px solid var(--accent-emerald); color: #FFF; padding: 18px 16px; border-radius: var(--radius-md); font-size: 0.9rem; text-align: center;">
-            <div style="font-size: 1.1rem; font-weight: 700; color: #6EE7B7; margin-bottom: 8px;">
+          <div style="background: rgba(16, 185, 129, 0.15); border: 1.5px solid var(--accent-emerald); color: #FFF; padding: 20px 16px; border-radius: var(--radius-md); font-size: 0.9rem; text-align: center;">
+            <div style="font-size: 1.15rem; font-weight: 700; color: #6EE7B7; margin-bottom: 8px;">
               <i class="fas fa-check-circle"></i> Solicitação Enviada com Sucesso!
             </div>
-            <p style="font-size: 0.86rem; color: #E2E8F0; margin-bottom: 14px; line-height: 1.5;">
-              Seu cadastro com o Login <strong>@${res.user.username}</strong> foi registrado no sistema. Assim que o Sensei Diego liberar seu acesso, você poderá entrar no portal.
+            <p style="font-size: 0.86rem; color: #E2E8F0; margin-bottom: 16px; line-height: 1.5;">
+              Seu cadastro com o Login <strong>@${res.user.username}</strong> foi salvo no sistema. Para liberar seu acesso imediatamente, envie a notificação para o WhatsApp do <strong>Sensei Diego (21 97211-4674)</strong>.
             </p>
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('detailModal').classList.remove('active')" style="width: 100%; padding: 11px; font-weight: 700;">
-              Concluir
+
+            <a href="${whatsappUrl}" target="_blank" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; font-size: 0.95rem; font-weight: 700; background: #25D366; color: #FFF; border-radius: var(--radius-sm); margin-bottom: 10px; text-decoration: none; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);">
+              <i class="fab fa-whatsapp" style="font-size: 1.25rem;"></i> Notificar Sensei no WhatsApp (Liberar Acesso)
+            </a>
+
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="width: 100%; padding: 10px; font-weight: 600; font-size: 0.85rem;">
+              Fechar
             </button>
           </div>
         `;
@@ -5416,6 +5438,198 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       reader.readAsDataURL(file);
     },
 
+    // Japanese Pronunciation (Speech Synthesis)
+    speakJapanese: (text) => {
+      if (!('speechSynthesis' in window)) {
+        alert('Seu navegador não possui suporte a sintetizador de voz.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const cleanText = (text || '').replace(/\(.*?\)/g, '').trim();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'ja-JP';
+      utterance.rate = 0.85;
+      
+      const voices = window.speechSynthesis.getVoices();
+      const jaVoice = voices.find(v => v.lang === 'ja-JP' || v.lang.startsWith('ja'));
+      if (jaVoice) {
+        utterance.voice = jaVoice;
+      }
+      window.speechSynthesis.speak(utterance);
+    },
+
+    // Glossary Movement Detail & Media Viewer Modal
+    openGlossaryDetailModal: (categoryKey, japaneseName) => {
+      const glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : window.TKST_GLOSSARY;
+      let term = null;
+      let actualCat = categoryKey || 'bases';
+      const catMap = {
+        bases: 'Base (Dachi)',
+        defesas: 'Defesa (Uke)',
+        socosGolpes: 'Soco / Golpe (Tsuki/Uchi)',
+        chutes: 'Chute (Geri)',
+        comandosEContagem: 'Comando / Conceito'
+      };
+
+      if (categoryKey && glossary[categoryKey]) {
+        term = glossary[categoryKey].find(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim());
+      }
+      if (!term) {
+        const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+        for (const c of cats) {
+          const found = (glossary[c] || []).find(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim());
+          if (found) {
+            term = found;
+            actualCat = c;
+            break;
+          }
+        }
+      }
+
+      if (!term) {
+        alert('Termo não encontrado.');
+        return;
+      }
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
+
+      const ytQuery = encodeURIComponent(`karate shotokan ${term.japanese}`);
+      const googleImgQuery = encodeURIComponent(`karate shotokan ${term.japanese} technique diagram illustration`);
+      const ytUrl = `https://www.youtube.com/results?search_query=${ytQuery}`;
+      const googleImgUrl = `https://www.google.com/search?tbm=isch&q=${googleImgQuery}`;
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <span class="badge badge-amarela" style="font-size: 0.72rem;">${catMap[actualCat] || 'Técnica'}</span>
+          <span style="color: #FFF; font-weight: 700;">${term.japanese}</span>
+        </div>
+      `;
+
+      modalBody.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+          
+          <!-- Top Card: Kanji, Pronunciation & Meaning -->
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-gold); font-weight: 700; margin-bottom: 4px;">
+                Termo Tradicional Shotokan
+              </div>
+              <h2 style="font-family: var(--font-heading); font-size: 1.55rem; color: #FFF; margin: 0 0 6px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                ${term.japanese}
+                ${term.kanji ? `<span style="font-family: var(--font-kanji); color: rgba(255, 183, 3, 0.85); font-size: 1.35rem;">(${term.kanji})</span>` : ''}
+              </h2>
+              <div style="font-size: 0.92rem; color: #E2E8F0; line-height: 1.5;">
+                <strong>Significado:</strong> ${term.meaning}
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+              <button type="button" class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${term.japanese.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês">
+                <i class="fas fa-volume-up" style="font-size: 0.95rem;"></i> Ouvir Pronúncia
+              </button>
+              ${isAdmin ? `
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.76rem; padding: 6px 12px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703;">
+                  <i class="fas fa-edit"></i> Editar Mídias (Admin)
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Media Grid: Illustrated Movement + Video Demonstration -->
+          <div class="technique-media-grid">
+            
+            <!-- Illustrated Movement / GIF Card -->
+            <div class="technique-media-card">
+              <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-image" style="color: var(--accent-blue);"></i> Movimento Ilustrado / Diagrama
+              </div>
+              
+              <div class="technique-image-container">
+                ${term.image ? `
+                  <img src="${term.image}" alt="${term.japanese}" onerror="this.onerror=null; this.src='assets/images/logo-tkst.png';">
+                ` : `
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94A3B8; padding: 20px;">
+                    <i class="fas fa-running" style="font-size: 3rem; color: var(--accent-gold); margin-bottom: 10px; opacity: 0.85;"></i>
+                    <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 4px;">${term.japanese}</div>
+                    <div style="font-size: 0.75rem; color: #64748B;">Ilustração técnica do Shotokan</div>
+                  </div>
+                `}
+              </div>
+
+              <a href="${googleImgUrl}" target="_blank" class="btn btn-secondary" style="width: 100%; font-size: 0.8rem; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; border-color: rgba(255,255,255,0.15);">
+                <i class="fas fa-search-plus" style="color: var(--accent-blue);"></i> Ver Mais Ilustrações no Google Imagens (Nova Aba)
+              </a>
+            </div>
+
+            <!-- Video Demonstration Card -->
+            <div class="technique-media-card">
+              <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-video" style="color: var(--accent-crimson);"></i> Vídeo de Demonstração
+              </div>
+
+              ${term.videoUrl ? `
+                <div class="modal-video-wrapper" style="margin-bottom: 12px; width: 100%;">
+                  <iframe src="${term.videoUrl}" title="${term.japanese}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+              ` : `
+                <div class="technique-image-container" style="background: rgba(220, 38, 38, 0.08); border: 1px dashed rgba(220, 38, 38, 0.3);">
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94A3B8; padding: 20px;">
+                    <i class="fab fa-youtube" style="font-size: 3rem; color: #EF4444; margin-bottom: 10px;"></i>
+                    <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 4px;">Vídeos Oficiais do Movimento</div>
+                    <div style="font-size: 0.75rem; color: #94A3B8; text-align: center;">Assista aos mestres demonstrando a técnica</div>
+                  </div>
+                </div>
+              `}
+
+              <a href="${ytUrl}" target="_blank" class="btn" style="width: 100%; font-size: 0.8rem; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; background: #DC2626; color: #FFF; text-decoration: none; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
+                <i class="fab fa-youtube" style="font-size: 1rem;"></i> Assistir no YouTube (Nova Aba)
+              </a>
+            </div>
+
+          </div>
+
+          <!-- Technical Breakdown & Biomechanics Card -->
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px 20px;">
+            <h4 style="font-family: var(--font-heading); color: var(--accent-gold); font-size: 1.05rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-cogs"></i> Detalhamento Técnico & Biomecânica
+            </h4>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 0.86rem; color: #CBD5E1; line-height: 1.5;">
+              <div style="background: rgba(0,0,0,0.25); padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold);">
+                <strong style="color: #FFF; display: block; margin-bottom: 4px;"><i class="fas fa-arrows-alt-v" style="color: var(--accent-gold);"></i> Rotação do Quadril (Koshi):</strong>
+                ${term.hipRotation || 'Utilize a explosão do quadril sincronizada com o Kime para maximizar a transferência de energia.'}
+              </div>
+
+              <div style="background: rgba(0,0,0,0.25); padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-blue);">
+                <strong style="color: #FFF; display: block; margin-bottom: 4px;"><i class="fas fa-hand-rock" style="color: var(--accent-blue);"></i> Ação do Hikite / Apoio:</strong>
+                ${term.hikite || 'Puxada firme do braço de apoio rente às costelas flutuantes com o punho invertido.'}
+              </div>
+
+              <div style="background: rgba(0,0,0,0.25); padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald);">
+                <strong style="color: #FFF; display: block; margin-bottom: 4px;"><i class="fas fa-lungs" style="color: var(--accent-emerald);"></i> Respiração & Kime:</strong>
+                ${term.breathing || 'Expiração enérgica e contração do Tanden (baixo abdômen) no momento do impacto.'}
+              </div>
+            </div>
+
+            ${term.technicalTips ? `
+              <div style="margin-top: 14px; padding: 12px 14px; background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); font-size: 0.86rem; color: #FFE299;">
+                <strong><i class="fas fa-chalkboard-teacher"></i> Instruções do Sensei Diego:</strong> ${term.technicalTips}
+              </div>
+            ` : ''}
+          </div>
+
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="width: 100%; padding: 11px; font-weight: 600;">
+            Fechar
+          </button>
+
+        </div>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
     openAddGlossaryTermModal: (defaultCat) => {
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
@@ -5425,7 +5639,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddGlossaryTerm();" style="display: flex; flex-direction: column; gap: 14px;">
           <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
-            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Cadastre um novo termo com nome em japonês/romaji, ideogramas em Kanji (opcional) e significado completo.
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Cadastre um novo termo com nome em japonês/romaji, ideogramas em Kanji (opcional), significado, imagem e vídeo.
           </div>
 
           <div class="form-group">
@@ -5462,6 +5676,27 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             <textarea id="newGlossaryMeaning" class="form-input" rows="3" required placeholder="ex: Soco em gancho curto lateral com cotovelo a 90 graus..." style="resize: vertical; font-size: 0.88rem;"></textarea>
           </div>
 
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-image" style="color: var(--accent-blue); margin-right: 6px;"></i> URL da Imagem / GIF Ilustrado (Opcional):
+            </label>
+            <input type="url" id="newGlossaryImage" class="form-input" placeholder="https://exemplo.com/movimento.gif ou imagem" style="font-size: 0.85rem;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-video" style="color: var(--accent-crimson); margin-right: 6px;"></i> URL do Vídeo / YouTube Embed (Opcional):
+            </label>
+            <input type="url" id="newGlossaryVideoUrl" class="form-input" placeholder="https://www.youtube.com/embed/... ou link de vídeo" style="font-size: 0.85rem;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-chalkboard-teacher" style="color: var(--accent-gold); margin-right: 6px;"></i> Instruções & Dicas do Sensei Diego (Opcional):
+            </label>
+            <textarea id="newGlossaryTips" class="form-input" rows="2" placeholder="Dicas de execução, foco no quadril, erros comuns a evitar..." style="resize: vertical; font-size: 0.85rem;"></textarea>
+          </div>
+
           <div style="display: flex; gap: 10px; margin-top: 8px;">
             <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
               Cancelar
@@ -5481,6 +5716,9 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const japanese = document.getElementById('newGlossaryJapanese').value.trim();
       const kanji = document.getElementById('newGlossaryKanji').value.trim();
       const meaning = document.getElementById('newGlossaryMeaning').value.trim();
+      const image = (document.getElementById('newGlossaryImage') && document.getElementById('newGlossaryImage').value.trim()) || '';
+      const videoUrl = (document.getElementById('newGlossaryVideoUrl') && document.getElementById('newGlossaryVideoUrl').value.trim()) || '';
+      const technicalTips = (document.getElementById('newGlossaryTips') && document.getElementById('newGlossaryTips').value.trim()) || '';
 
       if (!cat || !japanese || !meaning) {
         alert('Por favor, preencha o termo em japonês e o seu significado.');
@@ -5490,7 +5728,10 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const res = window.TKST_AUTH.addGlossaryTerm(cat, {
         japanese,
         kanji,
-        meaning
+        meaning,
+        image,
+        videoUrl,
+        technicalTips
       });
 
       if (res && res.success) {
@@ -5592,6 +5833,27 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             <textarea id="editGlossaryMeaning" class="form-input" rows="3" required style="resize: vertical; font-size: 0.88rem;">${term.meaning.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
           </div>
 
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-image" style="color: var(--accent-blue); margin-right: 6px;"></i> URL da Imagem / GIF Ilustrado (Opcional):
+            </label>
+            <input type="url" id="editGlossaryImage" class="form-input" value="${(term.image || '').replace(/"/g, '&quot;')}" placeholder="https://exemplo.com/movimento.gif ou imagem" style="font-size: 0.85rem;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-video" style="color: var(--accent-crimson); margin-right: 6px;"></i> URL do Vídeo / YouTube Embed (Opcional):
+            </label>
+            <input type="url" id="editGlossaryVideoUrl" class="form-input" value="${(term.videoUrl || '').replace(/"/g, '&quot;')}" placeholder="https://www.youtube.com/embed/... ou link de vídeo" style="font-size: 0.85rem;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-chalkboard-teacher" style="color: var(--accent-gold); margin-right: 6px;"></i> Instruções & Dicas do Sensei Diego (Opcional):
+            </label>
+            <textarea id="editGlossaryTips" class="form-input" rows="2" placeholder="Dicas de execução, foco no quadril, erros comuns..." style="resize: vertical; font-size: 0.85rem;">${(term.technicalTips || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+          </div>
+
           <div style="display: flex; gap: 10px; margin-top: 8px;">
             <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
               Cancelar
@@ -5611,6 +5873,9 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const japanese = document.getElementById('editGlossaryJapanese').value.trim();
       const kanji = document.getElementById('editGlossaryKanji').value.trim();
       const meaning = document.getElementById('editGlossaryMeaning').value.trim();
+      const image = (document.getElementById('editGlossaryImage') && document.getElementById('editGlossaryImage').value.trim()) || '';
+      const videoUrl = (document.getElementById('editGlossaryVideoUrl') && document.getElementById('editGlossaryVideoUrl').value.trim()) || '';
+      const technicalTips = (document.getElementById('editGlossaryTips') && document.getElementById('editGlossaryTips').value.trim()) || '';
 
       if (!newCategory || !japanese || !meaning) {
         alert('Por favor, preencha o termo em japonês e o seu significado.');
@@ -5620,7 +5885,10 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const res = window.TKST_AUTH.updateGlossaryTerm(oldCategory, oldJapaneseName, newCategory, {
         japanese,
         kanji,
-        meaning
+        meaning,
+        image,
+        videoUrl,
+        technicalTips
       });
 
       if (res && res.success) {

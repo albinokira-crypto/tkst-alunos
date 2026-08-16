@@ -3,17 +3,31 @@ window.TKST_GLOSSARY = {
     {
       "japanese": "Zenkutsu Dachi",
       "kanji": "前屈立ち",
-      "meaning": "Base avançada frontal (peso 70% na perna dianteira, 30% na traseira)"
+      "meaning": "Base avançada frontal (peso 70% na perna dianteira, 30% na traseira)",
+      "hipRotation": "Permite alternar entre Shomen (frontal) e Hanmi (semi-perfil a 45 graus) com velocidade.",
+      "hikite": "Coluna vertebral perfeitamente ereta e joelho frontal flexionado alinhado verticalmente sobre os dedos do pé.",
+      "breathing": "Respiração abdominal profunda, mantendo a musculatura estabilizadora do tronco ativada.",
+      "technicalTips": "Largura da base igual à dos ombros, comprimento correspondente a dois passos normais. Perna de trás esticada sem dobrar o joelho.",
+      "image": "https://upload.wikimedia.org/wikipedia/commons/4/4e/ZenkutsuDachi.svg"
     },
     {
       "japanese": "Kokutsu Dachi",
       "kanji": "後屈立ち",
-      "meaning": "Base recuada posterior (peso 70% na perna traseira, 30% na dianteira)"
+      "meaning": "Base recuada posterior (peso 70% na perna traseira, 30% na dianteira)",
+      "hipRotation": "Quadril mantido em ângulo de 45° a 60° (Hanmi), com o centro de gravidade rebaixado sobre a perna de apoio traseira.",
+      "hikite": "Base clássica para defesas recuando e transições de Shuto Uke.",
+      "breathing": "Respiração profunda concentrada no Tanden.",
+      "technicalTips": "Os dois calcanhares devem estar alinhados na mesma linha imaginária. O joelho de trás deve ser empurrado para fora.",
+      "image": "https://upload.wikimedia.org/wikipedia/commons/1/15/Koukutsudachi.svg"
     },
     {
       "japanese": "Kiba Dachi",
       "kanji": "騎馬立ち",
-      "meaning": "Base do cavaleiro / cavalo de ferro (pés paralelos, peso 50/50)"
+      "meaning": "Base do cavaleiro / cavalo de ferro (pés paralelos, peso 50/50)",
+      "hipRotation": "Quadril encaixado (Koshi o osameru), com os joelhos pressionando para fora e os pés rigorosamente paralelos.",
+      "hikite": "Excelente para desenvolver estabilidade lateral, força de adutores e golpes laterais (Empi, Yoko Geri, Uraken).",
+      "breathing": "Respiração estável e baixa.",
+      "technicalTips": "Não deixe os pés abrirem para fora nem os joelhos caírem para dentro. Mantenha as costas retas sem inclinar para frente."
     },
     {
       "japanese": "Shiko Dachi",
@@ -100,27 +114,47 @@ window.TKST_GLOSSARY = {
     {
       "japanese": "Jodan Age Uke",
       "kanji": "上段揚げ受け",
-      "meaning": "Defesa ascendente contra ataques na altura da cabeça"
+      "meaning": "Defesa ascendente contra ataques na altura da cabeça",
+      "hipRotation": "Giro de quadril em Hanmi (45°), desviando a força do ataque para cima da cabeça.",
+      "hikite": "Puxada vigorosa do punho de apoio sincronizada com a ascensão do antebraço defensor em ângulo de 45°.",
+      "breathing": "Expiração curta e firme no ponto de bloqueio.",
+      "technicalTips": "O antebraço deve terminar a um punho de distância da testa, mantendo o punho ligeiramente mais alto que o cotovelo."
     },
     {
       "japanese": "Chudan Soto Uke",
       "kanji": "中段外受け",
-      "meaning": "Defesa de fora para dentro com o antebraço contra ataques no tronco"
+      "meaning": "Defesa de fora para dentro com o antebraço contra ataques no tronco",
+      "hipRotation": "Torção vigorosa do quadril para fechar o corpo no momento do contato.",
+      "hikite": "Hikite veloz puxado até a cintura enquanto o punho defensor desce da orelha até a altura do ombro.",
+      "breathing": "Expiração no bloqueio com contração dos dorsais.",
+      "technicalTips": "O punho deve ficar na altura do ombro e o cotovelo a um punho de distância das costelas."
     },
     {
       "japanese": "Chudan Uchi Uke",
       "kanji": "中段内受け",
-      "meaning": "Defesa de dentro para fora com o antebraço contra ataques no tronco"
+      "meaning": "Defesa de dentro para fora com o antebraço contra ataques no tronco",
+      "hipRotation": "Abertura de quadril para Hanmi, permitindo a deflexão lateral do golpe adversário.",
+      "hikite": "O braço parte do quadril oposto cruzando por dentro e girando o punho no final.",
+      "breathing": "Expiração no momento do impacto com tensão no abdômen.",
+      "technicalTips": "O cotovelo atua como pivô estável a um punho de distância da caixa torácica."
     },
     {
       "japanese": "Gedan Barai",
       "kanji": "下段払い",
-      "meaning": "Varredura ou bloqueio para baixo contra chutes ou socos no nível inferior"
+      "meaning": "Varredura ou bloqueio para baixo contra chutes ou socos no nível inferior",
+      "hipRotation": "Rotação de quadril em Hanmi a 45°, tirando o corpo da linha de ataque.",
+      "hikite": "Puxada firme do punho oposto até a crista ilíaca.",
+      "breathing": "Expiração potente coincidindo com o final da varredura sobre a perna dianteira.",
+      "technicalTips": "O punho defensor parte da orelha oposta e desce rente à coxa, terminando a dois punhos do joelho."
     },
     {
       "japanese": "Chudan Shuto Uke",
       "kanji": "中段手刀受け",
-      "meaning": "Defesa com a mão em espada (faca da mão) absorvendo e desviando a trajetória"
+      "meaning": "Defesa com a mão em espada (faca da mão) absorvendo e desviando a trajetória",
+      "hipRotation": "Quadril encaixado em Hanmi na base Kokutsu Dachi.",
+      "hikite": "A mão de apoio se posiciona espalmada rente ao plexo solar (Suigetsu) com a palma para cima.",
+      "breathing": "Respiração controlada com foco nos dedos e borda da mão (Ulnar).",
+      "technicalTips": "A mão defensora bloqueia com a faca da mão formando um ângulo de 90° no cotovelo."
     },
     {
       "japanese": "Morote Uke",
@@ -217,17 +251,30 @@ window.TKST_GLOSSARY = {
     {
       "japanese": "Oi Tsuki (Jodan / Chudan / Gedan)",
       "kanji": "追い突き",
-      "meaning": "Soco direto avançando com a perna do mesmo lado do braço que golpeia"
+      "meaning": "Soco direto avançando com a perna do mesmo lado do braço que golpeia",
+      "hipRotation": "Avanço contínuo com o centro de gravidade estável e fechamento do quadril em Shomen no instante exato do impacto.",
+      "hikite": "Recolhimento veloz do braço oposto sincronizado com a chegada do pé frontal na base Zenkutsu Dachi.",
+      "breathing": "Expiração rápida e Kiai sonoro no final do movimento.",
+      "technicalTips": "O impacto do soco e o plantio do pé dianteiro devem acontecer rigorosamente juntos para transferir toda a energia cinética."
     },
     {
       "japanese": "Gyaku Tsuki",
       "kanji": "逆突き",
-      "meaning": "Soco contrário / reverso com o braço oposto à perna frontal, com forte torção de quadril"
+      "meaning": "Soco contrário / reverso com o braço oposto à perna frontal, com forte torção de quadril",
+      "hipRotation": "Giro completo e explosivo do quadril de Hanmi (semi-perfil a 45°) para Shomen (frontal), empurrando firmemente com o calcanhar traseiro cravado no solo.",
+      "hikite": "Puxada vigorosa do punho oposto até a crista ilíaca, garantindo o princípio da terceira lei de Newton (ação e reação).",
+      "breathing": "Expiração curta e potente no momento do Kime (impacto), com contração do Tanden (baixo abdômen).",
+      "technicalTips": "Mantenha o calcanhar da perna traseira sempre colado ao chão durante toda a extensão do golpe. Nunca projete o tronco ou a cabeça para a frente.",
+      "image": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Gyaku-tsuki.gif"
     },
     {
       "japanese": "Kizame Tsuki",
       "kanji": "刻み突き",
-      "meaning": "Soco rápido em estocada com o punho da frente sem trocar a base"
+      "meaning": "Soco rápido em estocada com o punho da frente sem trocar a base",
+      "hipRotation": "Vibração rápida de quadril em meia torção para frente e retorno imediato à guarda de combate.",
+      "hikite": "A mão de trás permanece como guarda protetora do plexo solar e queixo.",
+      "breathing": "Expiração curta e retorno elástico (Hiki-te / Hiki-waza).",
+      "technicalTips": "Golpe fundamental para Kumite esportivo e tradicional, pontuando com velocidade sem se expor ao contra-ataque."
     },
     {
       "japanese": "Nihon Tsuki",
@@ -374,12 +421,20 @@ window.TKST_GLOSSARY = {
     {
       "japanese": "Mae Geri Keage / Kekomi",
       "kanji": "前蹴り",
-      "meaning": "Chute frontal (em chicote com o Koshi ou penetrante/empurrado)"
+      "meaning": "Chute frontal (em chicote com o Koshi ou penetrante/empurrado)",
+      "hipRotation": "Elevação vertical do joelho bem alto (Hikiashi) antes do disparo em linha reta.",
+      "hikite": "Guarda de combate mantida firme sem abrir os braços no momento do chute.",
+      "breathing": "Expiração curta na extensão máxima e recolhimento instantâneo da perna.",
+      "technicalTips": "Ponto de impacto: almofada dos dedos do pé (Koshi). Puxe os dedos fortemente para trás para evitar lesões."
     },
     {
       "japanese": "Mawashi Geri",
       "kanji": "回し蹴り",
-      "meaning": "Chute semicircular com o peito do pé (Haisoku) ou ponta dos dedos dobrados (Koshi)"
+      "meaning": "Chute semicircular com o peito do pé (Haisoku) ou ponta dos dedos dobrados (Koshi)",
+      "hipRotation": "Giro total do quadril e pivô sobre a bola do pé de apoio girando de 90° a 180°.",
+      "hikite": "Manutenção da guarda protetora sem deixar o tronco cair para trás.",
+      "breathing": "Expiração forte no ápice do arco circular.",
+      "technicalTips": "Eleve o joelho dobrado lateralmente na altura do alvo antes de desdobrar a perna em chicotada."
     },
     {
       "japanese": "Gyaku Mawashi Geri",
@@ -389,12 +444,20 @@ window.TKST_GLOSSARY = {
     {
       "japanese": "Yoko Geri Keage",
       "kanji": "横蹴り上げ",
-      "meaning": "Chute lateral ascendente em chicote com a faca do pé (Sokuto)"
+      "meaning": "Chute lateral ascendente em chicote com a faca do pé (Sokuto)",
+      "hipRotation": "Abertura lateral do quadril com recolhimento rápido em chicote.",
+      "hikite": "Braços equilibrando a postura lateral sem inclinar excessivamente o tronco.",
+      "breathing": "Expiração explosiva e retorno imediato ao joelho alto.",
+      "technicalTips": "Ponto de impacto é a faca do pé (Sokuto), puxando o dedão para cima e os outros para baixo."
     },
     {
       "japanese": "Yoko Geri Kekomi",
       "kanji": "横蹴り込み",
-      "meaning": "Chute lateral penetrante e empurrado com extensão total de quadril e Sokuto"
+      "meaning": "Chute lateral penetrante e empurrado com extensão total de quadril e Sokuto",
+      "hipRotation": "Empurrão profundo do quadril cravando a faca do pé com todo o peso do corpo.",
+      "hikite": "Alinhamento do calcanhar com a bacia e o tronco em linha de força.",
+      "breathing": "Expiração pesada e Kime firme no ponto mais profundo do alvo.",
+      "technicalTips": "Gire o pé de apoio 180 graus para permitir que o quadril entre completamente no alvo."
     },
     {
       "japanese": "Ushiro Geri",
