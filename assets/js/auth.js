@@ -8,6 +8,7 @@
   const STORAGE_KEY_STUDENTS = 'tkst_all_students';
   const STORAGE_KEY_PROGRESS = 'tkst_student_progress';
   const STORAGE_KEY_DOJOS = 'tkst_all_dojos';
+  const STORAGE_KEY_DELETED_DOJOS = 'tkst_deleted_dojos';
   const STORAGE_KEY_VIDEOS = 'tkst_custom_kata_videos';
   const STORAGE_KEY_DELETED = 'tkst_deleted_student_ids';
   const STORAGE_KEY_QUIZ_SUBMISSIONS = 'tkst_quiz_submissions';
@@ -43,18 +44,7 @@
     }
   } catch(e) {}
 
-  const DEFAULT_DOJOS = [
-    'TKST Matriz - Central',
-    'TKST Santo Aleixo',
-    'QG TKST ( Capela )',
-    'TKST Rio do Ouro',
-    'TKST Jardim Esmeralda',
-    'TKST Alcântara',
-    'TKST Niterói',
-    'TKST Maricá',
-    'TKST São Gonçalo',
-    'TKST Itaboraí'
-  ];
+  const DEFAULT_DOJOS = [];
 
   // =========================================================================
   // AUTOMATIC REAL-TIME CLOUD SYNC ENGINE (PC <-> MOBILE IN REAL TIME)
@@ -85,8 +75,8 @@
       return;
     }
     try {
-      isSyncing = true;
-      const dojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS)) || DEFAULT_DOJOS;
+      const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+      const dojos = (JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS)) || []).filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
       const students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
       const videos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
       const progress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
@@ -110,6 +100,7 @@
         deletedQuizIds,
         deletedQuizSubIds,
         deletedGlossaryTerms,
+        deletedDojos,
         timestamp: Date.now()
       };
 
@@ -219,10 +210,23 @@
       }
     }
 
-    // 4. Sync Dojos
-    if (Array.isArray(cloudData.dojos) && cloudData.dojos.length > 0) {
-      let localDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS)) || DEFAULT_DOJOS;
-      const mergedDojos = Array.from(new Set([...localDojos, ...cloudData.dojos]));
+    // Sync Deleted Dojos (Tombstone)
+    let localDeletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+    if (Array.isArray(cloudData.deletedDojos)) {
+      const mergedDeletedDojos = Array.from(new Set([...localDeletedDojos, ...cloudData.deletedDojos.map(d => (d || '').toLowerCase().trim())]));
+      if (mergedDeletedDojos.length !== localDeletedDojos.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(mergedDeletedDojos));
+        localDeletedDojos = mergedDeletedDojos;
+        changed = true;
+      }
+    }
+
+    // 4. Sync Dojos (Filter out tombstoned deleted dojos)
+    if (Array.isArray(cloudData.dojos)) {
+      let localDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS)) || [];
+      const combined = [...localDojos, ...cloudData.dojos];
+      const mergedDojos = Array.from(new Set(combined))
+        .filter(d => typeof d === 'string' && d.trim().length > 0 && !localDeletedDojos.includes(d.toLowerCase().trim()));
       const currentDojosStr = localStorage.getItem(STORAGE_KEY_DOJOS);
       const newDojosStr = JSON.stringify(mergedDojos);
       if (currentDojosStr !== newDojosStr) {
@@ -414,9 +418,14 @@
     }
 
     // Initialize Dojos
-    if (!localStorage.getItem(STORAGE_KEY_DOJOS)) {
-      localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(DEFAULT_DOJOS));
-    }
+    try {
+      const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+      let savedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS));
+      if (Array.isArray(savedDojos)) {
+        savedDojos = savedDojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
+        localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(savedDojos));
+      }
+    } catch(e) {}
 
     // Seed default accounts (including Admin irons365)
     let students = [];
@@ -560,11 +569,14 @@
     // DOJO MANAGEMENT
     // ==========================================
     getDojos: function() {
+      const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
       try {
         const dojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS));
-        if (Array.isArray(dojos) && dojos.length > 0) return dojos;
+        if (Array.isArray(dojos)) {
+          return dojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
+        }
       } catch(e) {}
-      return DEFAULT_DOJOS;
+      return [];
     },
 
     addDojo: function(dojoName) {
@@ -572,7 +584,11 @@
       const trimmed = (dojoName || '').trim();
       if (!trimmed) return { success: false, message: 'Digite o nome do Dojo.' };
 
-      const dojos = this.getDojos();
+      let deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+      deletedDojos = deletedDojos.filter(d => d !== trimmed.toLowerCase());
+      localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(deletedDojos));
+
+      let dojos = this.getDojos();
       if (dojos.some(d => d.toLowerCase() === trimmed.toLowerCase())) {
         return { success: false, message: 'Já existe um Dojo cadastrado com este nome.' };
       }
@@ -585,11 +601,17 @@
 
     deleteDojo: function(dojoName) {
       if (!this.isAdmin()) return { success: false, message: 'Apenas o Administrador pode excluir Dojos.' };
-      let dojos = this.getDojos();
-      if (dojos.length <= 1) {
-        return { success: false, message: 'O sistema deve manter pelo menos um Dojo cadastrado.' };
+      const trimmed = (dojoName || '').trim();
+      if (!trimmed) return { success: false, message: 'Nome inválido de Dojo.' };
+
+      let deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+      if (!deletedDojos.includes(trimmed.toLowerCase())) {
+        deletedDojos.push(trimmed.toLowerCase());
       }
-      dojos = dojos.filter(d => d !== dojoName);
+      localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(deletedDojos));
+
+      let dojos = this.getDojos();
+      dojos = dojos.filter(d => d.toLowerCase().trim() !== trimmed.toLowerCase());
       localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(dojos));
       pushToCloud();
       return { success: true, dojos };

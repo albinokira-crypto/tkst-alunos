@@ -1,16 +1,6 @@
 // Serverless Real-Time Sync API for TKST Karate Portal
 let inMemoryData = {
-  dojos: [
-    'TKST Matriz - Central',
-    'TKST Jardim Catarina',
-    'TKST Alcântara',
-    'TKST Niterói',
-    'TKST Maricá',
-    'TKST São Gonçalo',
-    'TKST Itaboraí',
-    'TKST Rio do Ouro',
-    'TKST Jardim Esmeralda'
-  ],
+  dojos: [],
   students: [
     {
       id: 'admin_diego_001',
@@ -21,7 +11,7 @@ let inMemoryData = {
       currentBelt: 'Faixa Preta (Sensei Master)',
       currentKyu: 0,
       targetBelt: 'Faixa Preta',
-      dojo: 'TKST Matriz - Central',
+      dojo: 'TKST Central & Diretoria Geral',
       status: 'approved',
       approvedAt: '2026-01-01T00:00:00.000Z',
       createdAt: '2026-01-01T00:00:00.000Z'
@@ -31,7 +21,12 @@ let inMemoryData = {
   progress: {},
   quiz_submissions: [],
   custom_quiz_bank: null,
+  custom_glossary: null,
   deletedStudentIds: [],
+  deletedQuizIds: [],
+  deletedQuizSubIds: [],
+  deletedGlossaryTerms: [],
+  deletedDojos: [],
   lastSync: new Date().toISOString()
 };
 
@@ -82,7 +77,7 @@ module.exports = async (req, res) => {
           currentBelt: 'Faixa Preta (Sensei Master)',
           currentKyu: 0,
           targetBelt: 'Faixa Preta',
-          dojo: 'TKST Matriz - Central',
+          dojo: 'TKST Central & Diretoria Geral',
           status: 'approved',
           approvedAt: '2026-01-01T00:00:00.000Z',
           createdAt: '2026-01-01T00:00:00.000Z'
@@ -103,6 +98,16 @@ module.exports = async (req, res) => {
       }
       const allDeletedSubs = Array.from(deletedSubSet);
 
+      // Merge deleted Dojos
+      let deletedDojoSet = new Set(inMemoryData.deletedDojos || []);
+      if (Array.isArray(incoming.deletedDojos)) {
+        incoming.deletedDojos.forEach(d => deletedDojoSet.add((d || '').toLowerCase().trim()));
+      }
+      const allDeletedDojos = Array.from(deletedDojoSet);
+
+      let dojosList = Array.isArray(incoming.dojos) ? incoming.dojos : (inMemoryData.dojos || []);
+      dojosList = dojosList.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojoSet.has(d.toLowerCase().trim()));
+
       let quizBankMap = new Map();
       if (Array.isArray(inMemoryData.custom_quiz_bank)) {
         inMemoryData.custom_quiz_bank.forEach(q => quizBankMap.set(q.id, q));
@@ -118,15 +123,18 @@ module.exports = async (req, res) => {
       }
 
       inMemoryData = {
-        dojos: Array.isArray(incoming.dojos) && incoming.dojos.length > 0 ? incoming.dojos : inMemoryData.dojos,
+        dojos: dojosList,
         students: studentsList,
         custom_videos: incoming.custom_videos ? { ...inMemoryData.custom_videos, ...incoming.custom_videos } : inMemoryData.custom_videos,
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
         quiz_submissions: quizSubmissionsList,
         custom_quiz_bank: customQuizBank,
+        custom_glossary: incoming.custom_glossary || inMemoryData.custom_glossary || null,
         deletedStudentIds: allDeleted,
         deletedQuizIds: allDeletedQuizzes,
         deletedQuizSubIds: allDeletedSubs,
+        deletedGlossaryTerms: incoming.deletedGlossaryTerms || inMemoryData.deletedGlossaryTerms || [],
+        deletedDojos: allDeletedDojos,
         lastSync: new Date().toISOString()
       };
 
