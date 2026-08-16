@@ -1093,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div style="font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-map-marker-alt" style="color: var(--accent-gold);"></i> ${d}
                   </div>
-                  <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteDojo('${d}')" title="Excluir Dojo">
+                  <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteDojo('${d.replace(/'/g, "\\'")}')" title="Excluir Dojo">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>

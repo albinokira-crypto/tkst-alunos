@@ -44,7 +44,13 @@
     }
   } catch(e) {}
 
-  const DEFAULT_DOJOS = [];
+  const OFFICIAL_4_DOJOS = [
+    'TKST Matriz - Central',
+    'TKST Santo Aleixo',
+    'QG TKST ( Capela )',
+    'TKST Rio do Ouro'
+  ];
+  const DEFAULT_DOJOS = OFFICIAL_4_DOJOS;
 
   // =========================================================================
   // AUTOMATIC REAL-TIME CLOUD SYNC ENGINE (PC <-> MOBILE IN REAL TIME)
@@ -417,13 +423,37 @@
       localStorage.setItem(AUTH_VERSION_KEY, 'true');
     }
 
-    // Initialize Dojos
+    // Initialize Dojos (Enforce only the 4 official dojos requested by Sensei Diego)
     try {
-      const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
-      let savedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS));
-      if (Array.isArray(savedDojos)) {
-        savedDojos = savedDojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
-        localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(savedDojos));
+      const isPruned = localStorage.getItem('tkst_dojos_pruned_v4_fixed');
+      if (!isPruned) {
+        localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(OFFICIAL_4_DOJOS));
+        const deletedList = [
+          'tkst jardim esmeralda',
+          'tkst alcântara',
+          'tkst alcantara',
+          'tkst niterói',
+          'tkst niteroi',
+          'tkst maricá',
+          'tkst marica',
+          'tkst são gonçalo',
+          'tkst sao goncalo',
+          'tkst itaboraí',
+          'tkst itaborai',
+          'tkst jardim catarina'
+        ];
+        localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(deletedList));
+        localStorage.setItem('tkst_dojos_pruned_v4_fixed', 'true');
+        setTimeout(pushToCloud, 300);
+      } else {
+        const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+        let savedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS));
+        if (Array.isArray(savedDojos)) {
+          savedDojos = savedDojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
+          localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(savedDojos));
+        } else {
+          localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(OFFICIAL_4_DOJOS));
+        }
       }
     } catch(e) {}
 
@@ -572,11 +602,12 @@
       const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
       try {
         const dojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS));
-        if (Array.isArray(dojos)) {
-          return dojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
+        if (Array.isArray(dojos) && dojos.length > 0) {
+          const filtered = dojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
+          if (filtered.length > 0) return filtered;
         }
       } catch(e) {}
-      return [];
+      return OFFICIAL_4_DOJOS.filter(d => !deletedDojos.includes(d.toLowerCase().trim()));
     },
 
     addDojo: function(dojoName) {

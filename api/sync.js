@@ -1,6 +1,11 @@
 // Serverless Real-Time Sync API for TKST Karate Portal
 let inMemoryData = {
-  dojos: [],
+  dojos: [
+    'TKST Matriz - Central',
+    'TKST Santo Aleixo',
+    'QG TKST ( Capela )',
+    'TKST Rio do Ouro'
+  ],
   students: [
     {
       id: 'admin_diego_001',
@@ -26,7 +31,20 @@ let inMemoryData = {
   deletedQuizIds: [],
   deletedQuizSubIds: [],
   deletedGlossaryTerms: [],
-  deletedDojos: [],
+  deletedDojos: [
+    'tkst jardim esmeralda',
+    'tkst alcântara',
+    'tkst alcantara',
+    'tkst niterói',
+    'tkst niteroi',
+    'tkst maricá',
+    'tkst marica',
+    'tkst são gonçalo',
+    'tkst sao goncalo',
+    'tkst itaboraí',
+    'tkst itaborai',
+    'tkst jardim catarina'
+  ],
   lastSync: new Date().toISOString()
 };
 
