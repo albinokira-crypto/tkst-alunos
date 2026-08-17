@@ -76,6 +76,110 @@
     return null;
   }
 
+  // =========================================================================
+  // QUIZ BANK — Endpoint dedicado para persistência permanente das questões
+  // =========================================================================
+
+  async function pushQuizBankToCloud(bank, deletedIds) {
+    try {
+      // 1. Endpoint dedicado /api/quiz-bank (mais persistente que o sync geral)
+      await fetch('/api/quiz-bank', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bank, deletedQuizIds: deletedIds || [] })
+      }).catch(() => {});
+
+      // 2. GitHub auto-commit (se token configurado pelo Sensei)
+      const ghToken = localStorage.getItem('tkst_github_token');
+      const ghRepo = localStorage.getItem('tkst_github_repo');
+      if (ghToken && ghRepo && Array.isArray(bank)) {
+        pushQuizBankToGitHub(bank, ghToken, ghRepo).catch(() => {});
+      }
+    } catch(err) {
+      console.warn('Quiz bank push notice:', err);
+    }
+  }
+
+  async function pullQuizBankFromCloud() {
+    try {
+      const res = await fetch('/api/quiz-bank', { cache: 'no-store' });
+      if (!res.ok) return;
+      const json = await res.json();
+      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) return;
+
+      const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
+      const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+      const bankMap = new Map();
+      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
+      json.data.forEach(q => {
+        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+      });
+      const merged = Array.from(bankMap.values());
+      const localStr = localStorage.getItem(STORAGE_KEY_QUIZ_BANK);
+      const newStr = JSON.stringify(merged);
+      if (localStr !== newStr) {
+        localStorage.setItem(STORAGE_KEY_QUIZ_BANK, newStr);
+        window.TKST_QUIZ_BANK = merged;
+        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length } }));
+      }
+    } catch(err) {
+      console.warn('Quiz bank pull notice:', err);
+    }
+  }
+
+  async function pushQuizBankToGitHub(bank, token, repo) {
+    try {
+      // repo format: 'owner/repo-name'
+      const apiBase = `https://api.github.com/repos/${repo}/contents/assets/js/data-quiz.js`;
+      const headers = {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      };
+
+      // Busca SHA atual do arquivo
+      const getRes = await fetch(apiBase, { headers });
+      if (!getRes.ok) return;
+      const fileInfo = await getRes.json();
+      const sha = fileInfo.sha;
+
+      // Gera conteúdo atualizado do data-quiz.js
+      const customOnly = bank.filter(q => q.id && q.id.startsWith('q_custom_'));
+      if (customOnly.length === 0) return; // Nada custom para commitar
+
+      // Decodifica o arquivo atual e injeta as questões customizadas
+      const currentContent = atob(fileInfo.content.replace(/\n/g, ''));
+      const marker = '// ==TKST_CUSTOM_QUESTIONS_START==';
+      const endMarker = '// ==TKST_CUSTOM_QUESTIONS_END==';
+      const customBlock = `${marker}\n${customOnly.map(q => JSON.stringify(q)).join(',\n  ')},\n${endMarker}`;
+
+      let updatedContent;
+      if (currentContent.includes(marker)) {
+        const startIdx = currentContent.indexOf(marker);
+        const endIdx = currentContent.indexOf(endMarker) + endMarker.length;
+        updatedContent = currentContent.slice(0, startIdx) + customBlock + currentContent.slice(endIdx);
+      } else {
+        // Injeta antes do fechamento do array
+        updatedContent = currentContent.replace(/\];\s*$/, `  // Questões customizadas pelo Sensei\n  ${customBlock}\n];`);
+      }
+
+      const encoded = btoa(unescape(encodeURIComponent(updatedContent)));
+      await fetch(apiBase, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+          message: `feat: questões customizadas do simulado salvas pelo Sensei - ${new Date().toLocaleString('pt-BR')}`,
+          content: encoded,
+          sha
+        })
+      });
+
+      window.dispatchEvent(new CustomEvent('tkst_quiz_committed', { detail: { count: customOnly.length } }));
+    } catch(err) {
+      console.warn('GitHub quiz commit notice:', err);
+    }
+  }
+
   async function pushToCloud() {
     if (isSyncing) {
       syncPending = true;
@@ -114,14 +218,14 @@
 
       const payloadStr = JSON.stringify(payload);
 
-      // 1. Post to Vercel Serverless Sync API (as fallback)
+      // 1. Post to Vercel Serverless Sync API
       fetch('/api/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: payloadStr
       }).catch(() => {});
 
-      // 2. Post directly to real-time pubsub stream
+      // 2. Post directly to real-time pubsub stream (ntfy.sh)
       await fetch(SYNC_URL, {
         method: 'POST',
         headers: { 
@@ -417,7 +521,10 @@
 
   async function pullFromCloud() {
     try {
-      // 1. Try Vercel Serverless /api/sync if available
+      // 1. Endpoint dedicado do quiz bank (mais confiável — dados nunca são sobrescritos)
+      pullQuizBankFromCloud().catch(() => {});
+
+      // 2. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
       try {
         const apiRes = await fetch('/api/sync', { cache: 'no-store' });
         if (apiRes.ok) {
@@ -428,7 +535,7 @@
         }
       } catch(e) {}
 
-      // 2. Poll ntfy.sh
+      // 3. Poll ntfy.sh (tempo real — dados mais recentes das últimas 24h)
       const res = await fetch(SYNC_URL + '/json?poll=1');
       if (res.ok) {
         const text = await res.text();
@@ -1262,9 +1369,22 @@
       if (!Array.isArray(bank)) return false;
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       const cleanBank = bank.filter(q => !deletedIds.includes(q.id));
+
+      // 1. Salva localmente
       localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(cleanBank));
       window.TKST_QUIZ_BANK = cleanBank;
+
+      // 2. Envia ao endpoint DEDICADO /api/quiz-bank (persistência garantida)
+      pushQuizBankToCloud(cleanBank, deletedIds);
+
+      // 3. Envia ao sync geral (ntfy.sh + /api/sync) para outros dados
       pushToCloud();
+
+      // 4. Dispara evento de sync para atualizar badge na UI
+      window.dispatchEvent(new CustomEvent('tkst_quiz_bank_saved', {
+        detail: { count: cleanBank.length, savedAt: new Date() }
+      }));
+
       return true;
     },
 
@@ -1277,6 +1397,9 @@
       let bank = current.filter(item => item.id !== qId);
       localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(bank));
       window.TKST_QUIZ_BANK = bank;
+
+      // Sincroniza deleção no endpoint dedicado
+      pushQuizBankToCloud(bank, deleted);
       pushToCloud();
       return bank;
     },

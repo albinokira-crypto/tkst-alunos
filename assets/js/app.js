@@ -73,13 +73,82 @@ document.addEventListener('DOMContentLoaded', () => {
   let quizActive = false;
   let quizSubmissionDetails = [];
 
-  // DOM Elements
   const mainContent = document.getElementById('mainContent');
   const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
   const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-item');
   const detailModal = document.getElementById('detailModal');
   const videoModal = document.getElementById('videoModal');
   const sidebar = document.getElementById('sidebar');
+
+  // =========================================================================
+  // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)
+  // =========================================================================
+  function showToast(message, type = 'success', duration = 4000) {
+    let container = document.getElementById('tkst-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'tkst-toast-container';
+      container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
+      document.body.appendChild(container);
+    }
+
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️', sync: '☁️' };
+    const colors = {
+      success: 'rgba(34,197,94,0.18)',
+      error: 'rgba(239,68,68,0.18)',
+      warning: 'rgba(234,179,8,0.18)',
+      info: 'rgba(99,102,241,0.18)',
+      sync: 'rgba(255,183,3,0.18)'
+    };
+    const borders = {
+      success: '#22c55e', error: '#ef4444', warning: '#eab308', info: '#6366f1', sync: '#FFB703'
+    };
+
+    const toast = document.createElement('div');
+    toast.style.cssText = [
+      `background:${colors[type] || colors.success}`,
+      `border:1.5px solid ${borders[type] || borders.success}`,
+      'border-radius:10px',
+      'padding:12px 18px',
+      'color:#F1F5F9',
+      'font-size:0.88rem',
+      'font-weight:600',
+      'display:flex',
+      'align-items:center',
+      'gap:10px',
+      'max-width:340px',
+      'pointer-events:auto',
+      'box-shadow:0 4px 24px rgba(0,0,0,0.35)',
+      'animation:tkst-toast-in 0.3s cubic-bezier(.4,0,.2,1)',
+      'backdrop-filter:blur(8px)'
+    ].join(';');
+    toast.innerHTML = `<span style="font-size:1.1rem">${icons[type] || icons.success}</span><span>${message}</span>`;
+
+    if (!document.getElementById('tkst-toast-style')) {
+      const style = document.createElement('style');
+      style.id = 'tkst-toast-style';
+      style.textContent = '@keyframes tkst-toast-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}} @keyframes tkst-toast-out{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(16px)}}';
+      document.head.appendChild(style);
+    }
+
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'tkst-toast-out 0.3s cubic-bezier(.4,0,.2,1) forwards';
+      setTimeout(() => toast.remove(), 320);
+    }, duration);
+  }
+
+  // Listener: confirmação visual quando questões são salvas/sincronizadas
+  window.addEventListener('tkst_quiz_bank_saved', (e) => {
+    showToast(`☁️ Questões salvas! Sincronizando com a nuvem... (${e.detail.count} no banco)`, 'sync', 4000);
+  });
+  window.addEventListener('tkst_quiz_committed', (e) => {
+    showToast(`💚 ${e.detail.count} questões salvas permanentemente no GitHub!`, 'success', 5000);
+  });
+  window.addEventListener('tkst_quiz_bank_updated', (e) => {
+    showToast(`📥 Banco atualizado da nuvem: ${e.detail.count} questões carregadas.`, 'info', 3000);
+  });
+
 
   function getBeltBadgeClass(belt) {
     if (!belt) return 'badge-branca';
@@ -4690,7 +4759,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       window.TKST_AUTH.saveCustomQuizBank(bank);
       detailModal.classList.remove('active');
-      alert('Questão atualizada com sucesso e alternativas incorretas geradas automaticamente!');
+      showToast('✅ Questão atualizada! Sincronizando com a nuvem...', 'sync');
       renderAdminMaster();
     },
 
@@ -4784,7 +4853,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bank.push(newQuestion);
       window.TKST_AUTH.saveCustomQuizBank(bank);
       detailModal.classList.remove('active');
-      alert('Nova questão cadastrada com sucesso e alternativas incorretas geradas automaticamente!');
+      showToast('✅ Nova questão cadastrada! Sincronizando com a nuvem...', 'sync');
       renderAdminMaster();
     },
 
