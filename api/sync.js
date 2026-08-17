@@ -2,6 +2,23 @@
 const fs = require('fs');
 const path = require('path');
 const TMP_QUIZ_FILE = path.join('/tmp', 'tkst_sync_quiz_bank.json');
+const TMP_FULL_STATE_FILE = path.join('/tmp', 'tkst_sync_full_state.json');
+
+function readFullStateFromTmp() {
+  try {
+    if (fs.existsSync(TMP_FULL_STATE_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(TMP_FULL_STATE_FILE, 'utf8'));
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function writeFullStateToTmp(state) {
+  try {
+    fs.writeFileSync(TMP_FULL_STATE_FILE, JSON.stringify(state), 'utf8');
+  } catch (e) {}
+}
 
 function readQuizBankFromTmp() {
   try {
@@ -68,7 +85,11 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
-    // Se custom_quiz_bank está vazio em memória, tenta hidratar do /tmp
+    // Hidrata do /tmp se disponível para garantir persistência total
+    const tmpFull = readFullStateFromTmp();
+    if (tmpFull) {
+      inMemoryData = { ...inMemoryData, ...tmpFull };
+    }
     if (!inMemoryData.custom_quiz_bank || inMemoryData.custom_quiz_bank.length === 0) {
       const tmpBank = readQuizBankFromTmp();
       if (tmpBank) inMemoryData.custom_quiz_bank = tmpBank;
@@ -230,7 +251,8 @@ module.exports = async (req, res) => {
         lastSync: new Date().toISOString()
       };
 
-      // Persiste quiz bank no /tmp para sobreviver ao próximo cold-start
+      // Persiste estado completo e quiz bank no /tmp para sobreviver ao próximo cold-start
+      writeFullStateToTmp(inMemoryData);
       if (customQuizBank.length > 0) writeQuizBankToTmp(customQuizBank);
 
       return res.status(200).json({

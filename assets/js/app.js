@@ -487,9 +487,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = window.TKST_AUTH.getCurrentUser();
     if (!user) {
       switchTab('login');
-      // Auto open registration modal if accessed via invitation link ?cadastro=1
+      // Auto open registration modal if accessed via invitation link (?cadastro=1, ?convite=1, ?registro=1, etc.)
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('cadastro') === '1') {
+      if (urlParams.get('cadastro') === '1' || urlParams.get('convite') === '1' || urlParams.get('registro') === '1' || urlParams.has('cadastro') || urlParams.has('convite')) {
         setTimeout(() => {
           if (window.TKST_APP && window.TKST_APP.openRegisterModal) {
             window.TKST_APP.openRegisterModal();
