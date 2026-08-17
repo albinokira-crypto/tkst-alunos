@@ -1976,7 +1976,6 @@ window.TKST_DEFAULT_QUIZ_BANK = [
   }
   // Questões customizadas pelo Sensei (auto-salvo)
   // ==TKST_CUSTOM_QUESTIONS_START==
-  {"id":"q_custom_test_final","kyuNumber":7,"beltName":"Faixa Branca (7 Kyu)","question":"[TESTE FINAL] Qual e o estilo da TKST?","options":["Shotokan","Kyokushin","Goju-ryu","Wado-ryu"],"correctIndex":0,"explanation":"Shotokan - fundado por Gichin Funakoshi."},
   // ==TKST_CUSTOM_QUESTIONS_END==
 ];
 
