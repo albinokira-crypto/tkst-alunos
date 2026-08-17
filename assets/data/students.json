@@ -1,0 +1,24 @@
+{
+  "students": [
+    {
+      "id": "admin_irons365",
+      "username": "irons365",
+      "email": "irons365@tkst.com.br",
+      "name": "Sensei Diego",
+      "role": "admin",
+      "currentBelt": "Faixa Preta (Sensei Master)",
+      "targetBelt": "Faixa Preta",
+      "currentKyu": 0,
+      "dojo": "TKST Central & Diretoria Geral",
+      "startDate": "2000-01-01",
+      "avatar": "assets/images/logo-tkst.png",
+      "status": "approved",
+      "approvedAt": "2026-01-01T00:00:00.000Z",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "phone": "(21) 97607-7598",
+      "notes": "Administrador Master responsável por todo o sistema, arquivos e aprovações."
+    }
+  ],
+  "deletedStudentIds": [],
+  "updatedAt": 1786995000000
+}

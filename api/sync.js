@@ -94,6 +94,23 @@ module.exports = async (req, res) => {
       const tmpBank = readQuizBankFromTmp();
       if (tmpBank) inMemoryData.custom_quiz_bank = tmpBank;
     }
+
+    // Hidrata base de alunos do assets/data/students.json se a lista em memória só tiver o admin
+    if (!inMemoryData.students || inMemoryData.students.length <= 1) {
+      try {
+        const localStudentsPath = path.resolve(process.cwd(), 'assets/data/students.json');
+        if (fs.existsSync(localStudentsPath)) {
+          const sParsed = JSON.parse(fs.readFileSync(localStudentsPath, 'utf8'));
+          if (sParsed && Array.isArray(sParsed.students) && sParsed.students.length > 0) {
+            inMemoryData.students = sParsed.students;
+            if (Array.isArray(sParsed.deletedStudentIds)) {
+              inMemoryData.deletedStudentIds = sParsed.deletedStudentIds;
+            }
+          }
+        }
+      } catch(e) {}
+    }
+
     return res.status(200).json({
       success: true,
       data: inMemoryData

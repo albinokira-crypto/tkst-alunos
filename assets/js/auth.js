@@ -213,6 +213,62 @@
     }
   }
 
+  // =========================================================================
+  // STUDENTS PERMANENT CLOUD SYNC & GITHUB STORAGE
+  // =========================================================================
+  async function pullStudentsFromCloud() {
+    try {
+      // 1. Tenta endpoint dedicado /api/student-commit (GitHub API)
+      try {
+        const res = await fetch('/api/student-commit', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.success && json.data) {
+            applyCloudData({
+              students: json.data.students || [],
+              deletedStudentIds: json.data.deletedStudentIds || []
+            });
+            return;
+          }
+        }
+      } catch(e) {}
+
+      // 2. Tenta carregar assets/data/students.json diretamente (CDN/Vercel)
+      try {
+        const res = await fetch('./assets/data/students.json?_=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && Array.isArray(json.students)) {
+            applyCloudData({
+              students: json.students,
+              deletedStudentIds: json.deletedStudentIds || []
+            });
+            return;
+          }
+        }
+      } catch(e) {}
+    } catch(err) {
+      console.warn('Students pull notice:', err);
+    }
+  }
+
+  async function pushStudentsToServer(students, deletedIds) {
+    if (!Array.isArray(students) || students.length === 0) return;
+    const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || []);
+    try {
+      fetch('/api/student-commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          students,
+          deletedStudentIds: deleted
+        })
+      }).catch(() => {});
+    } catch(err) {
+      console.warn('Student server commit notice:', err);
+    }
+  }
+
   async function pushToCloud() {
     if (isSyncing) {
       syncPending = true;
@@ -560,7 +616,10 @@
       // 1. Endpoint dedicado do quiz bank (mais confiável — dados nunca são sobrescritos)
       pullQuizBankFromCloud().catch(() => {});
 
-      // 2. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
+      // 2. Endpoint dedicado de alunos permanentes no GitHub
+      pullStudentsFromCloud().catch(() => {});
+
+      // 3. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
       try {
         const apiRes = await fetch('/api/sync', { cache: 'no-store' });
         if (apiRes.ok) {
@@ -1102,6 +1161,9 @@
 
       students.push(newStudent);
       localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+      
+      const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
+      pushStudentsToServer(students, deletedStudentIds);
       pushToCloud();
       return { success: true, user: newStudent };
     },
@@ -1116,6 +1178,8 @@
         students[idx].statusUpdatedAt = Date.now();
         students[idx].updatedAt = Date.now();
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+        const deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
+        pushStudentsToServer(students, deleted);
         pushToCloud();
         return { success: true, student: students[idx] };
       }
@@ -1132,6 +1196,8 @@
         students[idx].statusUpdatedAt = Date.now();
         students[idx].updatedAt = Date.now();
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+        const deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
+        pushStudentsToServer(students, deleted);
         pushToCloud();
         return { success: true, student: students[idx] };
       }
@@ -1155,6 +1221,7 @@
 
       students = students.filter(s => s.id !== studentId);
       localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+      pushStudentsToServer(students, deleted);
       pushToCloud();
       return { success: true };
     },
