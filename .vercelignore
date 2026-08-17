@@ -1,0 +1,5 @@
+# Servidor local de desenvolvimento - nao deve ser deployado no Vercel
+server.js
+
+# Scripts utilitarios locais
+scripts/

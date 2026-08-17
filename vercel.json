@@ -1,12 +1,13 @@
 {
   "version": 2,
+  "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
+      "source": "/api/sync",
+      "destination": "/api/sync.js"
     },
     {
-      "source": "/((?!assets|api|sw\\.js|manifest\\.json|favicon\\.ico|assets/images).*)",
+      "source": "/((?!assets|api|sw\\.js|manifest\\.json|favicon\\.ico).*)",
       "destination": "/index.html"
     }
   ],
