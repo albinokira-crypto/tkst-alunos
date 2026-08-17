@@ -152,9 +152,15 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: false, reason: 'Nenhuma questão para commitar.' });
     }
 
-    // Filtra apenas questões que são customizadas ou foram editadas pelo Sensei
-    // Isso mantém o commit leve, rápido e sem risco de 503
-    const customOnly = incomingQuestions.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+    // Filtra e deduplica rigorosamente por ID as questões customizadas ou editadas pelo Sensei
+    // Isso garante que ao editar uma questão já salva no GitHub, ela apenas se atualize no mesmo lugar
+    const customMap = new Map();
+    incomingQuestions.forEach(q => {
+      if (q && q.id && (q._edited || q.id.startsWith('q_custom_'))) {
+        customMap.set(q.id, q);
+      }
+    });
+    const customOnly = Array.from(customMap.values());
 
     // 1. Busca o arquivo atual e seu SHA
     const apiPath = `/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`;

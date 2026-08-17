@@ -2016,23 +2016,30 @@ window.TKST_DEFAULT_QUIZ_BANK = [
   try {
     const deletedIds = JSON.parse(localStorage.getItem('tkst_deleted_quiz_ids')) || [];
     const customBank = JSON.parse(localStorage.getItem('tkst_custom_quiz_bank'));
-    const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+    
+    // 1. Unifica e deduplica rigorosamente por ID as questoes padrao e comitadas no GitHub
+    const bankMap = new Map();
+    (window.TKST_DEFAULT_QUIZ_BANK || []).forEach(q => {
+      if (q && q.id && !deletedIds.includes(q.id)) {
+        bankMap.set(q.id, { ...q });
+      }
+    });
 
+    // 2. Sobrepoe alteracoes locais recentes (mesmo ID atualiza a mesma questao)
     if (Array.isArray(customBank) && customBank.length > 0) {
-      const bankMap = new Map();
-      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
       customBank.forEach(q => {
-        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+        if (q && q.id && !deletedIds.includes(q.id)) {
+          bankMap.set(q.id, q);
+        }
       });
-      const merged = Array.from(bankMap.values());
-      localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(merged));
-      window.TKST_QUIZ_BANK = merged;
-    } else {
-      window.TKST_QUIZ_BANK = defaultList;
-      localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(defaultList));
     }
+
+    const merged = Array.from(bankMap.values());
+    localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(merged));
+    window.TKST_QUIZ_BANK = merged;
+    window.TKST_DEFAULT_QUIZ_BANK = merged;
   } catch(e) {
-    window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK;
+    window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK || [];
   }
   window.TKST_QUIZ = window.TKST_QUIZ_BANK;
 })();

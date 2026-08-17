@@ -1371,38 +1371,40 @@
 
     getCustomQuizBank: function() {
       const del = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
-      const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || window.TKST_QUIZ || []).filter(q => !del.includes(q.id));
+      const rawDefault = (window.TKST_DEFAULT_QUIZ_BANK || window.TKST_QUIZ || []).filter(q => !del.includes(q.id));
       
+      const bankMap = new Map();
+      rawDefault.forEach(q => { if (q && q.id) bankMap.set(q.id, { ...q }); });
+
       try {
         let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
         if (Array.isArray(saved) && saved.length > 0) {
-          const bankMap = new Map();
-          // 1. Populate current default questions
-          defaultList.forEach(q => bankMap.set(q.id, { ...q }));
-
-          // 2. Overlay custom questions and edits
           saved.forEach(q => {
-            if (!del.includes(q.id)) {
+            if (q && q.id && !del.includes(q.id)) {
               bankMap.set(q.id, q);
             }
           });
-
-          const mergedBank = Array.from(bankMap.values());
-          localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(mergedBank));
-          window.TKST_QUIZ_BANK = mergedBank;
-          return mergedBank;
         }
       } catch(e) {}
 
-      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(defaultList));
-      window.TKST_QUIZ_BANK = defaultList;
-      return defaultList;
+      const mergedBank = Array.from(bankMap.values());
+      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(mergedBank));
+      window.TKST_QUIZ_BANK = mergedBank;
+      return mergedBank;
     },
 
     saveCustomQuizBank: function(bank) {
       if (!Array.isArray(bank)) return false;
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
-      const cleanBank = bank.filter(q => !deletedIds.includes(q.id));
+      
+      // Deduplica rigorosamente por ID para garantir que cada questão só exista uma única vez
+      const bankMap = new Map();
+      bank.forEach(q => {
+        if (q && q.id && !deletedIds.includes(q.id)) {
+          bankMap.set(q.id, q);
+        }
+      });
+      const cleanBank = Array.from(bankMap.values());
 
       // 1. Salva localmente
       localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(cleanBank));
