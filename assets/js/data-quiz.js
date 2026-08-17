@@ -1976,6 +1976,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
   }
   // Questões customizadas pelo Sensei (auto-salvo)
   // ==TKST_CUSTOM_QUESTIONS_START==
+  {"id":"q3-1","kyuNumber":3,"beltName":"Faixa Verde (3� Kyu)","question":"Qual o Kata requerido para o exame de 3� Kyu (Faixa Verde para Roxa)?","options":["Heian Yondan","Heian Godan","Heian Sandan","Tekki Shodan"],"correctIndex":0,"_edited":true,"updatedAt":1786960000000},
   // ==TKST_CUSTOM_QUESTIONS_END==
 ];
 
