@@ -17,8 +17,27 @@
       "createdAt": "2026-01-01T00:00:00.000Z",
       "phone": "(21) 97607-7598",
       "notes": "Administrador Master responsável por todo o sistema, arquivos e aprovações."
+    },
+    {
+      "id": "std_geovanna01",
+      "username": "geovanna01",
+      "email": "geovanna01@tkst.com.br",
+      "password": "1234",
+      "name": "Geovanna Coutinho",
+      "role": "aluno",
+      "currentBelt": "Faixa Preta (Shodan - 1º Dan)",
+      "targetBelt": "Faixa Preta (Nidan - 2º Dan)",
+      "currentKyu": 0,
+      "dojo": "QG TKST ( Capela )",
+      "startDate": "2026-08-17",
+      "avatar": "assets/images/logo-tkst.png",
+      "status": "approved",
+      "approvedAt": "2026-08-17T16:40:00.000Z",
+      "createdAt": "2026-08-17T16:24:00.000Z",
+      "phone": "21967456006",
+      "notes": "Aluna Faixa Preta (1º Dan) vinculada ao QG TKST Capela."
     }
   ],
   "deletedStudentIds": [],
-  "updatedAt": 1786995000000
+  "updatedAt": 1786995600000
 }

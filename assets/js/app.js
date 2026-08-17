@@ -5290,6 +5290,27 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (res.success) {
+        if (res.autoApproved) {
+          // Auto-aprovado por cruzamento com a base de alunos gerenciada pelo Sensei!
+          feedback.innerHTML = `
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1.5px solid var(--accent-emerald); color: #FFF; padding: 20px 16px; border-radius: var(--radius-md); font-size: 0.9rem; text-align: center;">
+              <div style="font-size: 1.15rem; font-weight: 700; color: #6EE7B7; margin-bottom: 8px;">
+                <i class="fas fa-check-double"></i> Aluno(a) Reconhecido(a) e Aprovado(a) Automaticamente!
+              </div>
+              <p style="font-size: 0.88rem; color: #E2E8F0; margin-bottom: 16px; line-height: 1.5;">
+                Olá, <strong>${res.user.name}</strong>! Seu nome foi reconhecido na base oficial de alunos da TKST. Seu acesso aos estudos, simulados e vídeos de Kata já foi <strong>100% liberado</strong>!
+              </p>
+              <button type="button" class="btn btn-primary" onclick="window.TKST_AUTH.setCurrentUser(${JSON.stringify(res.user).replace(/"/g, '&quot;')}); document.getElementById('detailModal').classList.remove('active'); window.TKST_APP.switchTab('dashboard');" style="width: 100%; padding: 13px; font-weight: 700; font-size: 0.95rem; margin-bottom: 10px;">
+                <i class="fas fa-sign-in-alt"></i> Acessar Meu Portal de Aluno Agora
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="width: 100%; padding: 9px; font-weight: 600; font-size: 0.85rem;">
+                Fechar
+              </button>
+            </div>
+          `;
+          return;
+        }
+
         const senseiPhone = '5521972114674';
         const msg = `🥋 *SOLICITAÇÃO DE MATRÍCULA - TKST KARATÊ SHOTOKAN*\n\nOlá Sensei Diego! Acabei de realizar meu cadastro no Portal Oficial TKST e gostaria da liberação do meu acesso aos estudos:\n\n👤 *Nome:* ${name}\n🆔 *Login:* ${res.user.username}\n🥋 *Graduação:* ${currentBelt}\n🏯 *Dojo / Unidade:* ${dojo}\n📱 *WhatsApp do Aluno:* ${phone || 'Não informado'}\n\nPor favor, libere meu acesso no sistema. Oss!`;
         const whatsappUrl = `https://wa.me/${senseiPhone}?text=${encodeURIComponent(msg)}`;

@@ -1138,34 +1138,87 @@
       const isBlack = parsedKyu === 0 || selectedBelt.toLowerCase().includes('preta') || selectedBelt.toLowerCase().includes('dan');
       const targetBelt = isBlack ? 'Faixa Preta' : (studentData.targetBelt || (parsedKyu === 7 ? 'Faixa Amarela (6º Kyu)' : 'Faixa Preta'));
 
+      // Cruzamento inteligente de nomes com a base de alunos gerenciada pelo Sensei
+      const cleanName = (studentData.name || '').trim();
+      const normInput = cleanName
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+
+      // Procura na base se já existe algum aluno cadastrado com este nome ou parte do nome
+      let matchedExistingStudent = null;
+      if (normInput.length >= 3) {
+        matchedExistingStudent = students.find(s => {
+          if (!s || !s.name || s.username === 'irons365') return false;
+          const normExisting = s.name
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+
+          if (normInput === normExisting) return true;
+          if (normInput.length >= 4 && normExisting.length >= 4 && (normExisting.includes(normInput) || normInput.includes(normExisting))) return true;
+
+          const inParts = normInput.split(' ');
+          const exParts = normExisting.split(' ');
+          if (inParts.length >= 2 && exParts.length >= 2) {
+            if (inParts[0] === exParts[0] && inParts[inParts.length - 1] === exParts[exParts.length - 1]) return true;
+          }
+          return false;
+        });
+      }
+
+      let isAutoApproved = false;
+      let initialStatus = studentData.status || 'pending';
+      let autoApprovedAt = null;
+
+      if (matchedExistingStudent) {
+        // Aluno reconhecido no gerenciador de alunos! Auto-aprovação imediata!
+        isAutoApproved = true;
+        initialStatus = 'approved';
+        autoApprovedAt = new Date().toISOString();
+      }
+
       const newStudent = {
-        id: 'std_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        id: matchedExistingStudent ? matchedExistingStudent.id : ('std_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)),
         username: cleanNick,
         email: studentData.email ? studentData.email.trim() : `${cleanNick}@tkst.local`,
         password: pass,
-        name: studentData.name.trim(),
+        name: cleanName,
         role: studentData.role || 'aluno',
         currentBelt: selectedBelt,
         targetBelt: targetBelt,
         currentKyu: parsedKyu,
-        dojo: studentData.dojo || 'TKST Santo Aleixo',
-        startDate: studentData.startDate || new Date().toISOString().split('T')[0],
-        avatar: studentData.avatar || 'assets/images/logo-tkst.png',
-        status: studentData.status || 'pending',
-        createdAt: new Date().toISOString(),
+        dojo: studentData.dojo || (matchedExistingStudent ? matchedExistingStudent.dojo : 'TKST Santo Aleixo'),
+        startDate: studentData.startDate || (matchedExistingStudent ? matchedExistingStudent.startDate : new Date().toISOString().split('T')[0]),
+        avatar: studentData.avatar || (matchedExistingStudent ? matchedExistingStudent.avatar : 'assets/images/logo-tkst.png'),
+        status: initialStatus,
+        approvedAt: autoApprovedAt,
+        createdAt: matchedExistingStudent ? (matchedExistingStudent.createdAt || new Date().toISOString()) : new Date().toISOString(),
         updatedAt: Date.now(),
         statusUpdatedAt: Date.now(),
-        phone: studentData.phone ? studentData.phone.trim() : '',
-        notes: studentData.notes || 'Novo cadastro realizado pelo portal.'
+        phone: studentData.phone ? studentData.phone.trim() : (matchedExistingStudent ? matchedExistingStudent.phone : ''),
+        notes: (studentData.notes || 'Novo cadastro realizado pelo portal.') + (isAutoApproved ? ' [Auto-aprovado: Aluno reconhecido na base]' : '')
       };
 
-      students.push(newStudent);
+      if (matchedExistingStudent) {
+        const existIdx = students.findIndex(s => s.id === matchedExistingStudent.id);
+        if (existIdx !== -1) {
+          students[existIdx] = { ...students[existIdx], ...newStudent };
+        } else {
+          students.push(newStudent);
+        }
+      } else {
+        students.push(newStudent);
+      }
+
       localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
       
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
       pushStudentsToServer(students, deletedStudentIds);
       pushToCloud();
-      return { success: true, user: newStudent };
+      return { success: true, user: newStudent, autoApproved: isAutoApproved };
     },
 
     approveStudent: function(studentId) {
