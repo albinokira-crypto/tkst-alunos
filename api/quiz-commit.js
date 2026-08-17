@@ -12,7 +12,9 @@ const MARKER_END = '// ==TKST_CUSTOM_QUESTIONS_END==';
 
 function githubRequest(method, path, token, body) {
   return new Promise((resolve, reject) => {
-    const data = body ? JSON.stringify(body) : null;
+    const dataString = body ? JSON.stringify(body) : null;
+    const dataBuffer = dataString ? Buffer.from(dataString, 'utf8') : null;
+
     const options = {
       hostname: 'api.github.com',
       path,
@@ -21,33 +23,55 @@ function githubRequest(method, path, token, body) {
         'Authorization': `token ${token}`,
         'Accept': 'application/vnd.github.v3+json',
         'User-Agent': 'TKST-Alunos-AutoCommit/1.0',
-        'Content-Type': 'application/json',
-        ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {})
+        'Content-Type': 'application/json; charset=utf-8',
+        ...(dataBuffer ? { 'Content-Length': dataBuffer.length } : {})
       }
     };
 
     const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk);
+      let responseText = '';
+      res.setEncoding('utf8');
+      res.on('data', chunk => { responseText += chunk; });
       res.on('end', () => {
         try {
-          resolve({ status: res.statusCode, data: JSON.parse(body) });
+          resolve({ status: res.statusCode, data: JSON.parse(responseText) });
         } catch {
-          resolve({ status: res.statusCode, data: body });
+          resolve({ status: res.statusCode, data: responseText });
         }
       });
     });
 
     req.on('error', reject);
-    if (data) req.write(data);
-    req.end();
+    if (dataBuffer) {
+      req.end(dataBuffer);
+    } else {
+      req.end();
+    }
   });
 }
 
+// Executa requisição ao GitHub com retries automáticos em caso de 503/timeout
+async function githubRequestWithRetry(method, path, token, body, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await githubRequest(method, path, token, body);
+      if (res.status === 200 || res.status === 201 || (attempt === retries && res.status < 500)) {
+        return res;
+      }
+      // Se deu erro 500/502/503/504, aguarda e tenta novamente
+      if (res.status >= 500 && attempt < retries) {
+        await new Promise(r => setTimeout(r, attempt * 1000));
+        continue;
+      }
+      return res;
+    } catch (err) {
+      if (attempt === retries) throw err;
+      await new Promise(r => setTimeout(r, attempt * 1000));
+    }
+  }
+}
+
 // Injeta o bloco de questões customizadas no conteúdo do arquivo
-// Estratégia:
-//   1. Se os marcadores START/END já existem → substitui apenas o conteúdo entre eles
-//   2. Se não existem → insere antes do fechamento ]; do array TKST_DEFAULT_QUIZ_BANK
 function injectCustomBlock(currentContent, customQuestions) {
   const questionsJson = customQuestions.map(q => '  ' + JSON.stringify(q)).join(',\n');
 
@@ -67,17 +91,16 @@ function injectCustomBlock(currentContent, customQuestions) {
   }
 
   // Caso 2: Marcadores não existem — procura o fechamento do array principal
-  // O array window.TKST_DEFAULT_QUIZ_BANK termina com "];\n" antes do comentário "// Initialize"
   const patterns = [
-    /\n\];\s*\n\/\/ Initialize/,       // "];\n// Initialize"  (mais comum)
-    /\n\];\s*\r?\n\/\/ Initialize/,    // versão CRLF
-    /\n\];\s*\n\n\/\/ Initialize/      // com linha em branco extra
+    /\n\];\s*\n\/\/ Initialize/,
+    /\n\];\s*\r?\n\/\/ Initialize/,
+    /\n\];\s*\n\n\/\/ Initialize/
   ];
 
   for (const pattern of patterns) {
     const match = pattern.exec(currentContent);
     if (match) {
-      const insertAt = match.index; // ponto logo antes do "];
+      const insertAt = match.index;
       const customBlock = customQuestions.length > 0
         ? `\n  // Questões customizadas pelo Sensei (auto-salvo)\n  ${MARKER_START}\n${questionsJson},\n  ${MARKER_END}`
         : `\n  // Questões customizadas pelo Sensei (auto-salvo)\n  ${MARKER_START}\n  ${MARKER_END}`;
@@ -86,7 +109,6 @@ function injectCustomBlock(currentContent, customQuestions) {
     }
   }
 
-  // Fallback: não encontrou padrão conhecido — retorna sem modificar
   console.error('quiz-commit: não encontrou ponto de injeção no arquivo. Nenhuma alteração feita.');
   return null;
 }
@@ -101,7 +123,7 @@ module.exports = async (req, res) => {
 
   const token = process.env.GITHUB_TOKEN;
 
-  // DIAGNÓSTICO — lista env vars disponíveis no runtime (sem valores)
+  // Diagnóstico
   if (req.body && (req.body.debug === true || (typeof req.body === 'string' && req.body.includes('"debug":true')))) {
     const envKeys = Object.keys(process.env).filter(k =>
       !k.startsWith('PATH') && !k.startsWith('npm_') && !k.startsWith('NODE') &&
@@ -112,8 +134,8 @@ module.exports = async (req, res) => {
       tokenLength: token ? token.length : 0,
       tokenPrefix: token ? token.slice(0, 6) + '...' : null,
       visibleEnvKeys: envKeys,
-      repo: process.env.GITHUB_REPO || '(não definido — usando padrão)',
-      branch: process.env.GITHUB_BRANCH || '(não definido — usando padrão)'
+      repo: REPO,
+      branch: BRANCH
     });
   }
 
@@ -125,14 +147,18 @@ module.exports = async (req, res) => {
     let body = req.body;
     if (typeof body === 'string') body = JSON.parse(body);
 
-    const customQuestions = body.customQuestions;
-    if (!Array.isArray(customQuestions) || customQuestions.length === 0) {
+    const incomingQuestions = body.customQuestions || body.questions || body.bank || body;
+    if (!Array.isArray(incomingQuestions)) {
       return res.status(200).json({ success: false, reason: 'Nenhuma questão para commitar.' });
     }
 
+    // Filtra apenas questões que são customizadas ou foram editadas pelo Sensei
+    // Isso mantém o commit leve, rápido e sem risco de 503
+    const customOnly = incomingQuestions.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+
     // 1. Busca o arquivo atual e seu SHA
     const apiPath = `/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`;
-    const getResult = await githubRequest('GET', apiPath, token, null);
+    const getResult = await githubRequestWithRetry('GET', apiPath, token, null);
 
     if (getResult.status !== 200) {
       return res.status(200).json({ success: false, reason: `GitHub GET falhou: ${getResult.status}`, detail: getResult.data });
@@ -141,8 +167,8 @@ module.exports = async (req, res) => {
     const sha = getResult.data.sha;
     const currentContent = Buffer.from(getResult.data.content.replace(/\n/g, ''), 'base64').toString('utf8');
 
-    // 2. Injeta as questões customizadas no arquivo
-    const updatedContent = injectCustomBlock(currentContent, customQuestions);
+    // 2. Injeta as questões customizadas/editadas no arquivo
+    const updatedContent = injectCustomBlock(currentContent, customOnly);
 
     if (!updatedContent) {
       return res.status(200).json({ success: false, reason: 'Não foi possível localizar o ponto de injeção no data-quiz.js.' });
@@ -150,15 +176,15 @@ module.exports = async (req, res) => {
 
     // Se o conteúdo não mudou, não faz commit desnecessário
     if (updatedContent === currentContent) {
-      return res.status(200).json({ success: true, committed: 0, message: 'Arquivo já estava atualizado. Nenhum commit necessário.' });
+      return res.status(200).json({ success: true, committed: customOnly.length, message: 'Arquivo já estava atualizado.' });
     }
 
-    // 3. Commit via GitHub API
+    // 3. Commit via GitHub API com retries automáticos
     const encodedContent = Buffer.from(updatedContent, 'utf8').toString('base64');
     const now = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-    const putResult = await githubRequest('PUT', `/repos/${REPO}/contents/${FILE_PATH}`, token, {
-      message: `feat(quiz): ${customQuestions.length} questão(ões) salva(s) pelo Sensei em ${now}`,
+    const putResult = await githubRequestWithRetry('PUT', `/repos/${REPO}/contents/${FILE_PATH}`, token, {
+      message: `feat(quiz): ${customOnly.length} questão(ões) atualizada(s) pelo Sensei em ${now}`,
       content: encodedContent,
       sha,
       branch: BRANCH
@@ -167,9 +193,9 @@ module.exports = async (req, res) => {
     if (putResult.status === 200 || putResult.status === 201) {
       return res.status(200).json({
         success: true,
-        committed: customQuestions.length,
+        committed: customOnly.length,
         commitUrl: putResult.data.commit?.html_url || null,
-        message: `${customQuestions.length} questão(ões) commitada(s) com sucesso!`
+        message: `${customOnly.length} questão(ões) salva(s) com sucesso na nuvem permanente!`
       });
     } else {
       return res.status(200).json({ success: false, reason: `GitHub PUT falhou: ${putResult.status}`, detail: putResult.data });

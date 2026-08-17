@@ -82,16 +82,17 @@
 
   async function pushQuizBankToCloud(bank, deletedIds) {
     try {
+      const customOnly = (bank || []).filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
       // 1. Endpoint dedicado /api/quiz-bank (persistência entre requisições)
       fetch('/api/quiz-bank', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bank, deletedQuizIds: deletedIds || [] })
+        body: JSON.stringify({ bank: customOnly, deletedQuizIds: deletedIds || [] })
       }).catch(() => {});
 
       // 2. Commit automático no GitHub via endpoint server-side seguro
       //    (token fica na variável de ambiente Vercel — sem necessidade de configuração manual)
-      pushQuizBankToServer(bank).catch(() => {});
+      pushQuizBankToServer(customOnly).catch(() => {});
     } catch(err) {
       console.warn('Quiz bank push notice:', err);
     }
@@ -132,10 +133,18 @@
     try {
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+      const localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
       const bankMap = new Map();
+
+      // 1. Base default questions
       defaultList.forEach(q => bankMap.set(q.id, { ...q }));
 
-      // 1ª tentativa: endpoint dedicado /api/quiz-bank
+      // 2. Overlay current local questions (never overwrite what was edited locally)
+      localSaved.forEach(q => {
+        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+      });
+
+      // 3. 1ª tentativa: endpoint dedicado /api/quiz-bank
       let cloudQuestions = [];
       try {
         const res = await fetch('/api/quiz-bank', { cache: 'no-store' });
@@ -147,16 +156,21 @@
         }
       } catch(e) {}
 
-      // 2ª tentativa (fallback): lê direto do GitHub se /api/quiz-bank veio vazio
+      // 4. 2ª tentativa (fallback): lê direto do GitHub se /api/quiz-bank veio vazio
       if (cloudQuestions.length === 0) {
         cloudQuestions = await pullQuizBankFromGitHub();
       }
 
-      if (cloudQuestions.length === 0) return; // nada novo na nuvem
-
-      cloudQuestions.forEach(q => {
-        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
-      });
+      if (cloudQuestions.length > 0) {
+        cloudQuestions.forEach(q => {
+          if (!deletedIds.includes(q.id) && q && q.id) {
+            const localQ = bankMap.get(q.id);
+            if (!localQ || !localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt) || !localQ._edited) {
+              bankMap.set(q.id, q);
+            }
+          }
+        });
+      }
 
       const merged = Array.from(bankMap.values());
       const localStr = localStorage.getItem(STORAGE_KEY_QUIZ_BANK);
@@ -215,7 +229,8 @@
       const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
       const deletedGlossaryTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
       const quiz_submissions = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => !deletedQuizSubIds.includes(s.id));
-      const custom_quiz_bank = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || []).filter(q => !deletedQuizIds.includes(q.id));
+      const allSavedQuiz = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
+      const custom_quiz_bank = allSavedQuiz.filter(q => !deletedQuizIds.includes(q.id) && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
       const custom_glossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || {};
 
       const payload = {
@@ -478,11 +493,18 @@
     // 7. Sync Custom Quiz Bank (Filter out tombstoned deleted questions and merge with defaults)
     if (Array.isArray(cloudData.custom_quiz_bank) && cloudData.custom_quiz_bank.length > 0) {
       const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !localDeletedQuizzes.includes(q.id));
+      const localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
       const bankMap = new Map();
       defaultList.forEach(q => bankMap.set(q.id, { ...q }));
+      localSaved.forEach(q => {
+        if (!localDeletedQuizzes.includes(q.id)) bankMap.set(q.id, q);
+      });
       cloudData.custom_quiz_bank.forEach(q => {
-        if (!localDeletedQuizzes.includes(q.id)) {
-          bankMap.set(q.id, q);
+        if (!localDeletedQuizzes.includes(q.id) && q && q.id) {
+          const localQ = bankMap.get(q.id);
+          if (!localQ || !localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt) || !localQ._edited) {
+            bankMap.set(q.id, q);
+          }
         }
       });
       const mergedBank = Array.from(bankMap.values());
