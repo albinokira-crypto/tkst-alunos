@@ -1546,6 +1546,119 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     correctIndex: 0,
     explanation: "De 61 a 100 utiliza-se as dezenas Roku-Ju (60), Nana-Ju (70), Hachi-Ju (80), Kyu-Ju (90) e atinge-se Hyaku (100)."
   },
+  {
+    id: "q0-16",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan - 1º Dan)",
+    question: "No exame de Shodan (1º Dan), qual a diferença técnica entre os ataques duplos Yama Tsuki (Soco em Montanha) e Awase Tsuki (Soco em 'U')?",
+    options: [
+      "No Yama Tsuki os punhos atacam em planos verticais formando uma curva ampla em forma de montanha (Jodan e Chudan), enquanto no Awase Tsuki os punhos atacam juntos na mesma linha vertical paralela direta",
+      "O Yama Tsuki é desferido apenas com a mão aberta e o Awase Tsuki é desferido com o cotovelo",
+      "O Yama Tsuki é uma defesa e o Awase Tsuki é um chute duplo",
+      "Não há diferença técnica, ambos são o mesmo golpe com nomes trocados"
+    ],
+    correctIndex: 0,
+    explanation: "O Yama Tsuki descreve uma trajetória curva imitando o kanji de montanha (山), com um punho em Jodan e outro em Chudan com o tronco inclinado, enquanto o Awase Tsuki é um ataque simultâneo direto com punhos paralelos verticalmente alinhados."
+  },
+  {
+    id: "q0-17",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan - 1º Dan)",
+    question: "No programa de Te Waza para Faixa Preta (Shodan), como são classificadas as técnicas de mão aberta Shihon Nukite, Nihon Nukite e Ippon Nukite?",
+    options: [
+      "Ataques perfurantes com a ponta dos dedos: Shihon (4 dedos), Nihon (2 dedos em V visando os olhos) e Ippon (1 dedo indicador em ponto vital)",
+      "Defesas circulares com a palma da mão para nível médio e baixo",
+      "Técnicas de agarramento de kimono e projeção no solo",
+      "Variações de golpes com o dorso do punho fechado em avanço"
+    ],
+    correctIndex: 0,
+    explanation: "Nukite são técnicas de mão em lança perfurante: Shihon Nukite utiliza 4 dedos agrupados, Nihon Nukite utiliza 2 dedos (indicador e médio) frequentemente direcionados aos olhos, e Ippon Nukite usa a ponta de um único dedo em pontos vitais (Kyusho)."
+  },
+  {
+    id: "q0-18",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan - 1º Dan)",
+    question: "Entre as 25 técnicas de Uke Waza do Shodan da TKST, qual a definição correta de Seiryuto Uke e Kake Wake Uke?",
+    options: [
+      "Seiryuto Uke é a defesa com a base da mão e pulso (mandíbula do boi), e Kake Wake Uke é a defesa dupla em cunha separando ataques com ambos os antebraços",
+      "Seiryuto Uke é um chute em salto e Kake Wake Uke é uma queda",
+      "Ambas são defesas baixas executadas somente em Kiba Dachi",
+      "Seiryuto Uke é uma esquiva circular e Kake Wake Uke é um ataque com a cabeça"
+    ],
+    correctIndex: 0,
+    explanation: "Seiryuto Uke utiliza a base da palma/borda do rádio (mandíbula do boi) para desviar golpes contundentes, enquanto Kake Wake Uke (defesa em cunha/abertura) afasta ataques duplos simultâneos usando os dois antebraços externamente."
+  },
+  {
+    id: "q0-19",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan - 1º Dan)",
+    question: "No pilar de Ashi Waza para Shodan (15 chutes oficiais), quais técnicas correspondem a Ura Mawashi Geri, Mikazuki Geri e Kakuto Geri?",
+    options: [
+      "Ura Mawashi (chute circular invertido/gancho com calcanhar/sola), Mikazuki (chute semicircular em meia-lua) e Kakuto (chute descendente 'machado' com o calcanhar)",
+      "Três tipos de rasteiras baixas aplicadas apenas no calcanhar do oponente",
+      "Chutes laterais empurrados em linha reta sem flexão de joelho",
+      "Técnicas de joelhadas saltadas sem impacto"
+    ],
+    correctIndex: 0,
+    explanation: "Ura Mawashi Geri é o chute em chicotada invertida atingindo com o calcanhar/planta, Mikazuki Geri é o chute em meia-lua (interno ou externo) e Kakuto/Kakato Geri é o chute descendente esmagador utilizando o calcanhar."
+  },
+  {
+    id: "q0-20",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan - 1º Dan)",
+    question: "O exame de Faixa Preta (Shodan) da TKST exige o domínio de 18 posturas (Dachi Waza). Qual a característica fundamental de Hangetsu Dachi e Sanchin Dachi?",
+    options: [
+      "São bases semicirculares de grande estabilidade e tensão dinâmica interna (tensão isométrica e respiração concentrada), originárias do Naha-te / Tomari-te",
+      "São bases totalmente relaxadas e longas exclusivas para corridas de velocidade",
+      "São posturas em um pé só utilizadas para desarmar bastão",
+      "São bases sentadas no chão com pernas cruzadas"
+    ],
+    correctIndex: 0,
+    explanation: "Hangetsu Dachi (base meia-lua) e Sanchin Dachi (base das três batalhas) utilizam rotação interna dos joelhos e contração pélvico-abdominal profunda (Shime), gerando extrema solidez e ancoragem no solo."
+  },
+  {
+    id: "q0-21",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan - 1º Dan)",
+    question: "No plano de estudos para Shodan da TKST, qual a exigência oficial referente aos Katas Heian e aos Katas Superiores?",
+    options: [
+      "Execução com excelência dos 5 Katas Heian (demonstrando 1 Bunkai prático em cada um), além dos Katas oficiais Tekki Shodan, Bassai Dai, Kanku Dai e Jion",
+      "Apresentar apenas o Heian Shodan sem aplicação prática",
+      "Criar um Kata livre sem regras tradicionais",
+      "Executar somente Katas de outros estilos como Wado-Ryu ou Goju-Ryu"
+    ],
+    correctIndex: 0,
+    explanation: "O candidato a Shodan deve dominar a aplicação marcial real (Bunkai) de cada um dos 5 Heians, além de demonstrar perfeição técnica e ritmo nos Katas avançados Tekki Shodan, Bassai Dai, Kanku Dai e Jion."
+  },
+  {
+    id: "q0-22",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan - 1º Dan)",
+    question: "O teste de Kumite para Shodan da TKST inclui o combate sucessivo: Contra 1, Contra 2 e Contra 4 oponentes. Qual o objetivo marcial dessa avaliação?",
+    options: [
+      "Testar o Zanshin absoluto, controle espacial, visão periférica, tempo de reação (De-ai), estratégia de não se deixar cercar e espírito inabalável (Fudoshin)",
+      "Nocautear violentamente todos os oponentes sem critério de controle",
+      "Ficar parado no centro do Dojo sem se movimentar",
+      "Apenas realizar técnicas pré-combinadas (Yakusoku) sem contato"
+    ],
+    correctIndex: 0,
+    explanation: "O Jiyu Kumite múltiplo do Shodan avalia o praticante em situação real de múltiplos agressores: exige posicionamento dinâmico (alinhando os oponentes para não ser cercado), Zanshin contínuo, compostura emocional e controle técnico total."
+  },
+  {
+    id: "q0-23",
+    kyuNumber: 0,
+    beltName: "Faixa Preta (Shodan - 1º Dan)",
+    question: "De acordo com o Plano Oficial de Estudos para Shodan da TKST, quantas técnicas fundamentais de Kihon compõem o somatório dos 4 pilares técnicos (Te Waza, Uke Waza, Ashi Waza e Dachi Waza)?",
+    options: [
+      "86 técnicas no total (28 Te Waza + 25 Uke Waza + 15 Ashi Waza + 18 Dachi Waza)",
+      "40 técnicas (10 de cada pilar)",
+      "120 técnicas divididas em 2 pilares",
+      "50 técnicas sem divisão de categorias"
+    ],
+    correctIndex: 0,
+    explanation: "A Tabela Geral do Exame de Shodan da TKST é estruturada em 4 pilares somando 86 técnicas fundamentais: 28 ataques de mão (Te Waza), 25 defesas (Uke Waza), 15 chutes (Ashi Waza) e 18 bases (Dachi Waza)."
+  },
+
 
   // =========================================================================
   // FAIXA PRETA NIDAN (2º DAN)
@@ -1973,7 +2086,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     ],
     correctIndex: 0,
     explanation: "O 3º Dan simboliza a transição de praticante avançado para professor habilitado com profunda compreensão do Budo."
-  }
+  },
   // Questões customizadas pelo Sensei (auto-salvo)
   // ==TKST_CUSTOM_QUESTIONS_START==
   {"id":"q3-1","kyuNumber":3,"beltName":"Faixa Verde (3� Kyu)","question":"Qual o Kata requerido para o exame de 3� Kyu (Faixa Verde para Roxa)?","options":["Heian Yondan","Heian Godan","Heian Sandan","Tekki Shodan"],"correctIndex":0,"_edited":true,"updatedAt":1786960000000},
