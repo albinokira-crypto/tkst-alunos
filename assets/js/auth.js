@@ -82,19 +82,16 @@
 
   async function pushQuizBankToCloud(bank, deletedIds) {
     try {
-      // 1. Endpoint dedicado /api/quiz-bank (mais persistente que o sync geral)
-      await fetch('/api/quiz-bank', {
+      // 1. Endpoint dedicado /api/quiz-bank (persistência entre requisições)
+      fetch('/api/quiz-bank', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bank, deletedQuizIds: deletedIds || [] })
       }).catch(() => {});
 
-      // 2. GitHub auto-commit (se token configurado pelo Sensei)
-      const ghToken = localStorage.getItem('tkst_github_token');
-      const ghRepo = localStorage.getItem('tkst_github_repo');
-      if (ghToken && ghRepo && Array.isArray(bank)) {
-        pushQuizBankToGitHub(bank, ghToken, ghRepo).catch(() => {});
-      }
+      // 2. Commit automático no GitHub via endpoint server-side seguro
+      //    (token fica na variável de ambiente Vercel — sem necessidade de configuração manual)
+      pushQuizBankToServer(bank).catch(() => {});
     } catch(err) {
       console.warn('Quiz bank push notice:', err);
     }
@@ -127,56 +124,34 @@
     }
   }
 
-  async function pushQuizBankToGitHub(bank, token, repo) {
+  // Commit server-side seguro: o token GITHUB_TOKEN fica exclusivamente
+  // na variável de ambiente da Vercel — nunca exposto ao browser.
+  async function pushQuizBankToServer(bank) {
+    if (!Array.isArray(bank)) return;
+    const customOnly = bank.filter(q => q.id && q.id.startsWith('q_custom_'));
+    if (customOnly.length === 0) return; // Sem questões customizadas, nada a commitar
+
     try {
-      // repo format: 'owner/repo-name'
-      const apiBase = `https://api.github.com/repos/${repo}/contents/assets/js/data-quiz.js`;
-      const headers = {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      };
-
-      // Busca SHA atual do arquivo
-      const getRes = await fetch(apiBase, { headers });
-      if (!getRes.ok) return;
-      const fileInfo = await getRes.json();
-      const sha = fileInfo.sha;
-
-      // Gera conteúdo atualizado do data-quiz.js
-      const customOnly = bank.filter(q => q.id && q.id.startsWith('q_custom_'));
-      if (customOnly.length === 0) return; // Nada custom para commitar
-
-      // Decodifica o arquivo atual e injeta as questões customizadas
-      const currentContent = atob(fileInfo.content.replace(/\n/g, ''));
-      const marker = '// ==TKST_CUSTOM_QUESTIONS_START==';
-      const endMarker = '// ==TKST_CUSTOM_QUESTIONS_END==';
-      const customBlock = `${marker}\n${customOnly.map(q => JSON.stringify(q)).join(',\n  ')},\n${endMarker}`;
-
-      let updatedContent;
-      if (currentContent.includes(marker)) {
-        const startIdx = currentContent.indexOf(marker);
-        const endIdx = currentContent.indexOf(endMarker) + endMarker.length;
-        updatedContent = currentContent.slice(0, startIdx) + customBlock + currentContent.slice(endIdx);
-      } else {
-        // Injeta antes do fechamento do array
-        updatedContent = currentContent.replace(/\];\s*$/, `  // Questões customizadas pelo Sensei\n  ${customBlock}\n];`);
-      }
-
-      const encoded = btoa(unescape(encodeURIComponent(updatedContent)));
-      await fetch(apiBase, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({
-          message: `feat: questões customizadas do simulado salvas pelo Sensei - ${new Date().toLocaleString('pt-BR')}`,
-          content: encoded,
-          sha
-        })
+      const res = await fetch('/api/quiz-commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customQuestions: customOnly })
       });
 
-      window.dispatchEvent(new CustomEvent('tkst_quiz_committed', { detail: { count: customOnly.length } }));
+      if (!res.ok) return;
+      const json = await res.json();
+
+      if (json.success) {
+        // Commit realizado com sucesso — notifica a UI
+        window.dispatchEvent(new CustomEvent('tkst_quiz_committed', {
+          detail: { count: json.committed, commitUrl: json.commitUrl }
+        }));
+      }
+      // Se json.success === false por falta de token ou sem questões custom,
+      // falha silenciosamente — as questões já estão salvas no /api/quiz-bank
     } catch(err) {
-      console.warn('GitHub quiz commit notice:', err);
+      // Falha silenciosa — não bloqueia o uso do app
+      console.warn('Quiz server commit notice:', err);
     }
   }
 

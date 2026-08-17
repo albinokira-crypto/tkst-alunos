@@ -10,6 +10,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/quiz-commit.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "**/*",
       "use": "@vercel/static"
     }
@@ -22,6 +26,10 @@
     {
       "src": "/api/quiz-bank",
       "dest": "/api/quiz-bank.js"
+    },
+    {
+      "src": "/api/quiz-commit",
+      "dest": "/api/quiz-commit.js"
     },
     {
       "handle": "filesystem"
