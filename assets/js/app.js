@@ -778,7 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span style="color: #94A3B8;">Dojo / Unidade:</span>
-              <strong style="color: #FFF;">${user.dojo || 'TKST Matriz'}</strong>
+              <strong style="color: #FFF;">${user.dojo || 'TKST'}</strong>
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span style="color: #94A3B8;">Status:</span>
@@ -5547,14 +5547,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!nick) return;
       const currentBelt = prompt('Faixa:', 'Faixa Branca');
       const pass = prompt('Senha de acesso (mínimo 4 caracteres):', '1234');
-      const dojo = prompt('Dojo / Unidade:', 'TKST Matriz - Central');
+      const dojo = prompt('Dojo / Unidade:', 'TKST Santo Aleixo');
 
       const res = window.TKST_AUTH.register({
         name,
         username: nick,
         currentBelt: currentBelt || 'Faixa Branca',
         currentKyu: 6,
-        dojo: dojo || 'TKST Matriz - Central',
+        dojo: dojo || 'TKST Santo Aleixo',
         password: pass || '1234',
         status: 'approved'
       });

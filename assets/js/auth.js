@@ -44,13 +44,12 @@
     }
   } catch(e) {}
 
-  const OFFICIAL_4_DOJOS = [
-    'TKST Matriz - Central',
+  const OFFICIAL_DOJOS = [
     'TKST Santo Aleixo',
     'QG TKST ( Capela )',
     'TKST Rio do Ouro'
   ];
-  const DEFAULT_DOJOS = OFFICIAL_4_DOJOS;
+  const DEFAULT_DOJOS = OFFICIAL_DOJOS;
 
   // =========================================================================
   // AUTOMATIC REAL-TIME CLOUD SYNC ENGINE (PC <-> MOBILE IN REAL TIME)
@@ -421,6 +420,9 @@
 
     // Sync Deleted Dojos (Tombstone)
     let localDeletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+    if (!localDeletedDojos.includes('tkst matriz - central')) {
+      localDeletedDojos.push('tkst matriz - central');
+    }
     if (Array.isArray(cloudData.deletedDojos)) {
       const mergedDeletedDojos = Array.from(new Set([...localDeletedDojos, ...cloudData.deletedDojos.map(d => (d || '').toLowerCase().trim())]));
       if (mergedDeletedDojos.length !== localDeletedDojos.length) {
@@ -430,20 +432,12 @@
       }
     }
 
-    // 4. Sync Dojos
+    // 4. Sync Dojos (Tombstones ALWAYS win, never un-delete!)
     if (Array.isArray(cloudData.dojos)) {
       let localDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS)) || [];
-      cloudData.dojos.forEach(d => {
-        if (d) {
-          const clean = d.toLowerCase().trim();
-          localDeletedDojos = localDeletedDojos.filter(k => k !== clean);
-        }
-      });
-      localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(localDeletedDojos));
-
       const combined = [...localDojos, ...cloudData.dojos];
       const mergedDojos = Array.from(new Set(combined))
-        .filter(d => typeof d === 'string' && d.trim().length > 0 && !localDeletedDojos.includes(d.toLowerCase().trim()));
+        .filter(d => typeof d === 'string' && d.trim().length > 0 && !localDeletedDojos.includes(d.toLowerCase().trim()) && d.toLowerCase().trim() !== 'tkst matriz - central');
       const currentDojosStr = localStorage.getItem(STORAGE_KEY_DOJOS);
       const newDojosStr = JSON.stringify(mergedDojos);
       if (currentDojosStr !== newDojosStr) {
@@ -645,23 +639,20 @@
       localStorage.setItem(AUTH_VERSION_KEY, 'true');
     }
 
-    // Initialize Dojos (Set only the 4 official dojos and reset deleted blocklists)
+    // Initialize Dojos (Ensure deleted dojos and default list are clean)
     try {
-      const isPruned = localStorage.getItem('tkst_dojos_init_v5');
-      if (!isPruned) {
-        localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(OFFICIAL_4_DOJOS));
-        localStorage.removeItem(STORAGE_KEY_DELETED_DOJOS);
-        localStorage.setItem('tkst_dojos_init_v5', 'true');
-        setTimeout(pushToCloud, 300);
+      let deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+      if (!deletedDojos.includes('tkst matriz - central')) {
+        deletedDojos.push('tkst matriz - central');
+        localStorage.setItem(STORAGE_KEY_DELETED_DOJOS, JSON.stringify(deletedDojos));
+      }
+
+      let savedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS));
+      if (Array.isArray(savedDojos)) {
+        savedDojos = savedDojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()) && d.toLowerCase().trim() !== 'tkst matriz - central');
+        localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(savedDojos));
       } else {
-        const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
-        let savedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS));
-        if (Array.isArray(savedDojos)) {
-          savedDojos = savedDojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
-          localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(savedDojos));
-        } else {
-          localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(OFFICIAL_4_DOJOS));
-        }
+        localStorage.setItem(STORAGE_KEY_DOJOS, JSON.stringify(OFFICIAL_DOJOS));
       }
     } catch(e) {}
 
@@ -747,7 +738,7 @@
           currentBelt: 'Faixa Branca',
           targetBelt: 'Faixa Amarela (6º Kyu)',
           currentKyu: 6,
-          dojo: 'TKST Matriz - Central',
+          dojo: 'TKST Santo Aleixo',
           startDate: '2026-08-10',
           avatar: 'assets/images/tigre.png',
           status: 'pending',
@@ -810,15 +801,18 @@
     // DOJO MANAGEMENT
     // ==========================================
     getDojos: function() {
-      const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+      let deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
+      if (!deletedDojos.includes('tkst matriz - central')) {
+        deletedDojos.push('tkst matriz - central');
+      }
       try {
         const dojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS));
         if (Array.isArray(dojos) && dojos.length > 0) {
-          const filtered = dojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
+          const filtered = dojos.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()) && d.toLowerCase().trim() !== 'tkst matriz - central');
           if (filtered.length > 0) return filtered;
         }
       } catch(e) {}
-      return OFFICIAL_4_DOJOS.filter(d => !deletedDojos.includes(d.toLowerCase().trim()));
+      return OFFICIAL_DOJOS.filter(d => !deletedDojos.includes(d.toLowerCase().trim()) && d.toLowerCase().trim() !== 'tkst matriz - central');
     },
 
     addDojo: function(dojoName) {
@@ -1093,7 +1087,7 @@
         currentBelt: selectedBelt,
         targetBelt: targetBelt,
         currentKyu: parsedKyu,
-        dojo: studentData.dojo || 'TKST Matriz - Central',
+        dojo: studentData.dojo || 'TKST Santo Aleixo',
         startDate: studentData.startDate || new Date().toISOString().split('T')[0],
         avatar: studentData.avatar || 'assets/images/logo-tkst.png',
         status: studentData.status || 'pending',
@@ -1266,7 +1260,7 @@
         name: cleanName,
         username: cleanNick,
         phone: updatedData.phone !== undefined ? updatedData.phone.trim() : (currentUser.phone || ''),
-        dojo: updatedData.dojo ? updatedData.dojo.trim() : (currentUser.dojo || 'TKST Matriz - Central'),
+        dojo: updatedData.dojo ? updatedData.dojo.trim() : (currentUser.dojo || 'TKST Santo Aleixo'),
         currentBelt: selectedBelt,
         currentKyu: kyu,
         targetBelt: targetBelt,

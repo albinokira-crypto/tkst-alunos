@@ -21,7 +21,6 @@ function writeQuizBankToTmp(bank) {
 
 let inMemoryData = {
   dojos: [
-    'TKST Matriz - Central',
     'TKST Santo Aleixo',
     'QG TKST ( Capela )',
     'TKST Rio do Ouro'
@@ -54,7 +53,7 @@ let inMemoryData = {
   deletedQuizIds: [],
   deletedQuizSubIds: [],
   deletedGlossaryTerms: [],
-  deletedDojos: [],
+  deletedDojos: ['tkst matriz - central'],
   lastSync: new Date().toISOString()
 };
 
@@ -187,23 +186,18 @@ module.exports = async (req, res) => {
       }
       const allDeletedSubs = Array.from(deletedSubSet);
 
-      // 5. Merge deleted Dojos
+      // 5. Merge deleted Dojos (tombstones ALWAYS win)
       let deletedDojoSet = new Set(inMemoryData.deletedDojos || []);
+      deletedDojoSet.add('tkst matriz - central');
       if (Array.isArray(incoming.deletedDojos)) {
         incoming.deletedDojos.forEach(d => {
           if (d) deletedDojoSet.add(d.toLowerCase().trim());
         });
       }
-
-      if (Array.isArray(incoming.dojos)) {
-        incoming.dojos.forEach(d => {
-          if (d) deletedDojoSet.delete(d.toLowerCase().trim());
-        });
-      }
       const allDeletedDojos = Array.from(deletedDojoSet);
 
       let dojosList = Array.isArray(incoming.dojos) ? incoming.dojos : (inMemoryData.dojos || []);
-      dojosList = dojosList.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojoSet.has(d.toLowerCase().trim()));
+      dojosList = dojosList.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojoSet.has(d.toLowerCase().trim()) && d.toLowerCase().trim() !== 'tkst matriz - central');
 
       // Merge custom_quiz_bank: preserva questões já em memória e adiciona as novas
       const existingQuizBank = inMemoryData.custom_quiz_bank || readQuizBankFromTmp() || [];
