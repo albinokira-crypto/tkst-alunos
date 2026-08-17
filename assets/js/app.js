@@ -4679,12 +4679,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const modalBody = document.getElementById('detailModalBody');
       const currentCorrectText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
 
-      modalTitle.innerHTML = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Questão (${q.beltName || 'Faixa'})</span>`;
+      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Questão (${q.beltName || 'Faixa'})</span><span class="badge badge-gold" style="font-size: 0.7rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> Edição Protegida</span></div>`;
 
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditQuizQuestion('${q.id}');" style="display: flex; flex-direction: column; gap: 14px;">
           <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
-            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite o enunciado, anexe uma imagem ilustrativa (se desejar) e a <strong>resposta correta oficial</strong>.
+            <i class="fas fa-shield-alt" style="color: var(--accent-gold); margin-right: 6px;"></i> <strong>Modo Seguro:</strong> Esta tela não fecha por toques acidentais fora da área. Digite as informações e clique em <strong>Salvar</strong>.
           </div>
 
           <div class="form-group">
@@ -4725,7 +4725,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 8px;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.cancelModalEdit()" style="flex: 1; padding: 12px;">
               Cancelar
             </button>
             <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
@@ -4735,6 +4735,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </form>
       `;
 
+      detailModal.setAttribute('data-prevent-outside-close', 'true');
       detailModal.classList.add('active');
     },
 
@@ -4763,6 +4764,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // saveCustomQuizBank salva no localStorage, envia ao /api/quiz-bank E commita
       // o banco completo no GitHub (incluindo questões com IDs originais como q7-1)
       window.TKST_AUTH.saveCustomQuizBank(bank);
+      detailModal.removeAttribute('data-prevent-outside-close');
       detailModal.classList.remove('active');
       showToast('✅ Questão atualizada! Sincronizando com a nuvem...', 'sync');
       renderAdminMaster();
@@ -4774,12 +4776,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const modalBody = document.getElementById('detailModalBody');
       const beltName = getBeltNameFromKyu(kyu);
 
-      modalTitle.innerHTML = `<span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Nova Questão (${beltName})</span>`;
+      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Nova Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.7rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> Edição Protegida</span></div>`;
 
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddQuizQuestion(${kyu});" style="display: flex; flex-direction: column; gap: 14px;">
           <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
-            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Digite a pergunta, anexe uma foto ilustrativa (se desejar) e a <strong>resposta correta</strong>. As alternativas erradas serão geradas automaticamente pelo sistema!
+            <i class="fas fa-shield-alt" style="color: var(--accent-gold); margin-right: 6px;"></i> <strong>Modo Seguro:</strong> Esta tela não fecha por toques acidentais fora da área. Digite as informações e clique em <strong>Cadastrar</strong>.
           </div>
 
           <div class="form-group">
@@ -4820,7 +4822,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 8px;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.cancelModalEdit()" style="flex: 1; padding: 12px;">
               Cancelar
             </button>
             <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
@@ -4830,6 +4832,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </form>
       `;
 
+      detailModal.setAttribute('data-prevent-outside-close', 'true');
       detailModal.classList.add('active');
     },
 
@@ -6456,13 +6459,29 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       } else {
         alert((res && res.error) || 'Erro ao atualizar termo.');
       }
+    },
+    cancelModalEdit: () => {
+      const modal = document.getElementById('detailModal');
+      if (modal) {
+        modal.removeAttribute('data-prevent-outside-close');
+        modal.classList.remove('active');
+      }
     }
   };
 
   // Close modals
   document.querySelectorAll('.modal-overlay').forEach(m => {
     m.addEventListener('click', (e) => {
+      // Se clicou no fundo escuro fora da área do modal:
+      if (e.target === m) {
+        if (m.getAttribute('data-prevent-outside-close') === 'true' || m.querySelector('form')) {
+          // Bloqueia fechamento acidental ao tocar fora da área durante edição de questões ou formulários!
+          return;
+        }
+      }
+
       if (e.target === m || e.target.classList.contains('modal-close-btn') || e.target.closest('.modal-close-btn')) {
+        m.removeAttribute('data-prevent-outside-close');
         m.classList.remove('active');
         const container = m.querySelector('#videoModalContainer');
         if (container) container.innerHTML = '';
