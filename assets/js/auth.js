@@ -19,7 +19,7 @@
   const STORAGE_KEY_DELETED_GLOSSARY = 'tkst_deleted_glossary_terms';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
-  const SYNC_TOPIC = 'tkst_karate_master_stream_2026';
+  const SYNC_TOPIC = 'tkst_karate_cloud_v2_sync';
   const SYNC_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
   let isSyncing = false;
   let syncPending = false;
@@ -57,6 +57,12 @@
   // =========================================================================
   async function parseNtfyItem(item) {
     if (!item) return null;
+    if (item.message && typeof item.message === 'string') {
+      try {
+        const parsed = JSON.parse(item.message);
+        if (parsed && typeof parsed === 'object') return parsed;
+      } catch(e) {}
+    }
     if (item.attachment && item.attachment.url) {
       try {
         const res = await fetch(item.attachment.url);
@@ -67,11 +73,6 @@
         console.warn('Failed to fetch ntfy attachment:', e);
       }
     }
-    if (item.message && typeof item.message === 'string') {
-      try {
-        return JSON.parse(item.message);
-      } catch(e) {}
-    }
     return null;
   }
 
@@ -80,6 +81,7 @@
       syncPending = true;
       return;
     }
+    isSyncing = true;
     try {
       const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
       const dojos = (JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS)) || []).filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
@@ -91,8 +93,8 @@
       const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
       const deletedGlossaryTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
       const quiz_submissions = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => !deletedQuizSubIds.includes(s.id));
-      const custom_quiz_bank = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || (window.TKST_QUIZ_BANK || [])).filter(q => !deletedQuizIds.includes(q.id));
-      const custom_glossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || (window.TKST_GLOSSARY || {});
+      const custom_quiz_bank = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || []).filter(q => !deletedQuizIds.includes(q.id));
+      const custom_glossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || {};
 
       const payload = {
         dojos,
@@ -112,19 +114,19 @@
 
       const payloadStr = JSON.stringify(payload);
 
-      // 1. Post to Vercel Serverless Sync API
+      // 1. Post to Vercel Serverless Sync API (as fallback)
       fetch('/api/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: payloadStr
       }).catch(() => {});
 
-      // 2. Post to ntfy.sh for real-time pub/sub
+      // 2. Post directly to real-time pubsub stream
       await fetch(SYNC_URL, {
         method: 'POST',
         headers: { 
-          'Title': 'TKST_SYNC',
-          'Filename': 'sync.json'
+          'Title': 'TKST_DATA_V2',
+          'Content-Type': 'text/plain; charset=utf-8'
         },
         body: payloadStr
       });
@@ -136,7 +138,7 @@
       isSyncing = false;
       if (syncPending) {
         syncPending = false;
-        setTimeout(pushToCloud, 200);
+        setTimeout(pushToCloud, 300);
       }
     }
   }
@@ -178,30 +180,86 @@
       }
     }
 
-    // 4. Sync Students (Expunge deleted & merge active)
+    // 4. Sync Students (Expunge deleted & merge active with conflict protection)
     if (Array.isArray(cloudData.students)) {
       let localStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
       const studentMap = new Map();
 
       // Keep local students not deleted
       localStudents.forEach(s => {
-        if (!localDeleted.includes(s.id)) {
-          studentMap.set(s.id || s.username, s);
+        if (s && s.id && !localDeleted.includes(s.id)) {
+          studentMap.set(s.id, { ...s });
         }
       });
 
       // Merge cloud students not deleted
       cloudData.students.forEach(s => {
-        if (!localDeleted.includes(s.id)) {
-          const key = s.id || s.username;
-          const existing = studentMap.get(key);
-          const merged = { ...(existing || {}), ...s };
-          if (existing && existing.lastActive && s.lastActive) {
-            merged.lastActive = Math.max(new Date(existing.lastActive).getTime(), new Date(s.lastActive).getTime());
-          } else if (existing && existing.lastActive && !s.lastActive) {
-            merged.lastActive = existing.lastActive;
+        if (!s || !s.id || localDeleted.includes(s.id)) return;
+        const existing = studentMap.get(s.id);
+        if (!existing) {
+          studentMap.set(s.id, { ...s });
+          changed = true;
+        } else {
+          let studentModified = false;
+          const merged = { ...existing };
+
+          // Status conflict resolution:
+          const existingStatus = existing.status || 'pending';
+          const cloudStatus = s.status || 'pending';
+          const localStatusTime = existing.statusUpdatedAt || (existingStatus === 'approved' ? 1 : 0);
+          const cloudStatusTime = s.statusUpdatedAt || (cloudStatus === 'approved' ? 1 : 0);
+
+          if (existingStatus !== 'pending' && cloudStatus === 'pending') {
+            // NEVER revert approved/rejected to pending unless cloud statusUpdatedAt is strictly newer than local approval!
+            if (cloudStatusTime > localStatusTime && cloudStatusTime > (existing.approvedAt ? new Date(existing.approvedAt).getTime() : 0)) {
+              merged.status = cloudStatus;
+              merged.statusUpdatedAt = cloudStatusTime;
+              studentModified = true;
+            }
+          } else if (existingStatus === 'pending' && cloudStatus !== 'pending') {
+            // Cloud has approval/rejection! Accept it!
+            merged.status = cloudStatus;
+            merged.statusUpdatedAt = cloudStatusTime || Date.now();
+            if (s.approvedAt) merged.approvedAt = s.approvedAt;
+            if (s.rejectedAt) merged.rejectedAt = s.rejectedAt;
+            studentModified = true;
+          } else if (cloudStatusTime >= localStatusTime) {
+            if (merged.status !== cloudStatus) {
+              merged.status = cloudStatus;
+              studentModified = true;
+            }
+            merged.statusUpdatedAt = cloudStatusTime;
           }
-          studentMap.set(key, merged);
+
+          // Profile fields: update if cloud updatedAt >= local updatedAt
+          const localUpdateTime = existing.updatedAt || 0;
+          const cloudUpdateTime = s.updatedAt || 0;
+          if (cloudUpdateTime >= localUpdateTime) {
+            ['name', 'phone', 'currentBelt', 'currentKyu', 'targetBelt', 'dojo', 'notes', 'avatar', 'startDate'].forEach(f => {
+              if (s[f] !== undefined && s[f] !== null && s[f] !== '' && s[f] !== merged[f]) {
+                merged[f] = s[f];
+                studentModified = true;
+              }
+            });
+            if (s.password && !merged.password) {
+              merged.password = s.password;
+              studentModified = true;
+            }
+            merged.updatedAt = cloudUpdateTime || Date.now();
+          }
+
+          // Presence / Last Active (always take newer)
+          const localActive = existing.lastActive ? new Date(existing.lastActive).getTime() : 0;
+          const cloudActive = s.lastActive ? new Date(s.lastActive).getTime() : 0;
+          if (cloudActive > localActive) {
+            merged.lastActive = cloudActive;
+            studentModified = true;
+          }
+
+          if (studentModified) {
+            studentMap.set(s.id, merged);
+            changed = true;
+          }
         }
       });
 
@@ -879,7 +937,7 @@
       const targetBelt = isBlack ? 'Faixa Preta' : (studentData.targetBelt || (parsedKyu === 7 ? 'Faixa Amarela (6º Kyu)' : 'Faixa Preta'));
 
       const newStudent = {
-        id: 'std_' + Date.now(),
+        id: 'std_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         username: cleanNick,
         email: studentData.email ? studentData.email.trim() : `${cleanNick}@tkst.local`,
         password: pass,
@@ -892,6 +950,9 @@
         startDate: studentData.startDate || new Date().toISOString().split('T')[0],
         avatar: studentData.avatar || 'assets/images/logo-tkst.png',
         status: studentData.status || 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: Date.now(),
+        statusUpdatedAt: Date.now(),
         phone: studentData.phone ? studentData.phone.trim() : '',
         notes: studentData.notes || 'Novo cadastro realizado pelo portal.'
       };
@@ -908,6 +969,9 @@
       const idx = students.findIndex(s => s.id === studentId);
       if (idx !== -1) {
         students[idx].status = 'approved';
+        students[idx].approvedAt = new Date().toISOString();
+        students[idx].statusUpdatedAt = Date.now();
+        students[idx].updatedAt = Date.now();
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
         pushToCloud();
         return { success: true, student: students[idx] };
@@ -921,6 +985,9 @@
       const idx = students.findIndex(s => s.id === studentId);
       if (idx !== -1) {
         students[idx].status = 'rejected';
+        students[idx].rejectedAt = new Date().toISOString();
+        students[idx].statusUpdatedAt = Date.now();
+        students[idx].updatedAt = Date.now();
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
         pushToCloud();
         return { success: true, student: students[idx] };
@@ -1057,7 +1124,8 @@
         currentKyu: kyu,
         targetBelt: targetBelt,
         avatar: updatedData.avatar || currentUser.avatar || 'assets/images/logo-tkst.png',
-        password: newPassword
+        password: newPassword,
+        updatedAt: Date.now()
       };
 
       if (currentUser.username === 'irons365' || currentUser.role === 'admin') {

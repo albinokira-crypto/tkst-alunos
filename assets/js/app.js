@@ -5967,11 +5967,16 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 <strong><i class="fas fa-chalkboard-teacher"></i> Instruções do Sensei Diego:</strong> ${term.technicalTips}
               </div>
             ` : ''}
+          <div style="display: flex; gap: 10px; width: 100%;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 11px; font-weight: 600;">
+              Fechar
+            </button>
+            ${isAdmin ? `
+              <button type="button" class="btn btn-gold" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="flex: 1; padding: 11px; font-weight: 700;">
+                <i class="fas fa-edit"></i> Editar Termo (Admin)
+              </button>
+            ` : ''}
           </div>
-
-          <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="width: 100%; padding: 11px; font-weight: 600;">
-            Fechar
-          </button>
 
         </div>
       `;
@@ -5979,16 +5984,92 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       detailModal.classList.add('active');
     },
 
+    handleGlossaryImageUpload: (input, previewImgId, hiddenInputId) => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 400;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+          const previewBox = document.getElementById(previewImgId + 'Box');
+          const previewImg = document.getElementById(previewImgId);
+          const hiddenInput = document.getElementById(hiddenInputId);
+
+          if (previewImg) previewImg.src = compressedDataUrl;
+          if (previewBox) previewBox.style.display = 'block';
+          if (hiddenInput) hiddenInput.value = compressedDataUrl;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+
+    handleGlossaryImageUrl: (url, previewImgId) => {
+      const trimmed = (url || '').trim();
+      const previewBox = document.getElementById(previewImgId + 'Box');
+      const previewImg = document.getElementById(previewImgId);
+      if (previewBox && previewImg) {
+        if (trimmed) {
+          previewImg.src = trimmed;
+          previewBox.style.display = 'block';
+        } else {
+          previewBox.style.display = 'none';
+        }
+      }
+    },
+
+    removeGlossaryImage: (previewImgId, hiddenInputId, fileInputId) => {
+      const previewBox = document.getElementById(previewImgId + 'Box');
+      const previewImg = document.getElementById(previewImgId);
+      const hiddenInput = document.getElementById(hiddenInputId);
+      const fileInput = document.getElementById(fileInputId);
+
+      if (previewBox) previewBox.style.display = 'none';
+      if (previewImg) previewImg.src = '';
+      if (hiddenInput) hiddenInput.value = '';
+      if (fileInput) fileInput.value = '';
+    },
+
     openAddGlossaryTermModal: (defaultCat) => {
+      if (!window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+        return;
+      }
+
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
 
-      modalTitle.innerHTML = `<span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Novo Termo no Dicionário</span>`;
+      modalTitle.innerHTML = `<span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Novo Termo no Dicionário (Admin)</span>`;
 
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddGlossaryTerm();" style="display: flex; flex-direction: column; gap: 14px;">
           <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0;">
-            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Cadastre um novo termo com nome em japonês/romaji, ideogramas em Kanji (opcional), significado, imagem e vídeo.
+            <i class="fas fa-shield-alt" style="color: var(--accent-gold); margin-right: 6px;"></i> Cadastre um novo termo técnico com foto/GIF ilustrado direto da câmera/arquivo ou link.
           </div>
 
           <div class="form-group">
@@ -6025,11 +6106,28 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             <textarea id="newGlossaryMeaning" class="form-input" rows="3" required placeholder="ex: Soco em gancho curto lateral com cotovelo a 90 graus..." style="resize: vertical; font-size: 0.88rem;"></textarea>
           </div>
 
+          <!-- Upload de Imagem do Arquivo ou URL -->
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-image" style="color: var(--accent-blue); margin-right: 6px;"></i> URL da Imagem / GIF Ilustrado (Opcional):
+              <i class="fas fa-image" style="color: var(--accent-blue); margin-right: 6px;"></i> Imagem / Diagrama Ilustrado (Opcional):
             </label>
-            <input type="url" id="newGlossaryImage" class="form-input" placeholder="https://exemplo.com/movimento.gif ou imagem" style="font-size: 0.85rem;">
+            
+            <div id="addGlossaryImagePreviewBox" style="display: none; margin-bottom: 10px; background: rgba(0,0,0,0.4); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 12px; text-align: center;">
+              <img id="addGlossaryImagePreview" src="" style="max-height: 180px; max-width: 100%; object-fit: contain; border-radius: 4px; margin-bottom: 8px;">
+              <div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeGlossaryImage('addGlossaryImagePreview', 'newGlossaryImage', 'addGlossaryFileInput')" style="font-size: 0.75rem; padding: 4px 10px;">
+                  <i class="fas fa-trash"></i> Remover Imagem
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <label class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-camera"></i> Escolher Foto do Arquivo
+                <input type="file" accept="image/*" id="addGlossaryFileInput" style="display: none;" onchange="window.TKST_APP.handleGlossaryImageUpload(this, 'addGlossaryImagePreview', 'newGlossaryImage')">
+              </label>
+              <input type="text" id="newGlossaryImage" class="form-input" placeholder="Ou cole a URL da imagem (https://...)" oninput="window.TKST_APP.handleGlossaryImageUrl(this.value, 'addGlossaryImagePreview')" style="flex: 1; min-width: 180px; font-size: 0.82rem;">
+            </div>
           </div>
 
           <div class="form-group">
@@ -6061,6 +6159,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     submitAddGlossaryTerm: () => {
+      if (!window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+        return;
+      }
+
       const cat = document.getElementById('newGlossaryCategory').value;
       const japanese = document.getElementById('newGlossaryJapanese').value.trim();
       const kanji = document.getElementById('newGlossaryKanji').value.trim();
@@ -6093,6 +6196,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     deleteGlossaryTerm: (category, japaneseName) => {
+      if (!window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+        return;
+      }
+
       if (!confirm(`Tem certeza que deseja excluir o termo "${japaneseName}" do dicionário?`)) {
         return;
       }
@@ -6117,6 +6225,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     openEditGlossaryTermModal: (categoryKey, japaneseName) => {
+      if (!window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+        return;
+      }
+
       const glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : window.TKST_GLOSSARY;
       let actualCat = categoryKey;
       let term = null;
@@ -6144,7 +6257,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
 
-      modalTitle.innerHTML = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Termo: ${term.japanese}</span>`;
+      modalTitle.innerHTML = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Termo: ${term.japanese} (Admin)</span>`;
 
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}');" style="display: flex; flex-direction: column; gap: 14px;">
@@ -6182,11 +6295,28 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             <textarea id="editGlossaryMeaning" class="form-input" rows="3" required style="resize: vertical; font-size: 0.88rem;">${term.meaning.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
           </div>
 
+          <!-- Upload de Imagem do Arquivo ou URL -->
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-image" style="color: var(--accent-blue); margin-right: 6px;"></i> URL da Imagem / GIF Ilustrado (Opcional):
+              <i class="fas fa-image" style="color: var(--accent-blue); margin-right: 6px;"></i> Imagem / Diagrama Ilustrado (Opcional):
             </label>
-            <input type="url" id="editGlossaryImage" class="form-input" value="${(term.image || '').replace(/"/g, '&quot;')}" placeholder="https://exemplo.com/movimento.gif ou imagem" style="font-size: 0.85rem;">
+            
+            <div id="editGlossaryImagePreviewBox" style="${(term.image) ? 'display: block;' : 'display: none;'} margin-bottom: 10px; background: rgba(0,0,0,0.4); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 12px; text-align: center;">
+              <img id="editGlossaryImagePreview" src="${(term.image || '')}" style="max-height: 180px; max-width: 100%; object-fit: contain; border-radius: 4px; margin-bottom: 8px;">
+              <div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeGlossaryImage('editGlossaryImagePreview', 'editGlossaryImage', 'editGlossaryFileInput')" style="font-size: 0.75rem; padding: 4px 10px;">
+                  <i class="fas fa-trash"></i> Remover Imagem
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <label class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-camera"></i> Escolher Foto do Arquivo
+                <input type="file" accept="image/*" id="editGlossaryFileInput" style="display: none;" onchange="window.TKST_APP.handleGlossaryImageUpload(this, 'editGlossaryImagePreview', 'editGlossaryImage')">
+              </label>
+              <input type="text" id="editGlossaryImage" class="form-input" value="${(term.image || '').replace(/"/g, '&quot;')}" placeholder="Ou cole a URL da imagem (https://...)" oninput="window.TKST_APP.handleGlossaryImageUrl(this.value, 'editGlossaryImagePreview')" style="flex: 1; min-width: 180px; font-size: 0.82rem;">
+            </div>
           </div>
 
           <div class="form-group">
@@ -6218,6 +6348,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     submitEditGlossaryTerm: (oldCategory, oldJapaneseName) => {
+      if (!window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+        return;
+      }
+
       const newCategory = document.getElementById('editGlossaryCategory').value;
       const japanese = document.getElementById('editGlossaryJapanese').value.trim();
       const kanji = document.getElementById('editGlossaryKanji').value.trim();
