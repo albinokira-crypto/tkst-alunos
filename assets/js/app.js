@@ -903,9 +903,6 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.82rem; padding: 8px 14px; background: #25D366; color: #FFF; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
             <i class="fab fa-whatsapp"></i> Convidar Aluno para Cadastro
           </button>
-          <button class="btn btn-gold" onclick="window.TKST_APP.openDojobookImportModal()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;" title="Importar alunos do DojôBook para auto-aprovação">
-            <i class="fas fa-file-import"></i> Importar Alunos do DojôBook
-          </button>
           <button class="btn btn-primary" onclick="window.TKST_APP.openManualStudentModal()" style="font-size: 0.82rem; padding: 8px 14px;">
             <i class="fas fa-user-plus"></i> Novo Aluno Manual
           </button>
