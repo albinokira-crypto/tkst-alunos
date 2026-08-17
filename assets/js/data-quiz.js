@@ -1974,6 +1974,10 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     correctIndex: 0,
     explanation: "O 3º Dan simboliza a transição de praticante avançado para professor habilitado com profunda compreensão do Budo."
   }
+  // Questões customizadas pelo Sensei (auto-salvo)
+  // ==TKST_CUSTOM_QUESTIONS_START==
+  {"id":"q_custom_test_final","kyuNumber":7,"beltName":"Faixa Branca (7 Kyu)","question":"[TESTE FINAL] Qual e o estilo da TKST?","options":["Shotokan","Kyokushin","Goju-ryu","Wado-ryu"],"correctIndex":0,"explanation":"Shotokan - fundado por Gichin Funakoshi."},
+  // ==TKST_CUSTOM_QUESTIONS_END==
 ];
 
 // Initialize Bank taking into account custom edits and deleted question tombstones
