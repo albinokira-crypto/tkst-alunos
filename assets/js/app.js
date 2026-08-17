@@ -4756,7 +4756,11 @@ document.addEventListener('DOMContentLoaded', () => {
       q.options = smart.options;
       q.correctIndex = smart.correctIndex;
       delete q.explanation;
+      q._edited = true;           // marca que esta questão foi editada pelo Sensei
+      q.updatedAt = Date.now();   // timestamp da edição para rastreamento
 
+      // saveCustomQuizBank salva no localStorage, envia ao /api/quiz-bank E commita
+      // o banco completo no GitHub (incluindo questões com IDs originais como q7-1)
       window.TKST_AUTH.saveCustomQuizBank(bank);
       detailModal.classList.remove('active');
       showToast('✅ Questão atualizada! Sincronizando com a nuvem...', 'sync');

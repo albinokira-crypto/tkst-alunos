@@ -127,7 +127,7 @@ module.exports = async (req, res) => {
 
     const customQuestions = body.customQuestions;
     if (!Array.isArray(customQuestions) || customQuestions.length === 0) {
-      return res.status(200).json({ success: false, reason: 'Nenhuma questão customizada para commitar.' });
+      return res.status(200).json({ success: false, reason: 'Nenhuma questão para commitar.' });
     }
 
     // 1. Busca o arquivo atual e seu SHA

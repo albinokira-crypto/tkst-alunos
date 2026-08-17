@@ -23,10 +23,51 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=90">
-  <link rel="stylesheet" href="assets/css/components.css?v=90">
+  <link rel="stylesheet" href="assets/css/main.css?v=91">
+  <link rel="stylesheet" href="assets/css/components.css?v=91">
+
+  <!-- Mobile-Only Guard: bloqueia acesso em desktop imediatamente -->
+  <script>
+    (function() {
+      var MOBILE_MAX = 820; // px — qualquer tela maior que isso é considerada desktop
+      function checkDevice() {
+        var isDesktop = window.innerWidth > MOBILE_MAX;
+        var overlay = document.getElementById('desktop-block-overlay');
+        var app = document.getElementById('app-root');
+        if (overlay) overlay.style.display = isDesktop ? 'flex' : 'none';
+        if (app)     app.style.display     = isDesktop ? 'none' : '';
+      }
+      // Roda ao carregar e ao redimensionar a janela
+      document.addEventListener('DOMContentLoaded', checkDevice);
+      window.addEventListener('resize', checkDevice);
+    })();
+  </script>
 </head>
 <body class="login-view-active">
+
+  <!-- OVERLAY: Acesso bloqueado em desktop -->
+  <div id="desktop-block-overlay">
+    <div class="dbo-card">
+      <img src="assets/images/logo-tkst.png" alt="TKST Logo" class="dbo-logo">
+      <div class="dbo-kanji">空手道</div>
+      <h1 class="dbo-title">TKST Alunos</h1>
+      <p class="dbo-subtitle">Portal Oficial de Estudo</p>
+      <div class="dbo-divider"></div>
+      <div class="dbo-icon"><i class="fas fa-mobile-alt"></i></div>
+      <p class="dbo-message">
+        Este aplicativo é <strong>exclusivo para celular</strong>.<br>
+        Acesse pelo seu smartphone para uma experiência completa.
+      </p>
+      <div class="dbo-url">
+        <i class="fas fa-link"></i>
+        <span>tkst-alunos.vercel.app</span>
+      </div>
+      <p class="dbo-hint">Escaneie o QR Code ou digite o endereço no navegador do seu celular.</p>
+    </div>
+  </div>
+
+  <!-- Wrapper principal do app (escondido no desktop) -->
+  <div id="app-root">
 
   <!-- Japanese Background Watermark (空手道 - Karate-Dō) -->
   <div class="kanji-watermark">空手</div>
@@ -255,13 +296,13 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/auth.js?v=90"></script>
-  <script src="assets/js/data-curriculum.js?v=90"></script>
-  <script src="assets/js/data-katas.js?v=90"></script>
-  <script src="assets/js/data-kumite.js?v=90"></script>
-  <script src="assets/js/data-glossary.js?v=90"></script>
-  <script src="assets/js/data-quiz.js?v=90"></script>
-  <script src="assets/js/app.js?v=90"></script>
+  <script src="assets/js/auth.js?v=91"></script>
+  <script src="assets/js/data-curriculum.js?v=91"></script>
+  <script src="assets/js/data-katas.js?v=91"></script>
+  <script src="assets/js/data-kumite.js?v=91"></script>
+  <script src="assets/js/data-glossary.js?v=91"></script>
+  <script src="assets/js/data-quiz.js?v=91"></script>
+  <script src="assets/js/app.js?v=91"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
@@ -278,5 +319,7 @@
       });
     }
   </script>
+
+  </div><!-- /#app-root -->
 </body>
 </html>

@@ -174,30 +174,26 @@
   // Commit server-side seguro: o token GITHUB_TOKEN fica exclusivamente
   // na variável de ambiente da Vercel — nunca exposto ao browser.
   async function pushQuizBankToServer(bank) {
-    if (!Array.isArray(bank)) return;
-    const customOnly = bank.filter(q => q.id && q.id.startsWith('q_custom_'));
-    if (customOnly.length === 0) return; // Sem questões customizadas, nada a commitar
-
+    if (!Array.isArray(bank) || bank.length === 0) return;
+    // Envia o banco completo — inclui questões originais editadas (q7-1, q6-2...)
+    // e questões novas adicionadas pelo Sensei (q_custom_...)
     try {
       const res = await fetch('/api/quiz-commit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customQuestions: customOnly })
+        body: JSON.stringify({ customQuestions: bank })
       });
 
       if (!res.ok) return;
       const json = await res.json();
 
       if (json.success) {
-        // Commit realizado com sucesso — notifica a UI
         window.dispatchEvent(new CustomEvent('tkst_quiz_committed', {
           detail: { count: json.committed, commitUrl: json.commitUrl }
         }));
       }
-      // Se json.success === false por falta de token ou sem questões custom,
-      // falha silenciosamente — as questões já estão salvas no /api/quiz-bank
+      // Falha silenciosa — questões já estão salvas no localStorage e /api/quiz-bank
     } catch(err) {
-      // Falha silenciosa — não bloqueia o uso do app
       console.warn('Quiz server commit notice:', err);
     }
   }
