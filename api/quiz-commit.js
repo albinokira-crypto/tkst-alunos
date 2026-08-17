@@ -71,19 +71,29 @@ async function githubRequestWithRetry(method, path, token, body, retries = 3) {
   }
 }
 
-// Injeta o bloco de questões customizadas no conteúdo do arquivo
-function injectCustomBlock(currentContent, customQuestions) {
-  const questionsJson = customQuestions.map(q => '  ' + JSON.stringify(q)).join(',\n');
+// Injeta o bloco de questões customizadas no conteúdo do arquivo e remove questões excluídas
+function injectCustomBlock(currentContent, customQuestions, deletedIds = []) {
+  const deletedSet = new Set(Array.isArray(deletedIds) ? deletedIds : []);
+  const cleanCustom = (customQuestions || []).filter(q => q && q.id && !deletedSet.has(q.id));
+  const questionsJson = cleanCustom.map(q => '  ' + JSON.stringify(q)).join(',\n');
 
   // Caso 1: Marcadores já existem — substituição cirúrgica
   if (currentContent.includes(MARKER_START) && currentContent.includes(MARKER_END)) {
     const startIdx = currentContent.indexOf(MARKER_START);
     const endIdx = currentContent.indexOf(MARKER_END) + MARKER_END.length;
 
-    const before = currentContent.slice(0, startIdx);
+    let before = currentContent.slice(0, startIdx);
     const after = currentContent.slice(endIdx);
 
-    const newBlock = customQuestions.length > 0
+    // Se houver IDs de questões padrão deletadas, remove do bloco anterior também
+    if (deletedSet.size > 0) {
+      deletedSet.forEach(delId => {
+        const qRegex = new RegExp(`\\s*\\{[\\s\\S]*?["']id["']\\s*:\\s*["']${delId}["'][\\s\\S]*?\\},?`, 'g');
+        before = before.replace(qRegex, '');
+      });
+    }
+
+    const newBlock = cleanCustom.length > 0
       ? `${MARKER_START}\n${questionsJson},\n  ${MARKER_END}`
       : `${MARKER_START}\n  ${MARKER_END}`;
 
@@ -101,7 +111,7 @@ function injectCustomBlock(currentContent, customQuestions) {
     const match = pattern.exec(currentContent);
     if (match) {
       const insertAt = match.index;
-      const customBlock = customQuestions.length > 0
+      const customBlock = cleanCustom.length > 0
         ? `\n  // Questões customizadas pelo Sensei (auto-salvo)\n  ${MARKER_START}\n${questionsJson},\n  ${MARKER_END}`
         : `\n  // Questões customizadas pelo Sensei (auto-salvo)\n  ${MARKER_START}\n  ${MARKER_END}`;
 
@@ -148,6 +158,9 @@ module.exports = async (req, res) => {
     if (typeof body === 'string') body = JSON.parse(body);
 
     const incomingQuestions = body.customQuestions || body.questions || body.bank || body;
+    const deletedQuizIds = Array.isArray(body.deletedQuizIds) ? body.deletedQuizIds : [];
+    const deletedSet = new Set(deletedQuizIds);
+
     if (!Array.isArray(incomingQuestions)) {
       return res.status(200).json({ success: false, reason: 'Nenhuma questão para commitar.' });
     }
@@ -156,7 +169,7 @@ module.exports = async (req, res) => {
     // Isso garante que ao editar uma questão já salva no GitHub, ela apenas se atualize no mesmo lugar
     const customMap = new Map();
     incomingQuestions.forEach(q => {
-      if (q && q.id && (q._edited || q.id.startsWith('q_custom_'))) {
+      if (q && q.id && !deletedSet.has(q.id) && (q._edited || q.id.startsWith('q_custom_'))) {
         customMap.set(q.id, q);
       }
     });
@@ -173,8 +186,8 @@ module.exports = async (req, res) => {
     const sha = getResult.data.sha;
     const currentContent = Buffer.from(getResult.data.content.replace(/\n/g, ''), 'base64').toString('utf8');
 
-    // 2. Injeta as questões customizadas/editadas no arquivo
-    const updatedContent = injectCustomBlock(currentContent, customOnly);
+    // 2. Injeta as questões customizadas/editadas no arquivo e remove as excluídas
+    const updatedContent = injectCustomBlock(currentContent, customOnly, deletedQuizIds);
 
     if (!updatedContent) {
       return res.status(200).json({ success: false, reason: 'Não foi possível localizar o ponto de injeção no data-quiz.js.' });

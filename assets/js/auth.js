@@ -82,16 +82,16 @@
   async function pushQuizBankToCloud(bank, deletedIds) {
     try {
       const customOnly = (bank || []).filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+      const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || []);
       // 1. Endpoint dedicado /api/quiz-bank (persistência entre requisições)
       fetch('/api/quiz-bank', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bank: customOnly, deletedQuizIds: deletedIds || [] })
+        body: JSON.stringify({ bank: customOnly, deletedQuizIds: deleted })
       }).catch(() => {});
 
       // 2. Commit automático no GitHub via endpoint server-side seguro
-      //    (token fica na variável de ambiente Vercel — sem necessidade de configuração manual)
-      pushQuizBankToServer(customOnly).catch(() => {});
+      pushQuizBankToServer(customOnly, deleted).catch(() => {});
     } catch(err) {
       console.warn('Quiz bank push notice:', err);
     }
@@ -186,15 +186,17 @@
 
   // Commit server-side seguro: o token GITHUB_TOKEN fica exclusivamente
   // na variável de ambiente da Vercel — nunca exposto ao browser.
-  async function pushQuizBankToServer(bank) {
-    if (!Array.isArray(bank) || bank.length === 0) return;
-    // Envia o banco completo — inclui questões originais editadas (q7-1, q6-2...)
-    // e questões novas adicionadas pelo Sensei (q_custom_...)
+  async function pushQuizBankToServer(bank, deletedIds) {
+    if (!Array.isArray(bank) && (!deletedIds || !deletedIds.length)) return;
+    const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || []);
     try {
       const res = await fetch('/api/quiz-commit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customQuestions: bank })
+        body: JSON.stringify({
+          customQuestions: bank || [],
+          deletedQuizIds: deleted
+        })
       });
 
       if (!res.ok) return;
