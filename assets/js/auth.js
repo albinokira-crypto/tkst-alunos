@@ -1239,6 +1239,79 @@
       return { success: false, message: 'Aluno não encontrado.' };
     },
 
+    importDojobookStudents: function(studentsList) {
+      if (!Array.isArray(studentsList) || studentsList.length === 0) return { success: false, message: 'Nenhum aluno para importar.' };
+      let currentStudents = this.getAllStudents();
+      const studentMap = new Map();
+      currentStudents.forEach(s => {
+        if (s && s.id) studentMap.set(s.id, s);
+      });
+
+      let addedCount = 0;
+      let updatedCount = 0;
+
+      studentsList.forEach(item => {
+        if (!item || !item.name) return;
+        const cleanName = item.name.trim();
+        if (cleanName.length < 2) return;
+
+        // Normalização para busca
+        const normItem = cleanName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        let existing = null;
+        for (const [id, s] of studentMap.entries()) {
+          if (s && s.name && s.username !== 'irons365') {
+            const normS = s.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            if (normS === normItem || normS.includes(normItem) || normItem.includes(normS)) {
+              existing = s;
+              break;
+            }
+          }
+        }
+
+        if (existing) {
+          if (item.currentBelt) existing.currentBelt = item.currentBelt;
+          if (item.dojo) existing.dojo = item.dojo;
+          if (item.phone) existing.phone = item.phone;
+          existing.status = 'approved';
+          existing.updatedAt = Date.now();
+          updatedCount++;
+        } else {
+          const newId = 'std_dojo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+          const genNick = cleanName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '') + Math.floor(Math.random()*90 + 10);
+          const newObj = {
+            id: newId,
+            username: item.username || genNick,
+            email: item.email || `${genNick}@tkst.local`,
+            password: item.password || '1234',
+            name: cleanName,
+            role: 'aluno',
+            currentBelt: item.currentBelt || 'Faixa Branca (7º Kyu)',
+            targetBelt: item.targetBelt || 'Faixa Amarela (6º Kyu)',
+            currentKyu: item.currentKyu !== undefined ? item.currentKyu : 7,
+            dojo: item.dojo || 'TKST Santo Aleixo',
+            startDate: item.startDate || new Date().toISOString().split('T')[0],
+            avatar: 'assets/images/logo-tkst.png',
+            status: 'approved',
+            approvedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: Date.now(),
+            phone: item.phone || '',
+            notes: 'Importado da base oficial DojôBook.'
+          };
+          studentMap.set(newId, newObj);
+          addedCount++;
+        }
+      });
+
+      const finalStudents = Array.from(studentMap.values());
+      localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(finalStudents));
+      const deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
+      pushStudentsToServer(finalStudents, deleted);
+      pushToCloud();
+
+      return { success: true, added: addedCount, updated: updatedCount, total: finalStudents.length };
+    },
+
     rejectStudent: function(studentId) {
       if (!this.isAdmin()) return { success: false, message: 'Apenas administradores podem recusar alunos.' };
       const students = this.getAllStudents();

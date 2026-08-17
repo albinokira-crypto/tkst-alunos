@@ -903,6 +903,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.82rem; padding: 8px 14px; background: #25D366; color: #FFF; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
             <i class="fab fa-whatsapp"></i> Convidar Aluno para Cadastro
           </button>
+          <button class="btn btn-gold" onclick="window.TKST_APP.openDojobookImportModal()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;" title="Importar alunos do DojôBook para auto-aprovação">
+            <i class="fas fa-file-import"></i> Importar Alunos do DojôBook
+          </button>
           <button class="btn btn-primary" onclick="window.TKST_APP.openManualStudentModal()" style="font-size: 0.82rem; padding: 8px 14px;">
             <i class="fas fa-user-plus"></i> Novo Aluno Manual
           </button>
@@ -5539,6 +5542,94 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAdminMaster();
       } else {
         alert(res.message);
+      }
+    },
+
+    openDojobookImportModal: () => {
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      modalTitle.innerHTML = `<span><i class="fas fa-file-import" style="color: var(--accent-gold);"></i> Importar Alunos do DojôBook</span>`;
+      modalBody.innerHTML = `
+        <div style="padding: 10px 4px;">
+          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.25); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px; font-size: 0.85rem; color: #E2E8F0; line-height: 1.6;">
+            <strong style="color: var(--accent-gold);"><i class="fas fa-magic"></i> Cruzamento Automático Ativado:</strong><br>
+            Cole a lista de alunos do <strong>DojôBook</strong> abaixo (um por linha). Todos os alunos importados serão reconhecidos e <strong>aprovados automaticamente</strong> assim que realizarem o cadastro no portal pelo link!
+          </div>
+
+          <form onsubmit="event.preventDefault(); window.TKST_APP.submitDojobookImport();">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 6px;">
+                Lista de Alunos (Copie e Cole do DojôBook):
+              </label>
+              <textarea id="dojobookImportText" class="form-input" rows="8" placeholder="Exemplo:
+Geovanna Coutinho - Faixa Preta (1º Dan) - QG TKST Capela
+Lucas Silva - Faixa Branca - TKST Santo Aleixo
+Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace; font-size: 0.82rem; padding: 10px; resize: vertical;" required></textarea>
+              <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 4px;">
+                * Aceita formato com apenas o nome, ou separado por hífen/vírgula com graduação e dojo.
+              </div>
+            </div>
+
+            <div id="dojobookImportFeedback" style="margin-bottom: 12px;"></div>
+
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 11px;">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-gold" style="flex: 2; padding: 11px; font-weight: 700;">
+                <i class="fas fa-check"></i> Importar Alunos Agora
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+      detailModal.classList.add('active');
+    },
+
+    submitDojobookImport: () => {
+      const text = document.getElementById('dojobookImportText').value;
+      const feedback = document.getElementById('dojobookImportFeedback');
+      if (!text || !text.trim()) return;
+
+      const lines = text.trim().split('\n');
+      const parsedList = [];
+
+      lines.forEach(line => {
+        const clean = line.trim();
+        if (!clean) return;
+
+        const parts = clean.split(/[-–—,]/).map(p => p.trim()).filter(Boolean);
+        const name = parts[0];
+        const belt = parts[1] || 'Faixa Branca (7º Kyu)';
+        const dojo = parts[2] || 'TKST Santo Aleixo';
+
+        if (name && name.length >= 2) {
+          parsedList.push({
+            name,
+            currentBelt: belt,
+            dojo
+          });
+        }
+      });
+
+      if (parsedList.length === 0) {
+        feedback.innerHTML = `<div style="color: #FF808A; font-size: 0.85rem;">Nenhum nome válido encontrado.</div>`;
+        return;
+      }
+
+      const res = window.TKST_AUTH.importDojobookStudents(parsedList);
+      if (res.success) {
+        feedback.innerHTML = `
+          <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 12px; border-radius: var(--radius-sm); font-size: 0.86rem;">
+            <i class="fas fa-check-circle"></i> Sucesso! <strong>${res.added}</strong> novos alunos cadastrados e <strong>${res.updated}</strong> atualizados. Total na base: ${res.total}.
+          </div>
+        `;
+        setTimeout(() => {
+          document.getElementById('detailModal').classList.remove('active');
+          renderAdminMaster();
+        }, 1500);
+      } else {
+        feedback.innerHTML = `<div style="color: #FF808A; font-size: 0.85rem;">${res.message}</div>`;
       }
     },
 
