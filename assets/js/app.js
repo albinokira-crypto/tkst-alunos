@@ -912,65 +912,53 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Admin Stats Grid -->
-      <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;">
-        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('pending')" style="cursor: pointer; padding: 14px;">
-          <div class="stat-icon-box gold" style="width: 42px; height: 42px; font-size: 1.2rem;">
-            <i class="fas fa-clock"></i>
-          </div>
-          <div style="min-width: 0;">
-            <div class="stat-value" style="font-size: 1.2rem;">${pendingStudents.length}</div>
-            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Cadastros Pendentes</div>
+      <!-- Admin Stats Grid - Ultra Compact -->
+      <div class="stats-mini-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px;">
+        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('pending')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-clock" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
+          <div style="min-width: 0; line-height: 1.15;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${pendingStudents.length}</div>
+            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Pendentes</div>
           </div>
         </div>
 
-        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; padding: 14px;">
-          <div class="stat-icon-box emerald" style="width: 42px; height: 42px; font-size: 1.2rem;">
-            <i class="fas fa-user-check"></i>
-          </div>
-          <div style="min-width: 0;">
-            <div class="stat-value" style="font-size: 1.2rem;">${approvedStudents.length}</div>
-            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Alunos Ativos</div>
+        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-user-check" style="color: var(--accent-emerald); font-size: 0.95rem; flex-shrink: 0;"></i>
+          <div style="min-width: 0; line-height: 1.15;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${approvedStudents.length}</div>
+            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Alunos</div>
           </div>
         </div>
 
-        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="cursor: pointer; padding: 14px;" title="Ver Simulados Realizados">
-          <div class="stat-icon-box gold" style="width: 42px; height: 42px; font-size: 1.2rem;">
-            <i class="fas fa-clipboard-check"></i>
-          </div>
-          <div style="min-width: 0;">
-            <div class="stat-value" style="font-size: 1.2rem;">${quizSubmissions.length}</div>
-            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Provas Realizadas</div>
+        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Ver Simulados Realizados">
+          <i class="fas fa-clipboard-check" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
+          <div style="min-width: 0; line-height: 1.15;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${quizSubmissions.length}</div>
+            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Simulados</div>
           </div>
         </div>
 
-        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('questions')" style="cursor: pointer; padding: 14px;" title="Gerenciar Perguntas & Respostas do Simulado">
-          <div class="stat-icon-box gold" style="width: 42px; height: 42px; font-size: 1.2rem;">
-            <i class="fas fa-question-circle"></i>
-          </div>
-          <div style="min-width: 0;">
-            <div class="stat-value" style="font-size: 1.2rem;">${quizBankCount}</div>
-            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Banco de Questões</div>
+        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('questions')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Gerenciar Perguntas & Respostas do Simulado">
+          <i class="fas fa-question-circle" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
+          <div style="min-width: 0; line-height: 1.15;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${quizBankCount}</div>
+            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Questões</div>
           </div>
         </div>
 
-        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('dojos')" style="cursor: pointer; padding: 14px;" title="Gerenciar Dojos">
-          <div class="stat-icon-box purple" style="width: 42px; height: 42px; font-size: 1.2rem;">
-            <i class="fas fa-torii-gate"></i>
-          </div>
-          <div style="min-width: 0;">
-            <div class="stat-value" style="font-size: 1.2rem;">${dojos.length}</div>
-            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Dojos Cadastrados</div>
+        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('dojos')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Gerenciar Dojos">
+          <i class="fas fa-torii-gate" style="color: #A78BFA; font-size: 0.95rem; flex-shrink: 0;"></i>
+          <div style="min-width: 0; line-height: 1.15;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${dojos.length}</div>
+            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dojos</div>
           </div>
         </div>
 
-        <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('kata-videos')" style="cursor: pointer; padding: 14px;" title="Gerenciar Vídeos dos 26 Kata">
-          <div class="stat-icon-box blue" style="width: 42px; height: 42px; font-size: 1.2rem;">
-            <i class="fas fa-video"></i>
-          </div>
-          <div style="min-width: 0;">
-            <div class="stat-value" style="font-size: 1.2rem;">26 Kata</div>
-            <div class="stat-label" style="font-size: 0.72rem; white-space: nowrap;">Vídeos dos Kata</div>
+        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('kata-videos')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Gerenciar Vídeos dos 26 Kata">
+          <i class="fas fa-video" style="color: #60A5FA; font-size: 0.95rem; flex-shrink: 0;"></i>
+          <div style="min-width: 0; line-height: 1.15;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">26</div>
+            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Vídeos Kata</div>
           </div>
         </div>
       </div>
@@ -1394,24 +1382,37 @@ document.addEventListener('DOMContentLoaded', () => {
             </button>
           </div>
 
-          <!-- Graduation Filter Buttons -->
-          <div style="padding: 14px 18px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,0.2);">
+          <!-- Graduation Filter Buttons - 2 linhas (5 botões por linha) com cor da faixa de fundo -->
+          <div style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; background: rgba(0,0,0,0.25);">
             ${[
-              { kyu: 7, label: "7º Kyu Branca", color: "#FFFFFF" },
-              { kyu: 6, label: "6º Kyu Amarela", color: "#F5BE00" },
-              { kyu: 5, label: "5º Kyu Vermelha", color: "#E63946" },
-              { kyu: 4, label: "4º Kyu Laranja", color: "#FF7700" },
-              { kyu: 3, label: "3º Kyu Verde", color: "#10B981" },
-              { kyu: 2, label: "2º Kyu Roxa", color: "#8B5CF6" },
-              { kyu: 1, label: "1º Kyu Marrom", color: "#78350F" },
-              { kyu: 0, label: "Shodan (1º Dan)", color: "#18181B" },
-              { kyu: -1, label: "Nidan (2º Dan)", color: "#1E293B" },
-              { kyu: -2, label: "Sandan (3º Dan)", color: "#020617" }
+              { kyu: 7, label: "7ºKyu", bg: "#FFFFFF", color: "#0A0D14" },
+              { kyu: 6, label: "6ºKyu", bg: "#F5BE00", color: "#0A0D14" },
+              { kyu: 5, label: "5ºKyu", bg: "#E63946", color: "#FFFFFF" },
+              { kyu: 4, label: "4ºKyu", bg: "#FF7700", color: "#FFFFFF" },
+              { kyu: 3, label: "3ºKyu", bg: "#10B981", color: "#FFFFFF" },
+              { kyu: 2, label: "2ºKyu", bg: "#8B5CF6", color: "#FFFFFF" },
+              { kyu: 1, label: "1ºKyu", bg: "#78350F", color: "#FFFFFF" },
+              { kyu: 0, label: "1ºDan", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
+              { kyu: -1, label: "2ºDan", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
+              { kyu: -2, label: "3ºDan", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" }
             ].map(b => `
               <button 
-                class="btn ${adminQuizSelectedKyu === b.kyu ? 'btn-gold' : 'btn-secondary'}" 
                 onclick="window.TKST_APP.setAdminQuizSelectedKyu(${b.kyu})"
-                style="font-size: 0.8rem; padding: 7px 12px; font-weight: 700; border-left: 4px solid ${b.color}; ${adminQuizSelectedKyu === b.kyu ? 'box-shadow: 0 0 10px rgba(255,183,3,0.3);' : ''}"
+                style="
+                  background: ${b.bg};
+                  color: ${b.color};
+                  border: ${adminQuizSelectedKyu === b.kyu ? '2px solid #FFB703' : (b.border || '1px solid rgba(255,255,255,0.15)')};
+                  ${adminQuizSelectedKyu === b.kyu ? 'box-shadow: 0 0 10px rgba(255, 183, 3, 0.8); transform: scale(1.04); font-weight: 900;' : 'opacity: 0.85; font-weight: 700;'}
+                  border-radius: 6px;
+                  padding: 8px 2px;
+                  font-size: 0.76rem;
+                  cursor: pointer;
+                  text-align: center;
+                  transition: all 0.15s ease;
+                  line-height: 1;
+                  white-space: nowrap;
+                "
+                title="Filtrar por ${b.label}"
               >
                 ${b.label}
               </button>
