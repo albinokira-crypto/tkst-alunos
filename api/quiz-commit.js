@@ -108,7 +108,26 @@ module.exports = async (req, res) => {
       updatedContent = currentContent.slice(0, startIdx) + customBlock + currentContent.slice(endIdx);
     } else {
       // Injeta antes do fechamento do array window.TKST_DEFAULT_QUIZ_BANK
-      updatedContent = currentContent.replace(/\];\s*$/, `  // Questões customizadas pelo Sensei (auto-salvo)\n  ${customBlock}\n];`);
+      // O array termina com "};\n];\n\n// Initialize Bank" ou similar
+      // Usamos uma âncora específica para não pegar o fechamento da IIFE
+      const arrayCloseMarker = '\n];\n\n// Initialize Bank';
+      const altMarker = '\n];\n\n// initialize';
+      const closeIdx = currentContent.indexOf(arrayCloseMarker) !== -1
+        ? currentContent.indexOf(arrayCloseMarker)
+        : currentContent.indexOf(altMarker);
+
+      if (closeIdx !== -1) {
+        updatedContent =
+          currentContent.slice(0, closeIdx) +
+          `\n  // Questões customizadas pelo Sensei (auto-salvo)\n  ${customBlock}` +
+          currentContent.slice(closeIdx);
+      } else {
+        // Fallback: substitui o último ];\n antes da IIFE
+        updatedContent = currentContent.replace(
+          /\];\s*\n(\/\/ Initialize)/,
+          `];\n  // Questões customizadas pelo Sensei (auto-salvo)\n  ${customBlock}\n// Initialize`
+        );
+      }
     }
 
     // 3. Commit via GitHub API
