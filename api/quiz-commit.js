@@ -51,10 +51,28 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const token = process.env.GITHUB_TOKEN;
+
+  // DIAGNÓSTICO TEMPORÁRIO — lista env vars disponíveis no runtime (sem valores)
+  // Será removido após confirmação do token
+  if (req.body && (req.body.debug === true || (typeof req.body === 'string' && req.body.includes('"debug":true')))) {
+    const envKeys = Object.keys(process.env).filter(k =>
+      !k.startsWith('PATH') && !k.startsWith('npm_') && !k.startsWith('NODE') &&
+      !k.startsWith('HOME') && !k.startsWith('USER') && !k.startsWith('PWD')
+    );
+    return res.status(200).json({
+      tokenConfigured: !!token,
+      tokenLength: token ? token.length : 0,
+      tokenPrefix: token ? token.slice(0, 6) + '...' : null,
+      visibleEnvKeys: envKeys,
+      repo: process.env.GITHUB_REPO || '(não definido — usando padrão)',
+      branch: process.env.GITHUB_BRANCH || '(não definido — usando padrão)'
+    });
+  }
+
   if (!token) {
-    // Sem token configurado — retorna silenciosamente (sem erro, não bloqueia o app)
     return res.status(200).json({ success: false, reason: 'GITHUB_TOKEN não configurado. Questões salvas localmente.' });
   }
+
 
   try {
     let body = req.body;
