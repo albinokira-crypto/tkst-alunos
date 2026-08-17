@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>TKST - Recuperar Questões do Quiz</title>
+  <style>
+    body { font-family: monospace; background: #0f172a; color: #e2e8f0; padding: 20px; }
+    h1 { color: #FFB703; }
+    button { background: #FFB703; color: #0f172a; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px; font-size: 1rem; font-weight: 700; margin: 8px 4px; }
+    button.danger { background: #ef4444; color: white; }
+    pre { background: #1e293b; padding: 16px; border-radius: 8px; overflow: auto; font-size: 0.8rem; white-space: pre-wrap; max-height: 400px; }
+    .status { padding: 12px; border-radius: 8px; margin: 10px 0; }
+    .ok { background: rgba(34,197,94,0.2); color: #86efac; border: 1px solid #22c55e; }
+    .warn { background: rgba(234,179,8,0.2); color: #fde047; border: 1px solid #eab308; }
+    .err { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid #ef4444; }
+  </style>
+</head>
+<body>
+  <h1>🔧 TKST - Recuperar Questões Editadas</h1>
+  <p>Este utilitário lê as questões salvas no navegador (localStorage) e as publica na nuvem do TKST.</p>
+  
+  <div id="status"></div>
+
+  <button onclick="verQuestoes()">📋 Ver Questões Salvas Localmente</button>
+  <button onclick="publicarNaNuvem()">☁️ Publicar na Nuvem (Restaurar)</button>
+  <button class="danger" onclick="limparLocal()">🗑️ Limpar localStorage (CUIDADO!)</button>
+
+  <pre id="output">Clique em "Ver Questões Salvas Localmente" para começar...</pre>
+
+  <script>
+    const STORAGE_KEY_QUIZ_BANK = 'tkst_custom_quiz_bank';
+    const STORAGE_KEY_DELETED_QUIZZES = 'tkst_deleted_quiz_ids';
+    const NTFY_TOPIC = 'tkst_karate_cloud_v2_sync';
+
+    function log(msg) {
+      document.getElementById('output').textContent += '\n' + msg;
+    }
+
+    function setStatus(msg, type) {
+      document.getElementById('status').innerHTML = `<div class="status ${type}">${msg}</div>`;
+    }
+
+    function verQuestoes() {
+      document.getElementById('output').textContent = '';
+      const bank = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK) || '[]');
+      const deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES) || '[]');
+      
+      log('=== QUESTÕES NO LOCALSTORAGE ===');
+      log('Total encontradas: ' + bank.length);
+      log('IDs deletados: ' + deleted.length);
+      log('');
+      
+      if (bank.length === 0) {
+        setStatus('⚠️ Nenhuma questão encontrada no localStorage deste navegador. As edições podem ter sido feitas em outro dispositivo/navegador.', 'warn');
+        log('NENHUMA QUESTÃO ENCONTRADA.');
+        log('Isso significa que as edições foram feitas em outro dispositivo ou navegador.');
+        return;
+      }
+
+      setStatus('✅ ' + bank.length + ' questões encontradas!', 'ok');
+      bank.forEach((q, i) => {
+        log(`\nQ${i+1} [Kyu ${q.kyuNumber}]: ${q.question}`);
+        log(`  Resposta correta: ${q.options ? q.options[q.correctIndex] : q.answer}`);
+      });
+    }
+
+    async function publicarNaNuvem() {
+      document.getElementById('output').textContent = '';
+      log('Lendo dados do localStorage...');
+
+      const bank = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK) || '[]');
+      const deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES) || '[]');
+
+      if (bank.length === 0) {
+        setStatus('⚠️ Nenhuma questão para publicar! As questões não foram encontradas neste navegador.', 'warn');
+        log('Sem questões para publicar.');
+        return;
+      }
+
+      log('Buscando estado atual da nuvem...');
+      
+      try {
+        const resp = await fetch('https://ntfy.sh/' + NTFY_TOPIC + '/json?poll=1&since=24h');
+        const text = await resp.text();
+        const lines = text.trim().split('\n').filter(Boolean);
+        
+        let currentData = { students: [], dojos: [], custom_quiz_bank: [], deletedQuizIds: [] };
+        let latestTime = 0;
+        
+        lines.forEach(line => {
+          try {
+            const msg = JSON.parse(line);
+            const payload = msg.message ? JSON.parse(msg.message) : null;
+            if (payload && msg.time > latestTime) {
+              latestTime = msg.time;
+              currentData = { ...currentData, ...payload };
+            }
+          } catch(e) {}
+        });
+
+        log('Estado atual da nuvem carregado. Alunos: ' + (currentData.students || []).length);
+
+        // Merge questões customizadas
+        const existingIds = new Set((currentData.custom_quiz_bank || []).map(q => q.id));
+        const newQuestions = bank.filter(q => !existingIds.has(q.id));
+        const mergedBank = [...(currentData.custom_quiz_bank || []), ...newQuestions];
+
+        // Atualizar ids deletados
+        const mergedDeleted = [...new Set([...(currentData.deletedQuizIds || []), ...deleted])];
+
+        const newPayload = {
+          ...currentData,
+          custom_quiz_bank: mergedBank,
+          deletedQuizIds: mergedDeleted,
+          syncedAt: new Date().toISOString()
+        };
+
+        const payloadStr = JSON.stringify(newPayload);
+        log('Payload size: ' + payloadStr.length + ' bytes');
+        log('Total questões após merge: ' + mergedBank.length);
+        log('Publicando na nuvem...');
+
+        const postResp = await fetch('https://ntfy.sh/' + NTFY_TOPIC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payloadStr
+        });
+
+        if (postResp.ok) {
+          setStatus('✅ ' + mergedBank.length + ' questões publicadas na nuvem com sucesso! Recarregue o app TKST.', 'ok');
+          log('\n✅ SUCESSO! Questões restauradas na nuvem.');
+          log('Abra o app TKST e recarregue a página para ver as questões.');
+        } else {
+          setStatus('❌ Erro ao publicar: HTTP ' + postResp.status, 'err');
+          log('ERRO: ' + postResp.status);
+        }
+      } catch(e) {
+        setStatus('❌ Erro: ' + e.message, 'err');
+        log('ERRO: ' + e.message);
+      }
+    }
+
+    function limparLocal() {
+      if (confirm('CUIDADO! Isso vai apagar os dados locais. Tem certeza?')) {
+        localStorage.removeItem(STORAGE_KEY_QUIZ_BANK);
+        localStorage.removeItem(STORAGE_KEY_DELETED_QUIZZES);
+        setStatus('🗑️ localStorage limpo.', 'warn');
+        document.getElementById('output').textContent = 'localStorage limpo.';
+      }
+    }
+
+    // Rodar verificação automática ao abrir
+    window.onload = verQuestoes;
+  </script>
+</body>
+</html>
