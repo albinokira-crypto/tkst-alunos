@@ -1976,7 +1976,6 @@ window.TKST_DEFAULT_QUIZ_BANK = [
   }
   // Questões customizadas pelo Sensei (auto-salvo)
   // ==TKST_CUSTOM_QUESTIONS_START==
-  {"id":"q_custom_test_20260817140338","correctIndex":0,"kyu":6,"explanation":"Dojo significa local onde se pratica o caminho.","difficulty":"easy","options":["Local de treino","Sensei","Kata","Kihon"],"question":"TESTE AUTOMATICO - Qual o significado de Dojo?"},
   // ==TKST_CUSTOM_QUESTIONS_END==
 ];
 
