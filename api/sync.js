@@ -1,4 +1,24 @@
 // Serverless Real-Time Sync API for TKST Karate Portal
+const fs = require('fs');
+const path = require('path');
+const TMP_QUIZ_FILE = path.join('/tmp', 'tkst_sync_quiz_bank.json');
+
+function readQuizBankFromTmp() {
+  try {
+    if (fs.existsSync(TMP_QUIZ_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(TMP_QUIZ_FILE, 'utf8'));
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function writeQuizBankToTmp(bank) {
+  try {
+    fs.writeFileSync(TMP_QUIZ_FILE, JSON.stringify(bank), 'utf8');
+  } catch (e) {}
+}
+
 let inMemoryData = {
   dojos: [
     'TKST Matriz - Central',
@@ -49,6 +69,11 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
+    // Se custom_quiz_bank está vazio em memória, tenta hidratar do /tmp
+    if (!inMemoryData.custom_quiz_bank || inMemoryData.custom_quiz_bank.length === 0) {
+      const tmpBank = readQuizBankFromTmp();
+      if (tmpBank) inMemoryData.custom_quiz_bank = tmpBank;
+    }
     return res.status(200).json({
       success: true,
       data: inMemoryData
@@ -180,8 +205,17 @@ module.exports = async (req, res) => {
       let dojosList = Array.isArray(incoming.dojos) ? incoming.dojos : (inMemoryData.dojos || []);
       dojosList = dojosList.filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojoSet.has(d.toLowerCase().trim()));
 
-      let customQuizBank = Array.isArray(incoming.custom_quiz_bank) ? incoming.custom_quiz_bank : (inMemoryData.custom_quiz_bank || []);
-      customQuizBank = customQuizBank.filter(q => !deletedQuizSet.has(q.id));
+      // Merge custom_quiz_bank: preserva questões já em memória e adiciona as novas
+      const existingQuizBank = inMemoryData.custom_quiz_bank || readQuizBankFromTmp() || [];
+      let customQuizBank;
+      if (Array.isArray(incoming.custom_quiz_bank) && incoming.custom_quiz_bank.length > 0) {
+        const quizMap = new Map();
+        existingQuizBank.forEach(q => { if (q && q.id) quizMap.set(q.id, q); });
+        incoming.custom_quiz_bank.forEach(q => { if (q && q.id) quizMap.set(q.id, q); });
+        customQuizBank = Array.from(quizMap.values()).filter(q => !deletedQuizSet.has(q.id));
+      } else {
+        customQuizBank = existingQuizBank.filter(q => !deletedQuizSet.has(q.id));
+      }
 
       let quizSubmissionsList = Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []);
       quizSubmissionsList = quizSubmissionsList.filter(s => !deletedSubSet.has(s.id));
@@ -201,6 +235,9 @@ module.exports = async (req, res) => {
         deletedDojos: allDeletedDojos,
         lastSync: new Date().toISOString()
       };
+
+      // Persiste quiz bank no /tmp para sobreviver ao próximo cold-start
+      if (customQuizBank.length > 0) writeQuizBankToTmp(customQuizBank);
 
       return res.status(200).json({
         success: true,

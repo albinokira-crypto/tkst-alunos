@@ -97,20 +97,67 @@
     }
   }
 
+  // Busca questões customizadas diretamente do data-quiz.js no GitHub (fonte permanente).
+  // Usado como fallback final quando /api/quiz-bank retorna vazio após cold-start da Vercel.
+  async function pullQuizBankFromGitHub() {
+    try {
+      const REPO = 'albinokira-crypto/tkst-alunos';
+      const BRANCH = 'main';
+      // raw.githubusercontent.com serve o arquivo diretamente sem autenticação
+      const rawUrl = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/assets/js/data-quiz.js`;
+      const res = await fetch(rawUrl + '?_=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) return [];
+
+      const text = await res.text();
+      const MARKER_START = '// ==TKST_CUSTOM_QUESTIONS_START==';
+      const MARKER_END = '// ==TKST_CUSTOM_QUESTIONS_END==';
+      const startIdx = text.indexOf(MARKER_START);
+      const endIdx = text.indexOf(MARKER_END);
+      if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return [];
+
+      const block = text.slice(startIdx + MARKER_START.length, endIdx).trim();
+      if (!block) return [];
+
+      // O bloco é uma lista de objetos JSON separados por vírgulas
+      const cleanBlock = '[' + block.replace(/,\s*$/, '') + ']';
+      const questions = JSON.parse(cleanBlock);
+      return Array.isArray(questions) ? questions : [];
+    } catch(err) {
+      console.warn('Quiz bank GitHub pull notice:', err);
+      return [];
+    }
+  }
+
   async function pullQuizBankFromCloud() {
     try {
-      const res = await fetch('/api/quiz-bank', { cache: 'no-store' });
-      if (!res.ok) return;
-      const json = await res.json();
-      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) return;
-
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
       const bankMap = new Map();
       defaultList.forEach(q => bankMap.set(q.id, { ...q }));
-      json.data.forEach(q => {
+
+      // 1ª tentativa: endpoint dedicado /api/quiz-bank
+      let cloudQuestions = [];
+      try {
+        const res = await fetch('/api/quiz-bank', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            cloudQuestions = json.data;
+          }
+        }
+      } catch(e) {}
+
+      // 2ª tentativa (fallback): lê direto do GitHub se /api/quiz-bank veio vazio
+      if (cloudQuestions.length === 0) {
+        cloudQuestions = await pullQuizBankFromGitHub();
+      }
+
+      if (cloudQuestions.length === 0) return; // nada novo na nuvem
+
+      cloudQuestions.forEach(q => {
         if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
       });
+
       const merged = Array.from(bankMap.values());
       const localStr = localStorage.getItem(STORAGE_KEY_QUIZ_BANK);
       const newStr = JSON.stringify(merged);
