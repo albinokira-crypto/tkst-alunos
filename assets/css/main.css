@@ -460,7 +460,7 @@ body::before {
   }
 
   .top-header {
-    padding: 0 12px;
+    padding: 0 10px;
     height: 56px;
     width: 100%;
     max-width: 100vw;
@@ -473,15 +473,32 @@ body::before {
   }
 
   .header-actions {
-    gap: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     margin-left: auto;
+    max-width: calc(100vw - 50px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .header-actions .btn {
-    padding: 6px 10px !important;
-    font-size: 0.76rem !important;
+    padding: 5px 8px !important;
+    font-size: 0.72rem !important;
     gap: 4px;
     white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 480px) {
+    .header-actions .btn span {
+      display: none;
+    }
+    .header-actions .btn {
+      padding: 6px 8px !important;
+      min-width: 32px;
+      justify-content: center;
+    }
   }
 
   .mobile-bottom-nav {
