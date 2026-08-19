@@ -360,13 +360,59 @@ document.addEventListener('DOMContentLoaded', () => {
     return 'assets/images/faixas/quimono-branca.svg';
   }
 
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // Video Helpers
   function getCustomKataVideos() {
+    if (window.TKST_AUTH && window.TKST_AUTH.getCustomKataVideos) {
+      return window.TKST_AUTH.getCustomKataVideos();
+    }
     try {
       return JSON.parse(localStorage.getItem('tkst_custom_kata_videos')) || {};
     } catch (e) {
       return {};
     }
+  }
+
+  function normalizeKataVideos(videoEntry, kata) {
+    if (!videoEntry) {
+      if (kata && (kata.youtubeUrl || kata.videoUrl || kata.videoFileName)) {
+        const defaultUrl = kata.youtubeUrl || kata.videoUrl || ('videos/' + kata.videoFileName);
+        return [{
+          id: 'default_1',
+          title: 'Demonstração Oficial TKST',
+          description: 'Vídeo técnico oficial com os movimentos e ritmo tradicional Shotokan.',
+          url: defaultUrl
+        }];
+      }
+      return [];
+    }
+    if (typeof videoEntry === 'string') {
+      if (!videoEntry.trim()) return [];
+      return [{
+        id: 'vid_1',
+        title: 'Vídeo Técnico Principal',
+        description: 'Demonstração em vídeo do Kata.',
+        url: videoEntry.trim()
+      }];
+    }
+    if (Array.isArray(videoEntry)) {
+      return videoEntry.filter(v => v && v.url && v.url.trim()).map((v, i) => ({
+        id: v.id || `vid_${i + 1}`,
+        title: (v.title && v.title.trim()) || `Vídeo ${i + 1}`,
+        description: (v.description && v.description.trim()) || '',
+        url: v.url.trim()
+      }));
+    }
+    return [];
   }
 
   function extractYouTubeId(url) {
@@ -469,6 +515,57 @@ document.addEventListener('DOMContentLoaded', () => {
       url: url,
       rawUrl: url
     };
+  }
+
+  function openVideoModal(title, rawUrl, description = '') {
+    const videoModal = document.getElementById('videoModal');
+    const titleEl = document.getElementById('videoModalTitle');
+    const container = document.getElementById('videoModalContainer');
+    const footer = document.getElementById('videoModalFooter');
+    if (!videoModal || !container) return;
+
+    if (titleEl) {
+      titleEl.innerHTML = `<i class="fas fa-video" style="color: var(--accent-gold); margin-right: 6px;"></i> ${title || 'Vídeo Técnico'}`;
+    }
+
+    const embed = getEmbedUrl(rawUrl);
+    if (embed.type === 'video') {
+      container.innerHTML = `
+        <video controls autoplay playsinline style="width: 100%; max-height: 70vh; background: #000; display: block; border-radius: var(--radius-sm);">
+          <source src="${embed.url}" type="video/mp4">
+          Seu navegador não suporta a reprodução direta deste vídeo.
+        </video>
+      `;
+    } else {
+      container.innerHTML = `
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--radius-sm); background: #000;">
+          <iframe 
+            src="${embed.url}" 
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+          </iframe>
+        </div>
+      `;
+    }
+
+    if (footer) {
+      footer.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+          ${description ? `<div style="font-size: 0.86rem; color: #FFF; font-weight: 600;"><i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> ${description}</div>` : ''}
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <span style="color: #94A3B8; font-size: 0.78rem;">
+              <i class="fas fa-film" style="color: var(--accent-gold); margin-right: 4px;"></i> Reprodução integrada oficial TKST Alunos.
+            </span>
+            <a href="${embed.rawUrl}" target="_blank" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; padding: 4px 10px; text-decoration: none;">
+              <i class="fas fa-external-link-alt"></i> Abrir Externamente
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    videoModal.classList.add('active');
   }
 
   // Initialize
@@ -1199,45 +1296,67 @@ document.addEventListener('DOMContentLoaded', () => {
       ` : ''}
 
       ${adminSubTab === 'kata-videos' ? `
-        <!-- 26 KATA VIDEO LINKS MANAGER -->
+        <!-- 26 KATA VIDEO LINKS MANAGER (MULTI-VIDEO SUPPORT) -->
         <div class="admin-table-container">
-          <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color);">
-            <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-              <i class="fas fa-video" style="color: var(--accent-gold);"></i> Gerenciador de Vídeos dos 26 Kata
-            </h4>
-            <p style="font-size: 0.85rem; color: #94A3B8; margin-top: 4px;">
-              Insira o link de vídeo do YouTube, Vimeo ou MP4 para cada Kata. Os alunos poderão assistir diretamente dentro da plataforma, sem sair do sistema.
-            </p>
+          <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; margin: 0 0 4px 0;">
+                <i class="fas fa-video" style="color: var(--accent-gold);"></i> Gerenciador de Vídeos dos 26 Kata (Múltiplos Vídeos por Kata)
+              </h4>
+              <p style="font-size: 0.85rem; color: #94A3B8; margin: 0;">
+                Cadastre múltiplos vídeos para cada Kata com título e descrição (ex: <em>Execução Lenta</em>, <em>Passo a Passo</em>, <em>Aplicação Bunkai</em>). Os alunos verão a lista completa e escolherão qual querem assistir.
+              </p>
+            </div>
           </div>
 
-          <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+          <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px;">
             ${(window.TKST_KATAS || []).map((k, idx) => {
-              const currentUrl = customVideos[k.id] || (k.videoFileName ? 'videos/' + k.videoFileName : '');
-              const hasVideo = !!currentUrl;
+              const videosList = normalizeKataVideos(customVideos[k.id], k);
+              const count = videosList.length;
               return `
-                <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 16px; background: rgba(18, 23, 34, 0.85); border-left: 4px solid ${hasVideo ? 'var(--accent-emerald)' : 'var(--border-color)'};">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="font-weight: 700; color: #FFF; font-size: 0.95rem;">
-                      ${idx + 1}. ${k.name} <span style="font-family: var(--font-kanji); color: var(--accent-gold); font-size: 0.85rem;">(${k.kanji})</span>
+                <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 16px; background: rgba(18, 23, 34, 0.85); border-left: 4px solid ${count > 0 ? 'var(--accent-emerald)' : 'var(--border-color)'}; gap: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-weight: 700; color: #FFF; font-size: 1rem;">
+                      ${idx + 1}. ${k.name} <span style="font-family: var(--font-kanji); color: var(--accent-gold); font-size: 0.88rem;">(${k.kanji})</span>
                     </div>
-                    <span id="kata_vid_badge_${k.id}" class="badge ${hasVideo ? 'badge-verde' : 'badge-status-pending'}" style="font-size: 0.7rem;">
-                      ${hasVideo ? 'Vídeo Configurado' : 'Sem Link'}
+                    <span class="badge ${count > 0 ? 'badge-verde' : 'badge-status-pending'}" style="font-size: 0.7rem;">
+                      ${count > 0 ? `${count} Vídeo${count > 1 ? 's' : ''}` : 'Sem Vídeos'}
                     </span>
                   </div>
 
-                  <div class="form-group" style="margin-bottom: 10px;">
-                    <label style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; display: block;">Link do Vídeo (YouTube / Vimeo / MP4):</label>
-                    <input type="text" id="kata_vid_input_${k.id}" class="form-input" placeholder="ex: https://www.youtube.com/watch?v=..." value="${currentUrl}" style="font-size: 0.85rem; padding: 8px 12px;" onchange="window.TKST_APP.saveKataVideo('${k.id}')">
+                  <!-- Lista de vídeos configurados para este Kata -->
+                  <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+                    ${count === 0 ? `
+                      <div style="font-size: 0.8rem; color: #64748B; padding: 8px; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); text-align: center;">
+                        Nenhum vídeo cadastrado. Clique no botão abaixo para adicionar.
+                      </div>
+                    ` : videosList.map((v, vIdx) => `
+                      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                        <div style="min-width: 0; flex: 1;">
+                          <div style="font-size: 0.86rem; font-weight: 700; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${vIdx + 1}. ${escapeHtml(v.title)}
+                          </div>
+                          ${v.description ? `<div style="font-size: 0.75rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(v.description)}</div>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                          <button class="btn btn-sm btn-gold" onclick="window.TKST_APP.testDirectVideo('${escapeHtml(v.title.replace(/'/g, "\\'"))}', '${escapeHtml(v.url.replace(/'/g, "\\'"))}', '${escapeHtml((v.description || '').replace(/'/g, "\\'"))}')" title="Testar Vídeo" style="font-size: 0.7rem; padding: 4px 7px;">
+                            <i class="fas fa-play"></i>
+                          </button>
+                          <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openEditKataVideoModal('${k.id}', '${v.id}')" title="Editar Vídeo" style="font-size: 0.7rem; padding: 4px 7px;">
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteKataVideo('${k.id}', '${v.id}')" title="Excluir Vídeo" style="font-size: 0.7rem; padding: 4px 7px;">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                    `).join('')}
                   </div>
 
-                  <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.saveKataVideo('${k.id}')" style="font-size: 0.78rem; padding: 6px 12px;">
-                      <i class="fas fa-save"></i> Salvar Link
-                    </button>
-                    <button class="btn btn-sm btn-gold" onclick="window.TKST_APP.testKataVideo('${k.id}')" style="font-size: 0.78rem; padding: 6px 12px;">
-                      <i class="fas fa-play"></i> Testar no Sistema
-                    </button>
-                  </div>
+                  <!-- Botão Adicionar Vídeo -->
+                  <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openAddKataVideoModal('${k.id}')" style="width: 100%; font-size: 0.8rem; padding: 8px; font-weight: 700;">
+                    <i class="fas fa-plus"></i> Adicionar Vídeo a ${k.name}
+                  </button>
                 </div>
               `;
             }).join('')}
@@ -1635,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div>
               <h3 style="font-size: 1.05rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px; margin: 0;">
-                Dojo Kun <span style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 700; background: rgba(255, 183, 3, 0.12); border: 1px solid rgba(255, 183, 3, 0.3); border-radius: 999px; padding: 2px 8px;">5 Preceitos</span>
+                Dojo Kun
               </h3>
               <p style="color: #94A3B8; font-size: 0.78rem; margin: 2px 0 0 0;">Lema e princípios fundamentais do Karatê-Dō</p>
             </div>
@@ -3139,9 +3258,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="katas-grid">
         ${katas.map((k, idx) => {
-          const videoUrl = customVideos[k.id] || (k.videoFileName ? 'videos/' + k.videoFileName : '');
-          const hasVideo = !!videoUrl;
+          const videos = normalizeKataVideos(customVideos[k.id], k);
+          const hasVideo = videos.length > 0;
           const moves = k.movesCount || (k.moves ? k.moves.length : null);
+          const videoLabel = hasVideo ? (videos.length > 1 ? `${videos.length} Vídeos` : 'Vídeo Técnico') : 'Apostila PDF';
           return `
             <div class="kata-card" onclick="window.TKST_APP.openKataDetail('${k.id}')">
               <div class="kata-card-header">
@@ -3168,7 +3288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ` : ''}
                 <div class="kata-meta-item">
                   <i class="fas fa-video" style="color: ${hasVideo ? 'var(--accent-emerald)' : '#64748B'};"></i>
-                  <span>${hasVideo ? 'Vídeo Integrado' : 'Apostila PDF'}</span>
+                  <span>${videoLabel}</span>
                 </div>
               </div>
 
@@ -3205,7 +3325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!kata) return;
 
     const customVideos = getCustomKataVideos();
-    const videoUrl = customVideos[kata.id] || (kata.videoFileName ? 'videos/' + kata.videoFileName : '');
+    const videosList = normalizeKataVideos(customVideos[kata.id], kata);
 
     const modalTitle = document.getElementById('detailModalTitle');
     const modalBody = document.getElementById('detailModalBody');
@@ -3215,18 +3335,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfPath = kata.pdfFileName ? `assets/pdf/kata/${encodeURIComponent(kata.pdfFileName)}` : '';
 
     modalBody.innerHTML = `
-      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px;">
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
             <div style="font-size: 1.1rem; color: #FFF; font-weight: 700;">Significado: <span style="color: var(--accent-gold);">${kata.meaning}</span></div>
             <div style="font-size: 0.85rem; color: #94A3B8; margin-top: 2px;">Graduação de estudo: ${kata.graduation}</div>
           </div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            ${videoUrl ? `
-              <button class="btn btn-primary" onclick="window.TKST_APP.playKataVideo('${kata.id}')">
-                <i class="fas fa-play"></i> Assistir Vídeo Integrado
-              </button>
-            ` : ''}
             ${pdfPath ? `
               <a href="${pdfPath}" target="_blank" class="btn btn-gold" style="text-decoration: none;">
                 <i class="fas fa-file-pdf"></i> Abrir Apostila PDF
@@ -3234,6 +3349,46 @@ document.addEventListener('DOMContentLoaded', () => {
             ` : ''}
           </div>
         </div>
+      </div>
+
+      <!-- SEÇÃO DE VÍDEOS DISPONÍVEIS COM DESCRIÇÕES PARA ESCOLHA DO ALUNO -->
+      <div style="background: rgba(18, 23, 34, 0.95); border: 1.5px solid rgba(255, 183, 3, 0.3); border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px; box-shadow: 0 4px 18px rgba(0,0,0,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 183, 3, 0.15); padding-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+          <div style="font-weight: 700; color: #FFF; font-size: 0.98rem; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-video" style="color: var(--accent-gold);"></i> Vídeos de Estudo (${videosList.length})
+          </div>
+          <span style="font-size: 0.75rem; color: #94A3B8;">Toque no vídeo que deseja assistir</span>
+        </div>
+
+        ${videosList.length === 0 ? `
+          <div style="text-align: center; padding: 20px 10px; color: #94A3B8; font-size: 0.85rem;">
+            <i class="fas fa-video-slash" style="font-size: 1.8rem; color: #64748B; margin-bottom: 6px; display: block;"></i>
+            Nenhum vídeo cadastrado para este Kata ainda.
+          </div>
+        ` : `
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${videosList.map((v, idx) => `
+              <div class="stat-card" onclick="window.TKST_APP.playSpecificKataVideo('${kata.id}', '${v.id}')" style="cursor: pointer; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 183, 3, 0.25); border-left: 4px solid var(--accent-gold); padding: 12px 14px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: all 0.2s ease;">
+                <div style="min-width: 0; flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px;">
+                    <span class="badge badge-gold" style="font-size: 0.68rem; padding: 1px 6px;">Vídeo ${idx + 1}</span>
+                    <strong style="color: #FFF; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                      ${escapeHtml(v.title)}
+                    </strong>
+                  </div>
+                  ${v.description ? `
+                    <div style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.35; margin-top: 3px;">
+                      ${escapeHtml(v.description)}
+                    </div>
+                  ` : ''}
+                </div>
+                <button class="btn btn-sm btn-primary" style="flex-shrink: 0; font-size: 0.76rem; padding: 6px 12px; pointer-events: none;">
+                  <i class="fas fa-play"></i> Assistir
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `}
       </div>
 
       ${pdfPath ? `
@@ -5721,15 +5876,191 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
     // Video & Media Handlers
     getKataVideoUrl: (kataId) => {
-      const custom = window.TKST_AUTH ? window.TKST_AUTH.getCustomKataVideos() : {};
-      if (custom[kataId] && custom[kataId].trim()) return custom[kataId].trim();
       const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
-      if (kata) {
-        if (kata.youtubeUrl && kata.youtubeUrl.trim()) return kata.youtubeUrl.trim();
-        if (kata.videoUrl && !kata.videoUrl.startsWith('assets/videos/')) return kata.videoUrl.trim();
-        return `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent('karate shotokan kata ' + kata.name)}&rel=0&playsinline=1&modestbranding=1`;
-      }
+      const custom = getCustomKataVideos();
+      const list = normalizeKataVideos(custom[kataId], kata);
+      if (list.length > 0 && list[0].url) return list[0].url;
       return '';
+    },
+
+    playSpecificKataVideo: (kataId, videoId) => {
+      const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
+      const name = kata ? kata.name : 'Kata';
+      const customVideos = getCustomKataVideos();
+      const list = normalizeKataVideos(customVideos[kataId], kata);
+      const target = list.find(v => v.id === videoId) || list[0];
+      if (!target || !target.url) {
+        alert('Vídeo não encontrado.');
+        return;
+      }
+      openVideoModal(`${name} - ${target.title}`, target.url, target.description);
+    },
+
+    playKataVideo: (kataId) => {
+      const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
+      const name = kata ? kata.name : 'Kata';
+      const customVideos = getCustomKataVideos();
+      const list = normalizeKataVideos(customVideos[kataId], kata);
+      if (list.length === 0) {
+        alert('Nenhum link de vídeo configurado para este Kata no momento.');
+        return;
+      }
+      if (list.length === 1) {
+        openVideoModal(`${name} - ${list[0].title}`, list[0].url, list[0].description);
+      } else {
+        openKataDetail(kataId);
+      }
+    },
+
+    testDirectVideo: (title, url, description = '') => {
+      if (!url) {
+        alert('URL de vídeo inválida.');
+        return;
+      }
+      openVideoModal(title, url, description);
+    },
+
+    openAddKataVideoModal: (kataId) => {
+      const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
+      if (!kata) return;
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      modalTitle.innerHTML = `<span><i class="fas fa-video" style="color: var(--accent-gold);"></i> Adicionar Vídeo - ${kata.name}</span>`;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitKataVideoForm('${kataId}', '');">
+          <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.84rem; color: #E2E8F0; margin-bottom: 16px; line-height: 1.5;">
+            Adicione um vídeo para <strong>${kata.name}</strong>. Você pode definir a descrição e o foco do vídeo (ex: <em>Execução Lenta</em>, <em>Passo a Passo</em>, <em>Aplicação Bunkai</em>).
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">
+              Título / Descrição do Vídeo: *
+            </label>
+            <input type="text" id="modalKataVidTitle" class="form-input" placeholder="ex: Execução com Bunkai / Passo a Passo Detalhado" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">
+              Link do Vídeo (YouTube, Vimeo, Google Drive ou MP4): *
+            </label>
+            <input type="text" id="modalKataVidUrl" class="form-input" placeholder="ex: https://www.youtube.com/watch?v=..." required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label class="form-label" style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">
+              Descrição / Observações Técnicas para o Aluno (Opcional):
+            </label>
+            <textarea id="modalKataVidDesc" class="form-input" rows="3" placeholder="ex: Atenção especial aos pontos de Kiai e na postura Zenkutsu Dachi..."></textarea>
+          </div>
+
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="font-weight: 700;">
+              <i class="fas fa-save"></i> Salvar Vídeo na Nuvem
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    openEditKataVideoModal: (kataId, videoId) => {
+      const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
+      if (!kata) return;
+
+      const customVideos = getCustomKataVideos();
+      const list = normalizeKataVideos(customVideos[kataId], kata);
+      const existing = list.find(v => v.id === videoId);
+      if (!existing) {
+        alert('Vídeo não encontrado.');
+        return;
+      }
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      modalTitle.innerHTML = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Vídeo - ${kata.name}</span>`;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitKataVideoForm('${kataId}', '${videoId}');">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">
+              Título / Descrição do Vídeo: *
+            </label>
+            <input type="text" id="modalKataVidTitle" class="form-input" value="${escapeHtml(existing.title)}" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">
+              Link do Vídeo (YouTube, Vimeo, Google Drive ou MP4): *
+            </label>
+            <input type="text" id="modalKataVidUrl" class="form-input" value="${escapeHtml(existing.url)}" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label class="form-label" style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">
+              Descrição / Observações Técnicas para o Aluno (Opcional):
+            </label>
+            <textarea id="modalKataVidDesc" class="form-input" rows="3">${escapeHtml(existing.description || '')}</textarea>
+          </div>
+
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="font-weight: 700;">
+              <i class="fas fa-save"></i> Atualizar Vídeo
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    deleteKataVideo: (kataId, videoId) => {
+      if (confirm('Deseja realmente remover este vídeo do Kata?')) {
+        if (window.TKST_AUTH && window.TKST_AUTH.deleteKataVideo) {
+          window.TKST_AUTH.deleteKataVideo(kataId, videoId);
+        }
+        renderAdminMaster();
+      }
+    },
+
+    submitKataVideoForm: (kataId, videoId) => {
+      const titleInput = document.getElementById('modalKataVidTitle');
+      const urlInput = document.getElementById('modalKataVidUrl');
+      const descInput = document.getElementById('modalKataVidDesc');
+      if (!titleInput || !urlInput) return;
+
+      const title = titleInput.value.trim();
+      const url = urlInput.value.trim();
+      const desc = descInput ? descInput.value.trim() : '';
+
+      if (!title || !url) {
+        alert('Por favor, preencha o título e o link do vídeo.');
+        return;
+      }
+
+      if (videoId) {
+        if (window.TKST_AUTH && window.TKST_AUTH.updateKataVideo) {
+          window.TKST_AUTH.updateKataVideo(kataId, videoId, title, url, desc);
+        }
+      } else {
+        if (window.TKST_AUTH && window.TKST_AUTH.addKataVideo) {
+          window.TKST_AUTH.addKataVideo(kataId, title, url, desc);
+        }
+      }
+
+      document.getElementById('detailModal').classList.remove('active');
+      alert('Vídeo salvo e sincronizado com sucesso na nuvem!');
+      renderAdminMaster();
     },
 
     saveKataVideo: (kataId) => {
@@ -5739,11 +6070,6 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (window.TKST_AUTH && window.TKST_AUTH.saveKataVideo) {
         window.TKST_AUTH.saveKataVideo(kataId, url);
       }
-      const badge = document.getElementById(`kata_vid_badge_${kataId}`);
-      if (badge) {
-        badge.className = url ? 'badge badge-verde' : 'badge badge-status-pending';
-        badge.textContent = url ? 'Vídeo Configurado' : 'Sem Link';
-      }
       alert('Link do vídeo salvo e sincronizado com sucesso na nuvem!');
       renderAdminMaster();
     },
@@ -5751,27 +6077,13 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     testKataVideo: (kataId, kataName) => {
       const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
       const name = kataName || (kata ? kata.name : 'Kata');
-      const input = document.getElementById(`kata_vid_input_${kataId}`);
-      const url = input ? input.value.trim() : window.TKST_APP.getKataVideoUrl(kataId);
-      if (!url) {
-        alert('Por favor, insira um link de vídeo primeiro para testar.');
+      const customVideos = getCustomKataVideos();
+      const list = normalizeKataVideos(customVideos[kataId], kata);
+      if (list.length === 0) {
+        alert('Por favor, cadastre um vídeo primeiro para testar.');
         return;
       }
-      if (window.TKST_AUTH && window.TKST_AUTH.saveKataVideo) {
-        window.TKST_AUTH.saveKataVideo(kataId, url);
-      }
-      openVideoModal(name, url);
-    },
-
-    playKataVideo: (kataId) => {
-      const kata = (window.TKST_KATAS || []).find(k => k.id === kataId);
-      const name = kata ? kata.name : 'Kata';
-      const url = window.TKST_APP.getKataVideoUrl(kataId);
-      if (!url) {
-        alert('Nenhum link de vídeo configurado para este Kata no momento.');
-        return;
-      }
-      openVideoModal(name, url);
+      openVideoModal(`${name} - ${list[0].title}`, list[0].url, list[0].description);
     },
 
     openGlossaryVideo: (categoryKey, japaneseName) => {

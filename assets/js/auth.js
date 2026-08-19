@@ -913,11 +913,33 @@
     },
 
     // ==========================================
-    // CUSTOM KATA VIDEOS (CLOUD SYNCED)
+    // CUSTOM KATA VIDEOS (CLOUD SYNCED - MULTI-VIDEO SUPPORT)
     // ==========================================
     getCustomKataVideos: function() {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
+        const normalized = {};
+        Object.keys(raw).forEach(kataId => {
+          const val = raw[kataId];
+          if (typeof val === 'string') {
+            if (val.trim()) {
+              normalized[kataId] = [{
+                id: 'vid_legacy',
+                title: 'Vídeo Técnico Principal',
+                description: 'Demonstração oficial do Kata.',
+                url: val.trim()
+              }];
+            }
+          } else if (Array.isArray(val)) {
+            normalized[kataId] = val.filter(v => v && v.url && v.url.trim()).map((v, i) => ({
+              id: v.id || `vid_${i + 1}`,
+              title: (v.title && v.title.trim()) || `Vídeo ${i + 1}`,
+              description: (v.description && v.description.trim()) || '',
+              url: v.url.trim()
+            }));
+          }
+        });
+        return normalized;
       } catch (e) {
         return {};
       }
@@ -929,15 +951,74 @@
       window.dispatchEvent(new CustomEvent('tkst_videos_updated', { detail: videos }));
     },
 
-    saveKataVideo: function(kataId, url) {
-      const videos = this.getCustomKataVideos();
-      if (url && url.trim()) {
-        videos[kataId] = url.trim();
+    saveKataVideosList: function(kataId, list) {
+      const allVideos = this.getCustomKataVideos();
+      if (Array.isArray(list) && list.length > 0) {
+        allVideos[kataId] = list.filter(v => v && v.url && v.url.trim()).map((v, i) => ({
+          id: v.id || `vid_${Date.now()}_${i}`,
+          title: (v.title && v.title.trim()) || `Vídeo ${i + 1}`,
+          description: (v.description && v.description.trim()) || '',
+          url: v.url.trim()
+        }));
       } else {
-        delete videos[kataId];
+        delete allVideos[kataId];
       }
-      this.saveCustomKataVideos(videos);
-      return { success: true, videos };
+      this.saveCustomKataVideos(allVideos);
+      return { success: true, videos: allVideos };
+    },
+
+    addKataVideo: function(kataId, title, url, description = '') {
+      const allVideos = this.getCustomKataVideos();
+      const currentList = allVideos[kataId] || [];
+      if (!url || !url.trim()) return { success: false, message: 'URL do vídeo é obrigatória.' };
+
+      currentList.push({
+        id: `vid_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        title: (title && title.trim()) || `Vídeo ${currentList.length + 1}`,
+        description: (description && description.trim()) || '',
+        url: url.trim()
+      });
+      allVideos[kataId] = currentList;
+      this.saveCustomKataVideos(allVideos);
+      return { success: true, videos: allVideos };
+    },
+
+    updateKataVideo: function(kataId, videoId, title, url, description = '') {
+      const allVideos = this.getCustomKataVideos();
+      const currentList = allVideos[kataId] || [];
+      const idx = currentList.findIndex(v => v.id === videoId);
+      if (idx === -1) return { success: false, message: 'Vídeo não encontrado.' };
+
+      currentList[idx] = {
+        id: videoId,
+        title: (title && title.trim()) || `Vídeo ${idx + 1}`,
+        description: (description && description.trim()) || '',
+        url: url.trim()
+      };
+      allVideos[kataId] = currentList;
+      this.saveCustomKataVideos(allVideos);
+      return { success: true, videos: allVideos };
+    },
+
+    deleteKataVideo: function(kataId, videoId) {
+      const allVideos = this.getCustomKataVideos();
+      let currentList = allVideos[kataId] || [];
+      currentList = currentList.filter(v => v.id !== videoId);
+      if (currentList.length > 0) {
+        allVideos[kataId] = currentList;
+      } else {
+        delete allVideos[kataId];
+      }
+      this.saveCustomKataVideos(allVideos);
+      return { success: true, videos: allVideos };
+    },
+
+    saveKataVideo: function(kataId, url) {
+      if (url && url.trim()) {
+        return this.addKataVideo(kataId, 'Vídeo Técnico', url.trim(), '');
+      } else {
+        return this.saveKataVideosList(kataId, []);
+      }
     },
 
     // ==========================================
