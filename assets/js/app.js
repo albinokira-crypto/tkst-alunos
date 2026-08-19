@@ -1570,70 +1570,58 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Quick Stats -->
+      <!-- Quick Stats (Minimizados em 1 Linha) -->
       <div class="stats-grid">
         ${!isAdmin ? `
-          <div class="stat-card" onclick="window.TKST_APP.switchTab('my-exam')" style="cursor: pointer;">
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('my-exam')" style="cursor: pointer;" title="Ver Matéria de Exame">
             <div class="stat-icon-box">
               <i class="fas fa-medal"></i>
             </div>
-            <div>
-              <div class="stat-value">${curriculum.targetBelt.split(' ')[1] || 'Amarela'}</div>
-              <div class="stat-label">Matéria de Exame</div>
-            </div>
+            <div class="stat-value">${curriculum.targetBelt.split(' ')[1] || 'Amarela'}</div>
+            <div class="stat-label">Exame</div>
           </div>
         ` : `
-          <div class="stat-card" onclick="window.TKST_APP.switchTab('admin'); window.TKST_APP.setAdminSubTab('students');" style="cursor: pointer;">
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('admin'); window.TKST_APP.setAdminSubTab('students');" style="cursor: pointer;" title="Ver Alunos Matriculados">
             <div class="stat-icon-box crimson">
               <i class="fas fa-users"></i>
             </div>
-            <div>
-              <div class="stat-value">${students.length}</div>
-              <div class="stat-label">Alunos Matriculados</div>
-            </div>
+            <div class="stat-value">${students.length}</div>
+            <div class="stat-label">Alunos</div>
           </div>
         `}
 
-        <div class="stat-card" onclick="window.TKST_APP.switchTab('katas')" style="cursor: pointer;">
+        <div class="stat-card" onclick="window.TKST_APP.switchTab('katas')" style="cursor: pointer;" title="Ver Enciclopédia dos 26 Katas">
           <div class="stat-icon-box gold">
             <i class="fas fa-book-open"></i>
           </div>
-          <div>
-            <div class="stat-value">${totalKatas} Kata</div>
-            <div class="stat-label">Biblioteca Shotokan Completa</div>
-          </div>
+          <div class="stat-value">${totalKatas} Katas</div>
+          <div class="stat-label">Biblioteca</div>
         </div>
 
         ${!isAdmin ? `
-          <div class="stat-card" onclick="window.TKST_APP.switchTab('kumite')" style="cursor: pointer;">
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('kumite')" style="cursor: pointer;" title="Ver Guia de Kumite">
             <div class="stat-icon-box blue">
               <i class="fas fa-fist-raised"></i>
             </div>
-            <div>
-              <div class="stat-value">5 Modalidades</div>
-              <div class="stat-label">Sanbon, Kihon Ippon & Jiyu</div>
-            </div>
+            <div class="stat-value">Kumite</div>
+            <div class="stat-label">5 Modos</div>
           </div>
         ` : `
-          <div class="stat-card" onclick="window.TKST_APP.switchTab('admin'); window.TKST_APP.setAdminSubTab('questions');" style="cursor: pointer;">
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('admin'); window.TKST_APP.setAdminSubTab('questions');" style="cursor: pointer;" title="Gerenciar Banco de Questões">
             <div class="stat-icon-box purple">
               <i class="fas fa-question-circle"></i>
             </div>
-            <div>
-              <div class="stat-value">${(window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank().length : (window.TKST_DEFAULT_QUIZ_BANK ? window.TKST_DEFAULT_QUIZ_BANK.length : 138))}</div>
-              <div class="stat-label">Banco de Questões</div>
-            </div>
+            <div class="stat-value">${(window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank().length : (window.TKST_DEFAULT_QUIZ_BANK ? window.TKST_DEFAULT_QUIZ_BANK.length : 138))}</div>
+            <div class="stat-label">Questões</div>
           </div>
         `}
 
-        <div class="stat-card" onclick="window.TKST_APP.switchTab('quiz')" style="cursor: pointer;">
+        <div class="stat-card" onclick="window.TKST_APP.switchTab('quiz')" style="cursor: pointer;" title="Fazer Simulado Teórico">
           <div class="stat-icon-box emerald">
             <i class="fas fa-brain"></i>
           </div>
-          <div>
-            <div class="stat-value">Simulador</div>
-            <div class="stat-label">Teste Teórico de Exame</div>
-          </div>
+          <div class="stat-value">Simulado</div>
+          <div class="stat-label">Quiz</div>
         </div>
       </div>
 
