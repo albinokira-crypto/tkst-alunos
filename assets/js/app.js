@@ -3376,57 +3376,52 @@ document.addEventListener('DOMContentLoaded', () => {
     modalTitle.innerHTML = `<span>🥋 ${kata.name} (${kata.kanji})</span>`;
 
     const pdfPath = kata.pdfFileName ? `assets/pdf/kata/${encodeURIComponent(kata.pdfFileName)}` : '';
+    const badgeClass = getBeltBadgeClass(kata.graduation);
 
     modalBody.innerHTML = `
-      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <div style="font-size: 1.1rem; color: #FFF; font-weight: 700;">Significado: <span style="color: var(--accent-gold);">${kata.meaning}</span></div>
-            <div style="font-size: 0.85rem; color: #94A3B8; margin-top: 2px;">Graduação de estudo: ${kata.graduation}</div>
-          </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            ${pdfPath ? `
-              <a href="${pdfPath}" target="_blank" class="btn btn-gold" style="text-decoration: none;">
-                <i class="fas fa-file-pdf"></i> Abrir Apostila PDF
-              </a>
-            ` : ''}
-          </div>
+      <!-- METADADOS COMPACTOS DO KATA -->
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 10px;">
+        <div style="font-size: 0.88rem; color: #FFF; font-weight: 700; line-height: 1.3;">
+          Significado: <span style="color: var(--accent-gold); font-weight: 600;">${kata.meaning}</span>
+        </div>
+        <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+          <span>Graduação de estudo:</span>
+          <span class="badge ${badgeClass}" style="font-size: 0.64rem; padding: 2px 7px; font-weight: 700;">${kata.graduation}</span>
         </div>
       </div>
 
-      <!-- SEÇÃO DE VÍDEOS DISPONÍVEIS COM DESCRIÇÕES PARA ESCOLHA DO ALUNO -->
-      <div style="background: rgba(18, 23, 34, 0.95); border: 1.5px solid rgba(255, 183, 3, 0.3); border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px; box-shadow: 0 4px 18px rgba(0,0,0,0.25);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 183, 3, 0.15); padding-bottom: 8px; flex-wrap: wrap; gap: 6px;">
-          <div style="font-weight: 700; color: #FFF; font-size: 0.98rem; display: flex; align-items: center; gap: 8px;">
+      <!-- SEÇÃO DE VÍDEOS COMPACTA -->
+      <div style="background: rgba(18, 23, 34, 0.95); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 183, 3, 0.12); padding-bottom: 6px;">
+          <div style="font-weight: 700; color: #FFF; font-size: 0.86rem; display: flex; align-items: center; gap: 6px;">
             <i class="fas fa-video" style="color: var(--accent-gold);"></i> Vídeos de Estudo (${videosList.length})
           </div>
-          <span style="font-size: 0.75rem; color: #94A3B8;">Toque no vídeo que deseja assistir</span>
         </div>
 
         ${videosList.length === 0 ? `
-          <div style="text-align: center; padding: 20px 10px; color: #94A3B8; font-size: 0.85rem;">
-            <i class="fas fa-video-slash" style="font-size: 1.8rem; color: #64748B; margin-bottom: 6px; display: block;"></i>
-            Nenhum vídeo cadastrado para este Kata ainda.
+          <div style="text-align: center; padding: 12px 6px; color: #94A3B8; font-size: 0.8rem;">
+            <i class="fas fa-video-slash" style="font-size: 1.3rem; color: #64748B; margin-bottom: 4px; display: block;"></i>
+            Nenhum vídeo cadastrado no momento.
           </div>
         ` : `
-          <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
             ${videosList.map((v, idx) => `
-              <div class="stat-card" onclick="window.TKST_APP.playSpecificKataVideo('${kata.id}', '${v.id}')" style="cursor: pointer; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 183, 3, 0.25); border-left: 4px solid var(--accent-gold); padding: 12px 14px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: all 0.2s ease;">
+              <div onclick="window.TKST_APP.playSpecificKataVideo('${kata.id}', '${v.id}')" style="cursor: pointer; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 183, 3, 0.2); border-left: 3.5px solid var(--accent-gold); padding: 8px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 8px; transition: all 0.15s ease;">
                 <div style="min-width: 0; flex: 1;">
-                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px;">
-                    <span class="badge badge-gold" style="font-size: 0.68rem; padding: 1px 6px;">Vídeo ${idx + 1}</span>
-                    <strong style="color: #FFF; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <span class="badge badge-gold" style="font-size: 0.62rem; padding: 1px 5px;">Vídeo ${idx + 1}</span>
+                    <strong style="color: #FFF; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                       ${escapeHtml(v.title)}
                     </strong>
                   </div>
                   ${v.description ? `
-                    <div style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.35; margin-top: 3px;">
+                    <div style="font-size: 0.75rem; color: #94A3B8; line-height: 1.25; margin-top: 2px;">
                       ${escapeHtml(v.description)}
                     </div>
                   ` : ''}
                 </div>
-                <button class="btn btn-sm btn-primary" style="flex-shrink: 0; font-size: 0.76rem; padding: 6px 12px; pointer-events: none;">
-                  <i class="fas fa-play"></i> Assistir
+                <button class="btn btn-sm btn-primary" style="flex-shrink: 0; font-size: 0.72rem; padding: 5px 10px; pointer-events: none;">
+                  <i class="fas fa-play" style="font-size: 0.65rem;"></i> Assistir
                 </button>
               </div>
             `).join('')}
@@ -3435,27 +3430,27 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       ${pdfPath ? `
-        <!-- Official Kata PDF Document Viewer (Native Mobile & Desktop Canvas Renderer) -->
-        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: #0E121A; margin-top: 14px;">
-          <div style="padding: 12px 16px; background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #FFF; font-size: 0.9rem;">
-              <i class="fas fa-book-open" style="color: var(--accent-gold);"></i> Apostila Oficial de Estudos: ${kata.name}
+        <!-- SEÇÃO DE APOSTILA OFICIAL COMPACTA -->
+        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background: #0E121A;">
+          <div style="padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #FFF; font-size: 0.84rem;">
+              <i class="fas fa-book-open" style="color: var(--accent-gold);"></i> Apostila Oficial: ${kata.name}
             </div>
-            <div style="display: flex; gap: 8px;">
-              <a href="${pdfPath}" target="_blank" class="btn btn-sm btn-secondary" style="font-size: 0.78rem; text-decoration: none;">
+            <div style="display: flex; gap: 6px;">
+              <a href="${pdfPath}" target="_blank" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 4px 8px; text-decoration: none;">
                 <i class="fas fa-expand"></i> Tela Cheia
               </a>
-              <a href="${pdfPath}" download="${kata.pdfFileName || (kata.name + '.pdf')}" class="btn btn-sm btn-primary" style="font-size: 0.78rem; text-decoration: none;">
+              <a href="${pdfPath}" download="${kata.pdfFileName || (kata.name + '.pdf')}" class="btn btn-sm btn-primary" style="font-size: 0.72rem; padding: 4px 8px; text-decoration: none;">
                 <i class="fas fa-download"></i> Baixar PDF
               </a>
             </div>
           </div>
 
           <!-- Native PDF.js Mobile Canvas Pages Container -->
-          <div id="kataPdfPagesContainer" style="padding: 12px; display: flex; flex-direction: column; gap: 14px; align-items: center; max-height: 68vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #0B0E14;">
-            <div style="padding: 30px; text-align: center; color: var(--accent-gold);">
-              <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 8px; display: block;"></i>
-              <span style="font-size: 0.85rem; color: #94A3B8;">Renderizando páginas da apostila...</span>
+          <div id="kataPdfPagesContainer" style="padding: 8px; display: flex; flex-direction: column; gap: 8px; align-items: center; max-height: 55vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #0B0E14;">
+            <div style="padding: 20px; text-align: center; color: var(--accent-gold);">
+              <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 6px; display: block;"></i>
+              <span style="font-size: 0.78rem; color: #94A3B8;">Renderizando páginas da apostila...</span>
             </div>
           </div>
         </div>
