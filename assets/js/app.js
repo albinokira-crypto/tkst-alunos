@@ -1817,6 +1817,65 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
       </div>
+
+      <!-- Niju Kun Collapsible Accordion Card -->
+      <div class="stat-card nijukun-accordion-card" style="position: relative; flex-direction: column; align-items: stretch; margin-top: 14px; background: linear-gradient(135deg, rgba(22, 28, 42, 0.95) 0%, rgba(10, 13, 20, 0.98) 100%); border: 1.5px solid rgba(255, 183, 3, 0.25); box-shadow: var(--shadow-subtle); padding: 0; overflow: hidden;">
+        <!-- Subtle Vertical Kanji Watermark in Header -->
+        <img src="assets/images/logo-tkst-kanji-frente.png" alt="Kanji" style="position: absolute; right: 135px; top: 50%; transform: translateY(-50%); height: 44px; opacity: 0.08; pointer-events: none;">
+
+        <!-- Header Clicável com Efeito de Toque -->
+        <div class="nijukun-accordion-header" onclick="window.TKST_APP.toggleNijuKunAccordion()" style="position: relative; z-index: 1; padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; user-select: none; transition: background 0.2s ease;">
+          <div class="section-title-group" style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 183, 3, 0.12); border: 1px solid rgba(255, 183, 3, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;">
+              <i class="fas fa-feather-alt"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 1.05rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px; margin: 0;">
+                Niju Kun
+              </h3>
+              <p style="color: #94A3B8; font-size: 0.78rem; margin: 2px 0 0 0;">Os 20 Princípios do Mestre Gichin Funakoshi</p>
+            </div>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <span id="nijukunToggleBadge" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 12px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); pointer-events: none; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-chevron-down" id="nijukunChevronIcon" style="transition: transform 0.3s cubic-bezier(.4,0,.2,1);"></i> Toque para Ver
+            </span>
+          </div>
+        </div>
+
+        <!-- Conteúdo Expansível (Aparece ao Clicar) -->
+        <div id="nijukunAccordionBody" style="display: none; padding: 0 16px 16px 16px; border-top: 1px solid rgba(255, 183, 3, 0.15); animation: fadeIn 0.3s ease; position: relative; overflow: hidden;">
+          <!-- Authentic Vertical Kanji Background Ribbon -->
+          <img src="assets/images/logo-tkst-kanji-vertical.png" alt="Kanji Calligraphy" style="position: absolute; right: 10px; top: 12px; height: 190px; opacity: 0.055; pointer-events: none;">
+
+          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; margin: 12px 0; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 0.8rem; color: #94A3B8; font-style: italic;">二十訓 - Gichin Funakoshi</span>
+            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 12px;" onclick="event.stopPropagation(); window.TKST_APP.switchTab('philosophy')">
+              <i class="fas fa-torii-gate"></i> Ver Filosofia Completa
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+            ${(window.TKST_GLOSSARY && window.TKST_GLOSSARY.nijuKun ? window.TKST_GLOSSARY.nijuKun : []).map(n => `
+              <div class="dojokun-card" style="margin-top: 0; border-left: 3.5px solid var(--accent-gold); background: rgba(255, 255, 255, 0.02); padding: 12px 14px; border-radius: var(--radius-sm); display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span class="badge badge-gold" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700;">${n.number}º Princípio</span>
+                </div>
+                <div class="dojokun-pt" style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 3px;">
+                  ${n.translation}
+                </div>
+                <div class="dojokun-jp" style="font-size: 0.78rem; color: var(--accent-gold); font-style: italic; margin-bottom: 5px;">
+                  ${n.title}
+                </div>
+                <div class="dojokun-desc" style="font-size: 0.8rem; color: #CBD5E1; line-height: 1.4; margin-top: auto;">
+                  ${n.description}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
     `;
 
     mainContent.innerHTML = html;
@@ -3279,45 +3338,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="katas-grid">
         ${katas.map((k, idx) => {
-          const videos = normalizeKataVideos(customVideos[k.id], k);
-          const hasVideo = videos.length > 0;
-          const moves = k.movesCount || (k.moves ? k.moves.length : null);
-          const videoLabel = hasVideo ? (videos.length > 1 ? `${videos.length} Vídeos` : 'Vídeo Técnico') : 'Apostila PDF';
+          const kyuText = k.graduation.includes('(') ? k.graduation.split('(')[0].trim() : k.graduation.trim();
+          const badgeClass = getBeltBadgeClass(k.graduation);
+
           return `
-            <div class="kata-card" onclick="window.TKST_APP.openKataDetail('${k.id}')">
-              <div class="kata-card-header">
-                <div>
-                  <div class="kata-name" style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 0.78rem; background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); padding: 2px 7px; border-radius: 4px; font-weight: 800; border: 1px solid rgba(255, 183, 3, 0.3);">${idx + 1}º</span>
-                    <span>${k.name}</span>
-                  </div>
-                  <div class="kata-meaning">${k.meaning}</div>
-                </div>
-                <div class="kata-kanji-stamp">${k.kanji}</div>
+            <div class="kata-card" onclick="window.TKST_APP.openKataDetail('${k.id}')" title="Toque para ver a aula e vídeos do Kata ${k.name}">
+              <div>
+                <div class="kata-card-order">${idx + 1}º</div>
+                <div class="kata-card-title">${k.name}</div>
+                <div class="kata-card-meaning">${k.meaning}</div>
               </div>
 
-              <div class="kata-meta-row">
-                <div class="kata-meta-item">
-                  <i class="fas fa-file-pdf" style="color: var(--accent-gold);"></i>
-                  <span>Apostila PDF</span>
-                </div>
-                ${moves ? `
-                  <div class="kata-meta-item">
-                    <i class="fas fa-running" style="color: #48CAE4;"></i>
-                    <span>${moves} Movimentos</span>
-                  </div>
-                ` : ''}
-                <div class="kata-meta-item">
-                  <i class="fas fa-video" style="color: ${hasVideo ? 'var(--accent-emerald)' : '#64748B'};"></i>
-                  <span>${videoLabel}</span>
-                </div>
-              </div>
-
-              <div class="kata-card-footer">
-                <span class="badge badge-amarela">${k.graduation.split('(')[0].trim()}</span>
-                <span style="font-size: 0.82rem; color: var(--accent-gold); font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                  Estudar <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
-                </span>
+              <div class="kata-card-kyu-badge badge ${badgeClass}">
+                ${kyuText}
               </div>
             </div>
           `;
@@ -4528,12 +4561,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderPhilosophy() {
     const dojoKun = (window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun) ? window.TKST_GLOSSARY.dojoKun : [];
+    const nijuKun = (window.TKST_GLOSSARY && window.TKST_GLOSSARY.nijuKun) ? window.TKST_GLOSSARY.nijuKun : [];
 
     let html = `
       <div class="section-header">
         <div class="section-title-group">
-          <h3><i class="fas fa-scroll" style="color: var(--accent-gold);"></i> Filosofia do Dojo: Dojo Kun</h3>
-          <p>Os 5 Princípios Fundamentais recitados ao final de cada aula no Dojo</p>
+          <h3><i class="fas fa-scroll" style="color: var(--accent-gold);"></i> Filosofia do Dojo: Dojo Kun & Niju Kun</h3>
+          <p>Princípios e preceitos fundamentais da tradição Shotokan Karatê-Dō</p>
         </div>
       </div>
 
@@ -4560,6 +4594,34 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="dojokun-jp">${d.title}</div>
             <div class="dojokun-pt">${d.translation}</div>
             <div class="dojokun-desc">${d.description}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- NIJU KUN (20 PRECEITOS DE GICHIN FUNAKOSHI) -->
+      <div class="dashboard-hero" style="margin: 36px 0 20px 0; position: relative; overflow: hidden;">
+        <!-- Subtle Transparent TKST Emblem Watermark -->
+        <img src="assets/images/logo-tkst-emblem-transp.png" alt="TKST Emblem" style="position: absolute; right: -10px; bottom: -10px; height: 115%; opacity: 0.12; pointer-events: none; object-fit: contain;">
+
+        <div class="hero-content" style="position: relative; z-index: 1;">
+          <div>
+            <h2 style="font-family: var(--font-heading); color: #FFF; font-size: 1.5rem; margin-bottom: 8px;">二十訓 (Niju Kun)</h2>
+            <p style="color: #94A3B8;">
+              Os <strong>20 Preceitos Fundamentais</strong> transmitidos pelo Grande Mestre <strong>Gichin Funakoshi</strong> (Pai do Karatê Moderno), que ensinam que o Karatê vai muito além da luta física: é um caminho de autodomínio, retidão e disciplina para toda a vida.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="dojokun-grid">
+        ${nijuKun.map(n => `
+          <div class="dojokun-card">
+            <div style="margin-bottom: 8px;">
+              <span class="badge badge-gold" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 700;">${n.number}º Princípio</span>
+            </div>
+            <div class="dojokun-jp">${n.title}</div>
+            <div class="dojokun-pt">${n.translation}</div>
+            <div class="dojokun-desc">${n.description}</div>
           </div>
         `).join('')}
       </div>
@@ -4650,6 +4712,25 @@ document.addEventListener('DOMContentLoaded', () => {
         body.style.display = 'none';
         if (icon) icon.style.transform = 'rotate(0deg)';
         if (badge) badge.innerHTML = '<i class="fas fa-chevron-down" id="dojokunChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Toque para Ver';
+      }
+    },
+    toggleNijuKunAccordion: () => {
+      const body = document.getElementById('nijukunAccordionBody');
+      const icon = document.getElementById('nijukunChevronIcon');
+      const badge = document.getElementById('nijukunToggleBadge');
+      if (!body) return;
+
+      const isHidden = body.style.display === 'none' || body.hidden;
+      if (isHidden) {
+        body.hidden = false;
+        body.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        if (badge) badge.innerHTML = '<i class="fas fa-chevron-up" id="nijukunChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Recolher';
+      } else {
+        body.hidden = true;
+        body.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+        if (badge) badge.innerHTML = '<i class="fas fa-chevron-down" id="nijukunChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Toque para Ver';
       }
     },
     toggleStudyAccordion: (sectionId) => {

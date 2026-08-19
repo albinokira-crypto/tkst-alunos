@@ -710,6 +710,128 @@ window.TKST_GLOSSARY = {
       "translation": "Conter o espírito de agressão!",
       "description": "Dominar suas próprias emoções, impulsos violentos e buscar sempre a serenidade e a paz."
     }
+  ],
+  "nijuKun": [
+    {
+      "number": 1,
+      "title": "Karate-dō wa rei ni hajimari, rei ni owaru koto o wasuru na",
+      "translation": "O Karatê-Dō começa e termina com respeito (Rei).",
+      "description": "A cortesia e o respeito mútuo são a essência do Karatê, do primeiro ao último instante de prática e na vida cotidiana."
+    },
+    {
+      "number": 2,
+      "title": "Karate ni sente nashi",
+      "translation": "No Karatê não existe atitude ofensiva (não há primeiro ataque).",
+      "description": "O verdadeiro karateka nunca ataca primeiro nem busca a agressão; sua técnica é estritamente defensiva e de proteção."
+    },
+    {
+      "number": 3,
+      "title": "Karate wa gi no tasuke",
+      "translation": "O Karatê é um assistente e instrumento da justiça.",
+      "description": "A força e a habilidade adquiridas no treinamento devem ser usadas sempre a favor do bem, da verdade e da justiça."
+    },
+    {
+      "number": 4,
+      "title": "Mazu onore o shire, shikashite ta o shire",
+      "translation": "Conheça a si mesmo antes de tentar conhecer os outros.",
+      "description": "Compreender suas próprias forças, fraquezas e limitações emocionais é o primeiro passo para compreender os adversários e a vida."
+    },
+    {
+      "number": 5,
+      "title": "Gijutsu yori shinjutsu",
+      "translation": "O espírito e a mente são mais importantes que a técnica.",
+      "description": "A excelência técnica é inútil sem a retidão moral, humildade e integridade de caráter que guiam sua aplicação."
+    },
+    {
+      "number": 6,
+      "title": "Kokoro wa hanatan koto o yōsu",
+      "translation": "Mantenha a mente sempre livre e aberta (Mizu no Kokoro).",
+      "description": "Não fique preso a pensamentos fixos ou distrações. Uma mente desprendida e serena reflete a realidade como a água calma de um lago."
+    },
+    {
+      "number": 7,
+      "title": "Wazawai wa ketai ni seizu",
+      "translation": "Os acidentes e infortúnios nascem da negligência e da preguiça.",
+      "description": "A falta de atenção, desleixo nos treinos e descuido constante são a verdadeira causa das derrotas e dos erros na vida."
+    },
+    {
+      "number": 8,
+      "title": "Dōjō nomino karate to omou na",
+      "translation": "Não pense que o Karatê se limita apenas ao Dojo.",
+      "description": "O Karatê é um modo de vida para ser praticado em casa, no trabalho, na sociedade e em cada relacionamento humano."
+    },
+    {
+      "number": 9,
+      "title": "Karate-dō no shugyō wa isshō de aru",
+      "translation": "O aprendizado do Karatê-Dō deve ser perseguido durante toda a vida.",
+      "description": "Não há limite ou fim para a evolução marcial e espiritual. A prática contínua é uma jornada sem linha de chegada."
+    },
+    {
+      "number": 10,
+      "title": "Arayuru mono o karateka seyo; sokoni myōmi ari",
+      "translation": "Aplique o Karatê a todas as coisas da vida; aí reside seu encanto.",
+      "description": "Transforme cada desafio, tarefa e obstáculo diário em uma oportunidade de aplicar a disciplina, foco e serenidade do Karatê."
+    },
+    {
+      "number": 11,
+      "title": "Karate wa yu no gotoku taezu netsu o atae zareba motono mizu ni kaeru",
+      "translation": "O Karatê é como água quente: se não receber calor contínuo, esfria.",
+      "description": "O treinamento deve ser diário e constante. A falta de regularidade faz com que a técnica, o reflexo e o espírito esfriem rapidamente."
+    },
+    {
+      "number": 12,
+      "title": "Katsu kangae wa motsuna; makenu kangae wa hitsuyō",
+      "translation": "Não pense em vencer; pense em não ser vencido.",
+      "description": "A obsessão pela vitória gera ansiedade e erros. Concentre-se em manter uma defesa perfeita, compostura inabalável e firmeza."
+    },
+    {
+      "number": 13,
+      "title": "Teki ni yotte tenka seyo",
+      "translation": "Adapte sua postura e atitude conforme o adversário.",
+      "description": "Seja fluido e maleável. Mude sua tática conforme o tamanho, a velocidade, a distância e a postura do oponente."
+    },
+    {
+      "number": 14,
+      "title": "Tatakai wa kyojitsu no sōjū ikan ni ari",
+      "translation": "A vitória depende do controle do vazio (Kyo) e do cheio (Jitsu).",
+      "description": "Identifique as brechas e momentos de vulnerabilidade do oponente enquanto mantém sua própria guarda protegida e impenetrável."
+    },
+    {
+      "number": 15,
+      "title": "Hito no teashi o ken to omoe",
+      "translation": "Imagine os braços e pernas do adversário como espadas afiadas.",
+      "description": "Nunca subestime um ataque. Trate cada golpe do oponente com o máximo respeito e seriedade, protegendo-se com total atenção."
+    },
+    {
+      "number": 16,
+      "title": "Danshi mon o izureba hyakuman no teki ari",
+      "translation": "Ao sair pelo portão de casa, encare o mundo com mil obstáculos e adversários.",
+      "description": "Mantenha a atenção plena (Zanshin) onde quer que vá. Esteja sempre vigilante e preparado para qualquer situação inesperada."
+    },
+    {
+      "number": 17,
+      "title": "Kamae wa shoshinsha ni, ato wa hontai (shizentai)",
+      "translation": "A postura fixa (Kamae) é para o iniciante; com a evolução torna-se natural.",
+      "description": "O aluno aprende posturas rígidas, mas com a maturidade o corpo move-se de forma espontânea, fluida e natural (Shizentai)."
+    },
+    {
+      "number": 18,
+      "title": "Kata wa tadashiku, jissen wa betsumono",
+      "translation": "O Kata deve ser praticado com rigor; o combate real tem suas próprias regras.",
+      "description": "O Kata ensina os princípios perfeitos e a geometria dos movimentos; na aplicação real (Kumite), adapte a técnica à situação."
+    },
+    {
+      "number": 19,
+      "title": "Chikara no kyōjaku, karada no shinshuku, waza no kankyū o wasuru na",
+      "translation": "Não se esqueça: gradação da força, expansão e contração do corpo, e velocidade da técnica.",
+      "description": "O ritmo correto do Karatê alterna tensão e relaxamento muscular, movimentos lentos e rápidos, com explosão no momento do Kime."
+    },
+    {
+      "number": 20,
+      "title": "Tsune ni shinen kufū seyo",
+      "translation": "Mantenha a mente sempre reflexiva, criativa e em busca de aperfeiçoamento.",
+      "description": "Nunca seja passivo no aprendizado. Busque sempre novos entendimentos, estude os detalhes e refine incansavelmente seu Karatê-Dō."
+    }
   ]
 };
 
