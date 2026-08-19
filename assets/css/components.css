@@ -980,12 +980,37 @@ body.login-view-active .content-body {
   box-shadow: 0 4px 14px rgba(255, 183, 3, 0.15);
 }
 
+.kata-card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 5px;
+  line-height: 1;
+}
+
 .kata-card-order {
   font-size: 0.68rem;
   font-weight: 800;
   color: var(--accent-gold);
-  margin-bottom: 2px;
-  letter-spacing: 0.03em;
+  background: rgba(255, 183, 3, 0.12);
+  border: 1px solid rgba(255, 183, 3, 0.25);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.kata-card-kanji {
+  font-family: var(--font-kanji, 'Noto Serif JP', serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
 }
 
 .kata-card-title {

@@ -3330,7 +3330,10 @@ document.addEventListener('DOMContentLoaded', () => {
           return `
             <div class="kata-card" onclick="window.TKST_APP.openKataDetail('${k.id}')" title="Toque para ver a aula e vídeos do Kata ${k.name}">
               <div>
-                <div class="kata-card-order">${idx + 1}º</div>
+                <div class="kata-card-top-row">
+                  <span class="kata-card-order">${idx + 1}º</span>
+                  <span class="kata-card-kanji">${k.kanji || ''}</span>
+                </div>
                 <div class="kata-card-title">${k.name}</div>
                 <div class="kata-card-meaning">${k.meaning}</div>
               </div>
