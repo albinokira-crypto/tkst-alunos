@@ -23,8 +23,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=106">
-  <link rel="stylesheet" href="assets/css/components.css?v=106">
+  <link rel="stylesheet" href="assets/css/main.css?v=107">
+  <link rel="stylesheet" href="assets/css/components.css?v=107">
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop imediatamente -->
   <script>
@@ -48,7 +48,7 @@
   <!-- OVERLAY: Acesso bloqueado em desktop -->
   <div id="desktop-block-overlay">
     <div class="dbo-card">
-      <img src="assets/images/logo-tkst.png" alt="TKST Logo" class="dbo-logo">
+      <img src="assets/images/logo-tkst-projeto-transp.png" alt="TKST Logo" class="dbo-logo">
       <div class="dbo-kanji">空手道</div>
       <h1 class="dbo-title">TKST Alunos</h1>
       <p class="dbo-subtitle">Portal Oficial de Estudo</p>
@@ -69,15 +69,17 @@
   <!-- Wrapper principal do app (escondido no desktop) -->
   <div id="app-root">
 
-  <!-- Japanese Background Watermark (空手道 - Karate-Dō) -->
+  <!-- Japanese Background Watermark Graphics (Transparent & Non-Intrusive) -->
   <div class="kanji-watermark">空手</div>
+  <div class="kanji-watermark-bg" style="position: fixed; right: 2%; top: 12%; width: 130px; height: 360px; background: url('assets/images/logo-tkst-kanji-vertical.png') no-repeat center right; background-size: contain; opacity: 0.035; pointer-events: none; z-index: 0;"></div>
+  <div class="kanji-watermark-left" style="position: fixed; left: 2%; bottom: 8%; width: 90px; height: 260px; background: url('assets/images/logo-tkst-kanji-frente.png') no-repeat center left; background-size: contain; opacity: 0.025; pointer-events: none; z-index: 0;"></div>
 
   <div class="app-container">
 
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <img src="assets/images/logo-tkst.png" alt="TKST Logo" class="sidebar-logo">
+        <img src="assets/images/logo-tkst-projeto-transp.png" alt="TKST Logo" class="sidebar-logo">
         <div class="sidebar-title-group">
           <h1>TKST ALUNOS</h1>
           <span>Tradicional Karate-Do Shotokan Tsuyoi</span>
@@ -296,13 +298,13 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/auth.js?v=106"></script>
-  <script src="assets/js/data-curriculum.js?v=106"></script>
-  <script src="assets/js/data-katas.js?v=106"></script>
-  <script src="assets/js/data-kumite.js?v=106"></script>
-  <script src="assets/js/data-glossary.js?v=106"></script>
-  <script src="assets/js/data-quiz.js?v=106"></script>
-  <script src="assets/js/app.js?v=106"></script>
+  <script src="assets/js/auth.js?v=107"></script>
+  <script src="assets/js/data-curriculum.js?v=107"></script>
+  <script src="assets/js/data-katas.js?v=107"></script>
+  <script src="assets/js/data-kumite.js?v=107"></script>
+  <script src="assets/js/data-glossary.js?v=107"></script>
+  <script src="assets/js/data-quiz.js?v=107"></script>
+  <script src="assets/js/app.js?v=107"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>

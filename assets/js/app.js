@@ -911,9 +911,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let html = `
       <div class="auth-page-wrapper">
-        <div class="auth-card">
-          <div class="auth-header">
-            <img src="assets/images/logo-tkst.png" alt="TKST Karate Logo" class="auth-logo">
+        <div class="auth-card" style="position: relative; overflow: hidden;">
+          <!-- Subtle Vertical Kanji Watermark -->
+          <div style="position: absolute; right: 8px; bottom: 8px; width: 75px; height: 180px; background: url('assets/images/logo-tkst-kanji-frente.png') no-repeat center right; background-size: contain; opacity: 0.05; pointer-events: none;"></div>
+
+          <div class="auth-header" style="position: relative; z-index: 1;">
+            <img src="assets/images/logo-tkst-projeto-transp.png" alt="TKST Karate Logo" class="auth-logo" style="max-height: 90px; filter: drop-shadow(0 4px 14px rgba(255, 183, 3, 0.3));">
             <h2>TKST ALUNOS</h2>
             <p>Portal Oficial de Estudos</p>
           </div>
@@ -921,7 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div id="authAlertBox" class="auth-alert"></div>
 
           <!-- PURE SINGLE LOGIN FORM -->
-          <form onsubmit="event.preventDefault(); window.TKST_APP.submitLogin();">
+          <form onsubmit="event.preventDefault(); window.TKST_APP.submitLogin();" style="position: relative; z-index: 1;">
             <div class="form-group" style="margin-bottom: 14px;">
               <label class="form-label" style="font-size: 0.85rem; margin-bottom: 4px;">
                 <i class="fas fa-user" style="color: var(--accent-gold); margin-right: 6px;"></i> Usuário
@@ -955,7 +958,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ` : ''}
           </form>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 0.85rem; position: relative; z-index: 1;">
             <a href="#" onclick="event.preventDefault(); window.TKST_APP.openRegisterModal();" style="color: var(--accent-gold); text-decoration: none; font-weight: 600;">
               <i class="fas fa-user-plus"></i> Novo Aluno? Cadastrar Matrícula
             </a>
@@ -982,8 +985,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const quizBankCount = quizBankList.length;
 
     let html = `
-      <div class="section-header" style="margin-bottom: 20px;">
-        <div class="section-title-group" style="width: 100%;">
+      <div class="section-header" style="margin-bottom: 20px; position: relative; overflow: hidden;">
+        <!-- Subtle Transparent Emblem Watermark -->
+        <img src="assets/images/logo-tkst-emblem-transp.png" alt="TKST Emblem" style="position: absolute; right: 10px; top: 10px; height: 75px; opacity: 0.12; pointer-events: none; object-fit: contain;">
+        
+        <div class="section-title-group" style="width: 100%; position: relative; z-index: 1;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
             <div class="admin-badge-ribbon" style="margin-bottom: 0;">
               <i class="fas fa-crown"></i> Painel Geral do Administrador (Sensei Diego)
@@ -996,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <p style="font-size: 0.85rem; color: #94A3B8;">Controle de alunos, avaliações teóricas, cadastros de Dojos, vídeos dos 26 Kata e arquivos com sincronização em nuvem.</p>
         </div>
 
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; margin-top: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; margin-top: 8px; position: relative; z-index: 1;">
           <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.82rem; padding: 8px 14px; background: #25D366; color: #FFF; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
             <i class="fab fa-whatsapp"></i> Convidar Aluno para Cadastro
           </button>
@@ -1671,8 +1677,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       ` : ''}
 
-      <div class="dashboard-hero">
-        <div class="hero-content">
+      <div class="dashboard-hero" style="position: relative; overflow: hidden;">
+        <!-- Subtle Transparent TKST Emblem Watermark -->
+        <img src="assets/images/logo-tkst-emblem-transp.png" alt="TKST Emblem" style="position: absolute; right: -15px; bottom: -12px; height: 115%; opacity: 0.12; pointer-events: none; object-fit: contain; filter: drop-shadow(0 0 14px rgba(255, 183, 3, 0.2));">
+
+        <div class="hero-content" style="position: relative; z-index: 1;">
           <div class="hero-welcome">
             <h2>Oss, ${user.name}! 🥋</h2>
             <p>Bem-vindo ao seu portal oficial de estudos na <strong>Tradicional Karate-Do Shotokan Tsuyoi (TKST)</strong>.</p>
@@ -1745,9 +1754,12 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- Dojo Kun Collapsible Accordion Card -->
-      <div class="stat-card dojokun-accordion-card" style="flex-direction: column; align-items: stretch; margin-top: 18px; background: linear-gradient(135deg, rgba(22, 28, 42, 0.95) 0%, rgba(10, 13, 20, 0.98) 100%); border: 1.5px solid rgba(255, 183, 3, 0.25); box-shadow: var(--shadow-subtle); padding: 0; overflow: hidden;">
+      <div class="stat-card dojokun-accordion-card" style="position: relative; flex-direction: column; align-items: stretch; margin-top: 18px; background: linear-gradient(135deg, rgba(22, 28, 42, 0.95) 0%, rgba(10, 13, 20, 0.98) 100%); border: 1.5px solid rgba(255, 183, 3, 0.25); box-shadow: var(--shadow-subtle); padding: 0; overflow: hidden;">
+        <!-- Subtle Vertical Kanji Watermark in Header -->
+        <img src="assets/images/logo-tkst-kanji-frente.png" alt="Kanji" style="position: absolute; right: 135px; top: 50%; transform: translateY(-50%); height: 44px; opacity: 0.08; pointer-events: none;">
+
         <!-- Header Clicável com Efeito de Toque -->
-        <div class="dojokun-accordion-header" onclick="window.TKST_APP.toggleDojoKunAccordion()" style="padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; user-select: none; transition: background 0.2s ease;">
+        <div class="dojokun-accordion-header" onclick="window.TKST_APP.toggleDojoKunAccordion()" style="position: relative; z-index: 1; padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; user-select: none; transition: background 0.2s ease;">
           <div class="section-title-group" style="display: flex; align-items: center; gap: 10px;">
             <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 183, 3, 0.12); border: 1px solid rgba(255, 183, 3, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;">
               <i class="fas fa-scroll"></i>
@@ -1768,8 +1780,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <!-- Conteúdo Expansível (Aparece ao Clicar) -->
-        <div id="dojokunAccordionBody" style="display: none; padding: 0 16px 16px 16px; border-top: 1px solid rgba(255, 183, 3, 0.15); animation: fadeIn 0.3s ease;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0; flex-wrap: wrap; gap: 8px;">
+        <div id="dojokunAccordionBody" style="display: none; padding: 0 16px 16px 16px; border-top: 1px solid rgba(255, 183, 3, 0.15); animation: fadeIn 0.3s ease; position: relative; overflow: hidden;">
+          <!-- Authentic Vertical Kanji Background Ribbon -->
+          <img src="assets/images/logo-tkst-kanji-vertical.png" alt="Kanji Calligraphy" style="position: absolute; right: 10px; top: 12px; height: 190px; opacity: 0.055; pointer-events: none;">
+
+          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; margin: 12px 0; flex-wrap: wrap; gap: 8px;">
             <span style="font-size: 0.8rem; color: #94A3B8; font-style: italic;">Shotokan Karate-Do Tsuyoi</span>
             <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 12px;" onclick="event.stopPropagation(); window.TKST_APP.switchTab('philosophy')">
               <i class="fas fa-torii-gate"></i> Ver Filosofia Completa
@@ -2908,8 +2923,11 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- Belt Banner -->
-      <div class="dashboard-hero" style="padding: 24px; margin-bottom: 24px; border-left: 6px solid ${curr.beltColor};">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div class="dashboard-hero" style="position: relative; overflow: hidden; padding: 24px; margin-bottom: 24px; border-left: 6px solid ${curr.beltColor};">
+        <!-- Subtle Transparent TKST Emblem Watermark -->
+        <img src="assets/images/logo-tkst-emblem-transp.png" alt="TKST Emblem" style="position: absolute; right: -15px; bottom: -12px; height: 120%; opacity: 0.10; pointer-events: none; object-fit: contain;">
+
+        <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
           <div>
             <span class="badge" style="background: ${curr.beltColor}; color: ${curr.kyuNumber === 6 ? '#000' : '#FFF'}; margin-bottom: 8px;">
               Exame para ${curr.targetBelt}
@@ -3244,13 +3262,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let html = `
-      <div class="section-header">
-        <div class="section-title-group">
+      <div class="section-header" style="position: relative; overflow: hidden;">
+        <!-- Subtle Vertical Kanji Watermark -->
+        <img src="assets/images/logo-tkst-kanji-frente.png" alt="Kanji" style="position: absolute; right: 12px; top: 8px; height: 68px; opacity: 0.07; pointer-events: none;">
+
+        <div class="section-title-group" style="position: relative; z-index: 1;">
           <h3><i class="fas fa-book-open" style="color: var(--accent-crimson);"></i> Enciclopédia dos 26 Kata Shotokan</h3>
           <p>Apostila oficial em PDF e vídeos técnicos integrados</p>
         </div>
 
-        <div class="search-input-wrapper">
+        <div class="search-input-wrapper" style="position: relative; z-index: 1;">
           <i class="fas fa-search"></i>
           <input type="text" id="kataSearchInput" placeholder="Buscar kata por nome ou significado..." value="${kataSearchQuery}">
         </div>
@@ -4227,8 +4248,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <!-- SIMULADO GERAL (30 QUESTÕES - TODAS AS GRADUAÇÕES) -->
-        <div class="stat-card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(255, 183, 3, 0.12) 0%, rgba(18, 23, 34, 0.98) 100%); border: 2px solid var(--accent-gold); padding: 22px; flex-direction: column; align-items: stretch; gap: 14px; box-shadow: 0 4px 20px rgba(255, 183, 3, 0.15); border-radius: var(--radius-md);">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div class="stat-card" style="margin-bottom: 24px; position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(255, 183, 3, 0.12) 0%, rgba(18, 23, 34, 0.98) 100%); border: 2px solid var(--accent-gold); padding: 22px; flex-direction: column; align-items: stretch; gap: 14px; box-shadow: 0 4px 20px rgba(255, 183, 3, 0.15); border-radius: var(--radius-md);">
+          <!-- Subtle Transparent TKST Emblem Watermark -->
+          <img src="assets/images/logo-tkst-emblem-transp.png" alt="TKST Emblem" style="position: absolute; right: -12px; bottom: -8px; width: 140px; opacity: 0.085; pointer-events: none;">
+
+          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 14px;">
               <div style="width: 52px; height: 52px; border-radius: var(--radius-sm); background: linear-gradient(135deg, rgba(255,183,3,0.25) 0%, rgba(217,119,6,0.25) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--accent-gold); border: 1.5px solid var(--accent-gold); flex-shrink: 0;">
                 🏆
@@ -4246,7 +4270,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fas fa-play" style="margin-right: 6px;"></i> Iniciar Simulado (30 Questões)
             </button>
           </div>
-          <p style="color: #CBD5E1; font-size: 0.88rem; line-height: 1.6; margin: 0;">
+          <p style="color: #CBD5E1; font-size: 0.88rem; line-height: 1.6; margin: 0; position: relative; z-index: 1;">
             Desafio teórico completo com <strong>30 perguntas sorteadas aleatoriamente</strong> entre todas as faixas (Branca, Amarela, Vermelha, Laranja, Verde, Roxa, Marrom, Shodan, Nidan e Sandan).
           </p>
         </div>
@@ -4513,8 +4537,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <div class="dashboard-hero" style="margin-bottom: 24px;">
-        <div class="hero-content">
+      <div class="dashboard-hero" style="margin-bottom: 24px; position: relative; overflow: hidden;">
+        <!-- Subtle Transparent TKST Emblem Watermark -->
+        <img src="assets/images/logo-tkst-emblem-transp.png" alt="TKST Emblem" style="position: absolute; right: -10px; bottom: -10px; height: 115%; opacity: 0.12; pointer-events: none; object-fit: contain;">
+
+        <div class="hero-content" style="position: relative; z-index: 1;">
           <div>
             <h2 style="font-family: var(--font-heading); color: #FFF; font-size: 1.5rem; margin-bottom: 8px;">道場訓 (Dojo Kun)</h2>
             <p style="color: #94A3B8;">
@@ -4541,7 +4568,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 16px;">
           Comissão Técnica & Mestres TKST
         </h4>
-        <div style="display: flex; justify-content: center; align-items: center; gap: 40px; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 36px; flex-wrap: wrap;">
+          <div>
+            <img src="assets/images/logo-tkst-projeto-transp.png" alt="TKST Logo" style="max-height: 65px; opacity: 0.95; filter: drop-shadow(0 2px 8px rgba(255,183,3,0.3));">
+            <div style="color: #FFF; font-weight: 700; margin-top: 6px;">TKST Shotokan</div>
+            <div style="font-size: 0.78rem; color: var(--accent-gold);">Tradição & Graduações</div>
+          </div>
           <div>
             <img src="assets/images/assinatura-diego.png" alt="Assinatura Sensei Diego" style="max-height: 70px; filter: invert(1) brightness(2); opacity: 0.85;">
             <div style="color: #FFF; font-weight: 700; margin-top: 6px;">Sensei Diego</div>
