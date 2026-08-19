@@ -1625,43 +1625,62 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Dojo Kun Full Card -->
-      <div class="stat-card" style="flex-direction: column; align-items: stretch; margin-top: 20px; background: linear-gradient(135deg, rgba(22, 28, 42, 0.95) 0%, rgba(10, 13, 20, 0.98) 100%); border: 1.5px solid rgba(255, 183, 3, 0.2); box-shadow: var(--shadow-subtle);">
-        <div class="section-header" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div class="section-title-group">
-            <h3 style="font-size: 1.2rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px; margin: 0;">
-              <i class="fas fa-scroll" style="color: var(--accent-gold);"></i> Dojo Kun
-            </h3>
-            <p style="color: #94A3B8; font-size: 0.82rem; margin-top: 3px;">Preceitos e lema fundamentais do Karatê-Dō Shotokan</p>
+      <!-- Dojo Kun Collapsible Accordion Card -->
+      <div class="stat-card dojokun-accordion-card" style="flex-direction: column; align-items: stretch; margin-top: 18px; background: linear-gradient(135deg, rgba(22, 28, 42, 0.95) 0%, rgba(10, 13, 20, 0.98) 100%); border: 1.5px solid rgba(255, 183, 3, 0.25); box-shadow: var(--shadow-subtle); padding: 0; overflow: hidden;">
+        <!-- Header Clicável com Efeito de Toque -->
+        <div class="dojokun-accordion-header" onclick="window.TKST_APP.toggleDojoKunAccordion()" style="padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; user-select: none; transition: background 0.2s ease;">
+          <div class="section-title-group" style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 183, 3, 0.12); border: 1px solid rgba(255, 183, 3, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;">
+              <i class="fas fa-scroll"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 1.05rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px; margin: 0;">
+                Dojo Kun <span style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 700; background: rgba(255, 183, 3, 0.12); border: 1px solid rgba(255, 183, 3, 0.3); border-radius: 999px; padding: 2px 8px;">5 Preceitos</span>
+              </h3>
+              <p style="color: #94A3B8; font-size: 0.78rem; margin: 2px 0 0 0;">Lema e princípios fundamentais do Karatê-Dō</p>
+            </div>
           </div>
-          <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 14px;" onclick="window.TKST_APP.switchTab('philosophy')">
-            <i class="fas fa-torii-gate"></i> Ver Filosofia Completa
-          </button>
+          
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <span id="dojokunToggleBadge" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 12px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); pointer-events: none; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-chevron-down" id="dojokunChevronIcon" style="transition: transform 0.3s cubic-bezier(.4,0,.2,1);"></i> Toque para Ver
+            </span>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
-          ${(window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun ? window.TKST_GLOSSARY.dojoKun : [
-            { number: 1, title: "Hitotsu! Jinkaku kansei ni tsutomuru koto!", translation: "Esforçar-se para a formação do caráter!", description: "O objetivo supremo do Karatê-Dō reside no aperfeiçoamento do caráter e integridade do praticante." },
-            { number: 2, title: "Hitotsu! Makoto no michi o mamoru koto!", translation: "Fidelidade para com o verdadeiro caminho da razão!", description: "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio." },
-            { number: 3, title: "Hitotsu! Doryoku no seishin o yashinau koto!", translation: "Criar o espírito de esforço e perseverança!", description: "A dedicação e o treino contínuo superam qualquer obstáculo. Jamais desistir." },
-            { number: 4, title: "Hitotsu! Reigi o omonzuru koto!", translation: "Respeitar acima de tudo!", description: "O Karatê começa e termina com respeito e cortesia sincera (Rei)." },
-            { number: 5, title: "Hitotsu! Kekki no yū o imashimuru koto!", translation: "Conter o espírito de agressão!", description: "Dominar impulsos, cultivar o autocontrole e buscar sempre a serenidade e a paz." }
-          ]).map(d => `
-            <div class="dojokun-card" style="margin-top: 0; border-left: 3.5px solid var(--accent-gold); background: rgba(255, 255, 255, 0.02); padding: 14px 16px; border-radius: var(--radius-sm); display: flex; flex-direction: column;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span class="badge badge-gold" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 700;">一つ Hitotsu</span>
+        <!-- Conteúdo Expansível (Aparece ao Clicar) -->
+        <div id="dojokunAccordionBody" style="display: none; padding: 0 16px 16px 16px; border-top: 1px solid rgba(255, 183, 3, 0.15); animation: fadeIn 0.3s ease;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 0.8rem; color: #94A3B8; font-style: italic;">Shotokan Karate-Do Tsuyoi</span>
+            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 12px;" onclick="event.stopPropagation(); window.TKST_APP.switchTab('philosophy')">
+              <i class="fas fa-torii-gate"></i> Ver Filosofia Completa
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+            ${(window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun ? window.TKST_GLOSSARY.dojoKun : [
+              { number: 1, title: "Hitotsu! Jinkaku kansei ni tsutomuru koto!", translation: "Esforçar-se para a formação do caráter!", description: "O objetivo supremo do Karatê-Dō reside no aperfeiçoamento do caráter e integridade do praticante." },
+              { number: 2, title: "Hitotsu! Makoto no michi o mamoru koto!", translation: "Fidelidade para com o verdadeiro caminho da razão!", description: "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio." },
+              { number: 3, title: "Hitotsu! Doryoku no seishin o yashinau koto!", translation: "Criar o espírito de esforço e perseverança!", description: "A dedicação e o treino contínuo superam qualquer obstáculo. Jamais desistir." },
+              { number: 4, title: "Hitotsu! Reigi o omonzuru koto!", translation: "Respeitar acima de tudo!", description: "O Karatê começa e termina com respeito e cortesia sincera (Rei)." },
+              { number: 5, title: "Hitotsu! Kekki no yū o imashimuru koto!", translation: "Conter o espírito de agressão!", description: "Dominar impulsos, cultivar o autocontrole e buscar sempre a serenidade e a paz." }
+            ]).map(d => `
+              <div class="dojokun-card" style="margin-top: 0; border-left: 3.5px solid var(--accent-gold); background: rgba(255, 255, 255, 0.02); padding: 12px 14px; border-radius: var(--radius-sm); display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span class="badge badge-gold" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700;">一つ Hitotsu</span>
+                </div>
+                <div class="dojokun-pt" style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 3px;">
+                  ${d.translation}
+                </div>
+                <div class="dojokun-jp" style="font-size: 0.78rem; color: var(--accent-gold); font-style: italic; margin-bottom: 5px;">
+                  ${d.title}
+                </div>
+                <div class="dojokun-desc" style="font-size: 0.8rem; color: #CBD5E1; line-height: 1.4; margin-top: auto;">
+                  ${d.description}
+                </div>
               </div>
-              <div class="dojokun-pt" style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 4px;">
-                ${d.translation}
-              </div>
-              <div class="dojokun-jp" style="font-size: 0.8rem; color: var(--accent-gold); font-style: italic; margin-bottom: 6px;">
-                ${d.title}
-              </div>
-              <div class="dojokun-desc" style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.45; margin-top: auto;">
-                ${d.description}
-              </div>
-            </div>
-          `).join('')}
+            `).join('')}
+          </div>
         </div>
       </div>
     `;
@@ -4426,6 +4445,25 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       selectedBeltKyu = kyu;
       renderMyExam();
+    },
+    toggleDojoKunAccordion: () => {
+      const body = document.getElementById('dojokunAccordionBody');
+      const icon = document.getElementById('dojokunChevronIcon');
+      const badge = document.getElementById('dojokunToggleBadge');
+      if (!body) return;
+
+      const isHidden = body.style.display === 'none' || body.hidden;
+      if (isHidden) {
+        body.hidden = false;
+        body.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        if (badge) badge.innerHTML = '<i class="fas fa-chevron-up" id="dojokunChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Recolher';
+      } else {
+        body.hidden = true;
+        body.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+        if (badge) badge.innerHTML = '<i class="fas fa-chevron-down" id="dojokunChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Toque para Ver';
+      }
     },
     toggleStudyAccordion: (sectionId) => {
       const body = document.getElementById(`studyBody_${sectionId}`);
