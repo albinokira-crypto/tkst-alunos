@@ -4105,54 +4105,55 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('')}
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+      <div class="glossary-grid">
         ${terms.length === 0 ? `
           <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: #64748B;">
             <i class="fas fa-search" style="font-size: 2.2rem; margin-bottom: 10px; display: block;"></i>
             Nenhum termo encontrado para a busca selecionada.
           </div>
         ` : terms.map(t => `
-          <div class="stat-card glossary-card-hoverable" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="flex-direction: column; align-items: flex-start; padding: 18px; position: relative; cursor: pointer;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 8px; gap: 8px;">
-              <span class="badge badge-amarela" style="font-size: 0.68rem;">${t.cat || 'Termo'}</span>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.35); font-size: 1.15rem;">${t.kanji || ''}</span>
-                ${isAdmin ? `
-                  <div style="display: flex; gap: 6px; align-items: center;" onclick="event.stopPropagation();">
-                    <button class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openEditGlossaryTermModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Editar Termo (Admin)" style="padding: 5px 8px; font-size: 0.75rem; border-radius: 4px; line-height: 1; background: rgba(255, 183, 3, 0.22); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
-                      <i class="fas fa-pen"></i>
-                    </button>
-                    <button class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 5px 8px; font-size: 0.75rem; border-radius: 4px; line-height: 1; background: #DC2626; border: 1px solid #B91C1C; color: #FFF; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                ` : ''}
+          <div class="glossary-card-compact" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Toque para ver detalhes e vídeo de ${t.japanese}">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px; gap: 4px;">
+                <span class="badge badge-amarela" style="font-size: 0.60rem; padding: 1px 5px; font-weight: 700; white-space: nowrap;">${t.cat || 'Termo'}</span>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.45); font-size: 0.82rem; font-weight: 700; line-height: 1;">${t.kanji || ''}</span>
+                  ${isAdmin ? `
+                    <div style="display: flex; gap: 3px; align-items: center;" onclick="event.stopPropagation();">
+                      <button class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openEditGlossaryTermModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Editar Termo (Admin)" style="padding: 2px 4px; font-size: 0.62rem; border-radius: 3px; background: rgba(255, 183, 3, 0.22); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer;">
+                        <i class="fas fa-pen"></i>
+                      </button>
+                      <button class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 2px 4px; font-size: 0.62rem; border-radius: 3px; background: #DC2626; border: 1px solid #B91C1C; color: #FFF; cursor: pointer;">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div style="font-family: var(--font-heading); font-size: 0.90rem; font-weight: 700; color: #FFF; line-height: 1.25; margin-bottom: 2px; word-break: break-word;">
+                ${t.japanese}
+              </div>
+
+              <div style="font-size: 0.72rem; color: #94A3B8; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                ${t.meaning}
               </div>
             </div>
 
-            <div style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
-              ${t.japanese}
-            </div>
-
-            <div style="font-size: 0.88rem; color: #94A3B8; line-height: 1.45; margin-bottom: 14px; flex: 1;">
-              ${t.meaning}
-            </div>
-
-            <!-- Botões Rápidos de Vídeo e Áudio no Card -->
-            <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 6px;" onclick="event.stopPropagation();">
-                <button type="button" class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openGlossaryVideo('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.78rem; padding: 6px 12px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; background: #DC2626; border: none; color: #FFF; box-shadow: 0 2px 10px rgba(220, 38, 38, 0.4); cursor: pointer;" title="Assistir vídeo oficial da técnica">
-                  <i class="fas fa-play"></i> Vídeo
+            <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 4px;" onclick="event.stopPropagation();">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <button type="button" class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openGlossaryVideo('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.65rem; padding: 3px 6px; border-radius: 3px; display: inline-flex; align-items: center; gap: 3px; font-weight: 700; background: #DC2626; border: none; color: #FFF; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35); cursor: pointer;" title="Assistir vídeo">
+                  <i class="fas fa-play" style="font-size: 0.58rem;"></i> <span>Vídeo</span>
                 </button>
 
-                <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); window.TKST_APP.speakJapanese('${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.78rem; padding: 6px 9px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; color: var(--accent-gold); border-color: rgba(255,183,3,0.3); background: rgba(255,183,3,0.06);" title="Ouvir pronúncia em Japonês">
+                <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); window.TKST_APP.speakJapanese('${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.65rem; padding: 3px 5px; border-radius: 3px; display: inline-flex; align-items: center; color: var(--accent-gold); border-color: rgba(255,183,3,0.3); background: rgba(255,183,3,0.06);" title="Ouvir pronúncia">
                   <i class="fas fa-volume-up"></i>
                 </button>
               </div>
 
-              <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                <span>Ver Detalhes</span>
-                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+              <div onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.65rem; color: var(--accent-gold); font-weight: 600; display: inline-flex; align-items: center; gap: 2px; cursor: pointer;" title="Ver Detalhes">
+                <span>Ver</span>
+                <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i>
               </div>
             </div>
           </div>
@@ -6476,30 +6477,30 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       `;
 
       modalBody.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
           
           <!-- Top Card: Kanji, Pronunciation & Meaning -->
-          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <div>
-              <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-gold); font-weight: 700; margin-bottom: 4px;">
+              <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-gold); font-weight: 700; margin-bottom: 2px;">
                 Termo Tradicional Shotokan
               </div>
-              <h2 style="font-family: var(--font-heading); font-size: 1.55rem; color: #FFF; margin: 0 0 6px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: #FFF; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 ${term.japanese}
-                ${term.kanji ? `<span style="font-family: var(--font-kanji); color: rgba(255, 183, 3, 0.85); font-size: 1.35rem;">(${term.kanji})</span>` : ''}
+                ${term.kanji ? `<span style="font-family: var(--font-kanji); color: rgba(255, 183, 3, 0.85); font-size: 1.1rem;">(${term.kanji})</span>` : ''}
               </h2>
-              <div style="font-size: 0.92rem; color: #E2E8F0; line-height: 1.5;">
+              <div style="font-size: 0.84rem; color: #E2E8F0; line-height: 1.4;">
                 <strong>Significado:</strong> ${term.meaning}
               </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-              <button type="button" class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${term.japanese.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês">
-                <i class="fas fa-volume-up" style="font-size: 0.95rem;"></i> Ouvir Pronúncia (Japonês)
+            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${term.japanese.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês" style="font-size: 0.76rem; padding: 6px 12px;">
+                <i class="fas fa-volume-up"></i> Ouvir Pronúncia
               </button>
               ${isAdmin ? `
-                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.76rem; padding: 6px 12px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703;">
-                  <i class="fas fa-edit"></i> Configurar Mídias (Admin)
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.74rem; padding: 6px 10px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703;">
+                  <i class="fas fa-edit"></i> Configurar Mídias
                 </button>
               ` : ''}
             </div>
@@ -6509,41 +6510,37 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           <div class="technique-media-grid">
             
             <!-- Illustrated Movement / GIF Card -->
-            <div class="technique-media-card">
-              <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="technique-media-card" style="padding: 10px 12px;">
+              <div style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
                 <span style="display: inline-flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-image" style="color: var(--accent-blue);"></i> Movimento Ilustrado / Diagrama
+                  <i class="fas fa-image" style="color: var(--accent-blue);"></i> Movimento Ilustrado
                 </span>
-                <span style="font-size: 0.72rem; color: var(--accent-gold);">Shotokan Dō</span>
+                <span style="font-size: 0.70rem; color: var(--accent-gold);">Shotokan Dō</span>
               </div>
               
-              <div class="technique-image-container" style="background: #080c14; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 200px;">
+              <div class="technique-image-container" style="background: #080c14; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 160px;">
                 ${term.image ? `
-                  <img src="${term.image}" alt="${term.japanese}" style="max-height: 220px; width: 100%; object-fit: contain; padding: 6px;" onerror="this.onerror=null; this.src='assets/images/logo-tkst.png';">
+                  <img src="${term.image}" alt="${term.japanese}" style="max-height: 180px; width: 100%; object-fit: contain; padding: 4px;" onerror="this.onerror=null; this.src='assets/images/logo-tkst.png';">
                 ` : `
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94A3B8; padding: 20px; text-align: center;">
-                    <i class="fas fa-running" style="font-size: 3rem; color: var(--accent-gold); margin-bottom: 10px; opacity: 0.85;"></i>
-                    <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 4px;">${term.japanese}</div>
-                    <div style="font-size: 0.75rem; color: #64748B;">Demonstração Técnica Tradicional</div>
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94A3B8; padding: 16px; text-align: center;">
+                    <i class="fas fa-running" style="font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 8px; opacity: 0.85;"></i>
+                    <div style="font-weight: 700; color: #FFF; font-size: 0.88rem; margin-bottom: 2px;">${term.japanese}</div>
+                    <div style="font-size: 0.72rem; color: #64748B;">Demonstração Técnica Tradicional</div>
                   </div>
                 `}
-              </div>
-
-              <div style="font-size: 0.76rem; color: #94A3B8; text-align: center; margin-top: 8px; line-height: 1.4;">
-                <i class="fas fa-eye" style="color: var(--accent-blue); margin-right: 4px;"></i> Observe a base, o alinhamento corporal e os vetores de força.
               </div>
             </div>
 
             <!-- Video Demonstration Card (Direct in-app playback) -->
-            <div class="technique-media-card">
-              <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="technique-media-card" style="padding: 10px 12px;">
+              <div style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
                 <span style="display: inline-flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-video" style="color: var(--accent-crimson);"></i> Vídeo Oficial do Movimento
+                  <i class="fas fa-video" style="color: var(--accent-crimson);"></i> Vídeo Oficial
                 </span>
-                <span class="badge badge-amarela" style="font-size: 0.65rem; padding: 2px 6px;">Vídeo no Sistema</span>
+                <span class="badge badge-amarela" style="font-size: 0.62rem; padding: 1px 5px;">Vídeo no Sistema</span>
               </div>
 
-              <div class="modal-video-wrapper" style="margin-bottom: 10px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
+              <div class="modal-video-wrapper" style="margin-bottom: 8px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
                 ${embed.type === 'video' ? `
                   <video src="${embed.url}" controls playsinline webkit-playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
                     Seu navegador não suporta este formato de vídeo.
@@ -6553,47 +6550,49 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 `}
               </div>
 
-              <button type="button" class="btn" onclick="window.TKST_APP.openVideoModal('${term.japanese.replace(/'/g, "\\'")}', '${effectiveVideoSource.replace(/'/g, "\\'")}')" style="width: 100%; font-size: 0.82rem; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; background: #DC2626; color: #FFF; font-weight: 700; border: none; border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35); cursor: pointer;">
-                <i class="fas fa-expand"></i> Assistir em Player Expandido (No Sistema)
+              <button type="button" class="btn" onclick="window.TKST_APP.openVideoModal('${term.japanese.replace(/'/g, "\\'")}', '${effectiveVideoSource.replace(/'/g, "\\'")}')" style="width: 100%; font-size: 0.78rem; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; background: #DC2626; color: #FFF; font-weight: 700; border: none; border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35); cursor: pointer;">
+                <i class="fas fa-expand"></i> Assistir Expandido
               </button>
             </div>
 
           </div>
 
           <!-- Technical Breakdown & Biomechanics Card -->
-          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px 20px;">
-            <h4 style="font-family: var(--font-heading); color: var(--accent-gold); font-size: 1.05rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <h4 style="font-family: var(--font-heading); color: var(--accent-gold); font-size: 0.95rem; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
               <i class="fas fa-cogs"></i> Detalhamento Técnico & Biomecânica
             </h4>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 0.86rem; color: #CBD5E1; line-height: 1.5;">
-              <div style="background: rgba(0,0,0,0.25); padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold);">
-                <strong style="color: #FFF; display: block; margin-bottom: 4px;"><i class="fas fa-arrows-alt-v" style="color: var(--accent-gold);"></i> Rotação do Quadril (Koshi):</strong>
-                ${term.hipRotation || 'Utilize a explosão do quadril sincronizada com o Kime para maximizar a transferência de energia.'}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; font-size: 0.80rem; color: #CBD5E1; line-height: 1.4;">
+              <div style="background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold);">
+                <strong style="color: #FFF; display: block; margin-bottom: 2px;"><i class="fas fa-arrows-alt-v" style="color: var(--accent-gold);"></i> Quadril (Koshi):</strong>
+                ${term.hipRotation || 'Explosão do quadril sincronizada com o Kime para transferir energia máxima.'}
               </div>
 
-              <div style="background: rgba(0,0,0,0.25); padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-blue);">
-                <strong style="color: #FFF; display: block; margin-bottom: 4px;"><i class="fas fa-hand-rock" style="color: var(--accent-blue);"></i> Ação do Hikite / Apoio:</strong>
+              <div style="background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-blue);">
+                <strong style="color: #FFF; display: block; margin-bottom: 2px;"><i class="fas fa-hand-rock" style="color: var(--accent-blue);"></i> Hikite / Apoio:</strong>
                 ${term.hikite || 'Puxada firme do braço de apoio rente às costelas flutuantes com o punho invertido.'}
               </div>
 
-              <div style="background: rgba(0,0,0,0.25); padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald);">
-                <strong style="color: #FFF; display: block; margin-bottom: 4px;"><i class="fas fa-lungs" style="color: var(--accent-emerald);"></i> Respiração & Kime:</strong>
-                ${term.breathing || 'Expiração enérgica e contração do Tanden (baixo abdômen) no momento do impacto.'}
+              <div style="background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-emerald);">
+                <strong style="color: #FFF; display: block; margin-bottom: 2px;"><i class="fas fa-lungs" style="color: var(--accent-emerald);"></i> Respiração & Kime:</strong>
+                ${term.breathing || 'Expiração enérgica e contração do Tanden no impacto.'}
               </div>
             </div>
 
             ${term.technicalTips ? `
-              <div style="margin-top: 14px; padding: 12px 14px; background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); font-size: 0.86rem; color: #FFE299;">
+              <div style="margin-top: 10px; padding: 8px 10px; background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); font-size: 0.80rem; color: #FFE299;">
                 <strong><i class="fas fa-chalkboard-teacher"></i> Instruções do Sensei Diego:</strong> ${term.technicalTips}
               </div>
             ` : ''}
-          <div style="display: flex; gap: 10px; width: 100%;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 11px; font-weight: 600;">
+          </div>
+
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 9px; font-weight: 600; font-size: 0.82rem;">
               Fechar
             </button>
             ${isAdmin ? `
-              <button type="button" class="btn btn-gold" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="flex: 1; padding: 11px; font-weight: 700;">
+              <button type="button" class="btn btn-gold" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="flex: 1; padding: 9px; font-weight: 700; font-size: 0.82rem;">
                 <i class="fas fa-edit"></i> Editar Termo (Admin)
               </button>
             ` : ''}

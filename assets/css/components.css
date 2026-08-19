@@ -1659,6 +1659,33 @@ body.login-view-active .content-body {
   transform: translateY(-1px);
 }
 
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.glossary-card-compact {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 12px;
+  min-height: 135px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.glossary-card-compact:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(255, 183, 3, 0.15);
+}
+
 .glossary-card-hoverable {
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -1967,6 +1994,17 @@ body.login-view-active .content-body {
   .kata-card {
     padding: 8px 5px !important;
     min-height: 105px !important;
+  }
+
+  .glossary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .glossary-card-compact {
+    padding: 8px 8px !important;
+    min-height: 120px !important;
   }
 
   .dojokun-grid {
