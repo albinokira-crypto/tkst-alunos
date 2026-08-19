@@ -716,8 +716,11 @@ document.addEventListener('DOMContentLoaded', () => {
       headerUserArea.innerHTML = `
         ${isAdmin ? `
           <button class="btn btn-gold" onclick="window.TKST_APP.openAdminPanel()" style="font-size: 0.78rem; padding: 6px 12px; white-space: nowrap; position: relative; font-weight: 700;" title="Painel Master Sensei Diego">
-            <i class="fas fa-crown"></i> Painel Admin
+            <i class="fas fa-crown"></i> <span>Painel Admin</span>
             ${pendingCount > 0 ? `<span class="header-notification-pill" title="${pendingCount} cadastro(s) pendente(s)">${pendingCount}</span>` : ''}
+          </button>
+          <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.78rem; padding: 6px 11px; background: #25D366; color: #FFF; font-weight: 700; border: none; white-space: nowrap; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.35);" title="Convidar Novos Alunos via WhatsApp">
+            <i class="fab fa-whatsapp"></i> <span>Convidar</span>
           </button>
         ` : ''}
         <button class="btn btn-secondary" onclick="window.TKST_APP.openEditProfileModal()" style="font-size: 0.78rem; padding: 6px 10px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); white-space: nowrap;" title="Editar Perfil e Informações">
@@ -1656,23 +1659,6 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <button type="button" class="btn btn-gold" style="font-size: 0.78rem; padding: 8px 16px; white-space: nowrap; flex-shrink: 0;">
             <i class="fas fa-user-check"></i> Aprovar Alunos
-          </button>
-        </div>
-      ` : ''}
-
-      ${isAdmin ? `
-        <div style="background: rgba(37, 211, 102, 0.08); border: 1px solid rgba(37, 211, 102, 0.3); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(37, 211, 102, 0.2); display: flex; align-items: center; justify-content: center; color: #25D366; font-size: 1.2rem; flex-shrink: 0;">
-              <i class="fab fa-whatsapp"></i>
-            </div>
-            <div>
-              <div style="color: #FFF; font-weight: 700; font-size: 0.9rem;">Convidar Novos Alunos</div>
-              <div style="color: #94A3B8; font-size: 0.78rem;">Envie o convite oficial com link de matrícula direta no WhatsApp</div>
-            </div>
-          </div>
-          <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="background: #25D366; color: #FFF; font-weight: 700; font-size: 0.82rem; padding: 8px 16px; border-radius: var(--radius-sm); border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);">
-            <i class="fab fa-whatsapp"></i> Enviar Convite
           </button>
         </div>
       ` : ''}
