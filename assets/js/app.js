@@ -2066,74 +2066,80 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Dojo Kun & Niju Kun Cards Compactos (Lado a Lado) -->
-      <div class="dashboard-kun-grid">
-        <!-- 1. Dojo Kun -->
-        <div class="kun-compact-card gold-theme" onclick="window.TKST_APP.openDojoKunModal()" title="Toque para ver o Dojo Kun completo">
-          <div class="kun-card-top">
-            <div class="kun-title-box">
-              <div class="kun-icon">
-                <i class="fas fa-scroll"></i>
+      <!-- Dashboard 2-Column Grid: Coluna Esquerda (Dojo Kun + Ranking) & Coluna Direita (Niju Kun) -->
+      <div class="dashboard-columns-grid">
+        <!-- Coluna Esquerda: Dojo Kun e Ranking do Simulado alinhados -->
+        <div class="dashboard-col-left">
+          <!-- 1. Dojo Kun -->
+          <div class="kun-compact-card gold-theme" onclick="window.TKST_APP.openDojoKunModal()" title="Toque para ver o Dojo Kun completo">
+            <div class="kun-card-top">
+              <div class="kun-title-box">
+                <div class="kun-icon">
+                  <i class="fas fa-scroll"></i>
+                </div>
+                <div style="min-width: 0;">
+                  <h3 class="kun-name">Dojo Kun</h3>
+                  <span class="kun-kanji">道場訓</span>
+                </div>
               </div>
-              <div style="min-width: 0;">
-                <h3 class="kun-name">Dojo Kun</h3>
-                <span class="kun-kanji">道場訓 • Dōjō Kun</span>
+              <span class="kun-btn-view">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
+            </div>
+          </div>
+
+          <!-- Ranking do Simulado Retrátil (Embaixo do Dojo Kun e alinhado na mesma coluna) -->
+          <div class="stat-card ranking-card">
+            <div class="ranking-header">
+              <div class="ranking-header-title">
+                <div class="ranking-header-icon">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div style="min-width: 0;">
+                  <h3 class="ranking-title">Ranking do Simulado</h3>
+                  <p class="ranking-subtitle">Top 10 • Acerto +1 | Erro -1</p>
+                </div>
               </div>
             </div>
-            <span class="kun-btn-view">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
+
+            <div class="ranking-list">
+              ${top10Leaderboard.length === 0 ? `
+                <div style="padding: 16px 10px; text-align: center; color: #64748B; font-size: 0.74rem;">
+                  <i class="fas fa-medal" style="font-size: 1.4rem; color: var(--accent-gold); margin-bottom: 4px; display: block; opacity: 0.6;"></i>
+                  Nenhum aluno classificado ainda.<br>Faça um simulado para liderar o ranking!
+                </div>
+              ` : top10Leaderboard.map((item, idx) => `
+                <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
+                  <div class="ranking-row-left">
+                    <span class="ranking-pos-num">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}</span>
+                    <span class="ranking-student-name" title="${item.fullName}">${item.firstName}</span>
+                    <span class="ranking-dot">•</span>
+                    <span class="ranking-student-dojo" title="${item.dojo}">${item.dojo}</span>
+                  </div>
+                  <div class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
+                    ${item.points > 0 ? '+' : ''}${item.points} pts
+                  </div>
+                </div>
+              `).join('')}
+            </div>
           </div>
         </div>
 
-        <!-- 2. Niju Kun -->
-        <div class="kun-compact-card crimson-theme" onclick="window.TKST_APP.openNijuKunModal()" title="Toque para ver os 20 Preceitos de Gichin Funakoshi">
-          <div class="kun-card-top">
-            <div class="kun-title-box">
-              <div class="kun-icon crimson">
-                <i class="fas fa-torii-gate"></i>
+        <!-- Coluna Direita: Niju Kun -->
+        <div class="dashboard-col-right">
+          <!-- 2. Niju Kun -->
+          <div class="kun-compact-card crimson-theme" onclick="window.TKST_APP.openNijuKunModal()" title="Toque para ver os 20 Preceitos de Gichin Funakoshi">
+            <div class="kun-card-top">
+              <div class="kun-title-box">
+                <div class="kun-icon crimson">
+                  <i class="fas fa-torii-gate"></i>
+                </div>
+                <div style="min-width: 0;">
+                  <h3 class="kun-name">Niju Kun</h3>
+                  <span class="kun-kanji">二十条</span>
+                </div>
               </div>
-              <div style="min-width: 0;">
-                <h3 class="kun-name">Niju Kun</h3>
-                <span class="kun-kanji">二十条 • Nijū Kun</span>
-              </div>
-            </div>
-            <span class="kun-btn-view crimson">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ranking do Simulado Retrátil (Cresce dinamicamente conforme os alunos pontuam) -->
-      <div class="stat-card ranking-card">
-        <div class="ranking-header">
-          <div class="ranking-header-title">
-            <div class="ranking-header-icon">
-              <i class="fas fa-trophy"></i>
-            </div>
-            <div style="min-width: 0;">
-              <h3 class="ranking-title">Ranking do Simulado</h3>
-              <p class="ranking-subtitle">Top 10 • Acerto +1 | Erro -1</p>
+              <span class="kun-btn-view crimson">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
             </div>
           </div>
-        </div>
-
-        <div class="ranking-list">
-          ${top10Leaderboard.length === 0 ? `
-            <div style="padding: 16px 10px; text-align: center; color: #64748B; font-size: 0.74rem;">
-              <i class="fas fa-medal" style="font-size: 1.4rem; color: var(--accent-gold); margin-bottom: 4px; display: block; opacity: 0.6;"></i>
-              Nenhum aluno classificado ainda.<br>Faça um simulado para liderar o ranking!
-            </div>
-          ` : top10Leaderboard.map((item, idx) => `
-            <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
-              <div class="ranking-row-left">
-                <span class="ranking-pos-num">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}</span>
-                <span class="ranking-student-name" title="${item.fullName}">${item.firstName}</span>
-                <span class="ranking-dot">•</span>
-                <span class="ranking-student-dojo" title="${item.dojo}">${item.dojo}</span>
-              </div>
-              <div class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
-                ${item.points > 0 ? '+' : ''}${item.points} pts
-              </div>
-            </div>
-          `).join('')}
         </div>
       </div>
     `;
