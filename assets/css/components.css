@@ -1865,6 +1865,152 @@ body.login-view-active .content-body {
   transition: width 0.1s linear;
 }
 
+/* Fullscreen Quiz Countdown Overlay (Ichi, Ni, San, Hajime) */
+.quiz-countdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at center, rgba(18, 24, 38, 0.96) 0%, rgba(5, 7, 12, 0.99) 100%);
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 1;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  user-select: none;
+}
+
+.quiz-countdown-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.06);
+}
+
+.quiz-countdown-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+
+.quiz-countdown-ring {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 183, 3, 0.4);
+  box-shadow: 0 0 35px rgba(255, 183, 3, 0.25), inset 0 0 20px rgba(255, 183, 3, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+  background: rgba(10, 14, 23, 0.85);
+  position: relative;
+  animation: countdownPulse 1s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes countdownPulse {
+  0% { transform: scale(0.88); box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
+  50% { transform: scale(1.05); box-shadow: 0 0 45px rgba(255, 183, 3, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 0 25px rgba(255, 183, 3, 0.3); }
+}
+
+.quiz-countdown-kanji {
+  font-family: 'Hiragino Mincho Pro', 'MS Mincho', 'Noto Serif JP', serif;
+  font-size: 4.6rem;
+  font-weight: 900;
+  color: #FFF;
+  text-shadow: 0 0 25px rgba(255, 183, 3, 0.8), 0 0 50px rgba(255, 183, 3, 0.4);
+  line-height: 1;
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.quiz-countdown-romaji {
+  font-family: var(--font-heading);
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: var(--accent-gold);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+  margin-top: 4px;
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.quiz-countdown-sub {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #CBD5E1;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+.quiz-countdown-hajime .quiz-countdown-ring {
+  border-color: #10B981 !important;
+  box-shadow: 0 0 50px rgba(16, 185, 129, 0.7), inset 0 0 30px rgba(16, 185, 129, 0.3) !important;
+  animation: hajimeExplode 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.quiz-countdown-hajime .quiz-countdown-kanji {
+  color: #10B981 !important;
+  text-shadow: 0 0 35px rgba(16, 185, 129, 0.9) !important;
+  font-size: 3.4rem !important;
+}
+
+.quiz-countdown-hajime .quiz-countdown-romaji {
+  color: #10B981 !important;
+  font-size: 3rem !important;
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.6) !important;
+}
+
+@keyframes hajimeExplode {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.18); }
+  100% { transform: scale(1.05); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.quiz-sound-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #CBD5E1;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.quiz-sound-toggle:hover {
+  background: rgba(255, 183, 3, 0.2);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  transform: scale(1.08);
+}
+
+.quiz-sound-toggle.muted {
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.1);
+}
+
 .quiz-question-header {
   display: flex;
   justify-content: space-between;

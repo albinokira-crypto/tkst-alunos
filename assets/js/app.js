@@ -4352,8 +4352,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 4px;" onclick="event.stopPropagation();">
-              <div style="display: flex; align-items: center; gap: 4px;">
-                <button type="button" class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openGlossaryVideo('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.65rem; padding: 3px 6px; border-radius: 3px; display: inline-flex; align-items: center; gap: 3px; font-weight: 700; background: #DC2626; border: none; color: #FFF; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35); cursor: pointer;" title="Assistir vídeo">
+<button type="button" class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openGlossaryVideo('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.65rem; padding: 3px 6px; border-radius: 3px; display: inline-flex; align-items: center; gap: 3px; font-weight: 700; background: #DC2626; border: none; color: #FFF; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35); cursor: pointer;" title="Assistir vídeo">
                   <i class="fas fa-play" style="font-size: 0.58rem;"></i> <span>Vídeo</span>
                 </button>
 
@@ -4388,9 +4387,269 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ==========================================
+  // TKST AUDIO ENGINE (Web Audio API Synthesizer)
+  // ==========================================
+  const TKST_AUDIO = {
+    audioCtx: null,
+    isMuted: localStorage.getItem('tkst_quiz_muted') === 'true',
+
+    init: function() {
+      if (!this.audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          this.audioCtx = new AudioContextClass();
+        }
+      }
+      if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+    },
+
+    toggleMute: function() {
+      this.isMuted = !this.isMuted;
+      localStorage.setItem('tkst_quiz_muted', String(this.isMuted));
+      const btns = document.querySelectorAll('.quiz-sound-toggle');
+      btns.forEach(btn => {
+        if (this.isMuted) {
+          btn.classList.add('muted');
+          btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+          btn.title = 'Ativar Som do Simulado';
+        } else {
+          btn.classList.remove('muted');
+          btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+          btn.title = 'Silenciar Som do Simulado';
+        }
+      });
+      if (!this.isMuted) {
+        this.init();
+        this.playInterstellarTick(false);
+      }
+      return this.isMuted;
+    },
+
+    // Hans Zimmer "Miller's Planet" Interstellar Clock Ticking
+    playInterstellarTick: function(isCritical) {
+      if (this.isMuted) return;
+      this.init();
+      if (!this.audioCtx) return;
+
+      try {
+        const now = this.audioCtx.currentTime;
+
+        // 1. High-frequency crisp acoustic tick
+        const bufferSize = Math.floor(this.audioCtx.sampleRate * 0.028);
+        const noiseBuffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+
+        const whiteNoise = this.audioCtx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+
+        const bandpass = this.audioCtx.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        bandpass.frequency.setValueAtTime(isCritical ? 2500 : 1650, now);
+        bandpass.Q.setValueAtTime(9.0, now);
+
+        const noiseGain = this.audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(isCritical ? 0.38 : 0.24, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+
+        whiteNoise.connect(bandpass);
+        bandpass.connect(noiseGain);
+        noiseGain.connect(this.audioCtx.destination);
+
+        whiteNoise.start(now);
+        whiteNoise.stop(now + 0.028);
+
+        // 2. Low-frequency cinematic acoustic thud (Miller's planet pulse)
+        const osc = this.audioCtx.createOscillator();
+        const oscGain = this.audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(isCritical ? 135 : 95, now);
+        osc.frequency.exponentialRampToValueAtTime(42, now + 0.045);
+
+        oscGain.gain.setValueAtTime(isCritical ? 0.42 : 0.28, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+        osc.connect(oscGain);
+        oscGain.connect(this.audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } catch (err) {}
+    },
+
+    // Microwave Oven End Timer Bell ("Plim / Ding!")
+    playMicrowaveDing: function() {
+      if (this.isMuted) return;
+      this.init();
+      if (!this.audioCtx) return;
+
+      try {
+        const now = this.audioCtx.currentTime;
+
+        // Primary chime oscillator (approx 2450 Hz)
+        const osc1 = this.audioCtx.createOscillator();
+        const gain1 = this.audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(2450, now);
+
+        gain1.gain.setValueAtTime(0.5, now);
+        gain1.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+        osc1.connect(gain1);
+        gain1.connect(this.audioCtx.destination);
+
+        // Overtone / upper harmonic oscillator (approx 4900 Hz)
+        const osc2 = this.audioCtx.createOscillator();
+        const gain2 = this.audioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(4900, now);
+
+        gain2.gain.setValueAtTime(0.18, now);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+
+        osc2.connect(gain2);
+        gain2.connect(this.audioCtx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 1.45);
+        osc2.stop(now + 0.95);
+      } catch (err) {}
+    },
+
+    // Fullscreen Countdown Taiko / Martial Arts Gong
+    playCountdownBeat: function(step) {
+      if (this.isMuted) return;
+      this.init();
+      if (!this.audioCtx) return;
+
+      try {
+        const now = this.audioCtx.currentTime;
+
+        if (step === 'hajime') {
+          // Grand Hajime Gong / Cymbal Strike
+          const osc = this.audioCtx.createOscillator();
+          const oscGain = this.audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(65, now + 0.7);
+
+          oscGain.gain.setValueAtTime(0.65, now);
+          oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+
+          osc.connect(oscGain);
+          oscGain.connect(this.audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.75);
+
+          // High shimmer
+          const oscHigh = this.audioCtx.createOscillator();
+          const highGain = this.audioCtx.createGain();
+          oscHigh.type = 'triangle';
+          oscHigh.frequency.setValueAtTime(880, now);
+          highGain.gain.setValueAtTime(0.3, now);
+          highGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+
+          oscHigh.connect(highGain);
+          highGain.connect(this.audioCtx.destination);
+          oscHigh.start(now);
+          oscHigh.stop(now + 0.55);
+        } else {
+          // Deep Taiko Drum Strike (Ichi, Ni, San)
+          const osc = this.audioCtx.createOscillator();
+          const oscGain = this.audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(190, now);
+          osc.frequency.exponentialRampToValueAtTime(55, now + 0.35);
+
+          oscGain.gain.setValueAtTime(0.55, now);
+          oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
+          osc.connect(oscGain);
+          oscGain.connect(this.audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.38);
+        }
+      } catch (err) {}
+    }
+  };
+
+  let quizCountdownTimeout = null;
+
+  function runQuizCountdown(onComplete) {
+    TKST_AUDIO.init();
+
+    if (quizCountdownTimeout) {
+      clearTimeout(quizCountdownTimeout);
+      quizCountdownTimeout = null;
+    }
+
+    // Remove any existing overlay
+    const existing = document.getElementById('quizCountdownOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'quizCountdownOverlay';
+    overlay.className = 'quiz-countdown-overlay';
+
+    document.body.appendChild(overlay);
+
+    const steps = [
+      { kanji: '一', romaji: 'ICHI', sub: '1 • Concentração e Postura (Yoi)', sound: 1 },
+      { kanji: '二', romaji: 'NI', sub: '2 • Foco e Respiração (Kokyu)', sound: 2 },
+      { kanji: '三', romaji: 'SAN', sub: '3 • Espírito Alerta (Zanshin)', sound: 3 },
+      { kanji: '始め', romaji: 'HAJIME!', sub: 'Começar! Dê o seu melhor!', sound: 'hajime', isHajime: true }
+    ];
+
+    let currentStep = 0;
+
+    function renderStep() {
+      if (currentStep >= steps.length) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => {
+          overlay.remove();
+          if (typeof onComplete === 'function') onComplete();
+        }, 350);
+        return;
+      }
+
+      const s = steps[currentStep];
+      TKST_AUDIO.playCountdownBeat(s.sound);
+
+      overlay.className = `quiz-countdown-overlay ${s.isHajime ? 'quiz-countdown-hajime' : ''}`;
+      overlay.innerHTML = `
+        <div class="quiz-countdown-card">
+          <div class="quiz-countdown-ring">
+            <div class="quiz-countdown-kanji">${s.kanji}</div>
+          </div>
+          <div class="quiz-countdown-romaji">${s.romaji}</div>
+          <div class="quiz-countdown-sub">${s.sub}</div>
+          <div style="margin-top: 24px; font-size: 0.8rem; color: #64748B; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-hand-rock" style="color: var(--accent-gold);"></i> TKST Karatê Shotokan
+          </div>
+        </div>
+      `;
+
+      const delay = s.isHajime ? 1150 : 950;
+      currentStep++;
+      quizCountdownTimeout = setTimeout(renderStep, delay);
+    }
+
+    renderStep();
+  }
+
   function startQuiz(kyuNumber, beltName) {
     if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
     if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+    if (quizCountdownTimeout) { clearTimeout(quizCountdownTimeout); quizCountdownTimeout = null; }
+
+    TKST_AUDIO.init();
 
     const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || window.TKST_QUIZ || []);
     let pool;
@@ -4460,14 +4719,20 @@ document.addEventListener('DOMContentLoaded', () => {
     currentQuizKyu = kyuNumber;
     currentQuizBelt = beltName;
     quizSubmissionDetails = [];
-    quizActive = true;
 
-    renderQuiz();
+    // Executa a contagem regressiva em tela cheia (Ichi, Ni, San, Hajime!)
+    runQuizCountdown(() => {
+      quizActive = true;
+      renderQuiz();
+    });
   }
 
   function exitQuiz() {
     if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
     if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+    if (quizCountdownTimeout) { clearTimeout(quizCountdownTimeout); quizCountdownTimeout = null; }
+    const overlay = document.getElementById('quizCountdownOverlay');
+    if (overlay) overlay.remove();
     quizActive = false;
     currentQuizQuestions = [];
     renderQuiz();
@@ -4518,11 +4783,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulador de Exame Teórico de Graduação</h3>
           </div>
         </div>
-
-        <!-- SIMULADO GERAL (30 QUESTÕES - TODAS AS GRADUAÇÕES) -->
-        <div class="stat-card" style="margin-bottom: 24px; position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(255, 183, 3, 0.12) 0%, rgba(18, 23, 34, 0.98) 100%); border: 2px solid var(--accent-gold); padding: 22px; flex-direction: column; align-items: stretch; gap: 14px; box-shadow: 0 4px 20px rgba(255, 183, 3, 0.15); border-radius: var(--radius-md);">
-          <!-- Subtle Transparent TKST Emblem Watermark -->
-          <img src="assets/images/logo-tkst-emblem-transp.png" alt="TKST Emblem" style="position: absolute; right: -12px; bottom: -8px; width: 140px; opacity: 0.085; pointer-events: none;">
 
           <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 14px;">
@@ -4691,11 +4951,16 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="quiz-card">
-        <!-- Temporizador Visual de 15 Segundos por Questão -->
+        <!-- Temporizador Visual de 15 Segundos por Questão com Controle de Som -->
         <div class="quiz-timer-container">
           <div class="quiz-timer-header">
-            <span><i class="fas fa-stopwatch" style="color: var(--accent-gold); margin-right: 6px;"></i> Tempo Restante:</span>
-            <span id="quizTimerBadge" class="quiz-timer-badge">15s</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span><i class="fas fa-stopwatch" style="color: var(--accent-gold); margin-right: 4px;"></i> Tempo:</span>
+              <span id="quizTimerBadge" class="quiz-timer-badge">15s</span>
+            </div>
+            <button id="quizSoundToggleBtn" class="quiz-sound-toggle ${TKST_AUDIO.isMuted ? 'muted' : ''}" onclick="window.TKST_APP.toggleQuizSound()" title="${TKST_AUDIO.isMuted ? 'Ativar Som do Simulado' : 'Silenciar Som do Simulado'}">
+              <i class="fas ${TKST_AUDIO.isMuted ? 'fa-volume-mute' : 'fa-volume-up'}"></i>
+            </button>
           </div>
           <div class="quiz-timer-bar-bg">
             <div id="quizTimerBar" class="quiz-timer-bar-fill" style="width: 100%;"></div>
@@ -4752,6 +5017,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerBadge = document.getElementById('quizTimerBadge');
     const timerBar = document.getElementById('quizTimerBar');
 
+    let lastTickSec = -1;
+
     quizTimerInterval = setInterval(() => {
       if (!quizActive || quizAnswered) {
         clearInterval(quizTimerInterval);
@@ -4762,6 +5029,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const remaining = Math.max(0, totalDuration - elapsed);
       const remainingSec = Math.ceil(remaining / 1000);
       const pct = Math.max(0, (remaining / totalDuration) * 100);
+
+      if (remainingSec !== lastTickSec && remainingSec > 0) {
+        lastTickSec = remainingSec;
+        TKST_AUDIO.playInterstellarTick(remainingSec <= 4);
+      }
 
       if (timerBadge) {
         timerBadge.textContent = `${remainingSec}s`;
@@ -4779,6 +5051,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (remaining <= 0) {
         clearInterval(quizTimerInterval);
+        TKST_AUDIO.playMicrowaveDing();
         handleQuizTimeout();
       }
     }, 100);
@@ -5357,7 +5630,9 @@ document.addEventListener('DOMContentLoaded', () => {
     answerQuiz,
     nextQuizQuestion,
     restartQuiz,
+    startQuiz: (kyu, beltName) => startQuiz(kyu, beltName),
     startQuizLevel: (kyu, beltName) => startQuiz(kyu, beltName),
+    toggleQuizSound: () => TKST_AUDIO.toggleMute(),
     exitQuiz,
     setAdminQuizSelectedKyu: (kyu) => {
       adminQuizSelectedKyu = parseInt(kyu);
