@@ -5531,12 +5531,12 @@ document.addEventListener('DOMContentLoaded', () => {
       modalTitle.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-scroll" style="color: var(--accent-gold);"></i>
-          <span>道場訓 • Dojo Kun (5 Princípios)</span>
+          <span>道場訓 • Dojo Kun (5 Princípios Sagrados)</span>
         </div>
       `;
 
       const dojoKunList = (window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun) ? window.TKST_GLOSSARY.dojoKun : [
-        { number: 1, title: "Hitotsu! Jinkaku kansei ni tsutomuru koto!", translation: "Esforçar-se para a formação do caráter!", description: "O objetivo supremo do Karatê-Dō reside no aperfeiçoamento do caráter e integridade do praticante." },
+        { number: 1, title: "Hitotsu! Jinkaku kansei ni tsutomuru koto!", translation: "Esforçar-se para a formação do caráter!", description: "O objetivo supremo reside no aperfeiçoamento do caráter e integridade do praticante." },
         { number: 2, title: "Hitotsu! Makoto no michi o mamoru koto!", translation: "Fidelidade para com o verdadeiro caminho da razão!", description: "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio." },
         { number: 3, title: "Hitotsu! Doryoku no seishin o yashinau koto!", translation: "Criar o espírito de esforço e perseverança!", description: "A dedicação e o treino contínuo superam qualquer obstáculo. Jamais desistir." },
         { number: 4, title: "Hitotsu! Reigi o omonzuru koto!", translation: "Respeitar acima de tudo!", description: "O Karatê começa e termina com respeito e cortesia sincera (Rei)." },
@@ -5544,25 +5544,32 @@ document.addEventListener('DOMContentLoaded', () => {
       ];
 
       modalBody.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="padding: 10px 12px; background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); font-size: 0.80rem; color: #FFE299;">
-            Todos os 5 princípios iniciam com <strong>"Hitotsu!" (一つ - Em primeiro lugar)</strong>: todos possuem a mesma suprema importância.
+        <div class="dojokun-modal-view">
+          <div class="dojokun-top-banner">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); font-size: 0.85rem; flex-shrink: 0;"></i>
+            <span>Todos os 5 preceitos iniciam com <strong>"Hitotsu!" (一つ - Em primeiro lugar)</strong>: todos possuem o mesmo valor supremo.</span>
           </div>
-          ${dojoKunList.map(d => `
-            <div style="padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-left: 3.5px solid var(--accent-gold);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span class="badge badge-gold" style="font-size: 0.68rem; padding: 2px 7px;">一つ Hitotsu</span>
-                <button class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${d.title.replace(/'/g, "\\'")}')" style="font-size: 0.72rem; padding: 3px 8px;">
-                  <i class="fas fa-volume-up"></i> Ouvir
+
+          <div class="dojokun-list-compact">
+            ${dojoKunList.map((d, idx) => `
+              <div class="dojokun-item-row">
+                <div class="dojokun-item-left">
+                  <span class="dojokun-num-badge">一.${idx + 1}</span>
+                  <div class="dojokun-item-texts">
+                    <div class="dojokun-item-pt">${d.translation}</div>
+                    <div class="dojokun-item-jp">${d.title}</div>
+                    <div class="dojokun-item-desc">${d.description}</div>
+                  </div>
+                </div>
+                <button type="button" class="audio-pronounce-btn dojokun-audio-btn" onclick="window.TKST_APP.speakJapanese('${d.title.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês">
+                  <i class="fas fa-volume-up"></i>
                 </button>
               </div>
-              <div style="font-weight: 700; color: #FFF; font-size: 0.88rem; margin-bottom: 2px;">${d.translation}</div>
-              <div style="font-size: 0.78rem; color: var(--accent-gold); font-style: italic; margin-bottom: 4px;">${d.title}</div>
-              <div style="font-size: 0.78rem; color: #CBD5E1; line-height: 1.35;">${d.description}</div>
-            </div>
-          `).join('')}
-          <div style="margin-top: 6px; text-align: center;">
-            <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 16px; width: 100%;" onclick="window.TKST_APP.closeModal(); window.TKST_APP.switchTab('philosophy');">
+            `).join('')}
+          </div>
+
+          <div class="dojokun-footer-action">
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.74rem; padding: 5px 12px; width: 100%;" onclick="window.TKST_APP.closeModal(); window.TKST_APP.switchTab('philosophy');">
               <i class="fas fa-torii-gate"></i> Ver Filosofia Completa do Karatê
             </button>
           </div>
@@ -5580,32 +5587,39 @@ document.addEventListener('DOMContentLoaded', () => {
       modalTitle.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-torii-gate" style="color: var(--accent-crimson);"></i>
-          <span>二十訓 • Niju Kun (20 Preceitos)</span>
+          <span>二十訓 • Niju Kun (20 Preceitos de Funakoshi)</span>
         </div>
       `;
 
       const nijuKunList = (window.TKST_GLOSSARY && window.TKST_GLOSSARY.nijuKun) ? window.TKST_GLOSSARY.nijuKun : [];
 
       modalBody.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div style="padding: 10px 12px; background: rgba(230, 57, 70, 0.08); border: 1px solid rgba(230, 57, 70, 0.25); border-radius: var(--radius-sm); font-size: 0.80rem; color: #FFA8B0;">
-            Os 20 preceitos fundamentais formulados pelo <strong>Mestre Gichin Funakoshi</strong> para o aperfeiçoamento da mente e da vida.
+        <div class="nijukun-modal-view">
+          <div class="nijukun-top-banner">
+            <i class="fas fa-torii-gate" style="color: var(--accent-crimson); font-size: 0.85rem; flex-shrink: 0;"></i>
+            <span>Os <strong>20 Preceitos Fundamentais</strong> de Gichin Funakoshi para o aperfeiçoamento da mente e da vida.</span>
           </div>
-          ${nijuKunList.map((n, idx) => `
-            <div style="padding: 8px 10px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-left: 3px solid var(--accent-crimson);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <span class="badge badge-vermelha" style="font-size: 0.65rem; padding: 1px 6px;">Preceito ${n.number || (idx + 1)}</span>
-                <button class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${n.title.replace(/'/g, "\\'")}')" style="font-size: 0.70rem; padding: 2px 7px;">
+
+          <div class="nijukun-grid-compact">
+            ${nijuKunList.map((n, idx) => `
+              <div class="nijukun-item-row">
+                <div class="nijukun-item-left">
+                  <span class="nijukun-num-badge">${n.number || (idx + 1)}</span>
+                  <div class="nijukun-item-texts">
+                    <div class="nijukun-item-pt">${n.translation}</div>
+                    <div class="nijukun-item-jp">${n.title}</div>
+                    <div class="nijukun-item-desc">${n.description}</div>
+                  </div>
+                </div>
+                <button type="button" class="audio-pronounce-btn nijukun-audio-btn" onclick="window.TKST_APP.speakJapanese('${n.title.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês">
                   <i class="fas fa-volume-up"></i>
                 </button>
               </div>
-              <div style="font-weight: 700; color: #FFF; font-size: 0.84rem; margin-bottom: 2px;">${n.translation}</div>
-              <div style="font-size: 0.74rem; color: var(--accent-gold); font-style: italic; margin-bottom: 3px;">${n.title}</div>
-              <div style="font-size: 0.76rem; color: #CBD5E1; line-height: 1.3;">${n.description}</div>
-            </div>
-          `).join('')}
-          <div style="margin-top: 6px; text-align: center;">
-            <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 16px; width: 100%;" onclick="window.TKST_APP.closeModal(); window.TKST_APP.switchTab('philosophy');">
+            `).join('')}
+          </div>
+
+          <div class="dojokun-footer-action">
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.74rem; padding: 5px 12px; width: 100%;" onclick="window.TKST_APP.closeModal(); window.TKST_APP.switchTab('philosophy');">
               <i class="fas fa-torii-gate"></i> Ver Filosofia Completa do Karatê
             </button>
           </div>

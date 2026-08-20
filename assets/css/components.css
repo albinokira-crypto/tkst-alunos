@@ -1599,9 +1599,164 @@ body.login-view-active .content-body {
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 20px;
   overflow-y: auto;
   flex: 1;
+}
+
+/* ==========================================
+   DOJO KUN & NIJU KUN MODAL EXPANSION & COMPACT ROWS
+   ========================================== */
+.dojokun-modal-view,
+.nijukun-modal-view {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.dojokun-top-banner {
+  padding: 6px 10px;
+  background: rgba(255, 183, 3, 0.08);
+  border: 1px solid rgba(255, 183, 3, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+  color: #FFE299;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.25;
+}
+
+.nijukun-top-banner {
+  padding: 6px 10px;
+  background: rgba(230, 57, 70, 0.08);
+  border: 1px solid rgba(230, 57, 70, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+  color: #FFA8B0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.25;
+}
+
+.dojokun-list-compact,
+.nijukun-grid-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.dojokun-item-row,
+.nijukun-item-row {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-left: 3.5px solid var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+
+.nijukun-item-row {
+  border-left-color: var(--accent-crimson);
+}
+
+.dojokun-item-row:hover {
+  background: rgba(255, 183, 3, 0.05);
+}
+
+.nijukun-item-row:hover {
+  background: rgba(230, 57, 70, 0.05);
+}
+
+.dojokun-item-left,
+.nijukun-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dojokun-num-badge {
+  font-weight: 800;
+  font-size: 0.72rem;
+  color: #000;
+  background: var(--accent-gold);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nijukun-num-badge {
+  font-weight: 800;
+  font-size: 0.70rem;
+  color: #FFF;
+  background: var(--accent-crimson);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dojokun-item-texts,
+.nijukun-item-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dojokun-item-pt,
+.nijukun-item-pt {
+  font-weight: 700;
+  color: #FFF;
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.dojokun-item-jp,
+.nijukun-item-jp {
+  font-size: 0.70rem;
+  color: var(--accent-gold);
+  font-style: italic;
+  line-height: 1.15;
+}
+
+.dojokun-item-desc,
+.nijukun-item-desc {
+  font-size: 0.68rem;
+  color: #94A3B8;
+  line-height: 1.2;
+}
+
+.dojokun-audio-btn,
+.nijukun-audio-btn {
+  font-size: 0.74rem;
+  padding: 5px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nijukun-audio-btn {
+  color: var(--accent-crimson);
+  border-color: rgba(230, 57, 70, 0.35);
+  background: rgba(230, 57, 70, 0.1);
+}
+
+.dojokun-footer-action {
+  margin-top: 4px;
 }
 
 #videoModal {
@@ -2811,23 +2966,29 @@ body.login-view-active .content-body {
     width: 100% !important;
   }
 
-  /* Modals on Mobile */
+  /* Modals on Mobile - Expanded Width & Zero Wasted Space */
   .modal-container {
-    padding: 14px 12px !important;
-    width: 96% !important;
-    max-width: 480px !important;
-    max-height: 94vh !important;
+    padding: 0 !important;
+    width: 98vw !important;
+    max-width: 98vw !important;
+    max-height: 96vh !important;
     border-radius: var(--radius-md) !important;
+    margin: auto !important;
   }
 
   .modal-header {
-    margin-bottom: 8px !important;
-    padding-bottom: 8px !important;
+    padding: 10px 12px !important;
+    margin-bottom: 0 !important;
+    border-bottom: 1px solid var(--border-color) !important;
   }
 
   .modal-header h3 {
-    font-size: 1.05rem !important;
+    font-size: 0.96rem !important;
     line-height: 1.2 !important;
+  }
+
+  .modal-body {
+    padding: 8px 8px !important;
   }
 
   .auth-card {
