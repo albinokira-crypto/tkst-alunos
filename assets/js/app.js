@@ -1878,6 +1878,81 @@ document.addEventListener('DOMContentLoaded', () => {
     const students = window.TKST_AUTH.getAllStudents();
     const pendingStudents = students.filter(s => s.status === 'pending');
 
+    // ==========================================
+    // TOP 10 QUIZ RANKING CALCULATION
+    // Regra: Excluir qualquer faixa preta, acerto = +1 pt, erro = -1 pt
+    // ==========================================
+    const submissions = (window.TKST_AUTH ? window.TKST_AUTH.getAllQuizSubmissions() : []) || [];
+    let allProgress = {};
+    try {
+      allProgress = JSON.parse(localStorage.getItem('tkst_progress_v2')) || {};
+    } catch (e) { allProgress = {}; }
+
+    const eligibleStudents = students.filter(s => {
+      if (!s) return false;
+      const b = (s.currentBelt || '').toLowerCase();
+      if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan')) return false;
+      if (s.currentKyu !== undefined && s.currentKyu <= 0) return false;
+      if (s.role === 'admin' || s.username === 'irons365') return false;
+      return true;
+    });
+
+    const leaderboard = eligibleStudents.map(student => {
+      let totalCorrect = 0;
+      let totalWrong = 0;
+      let testsTaken = 0;
+
+      const studentSubs = submissions.filter(sub => {
+        return (sub.studentId && sub.studentId === student.id) ||
+               (sub.studentUsername && sub.studentUsername === student.username) ||
+               (sub.studentName && sub.studentName.toLowerCase().trim() === (student.name || '').toLowerCase().trim());
+      });
+
+      if (studentSubs.length > 0) {
+        studentSubs.forEach(sub => {
+          const score = typeof sub.score === 'number' ? sub.score : 0;
+          const total = typeof sub.total === 'number' ? sub.total : 10;
+          totalCorrect += score;
+          totalWrong += Math.max(0, total - score);
+          testsTaken++;
+        });
+      } else if (allProgress[student.id] && Array.isArray(allProgress[student.id].quizScores)) {
+        allProgress[student.id].quizScores.forEach(item => {
+          const score = typeof item.score === 'number' ? item.score : 0;
+          const total = typeof item.total === 'number' ? item.total : 10;
+          totalCorrect += score;
+          totalWrong += Math.max(0, total - score);
+          testsTaken++;
+        });
+      }
+
+      const netPoints = totalCorrect - totalWrong;
+      const rawName = (student.name || 'Aluno').trim();
+      const firstName = rawName.split(' ')[0];
+      const dojoShort = (student.dojo || 'TKST').replace(/^TKST\s+/i, '');
+
+      return {
+        id: student.id,
+        fullName: rawName,
+        firstName: firstName,
+        dojo: dojoShort,
+        currentBelt: student.currentBelt || 'Faixa Branca',
+        currentKyu: student.currentKyu !== undefined ? student.currentKyu : 7,
+        totalCorrect,
+        totalWrong,
+        testsTaken,
+        points: netPoints
+      };
+    });
+
+    leaderboard.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.totalCorrect !== a.totalCorrect) return b.totalCorrect - a.totalCorrect;
+      return b.testsTaken - a.testsTaken;
+    });
+
+    const top10Leaderboard = leaderboard.slice(0, 10);
+
     let html = `
       ${isAdmin && pendingStudents.length > 0 ? `
         <!-- ADMIN PENDING APPROVALS ALERT BANNER -->
@@ -1988,128 +2063,93 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Dojo Kun Collapsible Accordion Card -->
-      <div class="stat-card dojokun-accordion-card" style="position: relative; flex-direction: column; align-items: stretch; margin-top: 18px; background: linear-gradient(135deg, rgba(22, 28, 42, 0.95) 0%, rgba(10, 13, 20, 0.98) 100%); border: 1.5px solid rgba(255, 183, 3, 0.25); box-shadow: var(--shadow-subtle); padding: 0; overflow: hidden;">
-        <!-- Subtle Vertical Kanji Watermark in Header -->
-        <img src="assets/images/logo-tkst-kanji-frente.png" alt="Kanji" style="position: absolute; right: 135px; top: 50%; transform: translateY(-50%); height: 44px; opacity: 0.08; pointer-events: none;">
-
-        <!-- Header Clicável com Efeito de Toque -->
-        <div class="dojokun-accordion-header" onclick="window.TKST_APP.toggleDojoKunAccordion()" style="position: relative; z-index: 1; padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; user-select: none; transition: background 0.2s ease;">
-          <div class="section-title-group" style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 183, 3, 0.12); border: 1px solid rgba(255, 183, 3, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;">
-              <i class="fas fa-scroll"></i>
-            </div>
-            <div>
-              <h3 style="font-size: 1.05rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px; margin: 0;">
-                Dojo Kun
-              </h3>
-              <p style="color: #94A3B8; font-size: 0.78rem; margin: 2px 0 0 0;">Lema e princípios fundamentais do Karatê-Dō</p>
-            </div>
-          </div>
-          
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <span id="dojokunToggleBadge" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 12px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); pointer-events: none; display: flex; align-items: center; gap: 6px;">
-              <i class="fas fa-chevron-down" id="dojokunChevronIcon" style="transition: transform 0.3s cubic-bezier(.4,0,.2,1);"></i> Toque para Ver
-            </span>
-          </div>
-        </div>
-
-        <!-- Conteúdo Expansível (Aparece ao Clicar) -->
-        <div id="dojokunAccordionBody" style="display: none; padding: 0 16px 16px 16px; border-top: 1px solid rgba(255, 183, 3, 0.15); animation: fadeIn 0.3s ease; position: relative; overflow: hidden;">
-          <!-- Authentic Vertical Kanji Background Ribbon -->
-          <img src="assets/images/logo-tkst-kanji-vertical.png" alt="Kanji Calligraphy" style="position: absolute; right: 10px; top: 12px; height: 190px; opacity: 0.055; pointer-events: none;">
-
-          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; margin: 12px 0; flex-wrap: wrap; gap: 8px;">
-            <span style="font-size: 0.8rem; color: #94A3B8; font-style: italic;">Shotokan Karate-Do Tsuyoi</span>
-            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 12px;" onclick="event.stopPropagation(); window.TKST_APP.switchTab('philosophy')">
-              <i class="fas fa-torii-gate"></i> Ver Filosofia Completa
-            </button>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
-            ${(window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun ? window.TKST_GLOSSARY.dojoKun : [
-              { number: 1, title: "Hitotsu! Jinkaku kansei ni tsutomuru koto!", translation: "Esforçar-se para a formação do caráter!", description: "O objetivo supremo do Karatê-Dō reside no aperfeiçoamento do caráter e integridade do praticante." },
-              { number: 2, title: "Hitotsu! Makoto no michi o mamoru koto!", translation: "Fidelidade para com o verdadeiro caminho da razão!", description: "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio." },
-              { number: 3, title: "Hitotsu! Doryoku no seishin o yashinau koto!", translation: "Criar o espírito de esforço e perseverança!", description: "A dedicação e o treino contínuo superam qualquer obstáculo. Jamais desistir." },
-              { number: 4, title: "Hitotsu! Reigi o omonzuru koto!", translation: "Respeitar acima de tudo!", description: "O Karatê começa e termina com respeito e cortesia sincera (Rei)." },
-              { number: 5, title: "Hitotsu! Kekki no yū o imashimuru koto!", translation: "Conter o espírito de agressão!", description: "Dominar impulsos, cultivar o autocontrole e buscar sempre a serenidade e a paz." }
-            ]).map(d => `
-              <div class="dojokun-card" style="margin-top: 0; border-left: 3.5px solid var(--accent-gold); background: rgba(255, 255, 255, 0.02); padding: 12px 14px; border-radius: var(--radius-sm); display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span class="badge badge-gold" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700;">一つ Hitotsu</span>
+      <!-- Dashboard 2-Column Split Section: Ranking (Left) & Dojo Kun / Niju Kun (Right) -->
+      <div class="dashboard-split-layout">
+        
+        <!-- Left Column: Ranking do Simulado -->
+        <div class="dashboard-left-col">
+          <div class="stat-card ranking-card">
+            <div class="ranking-header">
+              <div class="ranking-header-title">
+                <div class="ranking-header-icon">
+                  <i class="fas fa-trophy"></i>
                 </div>
-                <div class="dojokun-pt" style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 3px;">
-                  ${d.translation}
-                </div>
-                <div class="dojokun-jp" style="font-size: 0.78rem; color: var(--accent-gold); font-style: italic; margin-bottom: 5px;">
-                  ${d.title}
-                </div>
-                <div class="dojokun-desc" style="font-size: 0.8rem; color: #CBD5E1; line-height: 1.4; margin-top: auto;">
-                  ${d.description}
+                <div>
+                  <h3 class="ranking-title">Ranking do Simulado</h3>
+                  <p class="ranking-subtitle">Top 10 • Acerto +1 | Erro -1</p>
                 </div>
               </div>
-            `).join('')}
+              <span class="badge badge-gold" style="font-size: 0.65rem; padding: 2px 6px; font-weight: 700;">🏆 Top 10</span>
+            </div>
+
+            <div class="ranking-list">
+              ${top10Leaderboard.length === 0 ? `
+                <div style="padding: 24px 10px; text-align: center; color: #64748B; font-size: 0.74rem;">
+                  <i class="fas fa-medal" style="font-size: 1.6rem; color: var(--accent-gold); margin-bottom: 6px; display: block; opacity: 0.6;"></i>
+                  Nenhum aluno classificado ainda.<br>Faça um simulado para liderar o ranking!
+                </div>
+              ` : top10Leaderboard.map((item, idx) => `
+                <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
+                  <div class="ranking-row-left">
+                    <span class="ranking-pos-num">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}</span>
+                    <span class="ranking-student-name" title="${item.fullName}">${item.firstName}</span>
+                    <span class="ranking-dot">•</span>
+                    <span class="ranking-student-dojo" title="${item.dojo}">${item.dojo}</span>
+                  </div>
+                  <div class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
+                    ${item.points > 0 ? '+' : ''}${item.points} pts
+                  </div>
+                </div>
+              `).join('')}
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Niju Kun Collapsible Accordion Card -->
-      <div class="stat-card nijukun-accordion-card" style="position: relative; flex-direction: column; align-items: stretch; margin-top: 14px; background: linear-gradient(135deg, rgba(22, 28, 42, 0.95) 0%, rgba(10, 13, 20, 0.98) 100%); border: 1.5px solid rgba(255, 183, 3, 0.25); box-shadow: var(--shadow-subtle); padding: 0; overflow: hidden;">
-        <!-- Subtle Vertical Kanji Watermark in Header -->
-        <img src="assets/images/logo-tkst-kanji-frente.png" alt="Kanji" style="position: absolute; right: 135px; top: 50%; transform: translateY(-50%); height: 44px; opacity: 0.08; pointer-events: none;">
-
-        <!-- Header Clicável com Efeito de Toque -->
-        <div class="nijukun-accordion-header" onclick="window.TKST_APP.toggleNijuKunAccordion()" style="position: relative; z-index: 1; padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; user-select: none; transition: background 0.2s ease;">
-          <div class="section-title-group" style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 183, 3, 0.12); border: 1px solid rgba(255, 183, 3, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;">
-              <i class="fas fa-feather-alt"></i>
-            </div>
-            <div>
-              <h3 style="font-size: 1.05rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px; margin: 0;">
-                Niju Kun
-              </h3>
-              <p style="color: #94A3B8; font-size: 0.78rem; margin: 2px 0 0 0;">Os 20 Princípios do Mestre Gichin Funakoshi</p>
-            </div>
-          </div>
+        <!-- Right Column: Dojo Kun & Niju Kun Otimizados (Um embaixo do outro) -->
+        <div class="dashboard-right-col">
           
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-            <span id="nijukunToggleBadge" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 12px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); pointer-events: none; display: flex; align-items: center; gap: 6px;">
-              <i class="fas fa-chevron-down" id="nijukunChevronIcon" style="transition: transform 0.3s cubic-bezier(.4,0,.2,1);"></i> Toque para Ver
-            </span>
-          </div>
-        </div>
-
-        <!-- Conteúdo Expansível (Aparece ao Clicar) -->
-        <div id="nijukunAccordionBody" style="display: none; padding: 0 16px 16px 16px; border-top: 1px solid rgba(255, 183, 3, 0.15); animation: fadeIn 0.3s ease; position: relative; overflow: hidden;">
-          <!-- Authentic Vertical Kanji Background Ribbon -->
-          <img src="assets/images/logo-tkst-kanji-vertical.png" alt="Kanji Calligraphy" style="position: absolute; right: 10px; top: 12px; height: 190px; opacity: 0.055; pointer-events: none;">
-
-          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; margin: 12px 0; flex-wrap: wrap; gap: 8px;">
-            <span style="font-size: 0.8rem; color: #94A3B8; font-style: italic;">二十訓 - Gichin Funakoshi</span>
-            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 12px;" onclick="event.stopPropagation(); window.TKST_APP.switchTab('philosophy')">
-              <i class="fas fa-torii-gate"></i> Ver Filosofia Completa
-            </button>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
-            ${(window.TKST_GLOSSARY && window.TKST_GLOSSARY.nijuKun ? window.TKST_GLOSSARY.nijuKun : []).map(n => `
-              <div class="dojokun-card" style="margin-top: 0; border-left: 3.5px solid var(--accent-gold); background: rgba(255, 255, 255, 0.02); padding: 12px 14px; border-radius: var(--radius-sm); display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span class="badge badge-gold" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700;">${n.number}º Princípio</span>
+          <!-- 1. Dojo Kun Otimizado -->
+          <div class="dojokun-mini-card-opt" onclick="window.TKST_APP.openDojoKunModal()" title="Toque para ver o Dojo Kun">
+            <div class="opt-card-header">
+              <div class="opt-card-title-group">
+                <div class="opt-card-icon">
+                  <i class="fas fa-scroll"></i>
                 </div>
-                <div class="dojokun-pt" style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 3px;">
-                  ${n.translation}
-                </div>
-                <div class="dojokun-jp" style="font-size: 0.78rem; color: var(--accent-gold); font-style: italic; margin-bottom: 5px;">
-                  ${n.title}
-                </div>
-                <div class="dojokun-desc" style="font-size: 0.8rem; color: #CBD5E1; line-height: 1.4; margin-top: auto;">
-                  ${n.description}
+                <div>
+                  <h3 class="opt-card-title">Dojo Kun</h3>
+                  <p class="opt-card-subtitle">5 Princípios Sagrados</p>
                 </div>
               </div>
-            `).join('')}
+              <span class="opt-card-btn">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
+            </div>
+            <div class="opt-card-preview">
+              <span style="font-weight: 700; color: var(--accent-gold); display: block; margin-bottom: 2px;">ひとつ！ Hitotsu</span>
+              Esforçar-se para a formação do caráter e integridade.
+            </div>
           </div>
+
+          <!-- 2. Niju Kun Otimizado -->
+          <div class="nijukun-mini-card-opt" onclick="window.TKST_APP.openNijuKunModal()" title="Toque para ver o Niju Kun">
+            <div class="opt-card-header">
+              <div class="opt-card-title-group">
+                <div class="opt-card-icon crimson">
+                  <i class="fas fa-torii-gate"></i>
+                </div>
+                <div>
+                  <h3 class="opt-card-title">Niju Kun</h3>
+                  <p class="opt-card-subtitle">20 Preceitos de Funakoshi</p>
+                </div>
+              </div>
+              <span class="opt-card-btn" style="color: var(--accent-crimson); border-color: rgba(230,57,70,0.3); background: rgba(230,57,70,0.1);">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
+            </div>
+            <div class="opt-card-preview crimson">
+              <span style="font-weight: 700; color: var(--accent-crimson); display: block; margin-bottom: 2px;">空手道 Karate-Dō</span>
+              Começa e termina com respeito mútuo (Rei).
+            </div>
+          </div>
+
         </div>
+
       </div>
     `;
 
@@ -5490,6 +5530,98 @@ document.addEventListener('DOMContentLoaded', () => {
         if (icon) icon.style.transform = 'rotate(0deg)';
         if (badge) badge.innerHTML = '<i class="fas fa-chevron-down" id="nijukunChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Toque para Ver';
       }
+    },
+    openDojoKunModal: () => {
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-scroll" style="color: var(--accent-gold);"></i>
+          <span>道場訓 • Dojo Kun (5 Princípios)</span>
+        </div>
+      `;
+
+      const dojoKunList = (window.TKST_GLOSSARY && window.TKST_GLOSSARY.dojoKun) ? window.TKST_GLOSSARY.dojoKun : [
+        { number: 1, title: "Hitotsu! Jinkaku kansei ni tsutomuru koto!", translation: "Esforçar-se para a formação do caráter!", description: "O objetivo supremo do Karatê-Dō reside no aperfeiçoamento do caráter e integridade do praticante." },
+        { number: 2, title: "Hitotsu! Makoto no michi o mamoru koto!", translation: "Fidelidade para com o verdadeiro caminho da razão!", description: "Agir com lealdade, verdade e honestidade perante seus mestres, colegas e a si próprio." },
+        { number: 3, title: "Hitotsu! Doryoku no seishin o yashinau koto!", translation: "Criar o espírito de esforço e perseverança!", description: "A dedicação e o treino contínuo superam qualquer obstáculo. Jamais desistir." },
+        { number: 4, title: "Hitotsu! Reigi o omonzuru koto!", translation: "Respeitar acima de tudo!", description: "O Karatê começa e termina com respeito e cortesia sincera (Rei)." },
+        { number: 5, title: "Hitotsu! Kekki no yū o imashimuru koto!", translation: "Conter o espírito de agressão!", description: "Dominar impulsos, cultivar o autocontrole e buscar sempre a serenidade e a paz." }
+      ];
+
+      modalBody.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="padding: 10px 12px; background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-sm); font-size: 0.80rem; color: #FFE299;">
+            Todos os 5 princípios iniciam com <strong>"Hitotsu!" (一つ - Em primeiro lugar)</strong>: todos possuem a mesma suprema importância.
+          </div>
+          ${dojoKunList.map(d => `
+            <div style="padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-left: 3.5px solid var(--accent-gold);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span class="badge badge-gold" style="font-size: 0.68rem; padding: 2px 7px;">一つ Hitotsu</span>
+                <button class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${d.title.replace(/'/g, "\\'")}')" style="font-size: 0.72rem; padding: 3px 8px;">
+                  <i class="fas fa-volume-up"></i> Ouvir
+                </button>
+              </div>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.88rem; margin-bottom: 2px;">${d.translation}</div>
+              <div style="font-size: 0.78rem; color: var(--accent-gold); font-style: italic; margin-bottom: 4px;">${d.title}</div>
+              <div style="font-size: 0.78rem; color: #CBD5E1; line-height: 1.35;">${d.description}</div>
+            </div>
+          `).join('')}
+          <div style="margin-top: 6px; text-align: center;">
+            <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 16px; width: 100%;" onclick="window.TKST_APP.closeModal(); window.TKST_APP.switchTab('philosophy');">
+              <i class="fas fa-torii-gate"></i> Ver Filosofia Completa do Karatê
+            </button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    },
+    openNijuKunModal: () => {
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-torii-gate" style="color: var(--accent-crimson);"></i>
+          <span>二十訓 • Niju Kun (20 Preceitos)</span>
+        </div>
+      `;
+
+      const nijuKunList = (window.TKST_GLOSSARY && window.TKST_GLOSSARY.nijuKun) ? window.TKST_GLOSSARY.nijuKun : [];
+
+      modalBody.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="padding: 10px 12px; background: rgba(230, 57, 70, 0.08); border: 1px solid rgba(230, 57, 70, 0.25); border-radius: var(--radius-sm); font-size: 0.80rem; color: #FFA8B0;">
+            Os 20 preceitos fundamentais formulados pelo <strong>Mestre Gichin Funakoshi</strong> para o aperfeiçoamento da mente e da vida.
+          </div>
+          ${nijuKunList.map((n, idx) => `
+            <div style="padding: 8px 10px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-left: 3px solid var(--accent-crimson);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <span class="badge badge-vermelha" style="font-size: 0.65rem; padding: 1px 6px;">Preceito ${n.number || (idx + 1)}</span>
+                <button class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${n.title.replace(/'/g, "\\'")}')" style="font-size: 0.70rem; padding: 2px 7px;">
+                  <i class="fas fa-volume-up"></i>
+                </button>
+              </div>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.84rem; margin-bottom: 2px;">${n.translation}</div>
+              <div style="font-size: 0.74rem; color: var(--accent-gold); font-style: italic; margin-bottom: 3px;">${n.title}</div>
+              <div style="font-size: 0.76rem; color: #CBD5E1; line-height: 1.3;">${n.description}</div>
+            </div>
+          `).join('')}
+          <div style="margin-top: 6px; text-align: center;">
+            <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 16px; width: 100%;" onclick="window.TKST_APP.closeModal(); window.TKST_APP.switchTab('philosophy');">
+              <i class="fas fa-torii-gate"></i> Ver Filosofia Completa do Karatê
+            </button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
     },
     toggleStudyAccordion: (sectionId) => {
       const body = document.getElementById(`studyBody_${sectionId}`);
