@@ -1978,6 +1978,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="stat-value">Simulado</div>
           <div class="stat-label">Quiz</div>
         </div>
+
+        <div class="stat-card" onclick="window.TKST_APP.switchTab('glossary')" style="cursor: pointer;" title="Abrir Dicionário Japonês de Karatê">
+          <div class="stat-icon-box crimson">
+            <i class="fas fa-language"></i>
+          </div>
+          <div class="stat-value">Dicionário</div>
+          <div class="stat-label">Japonês</div>
+        </div>
       </div>
 
       <!-- Dojo Kun Collapsible Accordion Card -->
@@ -4353,48 +4361,12 @@ document.addEventListener('DOMContentLoaded', () => {
             Nenhum termo encontrado para a busca selecionada.
           </div>
         ` : terms.map(t => `
-          <div class="glossary-card-compact" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Toque para ver detalhes e vídeo de ${t.japanese}">
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px; gap: 4px;">
-                <span class="badge badge-amarela" style="font-size: 0.60rem; padding: 1px 5px; font-weight: 700; white-space: nowrap;">${t.cat || 'Termo'}</span>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                  <span style="font-family: var(--font-kanji); color: rgba(255,255,255,0.45); font-size: 0.82rem; font-weight: 700; line-height: 1;">${t.kanji || ''}</span>
-                  ${isAdmin ? `
-                    <div style="display: flex; gap: 3px; align-items: center;" onclick="event.stopPropagation();">
-                      <button class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openEditGlossaryTermModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Editar Termo (Admin)" style="padding: 2px 4px; font-size: 0.62rem; border-radius: 3px; background: rgba(255, 183, 3, 0.22); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer;">
-                        <i class="fas fa-pen"></i>
-                      </button>
-                      <button class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir Termo (Admin)" style="padding: 2px 4px; font-size: 0.62rem; border-radius: 3px; background: #DC2626; border: 1px solid #B91C1C; color: #FFF; cursor: pointer;">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-
-              <div style="font-family: var(--font-heading); font-size: 0.90rem; font-weight: 700; color: #FFF; line-height: 1.25; margin-bottom: 2px; word-break: break-word;">
-                ${t.japanese}
-              </div>
-
-              <div style="font-size: 0.72rem; color: #94A3B8; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
-                ${t.meaning}
-              </div>
-            </div>
-
-            <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 4px;" onclick="event.stopPropagation();">
-<button type="button" class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.openGlossaryVideo('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.65rem; padding: 3px 6px; border-radius: 3px; display: inline-flex; align-items: center; gap: 3px; font-weight: 700; background: #DC2626; border: none; color: #FFF; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35); cursor: pointer;" title="Assistir vídeo">
-                  <i class="fas fa-play" style="font-size: 0.58rem;"></i> <span>Vídeo</span>
-                </button>
-
-                <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); window.TKST_APP.speakJapanese('${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.65rem; padding: 3px 5px; border-radius: 3px; display: inline-flex; align-items: center; color: var(--accent-gold); border-color: rgba(255,183,3,0.3); background: rgba(255,183,3,0.06);" title="Ouvir pronúncia">
-                  <i class="fas fa-volume-up"></i>
-                </button>
-              </div>
-
-              <div onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.65rem; color: var(--accent-gold); font-weight: 600; display: inline-flex; align-items: center; gap: 2px; cursor: pointer;" title="Ver Detalhes">
-                <span>Ver</span>
-                <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i>
-              </div>
+          <div class="glossary-card-trio" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Toque para ver detalhes de ${t.japanese}">
+            <div class="glossary-card-line-name" title="${t.japanese}">${t.japanese}</div>
+            <div class="glossary-card-line-jp" title="${t.kanji || t.japanese}">${t.kanji || t.japanese}</div>
+            <div class="glossary-card-line-link">
+              <span>Ver detalhes</span>
+              <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i>
             </div>
           </div>
         `).join('')}
