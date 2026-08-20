@@ -286,6 +286,20 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "explanation": "Kime é o foco máximo no instante do impacto seguido de controle postural."
   },
   {
+    "id": "q6-11",
+    "kyuNumber": 6,
+    "beltName": "Faixa Amarela (6º Kyu)",
+    "question": "Quantos movimentos técnicos compõem o Kata Heian Nidan?",
+    "options": [
+      "21 movimentos",
+      "24 movimentos",
+      "26 movimentos",
+      "28 movimentos"
+    ],
+    "correctIndex": 2,
+    "explanation": "O Kata Heian Nidan possui exatamente 26 movimentos (passos técnicos), com Kiais no 11º e no 26º movimento."
+  },
+  {
     "id": "q5-1",
     "kyuNumber": 5,
     "beltName": "Faixa Vermelha (5º Kyu)",

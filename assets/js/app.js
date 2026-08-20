@@ -253,6 +253,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function generateSmartOptions(questionText, correctAnswer) {
     const cleanCorrect = (correctAnswer || '').trim();
+
+    // Special handler: Number of movements / steps (e.g. "26 movimentos", "21 passos")
+    const matchNum = cleanCorrect.match(/^(\d+)\s*(.*)$/);
+    const isMovementOrNumber = /movimento|passo|quantos|técnicas/i.test(questionText) || /movimento|passo/i.test(cleanCorrect);
+
+    if (matchNum && (isMovementOrNumber || matchNum[2])) {
+      const num = parseInt(matchNum[1]);
+      const suffix = matchNum[2] ? matchNum[2].trim() : 'movimentos';
+      const cleanSuffix = suffix ? ' ' + suffix : ' movimentos';
+
+      const offsets = [-5, -2, 2, 4, -3, 3, 5, -4];
+      const distractors = [];
+      for (const off of offsets) {
+        const candidateNum = num + off;
+        if (candidateNum > 5 && candidateNum !== num) {
+          const optStr = `${candidateNum}${cleanSuffix}`;
+          if (!distractors.includes(optStr) && optStr !== cleanCorrect) {
+            distractors.push(optStr);
+          }
+        }
+        if (distractors.length >= 3) break;
+      }
+
+      const allOptions = [cleanCorrect, ...distractors.slice(0, 3)].sort(() => 0.5 - Math.random());
+      return {
+        options: allOptions,
+        correctIndex: allOptions.indexOf(cleanCorrect)
+      };
+    }
+
     const category = detectKarateCategory(questionText, cleanCorrect);
     
     let pool = [];
@@ -4388,10 +4418,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // TKST AUDIO ENGINE (Web Audio API Synthesizer)
+  // TKST AUDIO ENGINE (Web Audio API Synthesizer + Hans Zimmer Track)
   // ==========================================
   const TKST_AUDIO = {
     audioCtx: null,
+    interstellarAudio: null,
     isMuted: localStorage.getItem('tkst_quiz_muted') === 'true',
 
     init: function() {
@@ -4404,11 +4435,53 @@ document.addEventListener('DOMContentLoaded', () => {
       if (this.audioCtx && this.audioCtx.state === 'suspended') {
         this.audioCtx.resume();
       }
+      if (!this.interstellarAudio) {
+        try {
+          this.interstellarAudio = new Audio('assets/audio/interstellar-ticktock-15s.mp3');
+          this.interstellarAudio.preload = 'auto';
+        } catch(e) {}
+      }
+    },
+
+    playInterstellarTrack: function() {
+      if (this.isMuted) return;
+      this.init();
+      if (!this.interstellarAudio) return;
+
+      try {
+        this.interstellarAudio.currentTime = 0;
+        this.interstellarAudio.volume = 0.90;
+        const p = this.interstellarAudio.play();
+        if (p !== undefined) {
+          p.catch(() => {
+            // Autoplay prevented before first gesture, fallback silently
+          });
+        }
+      } catch (err) {
+        console.warn('Interstellar audio play error:', err);
+      }
+    },
+
+    stopInterstellarTrack: function() {
+      if (this.interstellarAudio) {
+        try {
+          this.interstellarAudio.pause();
+          this.interstellarAudio.currentTime = 0;
+        } catch (e) {}
+      }
     },
 
     toggleMute: function() {
       this.isMuted = !this.isMuted;
       localStorage.setItem('tkst_quiz_muted', String(this.isMuted));
+      if (this.isMuted) {
+        this.stopInterstellarTrack();
+      } else {
+        this.init();
+        if (quizActive && !quizAnswered) {
+          this.playInterstellarTrack();
+        }
+      }
       const btns = document.querySelectorAll('.quiz-sound-toggle');
       btns.forEach(btn => {
         if (this.isMuted) {
@@ -4421,14 +4494,10 @@ document.addEventListener('DOMContentLoaded', () => {
           btn.title = 'Silenciar Som do Simulado';
         }
       });
-      if (!this.isMuted) {
-        this.init();
-        this.playInterstellarTick(false);
-      }
       return this.isMuted;
     },
 
-    // Hans Zimmer "Miller's Planet" Interstellar Clock Ticking
+    // Hans Zimmer "Miller's Planet" Interstellar Clock Ticking Fallback
     playInterstellarTick: function(isCritical) {
       if (this.isMuted) return;
       this.init();
@@ -4731,6 +4800,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
     if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
     if (quizCountdownTimeout) { clearTimeout(quizCountdownTimeout); quizCountdownTimeout = null; }
+    TKST_AUDIO.stopInterstellarTrack();
     const overlay = document.getElementById('quizCountdownOverlay');
     if (overlay) overlay.remove();
     quizActive = false;
@@ -4741,6 +4811,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderQuiz() {
     if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
     if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+    TKST_AUDIO.stopInterstellarTrack();
 
     const user = window.TKST_AUTH.getCurrentUser();
     const isAdmin = window.TKST_AUTH.isAdmin();
@@ -5017,6 +5088,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerBadge = document.getElementById('quizTimerBadge');
     const timerBar = document.getElementById('quizTimerBar');
 
+    // Dispara a trilha oficial de 15 segundos de Hans Zimmer (Tick-Tock) a partir de 2:08
+    TKST_AUDIO.playInterstellarTrack();
+
     let lastTickSec = -1;
 
     quizTimerInterval = setInterval(() => {
@@ -5030,9 +5104,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const remainingSec = Math.ceil(remaining / 1000);
       const pct = Math.max(0, (remaining / totalDuration) * 100);
 
+      // Fallback ticking sintetizado se o áudio não estiver tocando
       if (remainingSec !== lastTickSec && remainingSec > 0) {
         lastTickSec = remainingSec;
-        TKST_AUDIO.playInterstellarTick(remainingSec <= 4);
+        if (!TKST_AUDIO.interstellarAudio || TKST_AUDIO.interstellarAudio.paused) {
+          TKST_AUDIO.playInterstellarTick(remainingSec <= 4);
+        }
       }
 
       if (timerBadge) {
@@ -5051,6 +5128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (remaining <= 0) {
         clearInterval(quizTimerInterval);
+        TKST_AUDIO.stopInterstellarTrack();
         TKST_AUDIO.playMicrowaveDing();
         handleQuizTimeout();
       }
@@ -5060,6 +5138,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleQuizTimeout() {
     if (quizAnswered) return;
     quizAnswered = true;
+
+    TKST_AUDIO.stopInterstellarTrack();
 
     const q = currentQuizQuestions[currentQuizIndex];
     quizSubmissionDetails.push({
@@ -5098,13 +5178,13 @@ document.addEventListener('DOMContentLoaded', () => {
       feedbackArea.innerHTML = `
         <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-crimson);">
           <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-            <i class="fas fa-hourglass-end"></i> Tempo Esgotado (7s) — Marcada como Incorreta!
+            <i class="fas fa-hourglass-end"></i> Tempo Esgotado (15s) — Questão não respondida!
           </div>
           <div style="color: #6EE7B7; font-size: 0.88rem; font-weight: 600; margin-top: 6px;">
             Resposta correta: ${q.options[q.correctIndex]}
           </div>
-          <div style="color: #94A3B8; font-size: 0.78rem; margin-top: 6px;">
-            <i class="fas fa-forward"></i> Avançando automaticamente para a próxima questão...
+          <div style="color: #CBD5E1; font-size: 0.82rem; margin-top: 8px; line-height: 1.4;">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 4px;"></i> Veja a resposta correta acima e toque no botão <strong>Próxima Questão</strong> abaixo quando estiver pronto(a).
           </div>
         </div>
       `;
@@ -5113,12 +5193,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('quizNextBtn');
     if (nextBtn) nextBtn.style.display = 'inline-flex';
 
-    if (quizAutoAdvanceTimeout) clearTimeout(quizAutoAdvanceTimeout);
-    quizAutoAdvanceTimeout = setTimeout(() => {
-      if (quizActive) {
-        nextQuizQuestion();
-      }
-    }, 2000);
+    // Aguarda o aluno ler com calma e clicar no botão (sem pular automático em erro/tempo esgotado)
+    if (quizAutoAdvanceTimeout) {
+      clearTimeout(quizAutoAdvanceTimeout);
+      quizAutoAdvanceTimeout = null;
+    }
   }
 
   function answerQuiz(optionIndex) {
@@ -5127,6 +5206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
     if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+    TKST_AUDIO.stopInterstellarTrack();
 
     const q = currentQuizQuestions[currentQuizIndex];
     const isCorrect = optionIndex === q.correctIndex;
@@ -5157,22 +5237,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const feedbackArea = document.getElementById('quizFeedbackArea');
     if (feedbackArea) {
-      feedbackArea.innerHTML = `
-        <div class="quiz-feedback-box" style="border-left: 4px solid ${isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">
-          <div style="font-weight: 700; color: ${isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; font-size: 0.95rem;">
-            ${isCorrect ? '✓ Resposta Correta!' : '✗ Resposta Incorreta'}
+      if (isCorrect) {
+        feedbackArea.innerHTML = `
+          <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-emerald);">
+            <div style="font-weight: 700; color: var(--accent-emerald); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-check-circle"></i> ✓ Resposta Correta!
+            </div>
+            <div style="color: #94A3B8; font-size: 0.78rem; margin-top: 6px;">
+              <i class="fas fa-forward"></i> Avançando automaticamente em 2 segundos...
+            </div>
           </div>
-          ${!isCorrect ? `
-            <div style="color: #6EE7B7; font-size: 0.88rem; font-weight: 600; margin-top: 4px;">
+        `;
+      } else {
+        feedbackArea.innerHTML = `
+          <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-crimson);">
+            <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-times-circle"></i> ✗ Resposta Incorreta
+            </div>
+            <div style="color: #6EE7B7; font-size: 0.88rem; font-weight: 600; margin-top: 6px;">
               Resposta correta: ${q.options[q.correctIndex]}
             </div>
-          ` : ''}
-        </div>
-      `;
+            <div style="color: #CBD5E1; font-size: 0.82rem; margin-top: 8px; line-height: 1.4;">
+              <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 4px;"></i> Analise a resposta correta acima e toque no botão <strong>Próxima Questão</strong> abaixo para prosseguir.
+            </div>
+          </div>
+        `;
+      }
     }
 
     const nextBtn = document.getElementById('quizNextBtn');
     if (nextBtn) nextBtn.style.display = 'inline-flex';
+
+    // Regra de transição: Se acertou, pula automático em 2 segundos. Se errou, espera o aluno clicar.
+    if (isCorrect) {
+      quizAutoAdvanceTimeout = setTimeout(() => {
+        if (quizActive) {
+          nextQuizQuestion();
+        }
+      }, 2000);
+    } else {
+      if (quizAutoAdvanceTimeout) {
+        clearTimeout(quizAutoAdvanceTimeout);
+        quizAutoAdvanceTimeout = null;
+      }
+    }
   }
 
   function nextQuizQuestion() {
