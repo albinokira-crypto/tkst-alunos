@@ -1945,13 +1945,16 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
-    leaderboard.sort((a, b) => {
+    // Apenas alunos que realizaram simulados e possuem pontos (> 0) entram no ranking
+    const activeRanked = leaderboard.filter(item => item.points > 0);
+
+    activeRanked.sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;
       if (b.totalCorrect !== a.totalCorrect) return b.totalCorrect - a.totalCorrect;
       return b.testsTaken - a.testsTaken;
     });
 
-    const top10Leaderboard = leaderboard.slice(0, 10);
+    const top10Leaderboard = activeRanked.slice(0, 10);
 
     let html = `
       ${isAdmin && pendingStudents.length > 0 ? `
