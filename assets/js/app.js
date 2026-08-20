@@ -1105,21 +1105,179 @@ document.addEventListener('DOMContentLoaded', () => {
       ${adminSubTab === 'pending' ? `
         <!-- PENDING STUDENTS APPROVAL LIST -->
         <div class="admin-table-container">
-          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.05rem; margin: 0;">
-              Solicitações de Cadastro Pendentes
-            </h4>
-            <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600;">
-              ${pendingStudents.length} aguardando análise
-            </span>
+          <div class="admin-accordion-header" onclick="window.TKST_APP.togglePendingAccordion()" style="cursor: pointer; padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; user-select: none;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-user-clock" style="color: var(--accent-gold); font-size: 1.1rem;"></i>
+              <div>
+                <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.05rem; margin: 0;">
+                  Solicitações de Cadastro Pendentes
+                </h4>
+                <div style="font-size: 0.78rem; color: #94A3B8;">${pendingStudents.length} aguardando liberação do Sensei</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge badge-amarela" id="pendingToggleBadge" style="font-size: 0.76rem; padding: 4px 9px;">
+                <i class="fas fa-chevron-up" id="pendingChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Toque para Recolher
+              </span>
+            </div>
           </div>
 
-          ${pendingStudents.length === 0 ? `
-            <div style="padding: 40px 20px; text-align: center; color: #64748B;">
-              <i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--accent-emerald); margin-bottom: 12px; display: block;"></i>
-              Nenhum cadastro pendente no momento. Todos os alunos foram revisados!
+          <div id="pendingAccordionBody" style="display: block;">
+            ${pendingStudents.length === 0 ? `
+              <div style="padding: 40px 20px; text-align: center; color: #64748B;">
+                <i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--accent-emerald); margin-bottom: 12px; display: block;"></i>
+                Nenhum cadastro pendente no momento. Todos os alunos foram revisados!
+              </div>
+            ` : `
+              <!-- Tabela para Desktop / Telas Grandes -->
+              <table class="admin-table admin-table-desktop">
+                <thead>
+                  <tr>
+                    <th>Aluno</th>
+                    <th>Login (Matrícula)</th>
+                    <th>Presença</th>
+                    <th>Contato</th>
+                    <th>Faixa</th>
+                    <th>Dojo Escolhido</th>
+                    <th>Data</th>
+                    <th style="text-align: right;">Ações do Sensei</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${pendingStudents.map(s => {
+                    const online = window.TKST_AUTH.isOnline(s);
+                    const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+                    return `
+                    <tr>
+                      <td>
+                        <div style="font-weight: 700; color: #FFF;">${s.name}</div>
+                      </td>
+                      <td>
+                        <span class="badge badge-amarela">${s.username}</span>
+                      </td>
+                      <td>
+                        ${online ? `
+                          <span class="presence-badge-online">
+                            <span class="presence-dot-online"></span>
+                            Online
+                          </span>
+                        ` : `
+                          <span class="presence-badge-offline">
+                            <span class="presence-dot-offline"></span>
+                            ${lastSeen}
+                          </span>
+                        `}
+                      </td>
+                      <td>${s.phone || '-'}</td>
+                      <td><span class="badge ${getBeltBadgeClass(s.currentBelt)}">${s.currentBelt}</span></td>
+                      <td><strong style="color: var(--accent-gold);">${s.dojo}</strong></td>
+                      <td style="color: #94A3B8;">${s.startDate}</td>
+                      <td style="text-align: right;">
+                        <div class="action-btn-group" style="justify-content: flex-end;">
+                          <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openEditStudentModal('${s.id}')" title="Editar / Alterar Senha" style="font-size: 0.78rem; padding: 6px 10px;">
+                            <i class="fas fa-edit"></i> Editar
+                          </button>
+                          <button class="btn btn-sm btn-success" onclick="window.TKST_APP.approveStudent('${s.id}')" title="Aprovar Aluno">
+                            <i class="fas fa-check"></i> Aceitar
+                          </button>
+                          <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.rejectStudent('${s.id}')" title="Recusar">
+                            <i class="fas fa-times"></i> Recusar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  `;}).join('')}
+                </tbody>
+              </table>
+
+              <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
+              <div class="admin-cards-mobile">
+                ${pendingStudents.map(s => {
+                  const online = window.TKST_AUTH.isOnline(s);
+                  const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+                  return `
+                  <div class="admin-card-item">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                      <div>
+                        <div style="font-weight: 700; color: #FFF; font-size: 0.98rem;">${s.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600; margin-top: 2px;">
+                          @${s.username}
+                        </div>
+                      </div>
+                      <div>
+                        ${online ? `
+                          <span class="presence-badge-online" style="font-size: 0.72rem; padding: 2px 7px;">
+                            <span class="presence-dot-online"></span> Online
+                          </span>
+                        ` : `
+                          <span class="presence-badge-offline" style="font-size: 0.72rem; padding: 2px 7px;">
+                            <span class="presence-dot-offline"></span> ${lastSeen}
+                          </span>
+                        `}
+                      </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.82rem; color: #CBD5E1; margin: 8px 0; background: rgba(0,0,0,0.22); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Graduação:</span>
+                        <span class="badge ${getBeltBadgeClass(s.currentBelt)}" style="font-size: 0.74rem;">${s.currentBelt}</span>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Dojo Escolhido:</span>
+                        <strong style="color: var(--accent-gold);">${s.dojo}</strong>
+                      </div>
+                      ${s.phone ? `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                          <span>Contato:</span>
+                          <span>${s.phone}</span>
+                        </div>
+                      ` : ''}
+                      <div style="display: flex; justify-content: space-between; align-items: center; color: #94A3B8; font-size: 0.76rem;">
+                        <span>Data de Solicitação:</span>
+                        <span>${s.startDate}</span>
+                      </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 4px;">
+                      <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openEditStudentModal('${s.id}')" style="justify-content: center; font-weight: 700; padding: 8px 6px; font-size: 0.76rem;">
+                        <i class="fas fa-edit"></i> Editar
+                      </button>
+                      <button class="btn btn-sm btn-success" onclick="window.TKST_APP.approveStudent('${s.id}')" style="justify-content: center; font-weight: 700; padding: 8px 6px; font-size: 0.76rem;">
+                        <i class="fas fa-check"></i> Aceitar
+                      </button>
+                      <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.rejectStudent('${s.id}')" style="justify-content: center; font-weight: 700; padding: 8px 6px; font-size: 0.76rem;">
+                        <i class="fas fa-times"></i> Recusar
+                      </button>
+                    </div>
+                  </div>
+                `;}).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+      ` : ''}
+
+      ${adminSubTab === 'students' ? `
+        <!-- ALL REGISTERED STUDENTS TABLE -->
+        <div class="admin-table-container">
+          <div class="admin-accordion-header" onclick="window.TKST_APP.toggleStudentsAccordion()" style="cursor: pointer; padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; user-select: none;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-users" style="color: var(--accent-gold); font-size: 1.15rem;"></i>
+              <div>
+                <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.05rem; margin: 0;">
+                  Base de Alunos e Praticantes Cadastrados
+                </h4>
+                <div style="font-size: 0.78rem; color: #94A3B8;">Total de ${students.length} praticantes cadastrados</div>
+              </div>
             </div>
-          ` : `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge badge-gold" id="studentsToggleBadge" style="font-size: 0.76rem; padding: 4px 9px;">
+                <i class="fas fa-chevron-up" id="studentsChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Toque para Recolher
+              </span>
+            </div>
+          </div>
+
+          <div id="studentsAccordionBody" style="display: block;">
             <!-- Tabela para Desktop / Telas Grandes -->
             <table class="admin-table admin-table-desktop">
               <thead>
@@ -1127,263 +1285,135 @@ document.addEventListener('DOMContentLoaded', () => {
                   <th>Aluno</th>
                   <th>Login (Matrícula)</th>
                   <th>Presença</th>
-                  <th>Contato</th>
+                  <th>Status</th>
                   <th>Faixa</th>
-                  <th>Dojo Escolhido</th>
-                  <th>Data</th>
-                  <th style="text-align: right;">Ações do Sensei</th>
+                  <th>Dojo / Unidade</th>
+                  <th style="text-align: right;">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                ${pendingStudents.map(s => {
+                ${students.map(s => {
+                  const isMaster = s.username === 'irons365';
                   const online = window.TKST_AUTH.isOnline(s);
                   const lastSeen = window.TKST_AUTH.getLastSeenText(s);
                   return `
-                  <tr>
-                    <td>
-                      <div style="font-weight: 700; color: #FFF;">${s.name}</div>
-                    </td>
-                    <td>
-                      <span class="badge badge-amarela">${s.username}</span>
-                    </td>
-                    <td>
-                      ${online ? `
-                        <span class="presence-badge-online">
-                          <span class="presence-dot-online"></span>
-                          Online
+                    <tr>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                          <div class="presence-avatar-wrapper">
+                            <img src="${s.avatar || 'assets/images/tigre.png'}" style="width: 36px; height: 36px; border-radius: var(--radius-full); object-fit: cover; border: 1px solid var(--border-color);">
+                            <span class="presence-avatar-dot ${online ? 'online' : 'offline'}" title="${online ? 'Online agora' : lastSeen}"></span>
+                          </div>
+                          <div>
+                            <div style="font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 6px;">
+                              ${s.name} ${isMaster ? '<i class="fas fa-crown" style="color: var(--accent-gold); font-size: 0.8rem;"></i>' : ''}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <strong style="color: var(--accent-gold);">${s.username}</strong>
+                      </td>
+                      <td>
+                        ${online ? `
+                          <span class="presence-badge-online">
+                            <span class="presence-dot-online"></span>
+                            Online
+                          </span>
+                        ` : `
+                          <span class="presence-badge-offline" title="${s.lastActive ? new Date(s.lastActive).toLocaleString('pt-BR') : 'Sem histórico recente'}">
+                            <span class="presence-dot-offline"></span>
+                            ${lastSeen}
+                          </span>
+                        `}
+                      </td>
+                      <td>
+                        <span class="badge ${s.status === 'approved' ? 'badge-status-approved' : s.status === 'pending' ? 'badge-status-pending' : 'badge-status-rejected'}">
+                          ${s.status === 'approved' ? 'Ativo' : s.status === 'pending' ? 'Pendente' : 'Recusado'}
                         </span>
-                      ` : `
-                        <span class="presence-badge-offline">
-                          <span class="presence-dot-offline"></span>
-                          ${lastSeen}
-                        </span>
-                      `}
-                    </td>
-                    <td>${s.phone || '-'}</td>
-                    <td><span class="badge ${getBeltBadgeClass(s.currentBelt)}">${s.currentBelt}</span></td>
-                    <td><strong style="color: var(--accent-gold);">${s.dojo}</strong></td>
-                    <td style="color: #94A3B8;">${s.startDate}</td>
-                    <td style="text-align: right;">
-                      <div class="action-btn-group" style="justify-content: flex-end;">
-                        <button class="btn btn-sm btn-success" onclick="window.TKST_APP.approveStudent('${s.id}')" title="Aprovar Aluno">
-                          <i class="fas fa-check"></i> Aceitar
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.rejectStudent('${s.id}')" title="Recusar">
-                          <i class="fas fa-times"></i> Recusar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                `;}).join('')}
+                      </td>
+                      <td>
+                        <span class="badge ${getBeltBadgeClass(s.currentBelt)}">${s.currentBelt}</span>
+                      </td>
+                      <td>${s.dojo}</td>
+                      <td style="text-align: right;">
+                        <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                          <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openEditStudentModal('${s.id}')" style="font-size: 0.78rem; padding: 6px 10px;" title="Editar Cadastro / Alterar Senha">
+                            <i class="fas fa-user-edit"></i> Editar
+                          </button>
+                          ${isMaster ? '' : `
+                            <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteStudent('${s.id}', '${(s.name || '').replace(/'/g, "\\'")}')" style="font-size: 0.78rem; padding: 6px 10px;" title="Excluir Aluno">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          `}
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
               </tbody>
             </table>
 
             <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
             <div class="admin-cards-mobile">
-              ${pendingStudents.map(s => {
-                const online = window.TKST_AUTH.isOnline(s);
-                const lastSeen = window.TKST_AUTH.getLastSeenText(s);
-                return `
-                <div class="admin-card-item">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                    <div>
-                      <div style="font-weight: 700; color: #FFF; font-size: 0.98rem;">${s.name}</div>
-                      <div style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600; margin-top: 2px;">
-                        @${s.username}
-                      </div>
-                    </div>
-                    <div>
-                      ${online ? `
-                        <span class="presence-badge-online" style="font-size: 0.72rem; padding: 2px 7px;">
-                          <span class="presence-dot-online"></span> Online
-                        </span>
-                      ` : `
-                        <span class="presence-badge-offline" style="font-size: 0.72rem; padding: 2px 7px;">
-                          <span class="presence-dot-offline"></span> ${lastSeen}
-                        </span>
-                      `}
-                    </div>
-                  </div>
-
-                  <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.82rem; color: #CBD5E1; margin: 8px 0; background: rgba(0,0,0,0.22); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <span>Graduação:</span>
-                      <span class="badge ${getBeltBadgeClass(s.currentBelt)}" style="font-size: 0.74rem;">${s.currentBelt}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <span>Dojo Escolhido:</span>
-                      <strong style="color: var(--accent-gold);">${s.dojo}</strong>
-                    </div>
-                    ${s.phone ? `
-                      <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>Contato:</span>
-                        <span>${s.phone}</span>
-                      </div>
-                    ` : ''}
-                    <div style="display: flex; justify-content: space-between; align-items: center; color: #94A3B8; font-size: 0.76rem;">
-                      <span>Data de Solicitação:</span>
-                      <span>${s.startDate}</span>
-                    </div>
-                  </div>
-
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
-                    <button class="btn btn-sm btn-success" onclick="window.TKST_APP.approveStudent('${s.id}')" style="justify-content: center; font-weight: 700; padding: 9px;">
-                      <i class="fas fa-check"></i> Aceitar
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.rejectStudent('${s.id}')" style="justify-content: center; font-weight: 700; padding: 9px;">
-                      <i class="fas fa-times"></i> Recusar
-                    </button>
-                  </div>
-                </div>
-              `;}).join('')}
-            </div>
-          `}
-        </div>
-      ` : ''}
-
-      ${adminSubTab === 'students' ? `
-        <!-- ALL REGISTERED STUDENTS TABLE -->
-        <div class="admin-table-container">
-          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.05rem; margin: 0;">
-              Base de Alunos e Praticantes Cadastrados
-            </h4>
-            <span style="font-size: 0.8rem; color: #94A3B8;">Total: ${students.length} usuários</span>
-          </div>
-
-          <!-- Tabela para Desktop / Telas Grandes -->
-          <table class="admin-table admin-table-desktop">
-            <thead>
-              <tr>
-                <th>Aluno</th>
-                <th>Login (Matrícula)</th>
-                <th>Presença</th>
-                <th>Status</th>
-                <th>Faixa</th>
-                <th>Dojo / Unidade</th>
-                <th style="text-align: right;">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
               ${students.map(s => {
                 const isMaster = s.username === 'irons365';
                 const online = window.TKST_AUTH.isOnline(s);
                 const lastSeen = window.TKST_AUTH.getLastSeenText(s);
                 return `
-                  <tr>
-                    <td>
-                      <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="presence-avatar-wrapper">
-                          <img src="${s.avatar || 'assets/images/tigre.png'}" style="width: 36px; height: 36px; border-radius: var(--radius-full); object-fit: cover; border: 1px solid var(--border-color);">
+                  <div class="admin-card-item">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+                      <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                        <div class="presence-avatar-wrapper" style="flex-shrink: 0;">
+                          <img src="${s.avatar || 'assets/images/tigre.png'}" style="width: 42px; height: 42px; border-radius: var(--radius-full); object-fit: cover; border: 1.5px solid var(--border-color);">
                           <span class="presence-avatar-dot ${online ? 'online' : 'offline'}" title="${online ? 'Online agora' : lastSeen}"></span>
                         </div>
-                        <div>
-                          <div style="font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 6px;">
-                            ${s.name} ${isMaster ? '<i class="fas fa-crown" style="color: var(--accent-gold); font-size: 0.8rem;"></i>' : ''}
+                        <div style="min-width: 0;">
+                          <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; word-break: break-word;">
+                            ${s.name} ${isMaster ? '<i class="fas fa-crown" style="color: var(--accent-gold); font-size: 0.82rem;"></i>' : ''}
+                          </div>
+                          <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 600; margin-top: 1px;">
+                            @${s.username}
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td>
-                      <strong style="color: var(--accent-gold);">${s.username}</strong>
-                    </td>
-                    <td>
-                      ${online ? `
-                        <span class="presence-badge-online">
-                          <span class="presence-dot-online"></span>
-                          Online
-                        </span>
-                      ` : `
-                        <span class="presence-badge-offline" title="${s.lastActive ? new Date(s.lastActive).toLocaleString('pt-BR') : 'Sem histórico recente'}">
-                          <span class="presence-dot-offline"></span>
-                          ${lastSeen}
-                        </span>
-                      `}
-                    </td>
-                    <td>
-                      <span class="badge ${s.status === 'approved' ? 'badge-status-approved' : s.status === 'pending' ? 'badge-status-pending' : 'badge-status-rejected'}">
+                      <div style="flex-shrink: 0;">
+                        ${online ? `
+                          <span class="presence-badge-online" style="font-size: 0.72rem; padding: 2px 7px;">
+                            <span class="presence-dot-online"></span> Online
+                          </span>
+                        ` : `
+                          <span class="presence-badge-offline" style="font-size: 0.72rem; padding: 2px 7px;">
+                            <span class="presence-dot-offline"></span> ${lastSeen}
+                          </span>
+                        `}
+                      </div>
+                    </div>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; background: rgba(0,0,0,0.22); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
+                      <span class="badge ${getBeltBadgeClass(s.currentBelt)}" style="font-size: 0.74rem;">${s.currentBelt}</span>
+                      <span class="badge ${s.status === 'approved' ? 'badge-status-approved' : s.status === 'pending' ? 'badge-status-pending' : 'badge-status-rejected'}" style="font-size: 0.72rem;">
                         ${s.status === 'approved' ? 'Ativo' : s.status === 'pending' ? 'Pendente' : 'Recusado'}
                       </span>
-                    </td>
-                    <td>
-                      <span class="badge ${getBeltBadgeClass(s.currentBelt)}">${s.currentBelt}</span>
-                    </td>
-                    <td>${s.dojo}</td>
-                    <td style="text-align: right;">
-                      ${isMaster ? `
-                        <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600;">Conta Master Principal</span>
-                      ` : `
-                        <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteStudent('${s.id}', '${s.name}')" title="Excluir Aluno">
+                      <div style="font-size: 0.78rem; color: #CBD5E1; display: flex; align-items: center; gap: 4px; margin-left: auto;">
+                        <i class="fas fa-torii-gate" style="color: var(--accent-gold);"></i> ${s.dojo}
+                      </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: ${isMaster ? '1fr' : '1fr 1fr'}; gap: 8px; margin-top: 4px;">
+                      <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openEditStudentModal('${s.id}')" style="justify-content: center; font-size: 0.82rem; padding: 8px 12px; font-weight: 700;" title="Editar Cadastro / Alterar Senha">
+                        <i class="fas fa-user-edit"></i> Editar Cadastro
+                      </button>
+                      ${isMaster ? '' : `
+                        <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteStudent('${s.id}', '${(s.name || '').replace(/'/g, "\\'")}')" style="justify-content: center; font-size: 0.82rem; padding: 8px 12px;" title="Excluir Aluno">
                           <i class="fas fa-trash"></i> Excluir
                         </button>
                       `}
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 `;
               }).join('')}
-            </tbody>
-          </table>
-
-          <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
-          <div class="admin-cards-mobile">
-            ${students.map(s => {
-              const isMaster = s.username === 'irons365';
-              const online = window.TKST_AUTH.isOnline(s);
-              const lastSeen = window.TKST_AUTH.getLastSeenText(s);
-              return `
-                <div class="admin-card-item">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
-                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                      <div class="presence-avatar-wrapper" style="flex-shrink: 0;">
-                        <img src="${s.avatar || 'assets/images/tigre.png'}" style="width: 42px; height: 42px; border-radius: var(--radius-full); object-fit: cover; border: 1.5px solid var(--border-color);">
-                        <span class="presence-avatar-dot ${online ? 'online' : 'offline'}" title="${online ? 'Online agora' : lastSeen}"></span>
-                      </div>
-                      <div style="min-width: 0;">
-                        <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; word-break: break-word;">
-                          ${s.name} ${isMaster ? '<i class="fas fa-crown" style="color: var(--accent-gold); font-size: 0.82rem;"></i>' : ''}
-                        </div>
-                        <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 600; margin-top: 1px;">
-                          @${s.username}
-                        </div>
-                      </div>
-                    </div>
-                    <div style="flex-shrink: 0;">
-                      ${online ? `
-                        <span class="presence-badge-online" style="font-size: 0.72rem; padding: 2px 7px;">
-                          <span class="presence-dot-online"></span> Online
-                        </span>
-                      ` : `
-                        <span class="presence-badge-offline" style="font-size: 0.72rem; padding: 2px 7px;">
-                          <span class="presence-dot-offline"></span> ${lastSeen}
-                        </span>
-                      `}
-                    </div>
-                  </div>
-
-                  <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; background: rgba(0,0,0,0.22); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
-                    <span class="badge ${getBeltBadgeClass(s.currentBelt)}" style="font-size: 0.74rem;">${s.currentBelt}</span>
-                    <span class="badge ${s.status === 'approved' ? 'badge-status-approved' : s.status === 'pending' ? 'badge-status-pending' : 'badge-status-rejected'}" style="font-size: 0.72rem;">
-                      ${s.status === 'approved' ? 'Ativo' : s.status === 'pending' ? 'Pendente' : 'Recusado'}
-                    </span>
-                    <div style="font-size: 0.78rem; color: #CBD5E1; display: flex; align-items: center; gap: 4px; margin-left: auto;">
-                      <i class="fas fa-torii-gate" style="color: var(--accent-gold);"></i> ${s.dojo}
-                    </div>
-                  </div>
-
-                  <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 2px;">
-                    ${isMaster ? `
-                      <span style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 700; display: flex; align-items: center; gap: 5px;">
-                        <i class="fas fa-shield-alt"></i> Conta Master Principal
-                      </span>
-                    ` : `
-                      <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteStudent('${s.id}', '${(s.name || '').replace(/'/g, "\\'")}')" style="width: 100%; justify-content: center; font-size: 0.82rem; padding: 8px 12px;" title="Excluir Aluno">
-                        <i class="fas fa-trash"></i> Excluir Aluno
-                      </button>
-                    `}
-                  </div>
-                </div>
-              `;
-            }).join('')}
+            </div>
           </div>
         </div>
       ` : ''}
@@ -4999,6 +5029,46 @@ document.addEventListener('DOMContentLoaded', () => {
       selectedBeltKyu = kyu;
       renderMyExam();
     },
+    toggleStudentsAccordion: () => {
+      const body = document.getElementById('studentsAccordionBody');
+      const icon = document.getElementById('studentsChevronIcon');
+      const badge = document.getElementById('studentsToggleBadge');
+      if (!body) return;
+
+      const isHidden = body.style.display === 'none' || body.hidden;
+      if (isHidden) {
+        body.hidden = false;
+        body.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        if (badge) badge.innerHTML = '<i class="fas fa-chevron-up" id="studentsChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Toque para Recolher';
+      } else {
+        body.hidden = true;
+        body.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+        const count = window.TKST_AUTH ? window.TKST_AUTH.getAllStudents().length : '';
+        if (badge) badge.innerHTML = `<i class="fas fa-chevron-down" id="studentsChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Ver Alunos (${count})`;
+      }
+    },
+    togglePendingAccordion: () => {
+      const body = document.getElementById('pendingAccordionBody');
+      const icon = document.getElementById('pendingChevronIcon');
+      const badge = document.getElementById('pendingToggleBadge');
+      if (!body) return;
+
+      const isHidden = body.style.display === 'none' || body.hidden;
+      if (isHidden) {
+        body.hidden = false;
+        body.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        if (badge) badge.innerHTML = '<i class="fas fa-chevron-up" id="pendingChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Toque para Recolher';
+      } else {
+        body.hidden = true;
+        body.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+        const pendingCount = window.TKST_AUTH ? window.TKST_AUTH.getAllStudents().filter(s => s.status === 'pending').length : '';
+        if (badge) badge.innerHTML = `<i class="fas fa-chevron-down" id="pendingChevronIcon" style="transition: transform 0.3s ease; margin-right: 4px;"></i> Ver Pendentes (${pendingCount})`;
+      }
+    },
     toggleDojoKunAccordion: () => {
       const body = document.getElementById('dojokunAccordionBody');
       const icon = document.getElementById('dojokunChevronIcon');
@@ -7320,6 +7390,184 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         renderGlossary();
       } else {
         alert((res && res.error) || 'Erro ao atualizar termo.');
+      }
+    },
+    openEditStudentModal: (studentId) => {
+      if (!window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+        return;
+      }
+
+      const students = window.TKST_AUTH.getAllStudents();
+      const s = students.find(item => item.id === studentId);
+      if (!s) {
+        alert('Aluno não encontrado na base.');
+        return;
+      }
+
+      const isMaster = s.username === 'irons365';
+      const dojos = window.TKST_AUTH.getDojos();
+
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+
+      modal.setAttribute('data-prevent-outside-close', 'true');
+      modalTitle.innerHTML = `<span><i class="fas fa-user-edit" style="color: var(--accent-gold);"></i> Editar Cadastro do Aluno</span>`;
+
+      const belts = [
+        'Faixa Branca (7º Kyu)',
+        'Faixa Amarela (6º Kyu)',
+        'Faixa Vermelha (5º Kyu)',
+        'Faixa Laranja (4º Kyu)',
+        'Faixa Verde (3º Kyu)',
+        'Faixa Roxa (2º Kyu)',
+        'Faixa Marrom (1º Kyu)',
+        'Faixa Preta (Shodan - 1º Dan)',
+        'Faixa Preta (Nidan - 2º Dan)',
+        'Faixa Preta (Sandan - 3º Dan)',
+        'Faixa Preta (Sensei Master)'
+      ];
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditStudent('${s.id}');" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.8rem; color: #E2E8F0;">
+            <i class="fas fa-key" style="color: var(--accent-gold); margin-right: 6px;"></i>
+            <strong>Gerenciamento Sensei:</strong> Altere os dados ou <strong>redefina a senha</strong> caso o aluno tenha esquecido.
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
+              <i class="fas fa-user" style="color: var(--accent-gold); margin-right: 6px;"></i> Nome Completo do Aluno:
+            </label>
+            <input type="text" id="editStudentName" class="form-input" required value="${(s.name || '').replace(/"/g, '&quot;')}" style="font-size: 0.9rem; font-weight: 600;">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
+                <i class="fas fa-at" style="color: var(--accent-gold); margin-right: 6px;"></i> Login (Nick):
+              </label>
+              <input type="text" id="editStudentUsername" class="form-input" required value="${(s.username || '').replace(/"/g, '&quot;')}" style="font-size: 0.88rem; font-weight: 600;" ${isMaster ? 'readonly title="Não é possível alterar o login master"' : ''}>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
+                <i class="fas fa-lock" style="color: var(--accent-gold); margin-right: 6px;"></i> Senha de Acesso:
+              </label>
+              <div style="position: relative;">
+                <input type="text" id="editStudentPassword" class="form-input" value="${(s.password || '1234').replace(/"/g, '&quot;')}" placeholder="Nova senha..." style="font-size: 0.88rem; font-weight: 700; color: var(--accent-gold); padding-right: 32px;">
+                <i class="fas fa-key" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #64748B; font-size: 0.8rem;"></i>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
+                <i class="fas fa-ribbon" style="color: var(--accent-gold); margin-right: 6px;"></i> Faixa / Graduação:
+              </label>
+              <select id="editStudentBelt" class="form-input" required style="font-size: 0.82rem;">
+                ${belts.map(b => `
+                  <option value="${b}" ${((s.currentBelt || '').toLowerCase().includes(b.split(' ')[1]?.toLowerCase() || 'xyz') || s.currentBelt === b) ? 'selected' : ''}>
+                    ${b}
+                  </option>
+                `).join('')}
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
+                <i class="fas fa-torii-gate" style="color: var(--accent-gold); margin-right: 6px;"></i> Dojo / Unidade:
+              </label>
+              <select id="editStudentDojo" class="form-input" required style="font-size: 0.82rem;">
+                ${dojos.map(d => `
+                  <option value="${d}" ${(s.dojo === d || (s.dojo || '').toLowerCase() === d.toLowerCase()) ? 'selected' : ''}>
+                    ${d}
+                  </option>
+                `).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
+                <i class="fab fa-whatsapp" style="color: var(--accent-emerald); margin-right: 6px;"></i> Telefone / WhatsApp:
+              </label>
+              <input type="text" id="editStudentPhone" class="form-input" value="${(s.phone || '').replace(/"/g, '&quot;')}" placeholder="(21) 9...." style="font-size: 0.85rem;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
+                <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Status da Matrícula:
+              </label>
+              <select id="editStudentStatus" class="form-input" style="font-size: 0.82rem;">
+                <option value="approved" ${s.status === 'approved' ? 'selected' : ''}>Ativo / Aprovado</option>
+                <option value="pending" ${s.status === 'pending' ? 'selected' : ''}>Pendente (Em Análise)</option>
+                <option value="rejected" ${s.status === 'rejected' ? 'selected' : ''}>Recusado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
+              <i class="fas fa-sticky-note" style="color: var(--accent-gold); margin-right: 6px;"></i> Observações do Sensei (Opcional):
+            </label>
+            <textarea id="editStudentNotes" class="form-input" rows="2" placeholder="Observações do exame, notas técnicas..." style="resize: vertical; font-size: 0.82rem;">${(s.notes || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 6px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.cancelModalEdit()" style="flex: 1; padding: 11px; font-size: 0.85rem;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 11px; font-weight: 700; font-size: 0.85rem;">
+              <i class="fas fa-save"></i> Salvar Cadastro
+            </button>
+          </div>
+        </form>
+      `;
+
+      modal.classList.add('active');
+    },
+
+    submitEditStudent: (studentId) => {
+      if (!window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+        return;
+      }
+
+      const name = document.getElementById('editStudentName').value.trim();
+      const username = document.getElementById('editStudentUsername').value.trim();
+      const password = document.getElementById('editStudentPassword').value.trim();
+      const currentBelt = document.getElementById('editStudentBelt').value;
+      const dojo = document.getElementById('editStudentDojo').value;
+      const phone = document.getElementById('editStudentPhone').value.trim();
+      const status = document.getElementById('editStudentStatus').value;
+      const notes = document.getElementById('editStudentNotes').value.trim();
+
+      if (!name || !username) {
+        alert('Por favor, preencha o Nome e o Login do aluno.');
+        return;
+      }
+
+      const res = window.TKST_AUTH.adminUpdateStudent(studentId, {
+        name,
+        username,
+        password,
+        currentBelt,
+        dojo,
+        phone,
+        status,
+        notes
+      });
+
+      if (res && res.success) {
+        window.TKST_APP.cancelModalEdit();
+        showToast(`✅ Cadastro de ${name} atualizado! Senha: ${password || 'mantida'}`, 'success', 4000);
+        renderAdminMaster();
+      } else {
+        alert((res && res.message) || 'Erro ao atualizar aluno.');
       }
     },
     cancelModalEdit: () => {

@@ -1450,6 +1450,120 @@
       return { success: true };
     },
 
+    adminUpdateStudent: function(studentId, updatedData) {
+      if (!this.isAdmin()) return { success: false, message: 'Apenas administradores podem editar cadastros de alunos.' };
+      if (!studentId) return { success: false, message: 'ID do aluno inválido.' };
+
+      let students = this.getAllStudents();
+      const idx = students.findIndex(s => s.id === studentId);
+      if (idx === -1) {
+        return { success: false, message: 'Aluno não encontrado na base.' };
+      }
+
+      const existing = { ...students[idx] };
+
+      // Validate new username if changed
+      if (updatedData.username) {
+        const cleanNick = updatedData.username.trim().toLowerCase();
+        if (cleanNick.length < 3) {
+          return { success: false, message: 'O Nick/Login deve conter no mínimo 3 caracteres.' };
+        }
+        const duplicate = students.find(s => s.id !== studentId && s.username && s.username.toLowerCase() === cleanNick);
+        if (duplicate) {
+          return { success: false, message: `O Nick "${cleanNick}" já está em uso por outro aluno.` };
+        }
+        existing.username = cleanNick;
+      }
+
+      // Update password if provided
+      if (updatedData.password) {
+        const pass = updatedData.password.trim();
+        if (pass.length < 4 || pass.length > 20) {
+          return { success: false, message: 'A nova senha deve conter entre 4 e 20 caracteres.' };
+        }
+        existing.password = pass;
+      }
+
+      if (updatedData.name && updatedData.name.trim()) {
+        existing.name = updatedData.name.trim();
+      }
+
+      if (updatedData.email !== undefined) {
+        existing.email = updatedData.email.trim();
+      }
+
+      if (updatedData.phone !== undefined) {
+        existing.phone = updatedData.phone.trim();
+      }
+
+      if (updatedData.dojo) {
+        existing.dojo = updatedData.dojo.trim();
+      }
+
+      if (updatedData.currentBelt) {
+        existing.currentBelt = updatedData.currentBelt;
+        const beltKyuMap = {
+          'Faixa Branca': 7,
+          'Faixa Branca (7º Kyu)': 7,
+          'Faixa Amarela': 6,
+          'Faixa Amarela (6º Kyu)': 6,
+          'Faixa Vermelha': 5,
+          'Faixa Vermelha (5º Kyu)': 5,
+          'Faixa Laranja': 4,
+          'Faixa Laranja (4º Kyu)': 4,
+          'Faixa Verde': 3,
+          'Faixa Verde (3º Kyu)': 3,
+          'Faixa Roxa': 2,
+          'Faixa Roxa (2º Kyu)': 2,
+          'Faixa Marrom': 1,
+          'Faixa Marrom (1º Kyu)': 1,
+          'Faixa Preta': 0,
+          'Faixa Preta (Shodan)': 0,
+          'Faixa Preta (Shodan - 1º Dan)': 0,
+          'Faixa Preta (Nidan - 2º Dan)': 0,
+          'Faixa Preta (Sandan - 3º Dan)': 0,
+          'Faixa Preta (Yondan - 4º Dan)': 0,
+          'Faixa Preta (Godan - 5º Dan)': 0,
+          'Faixa Preta (Sensei Master)': 0
+        };
+        if (beltKyuMap[updatedData.currentBelt] !== undefined) {
+          existing.currentKyu = beltKyuMap[updatedData.currentBelt];
+        }
+      }
+
+      if (updatedData.targetBelt) {
+        existing.targetBelt = updatedData.targetBelt.trim();
+      }
+
+      if (updatedData.status) {
+        existing.status = updatedData.status;
+        existing.statusUpdatedAt = Date.now();
+        if (updatedData.status === 'approved' && !existing.approvedAt) {
+          existing.approvedAt = new Date().toISOString();
+        }
+      }
+
+      if (updatedData.notes !== undefined) {
+        existing.notes = updatedData.notes.trim();
+      }
+
+      existing.updatedAt = Date.now();
+      students[idx] = existing;
+
+      localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+      const deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
+      pushStudentsToServer(students, deleted);
+      pushToCloud();
+
+      // If updating currently logged in user profile
+      const currentUser = this.getCurrentUser();
+      if (currentUser && currentUser.id === studentId) {
+        this.setCurrentUser(existing);
+      }
+
+      return { success: true, student: existing };
+    },
+
     getProgress: function(userId) {
       const uid = userId || (this.getCurrentUser() ? this.getCurrentUser().id : 'guest');
       try {

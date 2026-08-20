@@ -1088,6 +1088,18 @@ body.login-view-active .content-body {
   box-sizing: border-box;
 }
 
+.admin-accordion-header {
+  transition: background var(--transition-fast);
+}
+
+.admin-accordion-header:hover {
+  background: rgba(255, 183, 3, 0.05);
+}
+
+.admin-accordion-header:active {
+  background: rgba(255, 183, 3, 0.1);
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
