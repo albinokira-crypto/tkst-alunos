@@ -72,6 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentQuizBelt = '';
   let quizActive = false;
   let quizSubmissionDetails = [];
+  let quizTimerInterval = null;
+  let quizAutoAdvanceTimeout = null;
+  let quizTimeRemaining = 7;
 
   const mainContent = document.getElementById('mainContent');
   const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
@@ -622,6 +625,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function switchTab(tabName) {
+    if (tabName !== 'quiz') {
+      if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
+      if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+    }
+
     const user = window.TKST_AUTH.getCurrentUser();
 
     // Guard: Require login for private tabs
@@ -1097,22 +1105,23 @@ document.addEventListener('DOMContentLoaded', () => {
       ${adminSubTab === 'pending' ? `
         <!-- PENDING STUDENTS APPROVAL LIST -->
         <div class="admin-table-container">
-          <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-            <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem;">
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.05rem; margin: 0;">
               Solicitações de Cadastro Pendentes
             </h4>
-            <span style="font-size: 0.82rem; color: var(--accent-gold); font-weight: 600;">
+            <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600;">
               ${pendingStudents.length} aguardando análise
             </span>
           </div>
 
           ${pendingStudents.length === 0 ? `
-            <div style="padding: 40px; text-align: center; color: #64748B;">
+            <div style="padding: 40px 20px; text-align: center; color: #64748B;">
               <i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--accent-emerald); margin-bottom: 12px; display: block;"></i>
               Nenhum cadastro pendente no momento. Todos os alunos foram revisados!
             </div>
           ` : `
-            <table class="admin-table">
+            <!-- Tabela para Desktop / Telas Grandes -->
+            <table class="admin-table admin-table-desktop">
               <thead>
                 <tr>
                   <th>Aluno</th>
@@ -1168,6 +1177,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;}).join('')}
               </tbody>
             </table>
+
+            <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
+            <div class="admin-cards-mobile">
+              ${pendingStudents.map(s => {
+                const online = window.TKST_AUTH.isOnline(s);
+                const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+                return `
+                <div class="admin-card-item">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                    <div>
+                      <div style="font-weight: 700; color: #FFF; font-size: 0.98rem;">${s.name}</div>
+                      <div style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600; margin-top: 2px;">
+                        @${s.username}
+                      </div>
+                    </div>
+                    <div>
+                      ${online ? `
+                        <span class="presence-badge-online" style="font-size: 0.72rem; padding: 2px 7px;">
+                          <span class="presence-dot-online"></span> Online
+                        </span>
+                      ` : `
+                        <span class="presence-badge-offline" style="font-size: 0.72rem; padding: 2px 7px;">
+                          <span class="presence-dot-offline"></span> ${lastSeen}
+                        </span>
+                      `}
+                    </div>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.82rem; color: #CBD5E1; margin: 8px 0; background: rgba(0,0,0,0.22); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span>Graduação:</span>
+                      <span class="badge ${getBeltBadgeClass(s.currentBelt)}" style="font-size: 0.74rem;">${s.currentBelt}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span>Dojo Escolhido:</span>
+                      <strong style="color: var(--accent-gold);">${s.dojo}</strong>
+                    </div>
+                    ${s.phone ? `
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Contato:</span>
+                        <span>${s.phone}</span>
+                      </div>
+                    ` : ''}
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: #94A3B8; font-size: 0.76rem;">
+                      <span>Data de Solicitação:</span>
+                      <span>${s.startDate}</span>
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
+                    <button class="btn btn-sm btn-success" onclick="window.TKST_APP.approveStudent('${s.id}')" style="justify-content: center; font-weight: 700; padding: 9px;">
+                      <i class="fas fa-check"></i> Aceitar
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.rejectStudent('${s.id}')" style="justify-content: center; font-weight: 700; padding: 9px;">
+                      <i class="fas fa-times"></i> Recusar
+                    </button>
+                  </div>
+                </div>
+              `;}).join('')}
+            </div>
           `}
         </div>
       ` : ''}
@@ -1175,14 +1244,15 @@ document.addEventListener('DOMContentLoaded', () => {
       ${adminSubTab === 'students' ? `
         <!-- ALL REGISTERED STUDENTS TABLE -->
         <div class="admin-table-container">
-          <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-            <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem;">
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.05rem; margin: 0;">
               Base de Alunos e Praticantes Cadastrados
             </h4>
-            <span style="font-size: 0.82rem; color: #94A3B8;">Total: ${students.length} usuários</span>
+            <span style="font-size: 0.8rem; color: #94A3B8;">Total: ${students.length} usuários</span>
           </div>
 
-          <table class="admin-table">
+          <!-- Tabela para Desktop / Telas Grandes -->
+          <table class="admin-table admin-table-desktop">
             <thead>
               <tr>
                 <th>Aluno</th>
@@ -1253,6 +1323,68 @@ document.addEventListener('DOMContentLoaded', () => {
               }).join('')}
             </tbody>
           </table>
+
+          <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
+          <div class="admin-cards-mobile">
+            ${students.map(s => {
+              const isMaster = s.username === 'irons365';
+              const online = window.TKST_AUTH.isOnline(s);
+              const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+              return `
+                <div class="admin-card-item">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                      <div class="presence-avatar-wrapper" style="flex-shrink: 0;">
+                        <img src="${s.avatar || 'assets/images/tigre.png'}" style="width: 42px; height: 42px; border-radius: var(--radius-full); object-fit: cover; border: 1.5px solid var(--border-color);">
+                        <span class="presence-avatar-dot ${online ? 'online' : 'offline'}" title="${online ? 'Online agora' : lastSeen}"></span>
+                      </div>
+                      <div style="min-width: 0;">
+                        <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; word-break: break-word;">
+                          ${s.name} ${isMaster ? '<i class="fas fa-crown" style="color: var(--accent-gold); font-size: 0.82rem;"></i>' : ''}
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 600; margin-top: 1px;">
+                          @${s.username}
+                        </div>
+                      </div>
+                    </div>
+                    <div style="flex-shrink: 0;">
+                      ${online ? `
+                        <span class="presence-badge-online" style="font-size: 0.72rem; padding: 2px 7px;">
+                          <span class="presence-dot-online"></span> Online
+                        </span>
+                      ` : `
+                        <span class="presence-badge-offline" style="font-size: 0.72rem; padding: 2px 7px;">
+                          <span class="presence-dot-offline"></span> ${lastSeen}
+                        </span>
+                      `}
+                    </div>
+                  </div>
+
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; background: rgba(0,0,0,0.22); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
+                    <span class="badge ${getBeltBadgeClass(s.currentBelt)}" style="font-size: 0.74rem;">${s.currentBelt}</span>
+                    <span class="badge ${s.status === 'approved' ? 'badge-status-approved' : s.status === 'pending' ? 'badge-status-pending' : 'badge-status-rejected'}" style="font-size: 0.72rem;">
+                      ${s.status === 'approved' ? 'Ativo' : s.status === 'pending' ? 'Pendente' : 'Recusado'}
+                    </span>
+                    <div style="font-size: 0.78rem; color: #CBD5E1; display: flex; align-items: center; gap: 4px; margin-left: auto;">
+                      <i class="fas fa-torii-gate" style="color: var(--accent-gold);"></i> ${s.dojo}
+                    </div>
+                  </div>
+
+                  <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 2px;">
+                    ${isMaster ? `
+                      <span style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-shield-alt"></i> Conta Master Principal
+                      </span>
+                    ` : `
+                      <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteStudent('${s.id}', '${(s.name || '').replace(/'/g, "\\'")}')" style="width: 100%; justify-content: center; font-size: 0.82rem; padding: 8px 12px;" title="Excluir Aluno">
+                        <i class="fas fa-trash"></i> Excluir Aluno
+                      </button>
+                    `}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
         </div>
       ` : ''}
 
@@ -1422,27 +1554,28 @@ document.addEventListener('DOMContentLoaded', () => {
       ${adminSubTab === 'quizzes' ? `
         <!-- QUIZ SUBMISSIONS LIST -->
         <div class="admin-table-container">
-          <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <div>
-              <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 2px;">
+              <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.05rem; margin: 0 0 2px 0;">
                 Simulados e Avaliações Teóricas Realizadas
               </h4>
-              <div style="font-size: 0.8rem; color: #94A3B8;">
-                Veja as respostas completas de cada aluno, acertos, erros e percentual de aprovação.
+              <div style="font-size: 0.78rem; color: #94A3B8;">
+                Gabarito, acertos, erros e percentual de aprovação de cada aluno.
               </div>
             </div>
-            <span style="font-size: 0.82rem; color: var(--accent-gold); font-weight: 600;">
+            <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600;">
               ${quizSubmissions.length} prova(s) registrada(s)
             </span>
           </div>
 
           ${quizSubmissions.length === 0 ? `
-            <div style="padding: 40px; text-align: center; color: #64748B;">
+            <div style="padding: 40px 20px; text-align: center; color: #64748B;">
               <i class="fas fa-clipboard-list" style="font-size: 2.5rem; color: #64748B; margin-bottom: 12px; display: block;"></i>
               Nenhum aluno realizou simulados teóricos recentemente.
             </div>
           ` : `
-            <table class="admin-table">
+            <!-- Tabela para Desktop / Telas Grandes -->
+            <table class="admin-table admin-table-desktop">
               <thead>
                 <tr>
                   <th>Aluno</th>
@@ -1489,6 +1622,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 }).join('')}
               </tbody>
             </table>
+
+            <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
+            <div class="admin-cards-mobile">
+              ${quizSubmissions.map(sub => {
+                const dateStr = sub.date ? new Date(sub.date).toLocaleString('pt-BR') : '-';
+                const safeName = (sub.studentName || '').replace(/'/g, "\\'");
+                return `
+                  <div class="admin-card-item">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                      <div>
+                        <div style="font-weight: 700; color: #FFF; font-size: 0.96rem;">${sub.studentName || 'Aluno'}</div>
+                        <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 600; margin-top: 1px;">@${sub.studentUsername || ''}</div>
+                      </div>
+                      <span class="badge ${getBeltBadgeClass(sub.studentBelt)}" style="font-size: 0.72rem;">${sub.studentBelt || 'Faixa Branca'}</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.82rem; color: #CBD5E1; margin: 8px 0; background: rgba(0,0,0,0.22); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Nível do Simulado:</span>
+                        <strong style="color: var(--accent-gold);">${sub.beltLevel || 'Geral'}</strong>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Desempenho:</span>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                          <strong style="color: ${sub.passed ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; font-size: 0.92rem;">
+                            ${sub.score} / ${sub.total} (${sub.percentage}%)
+                          </strong>
+                          ${sub.perfect ? `<span class="badge badge-gold" style="font-size: 0.65rem;">100% 🏆</span>` : (sub.passed ? `<span class="badge badge-verde" style="font-size: 0.65rem;">Aprovado</span>` : `<span class="badge badge-vermelha" style="font-size: 0.65rem;">Reprovado</span>`)}
+                        </div>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; color: #94A3B8; font-size: 0.74rem;">
+                        <span>Data da Prova:</span>
+                        <span>${dateStr}</span>
+                      </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 4px;">
+                      <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openQuizDetailModal('${sub.id}')" style="justify-content: center; font-size: 0.8rem; padding: 8px 12px;">
+                        <i class="fas fa-search"></i> Ver Prova
+                      </button>
+                      <button class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteQuizSubmission('${sub.id}', '${safeName}')" style="justify-content: center; font-size: 0.8rem; padding: 8px 10px;" title="Excluir">
+                        <i class="fas fa-trash"></i> Excluir
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
           `}
         </div>
       ` : ''}
@@ -4178,12 +4359,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function startQuiz(kyuNumber, beltName) {
+    if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
+    if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+
     const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || window.TKST_QUIZ || []);
     let pool;
     let questionCount = 10;
 
     if (kyuNumber === 'all' || kyuNumber === -99) {
-      pool = [...bank];
+      // Simulado Geral: Exclui perguntas ambíguas de "próxima graduação"
+      pool = bank.filter(q => {
+        const qText = (q.question || '').toLowerCase();
+        return !qText.includes('próxima graduação') && !qText.includes('proxima graduacao') && !qText.includes('sua próxima faixa');
+      });
       questionCount = 30;
       beltName = "Simulado Geral";
     } else {
@@ -4217,12 +4405,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function exitQuiz() {
+    if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
+    if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
     quizActive = false;
     currentQuizQuestions = [];
     renderQuiz();
   }
 
   function renderQuiz() {
+    if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
+    if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+
     const user = window.TKST_AUTH.getCurrentUser();
     const isAdmin = window.TKST_AUTH.isAdmin();
     const userProgress = window.TKST_AUTH.getProgress();
@@ -4427,7 +4620,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = currentQuizQuestions[currentQuizIndex];
 
     let html = `
-      <div class="section-header" style="justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+      <div class="section-header" style="justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
         <div class="section-title-group">
           <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulado • ${currentQuizBelt}</h3>
         </div>
@@ -4437,6 +4630,17 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="quiz-card">
+        <!-- Temporizador Visual de 7 Segundos por Questão -->
+        <div class="quiz-timer-container">
+          <div class="quiz-timer-header">
+            <span><i class="fas fa-stopwatch" style="color: var(--accent-gold); margin-right: 6px;"></i> Tempo Restante:</span>
+            <span id="quizTimerBadge" class="quiz-timer-badge">7s</span>
+          </div>
+          <div class="quiz-timer-bar-bg">
+            <div id="quizTimerBar" class="quiz-timer-bar-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+
         <div class="quiz-question-header">
           <span class="badge badge-amarela">${currentQuizBelt}</span>
           <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">Questão ${currentQuizIndex + 1} de ${currentQuizQuestions.length}</span>
@@ -4453,7 +4657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="quiz-options-list">
           ${q.options.map((opt, idx) => `
             <button class="quiz-option-btn" id="quizOpt_${idx}" onclick="window.TKST_APP.answerQuiz(${idx})">
-              <span style="width: 28px; height: 28px; border-radius: var(--radius-full); background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem;">
+              <span style="width: 28px; height: 28px; border-radius: var(--radius-full); background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; flex-shrink: 0;">
                 ${['A', 'B', 'C', 'D'][idx]}
               </span>
               <span>${opt}</span>
@@ -4463,7 +4667,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div id="quizFeedbackArea"></div>
 
-        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
           <button id="quizNextBtn" class="btn btn-primary" style="display: none;" onclick="window.TKST_APP.nextQuizQuestion()">
             ${currentQuizIndex + 1 === currentQuizQuestions.length ? 'Finalizar Prova <i class="fas fa-check-circle"></i>' : 'Próxima Questão <i class="fas fa-arrow-right"></i>'}
           </button>
@@ -4472,11 +4676,123 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     mainContent.innerHTML = html;
+
+    // Inicia o temporizador oficial de 7 segundos da questão
+    startQuizTimer();
+  }
+
+  function startQuizTimer() {
+    if (quizTimerInterval) clearInterval(quizTimerInterval);
+    if (quizAutoAdvanceTimeout) clearTimeout(quizAutoAdvanceTimeout);
+
+    const timerStartTime = Date.now();
+    const totalDuration = 7000; // 7 segundos
+
+    const timerBadge = document.getElementById('quizTimerBadge');
+    const timerBar = document.getElementById('quizTimerBar');
+
+    quizTimerInterval = setInterval(() => {
+      if (!quizActive || quizAnswered) {
+        clearInterval(quizTimerInterval);
+        return;
+      }
+
+      const elapsed = Date.now() - timerStartTime;
+      const remaining = Math.max(0, totalDuration - elapsed);
+      const remainingSec = Math.ceil(remaining / 1000);
+      const pct = Math.max(0, (remaining / totalDuration) * 100);
+
+      if (timerBadge) {
+        timerBadge.textContent = `${remainingSec}s`;
+        if (remainingSec <= 2) {
+          timerBadge.className = 'quiz-timer-badge critical';
+        } else if (remainingSec <= 4) {
+          timerBadge.className = 'quiz-timer-badge warning';
+        } else {
+          timerBadge.className = 'quiz-timer-badge';
+        }
+      }
+      if (timerBar) {
+        timerBar.style.width = `${pct}%`;
+      }
+
+      if (remaining <= 0) {
+        clearInterval(quizTimerInterval);
+        handleQuizTimeout();
+      }
+    }, 100);
+  }
+
+  function handleQuizTimeout() {
+    if (quizAnswered) return;
+    quizAnswered = true;
+
+    const q = currentQuizQuestions[currentQuizIndex];
+    quizSubmissionDetails.push({
+      question: q.question,
+      image: q.image || '',
+      options: q.options,
+      selectedIndex: -1,
+      selectedText: 'Tempo Esgotado (0s - Não respondeu)',
+      correctIndex: q.correctIndex,
+      correctText: q.options[q.correctIndex],
+      isCorrect: false
+    });
+
+    q.options.forEach((_, idx) => {
+      const btn = document.getElementById(`quizOpt_${idx}`);
+      if (btn) {
+        btn.disabled = true;
+        if (idx === q.correctIndex) {
+          btn.classList.add('correct');
+        }
+      }
+    });
+
+    const timerBadge = document.getElementById('quizTimerBadge');
+    if (timerBadge) {
+      timerBadge.textContent = '0s';
+      timerBadge.className = 'quiz-timer-badge critical';
+    }
+    const timerBar = document.getElementById('quizTimerBar');
+    if (timerBar) {
+      timerBar.style.width = '0%';
+    }
+
+    const feedbackArea = document.getElementById('quizFeedbackArea');
+    if (feedbackArea) {
+      feedbackArea.innerHTML = `
+        <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-crimson);">
+          <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-hourglass-end"></i> Tempo Esgotado (7s) — Marcada como Incorreta!
+          </div>
+          <div style="color: #6EE7B7; font-size: 0.88rem; font-weight: 600; margin-top: 6px;">
+            Resposta correta: ${q.options[q.correctIndex]}
+          </div>
+          <div style="color: #94A3B8; font-size: 0.78rem; margin-top: 6px;">
+            <i class="fas fa-forward"></i> Avançando automaticamente para a próxima questão...
+          </div>
+        </div>
+      `;
+    }
+
+    const nextBtn = document.getElementById('quizNextBtn');
+    if (nextBtn) nextBtn.style.display = 'inline-flex';
+
+    if (quizAutoAdvanceTimeout) clearTimeout(quizAutoAdvanceTimeout);
+    quizAutoAdvanceTimeout = setTimeout(() => {
+      if (quizActive) {
+        nextQuizQuestion();
+      }
+    }, 2000);
   }
 
   function answerQuiz(optionIndex) {
     if (quizAnswered) return;
     quizAnswered = true;
+
+    if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
+    if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
 
     const q = currentQuizQuestions[currentQuizIndex];
     const isCorrect = optionIndex === q.correctIndex;
@@ -4526,6 +4842,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function nextQuizQuestion() {
+    if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
+    if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+
     quizAnswered = false;
     currentQuizIndex++;
     if (currentQuizIndex >= currentQuizQuestions.length) {

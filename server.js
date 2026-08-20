@@ -20,11 +20,82 @@ const MIME_TYPES = {
   '.webmanifest': 'application/manifest+json'
 };
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
 
-  // 1. Handle video streaming from D:\Videos Kata SKO
+  // 1. Handle API Endpoints
+  if (pathname.startsWith('/api/')) {
+    const apiName = pathname.replace('/api/', '').split('?')[0].replace(/\.js$/, '');
+    const apiFile = path.join(PUBLIC_DIR, 'api', `${apiName}.js`);
+
+    if (fs.existsSync(apiFile)) {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', async () => {
+        if (body) {
+          try {
+            req.body = JSON.parse(body);
+          } catch(e) {
+            req.body = body;
+          }
+        }
+        try {
+          // Helper to support res.json and res.status in standard http
+          if (!res.status) {
+            res.status = function(code) {
+              res.statusCode = code;
+              return res;
+            };
+          }
+          if (!res.json) {
+            res.json = function(data) {
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.end(JSON.stringify(data));
+              return res;
+            };
+          }
+
+          // Special local persistence for student-commit
+          if (apiName === 'student-commit' && (req.method === 'POST' || req.method === 'PUT') && req.body) {
+            try {
+              const studentsPath = path.join(PUBLIC_DIR, 'assets', 'data', 'students.json');
+              let currentData = { students: [], deletedStudentIds: [] };
+              if (fs.existsSync(studentsPath)) {
+                currentData = JSON.parse(fs.readFileSync(studentsPath, 'utf8'));
+              }
+              const incomingStudents = Array.isArray(req.body.students) ? req.body.students : (req.body.student ? [req.body.student] : []);
+              const incomingDeleted = Array.isArray(req.body.deletedStudentIds) ? req.body.deletedStudentIds : [];
+              
+              const delSet = new Set([...(currentData.deletedStudentIds || []), ...incomingDeleted]);
+              const sMap = new Map();
+              (currentData.students || []).forEach(s => { if (s && s.id && !delSet.has(s.id)) sMap.set(s.id, s); });
+              incomingStudents.forEach(s => { if (s && s.id && !delSet.has(s.id)) sMap.set(s.id, { ...(sMap.get(s.id) || {}), ...s }); });
+
+              const finalStudents = Array.from(sMap.values());
+              fs.writeFileSync(studentsPath, JSON.stringify({
+                students: finalStudents,
+                deletedStudentIds: Array.from(delSet),
+                updatedAt: Date.now()
+              }, null, 2), 'utf8');
+            } catch(e) {
+              console.error('Local student-commit save error:', e);
+            }
+          }
+
+          const handler = require(apiFile);
+          await handler(req, res);
+        } catch(err) {
+          console.error('API Error:', err);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: err.message }));
+        }
+      });
+      return;
+    }
+  }
+
+  // 2. Handle video streaming from D:\Videos Kata SKO
   if (pathname.startsWith('/videos/')) {
     const videoName = pathname.replace('/videos/', '');
     let videoPath = path.join(VIDEO_DIR, videoName);
@@ -70,7 +141,7 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  // 2. Handle Static Files
+  // 3. Handle Static Files
   if (pathname === '/') {
     pathname = '/index.html';
   }

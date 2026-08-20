@@ -36,8 +36,29 @@
       "createdAt": "2026-08-17T16:24:00.000Z",
       "phone": "21967456006",
       "notes": "Aluna Faixa Preta (1º Dan) vinculada ao QG TKST Capela."
+    },
+    {
+      "id": "std_joaogabriel",
+      "username": "joaogabriel.dasilva3150@gmail.com",
+      "email": "joaogabriel.dasilva3150@gmail.com",
+      "password": "1234",
+      "name": "João Gabriel Fonseca da Silva",
+      "role": "aluno",
+      "currentBelt": "Faixa Amarela (6º Kyu)",
+      "targetBelt": "Faixa Vermelha (5º Kyu)",
+      "currentKyu": 6,
+      "dojo": "TKST Santo Aleixo",
+      "startDate": "2026-08-20",
+      "avatar": "assets/images/logo-tkst.png",
+      "status": "approved",
+      "approvedAt": "2026-08-20T15:30:00.000Z",
+      "createdAt": "2026-08-20T15:08:00.000Z",
+      "updatedAt": 1787250000000,
+      "statusUpdatedAt": 1787250000000,
+      "phone": "21985215905",
+      "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     }
   ],
   "deletedStudentIds": [],
-  "updatedAt": 1786995600000
+  "updatedAt": 1787250000000
 }

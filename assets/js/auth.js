@@ -717,7 +717,7 @@
       }
     } catch(e) {}
 
-    // Seed default accounts (including Admin irons365)
+    // Seed default accounts (including Admin irons365 and João Gabriel)
     let students = [];
     try {
       students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
@@ -752,8 +752,42 @@
       students[adminIndex] = { ...masterAdminDefault, ...students[adminIndex] };
     }
 
+    // Ensure João Gabriel Fonseca da Silva is ALWAYS present and approved
+    const joaoIndex = students.findIndex(s => 
+      (s.username && s.username.toLowerCase().includes('joaogabriel')) ||
+      (s.email && s.email.toLowerCase().includes('joaogabriel')) ||
+      (s.name && s.name.toLowerCase().includes('joão gabriel'))
+    );
+    const joaoGabrielDefault = {
+      id: 'std_joaogabriel',
+      username: 'joaogabriel.dasilva3150@gmail.com',
+      email: 'joaogabriel.dasilva3150@gmail.com',
+      password: '1234',
+      name: 'João Gabriel Fonseca da Silva',
+      role: 'aluno',
+      currentBelt: 'Faixa Amarela (6º Kyu)',
+      targetBelt: 'Faixa Vermelha (5º Kyu)',
+      currentKyu: 6,
+      dojo: 'TKST Santo Aleixo',
+      startDate: '2026-08-20',
+      avatar: 'assets/images/logo-tkst.png',
+      status: 'approved',
+      approvedAt: '2026-08-20T15:30:00.000Z',
+      createdAt: '2026-08-20T15:08:00.000Z',
+      updatedAt: Date.now(),
+      statusUpdatedAt: Date.now(),
+      phone: '21985215905',
+      notes: 'Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego.'
+    };
+
+    if (joaoIndex === -1) {
+      students.push(joaoGabrielDefault);
+    } else {
+      students[joaoIndex] = { ...students[joaoIndex], ...joaoGabrielDefault, status: 'approved' };
+    }
+
     // Default sample students
-    if (students.length === 1) {
+    if (students.length === 2) {
       students.push(
         {
           id: 'std_01',
@@ -788,23 +822,6 @@
           status: 'approved',
           phone: '(21) 97777-2222',
           notes: 'Focada no Heian Sandan e Sanbon Kumite.'
-        },
-        {
-          id: 'std_03',
-          username: 'rodrigo99',
-          email: 'rodrigo@email.com',
-          password: '1234',
-          name: 'Rodrigo Alcantara',
-          role: 'aluno',
-          currentBelt: 'Faixa Branca',
-          targetBelt: 'Faixa Amarela (6º Kyu)',
-          currentKyu: 6,
-          dojo: 'TKST Santo Aleixo',
-          startDate: '2026-08-10',
-          avatar: 'assets/images/tigre.png',
-          status: 'pending',
-          phone: '(21) 96666-3333',
-          notes: 'Cadastro recente aguardando aprovação do Sensei.'
         }
       );
     }
