@@ -658,6 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabName !== 'quiz') {
       if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
       if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
+      TKST_AUDIO.stopInterstellarTrack();
     }
 
     const user = window.TKST_AUTH.getCurrentUser();
@@ -4452,13 +4453,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!this.interstellarAudio) return;
 
       try {
-        this.interstellarAudio.currentTime = 0;
-        this.interstellarAudio.volume = 0.90;
-        const p = this.interstellarAudio.play();
-        if (p !== undefined) {
-          p.catch(() => {
-            // Autoplay prevented before first gesture, fallback silently
-          });
+        this.interstellarAudio.loop = true;
+        this.interstellarAudio.volume = 0.85;
+        if (this.interstellarAudio.paused) {
+          const p = this.interstellarAudio.play();
+          if (p !== undefined) {
+            p.catch(() => {
+              // Autoplay prevented before first gesture, fallback silently
+            });
+          }
         }
       } catch (err) {
         console.warn('Interstellar audio play error:', err);
@@ -4814,7 +4817,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderQuiz() {
     if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
     if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
-    TKST_AUDIO.stopInterstellarTrack();
+    if (!quizActive) {
+      TKST_AUDIO.stopInterstellarTrack();
+    }
 
     const user = window.TKST_AUTH.getCurrentUser();
     const isAdmin = window.TKST_AUTH.isAdmin();
@@ -4941,6 +4946,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. DETAILED RESULTS SCREEN
     if (currentQuizIndex >= currentQuizQuestions.length) {
+      TKST_AUDIO.stopInterstellarTrack();
       const finalPercent = Math.round((quizScore / currentQuizQuestions.length) * 100);
       const isPassed = finalPercent >= 70;
       const isPerfect = quizScore === currentQuizQuestions.length;
@@ -5131,7 +5137,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (remaining <= 0) {
         clearInterval(quizTimerInterval);
-        TKST_AUDIO.stopInterstellarTrack();
         TKST_AUDIO.playMicrowaveDing();
         handleQuizTimeout();
       }
@@ -5141,8 +5146,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleQuizTimeout() {
     if (quizAnswered) return;
     quizAnswered = true;
-
-    TKST_AUDIO.stopInterstellarTrack();
 
     const q = currentQuizQuestions[currentQuizIndex];
     quizSubmissionDetails.push({
@@ -5209,7 +5212,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
     if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
-    TKST_AUDIO.stopInterstellarTrack();
 
     const q = currentQuizQuestions[currentQuizIndex];
     const isCorrect = optionIndex === q.correctIndex;
