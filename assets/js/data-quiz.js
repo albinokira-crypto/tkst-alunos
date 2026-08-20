@@ -305,12 +305,12 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Vermelha (5º Kyu)",
     "question": "Qual é o Kata oficial exigido no exame de Faixa Vermelha para Faixa Laranja?",
     "options": [
-      "Heian Sandan",
       "Heian Shodan",
+      "Heian Godan",
       "Heian Nidan",
-      "Heian Yondan"
+      "Heian Sandan"
     ],
-    "correctIndex": 0,
+    "correctIndex": 3,
     "explanation": "Heian Sandan é o terceiro Kata da série Heian, matéria oficial para o 4º Kyu (Faixa Laranja)."
   },
   {
@@ -417,12 +417,12 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Vermelha (5º Kyu)",
     "question": "Qual é o Kata oficial exigido para a passagem do 5º Kyu para o 4º Kyu (Faixa Laranja)?",
     "options": [
-      "Heian Sandan",
       "Heian Shodan",
+      "Heian Godan",
       "Heian Nidan",
-      "Heian Yondan"
+      "Heian Sandan"
     ],
-    "correctIndex": 0,
+    "correctIndex": 3,
     "explanation": "O Heian Sandan é o terceiro Kata da série Heian, matéria oficial para o exame de 4º Kyu (Faixa Laranja)."
   },
   {
