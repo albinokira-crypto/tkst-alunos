@@ -2355,20 +2355,55 @@ body.login-view-active .content-body {
   flex-shrink: 0;
 }
 
-.opt-card-preview {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 5px;
-  padding: 5px 7px;
-  font-size: 0.68rem;
-  color: #CBD5E1;
-  line-height: 1.25;
+/* Dojo Kun & Niju Kun Micro Principle List (Zero Empty Space) */
+.opt-principles-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   margin-top: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 5px 6px;
   border-left: 2.5px solid var(--accent-gold);
+  flex: 1;
+  justify-content: space-around;
 }
 
-.opt-card-preview.crimson {
+.opt-principles-container.crimson {
   border-left-color: var(--accent-crimson);
+}
+
+.opt-principle-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  color: #CBD5E1;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.opt-principle-num {
+  font-weight: 800;
+  color: var(--accent-gold);
+  font-size: 0.62rem;
+  flex-shrink: 0;
+  width: 11px;
+}
+
+.opt-principle-num.crimson {
+  color: var(--accent-crimson);
+}
+
+.opt-principle-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: #E2E8F0;
 }
 
 .quiz-question-header {
