@@ -11,10 +11,10 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Branca (7º Kyu)",
     "question": "Qual o Kata que você deve aprender e apresentar no exame de Faixa Branca para Amarela?",
     "options": [
-      "Hitotsu! Jinkaku kansei ni tsutomuru koto! (Esforçar-se para a formação do caráter)",
-      "Hitotsu! Reigi o omonzuru koto! (Respeito acima de tudo)",
-      "Hitotsu! Makoto no michi o mamoru koto! (Fidelidade para com o verdadeiro caminho da razão)",
-      "Hitotsu! Doryoku no seishin o yashinau koto! (Criar o espírito de esforço e perseverança)"
+      "Heian Shodan",
+      "Heian Nidan",
+      "Heian Sandan",
+      "Taikyoku Shodan"
     ],
     "correctIndex": 0,
     "explanation": "O Heian Shodan (Paz e Tranquilidade Nível 1) é o primeiro Kata do estilo Shotokan, exigido para a Faixa Amarela."
@@ -405,11 +405,11 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "options": [
       "Heian Sandan",
       "Heian Shodan",
-      "Tekki Shodan",
-      "Heian Nidan"
+      "Heian Nidan",
+      "Heian Yondan"
     ],
-    "correctIndex": 3,
-    "explanation": "Heian Nidan é o segundo Kata da série Heian, focado em defesas duplas, chutes laterais e ataques de costas do punho (Uraken)."
+    "correctIndex": 0,
+    "explanation": "O Heian Sandan é o terceiro Kata da série Heian, matéria oficial para o exame de 4º Kyu (Faixa Laranja)."
   },
   {
     "id": "q5-10",
@@ -473,12 +473,12 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Laranja (4º Kyu)",
     "question": "Qual é o Kata característico do 4º Kyu que introduz a base Kiba Dachi e técnicas com o cotovelo e costas da mão?",
     "options": [
-      "Zenkutsu Dachi é uma base curta e alta; Kokutsu Dachi é uma base longa com peso neutro no centro",
-      "Zenkutsu Dachi é executada com pés paralelos; Kokutsu Dachi é executada com os calcanhares unidos em V",
-      "Zenkutsu Dachi concentra 50% do peso em cada perna; Kokutsu Dachi concentra 90% do peso na perna da frente",
-      "Zenkutsu Dachi concentra 70% do peso na perna da frente; Kokutsu Dachi concentra 70% do peso na perna de trás"
+      "Heian Sandan",
+      "Heian Shodan",
+      "Heian Nidan",
+      "Heian Godan"
     ],
-    "correctIndex": 3,
+    "correctIndex": 0,
     "explanation": "Heian Sandan trabalha transições ágeis entre Zenkutsu Dachi, Kokutsu Dachi e Kiba Dachi com técnicas de cotovelo (Empi) e pisadas (Fumikomi)."
   },
   {
@@ -501,12 +501,12 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Laranja (4º Kyu)",
     "question": "Como se chama a base do cavaleiro com os pés paralelos e joelhos flexionados para fora?",
     "options": [
-      "Yon-Ju-Ichi, Yon-Ju-Ni, Yon-Ju-San, Yon-Ju-Shi, Yon-Ju-Go, Yon-Ju-Roku, Yon-Ju-Shichi, Yon-Ju-Hachi, Yon-Ju-Ku, Go-Ju",
-      "Ni-Ju-Ichi, Ni-Ju-Ni, Ni-Ju-San, Ni-Ju-Shi, Ni-Ju-Go, Ni-Ju-Roku, Ni-Ju-Shichi, Ni-Ju-Hachi, Ni-Ju-Ku, San-Ju",
-      "Ju-Ichi, Ju-Ni, Ju-San, Ju-Shi, Ju-Go, Ju-Roku, Ju-Shichi, Ju-Hachi, Ju-Ku, Ni-Ju",
-      "San-Ju-Ichi, San-Ju-Ni, San-Ju-San, San-Ju-Shi, San-Ju-Go, San-Ju-Roku, San-Ju-Shichi, San-Ju-Hachi, San-Ju-Ku, Yon-Ju"
+      "Kiba Dachi",
+      "Zenkutsu Dachi",
+      "Kokutsu Dachi",
+      "Neko Ashi Dachi"
     ],
-    "correctIndex": 3,
+    "correctIndex": 0,
     "explanation": "Kiba Dachi (base do cavaleiro) distribui o peso em 50%/50% com pés paralelos, abaixando o centro de gravidade (Hara)."
   },
   {
@@ -571,10 +571,10 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Laranja (4º Kyu)",
     "question": "Como se chama a técnica de pisada forte e firme no solo presente no Kata Heian Sandan para quebrar o equilíbrio ou pisar no pé do adversário?",
     "options": [
-      "Hitotsu! Reigi o omonzuru koto! (Respeito acima de tudo)",
-      "Hitotsu! Jinkaku kansei ni tsutomuru koto! (Esforçar-se para a formação do caráter)",
-      "Hitotsu! Doryoku no seishin o yashinau koto! (Criar o espírito de esforço e perseverança)",
-      "Hitotsu! Kekki no yū o imashimuru koto! (Conter o espírito de agressão destrutiva)"
+      "Fumikomi (Pisada)",
+      "Mae Geri (Chute frontal)",
+      "Yoko Keage (Chute lateral)",
+      "Nami Gaeshi (Onda que retorna)"
     ],
     "correctIndex": 0,
     "explanation": "Fumikomi é a pisada com impacto descendente, utilizada no Heian Sandan para transição rápida para Kiba Dachi."
@@ -613,12 +613,12 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Laranja (4º Kyu)",
     "question": "Como se chama a sequência de chutes executados consecutivamente com pernas alternadas ou na mesma perna (ex: Mae Geri seguido de Mawashi Geri)?",
     "options": [
-      "Treinamento focado unicamente em saltos acrobáticos no ar sem exigência de posturas tradicionais",
-      "Execução estática de defesas em Musubi Dachi sem nenhum deslocamento pelo dojo",
-      "Movimentos exclusivamente lineares em Zenkutsu Dachi com apenas um soco frontal por passada",
-      "Sequências com múltiplas trocas de base (Zenkutsu, Kokutsu, Kiba Dachi) combinando defesas duplas, Uraken e Gyaku Tsuki com rotação fluida de quadril"
+      "Ren Geri (Chutes Consecutivos)",
+      "Sanbon Tsuki (Três Socos)",
+      "Renzoku Waza (Técnicas Sucessivas)",
+      "Keri Waza (Técnicas de Chute Isolado)"
     ],
-    "correctIndex": 3,
+    "correctIndex": 0,
     "explanation": "Ren Geri significa 'Chutes Consecutivos' em combinação rápida sem interrupção de ritmo."
   },
   {
@@ -713,12 +713,12 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Verde (3º Kyu)",
     "question": "Como se chama o chute circular que atinge o alvo com o peito do pé (Haisoku) ou bola do pé (Koshi)?",
     "options": [
-      "Ni-Ju-Ichi, Ni-Ju-Ni, Ni-Ju-San, Ni-Ju-Shi, Ni-Ju-Go, Ni-Ju-Roku, Ni-Ju-Shichi, Ni-Ju-Hachi, Ni-Ju-Ku, San-Ju",
-      "San-Ju-Ichi, San-Ju-Ni, San-Ju-San, San-Ju-Shi, San-Ju-Go, San-Ju-Roku, San-Ju-Shichi, San-Ju-Hachi, San-Ju-Ku, Yon-Ju",
-      "Go-Ju-Ichi, Go-Ju-Ni, Go-Ju-San, Go-Ju-Shi, Go-Ju-Go, Go-Ju-Roku, Go-Ju-Shichi, Go-Ju-Hachi, Go-Ju-Ku, Roku-Ju",
-      "Yon-Ju-Ichi, Yon-Ju-Ni, Yon-Ju-San, Yon-Ju-Shi, Yon-Ju-Go, Yon-Ju-Roku, Yon-Ju-Shichi, Yon-Ju-Hachi, Yon-Ju-Ku, Go-Ju"
+      "Mawashi Geri",
+      "Mae Geri",
+      "Yoko Geri Kekomi",
+      "Ushiro Geri"
     ],
-    "correctIndex": 3,
+    "correctIndex": 0,
     "explanation": "Mawashi Geri é o chute circular, desferido com rotação completa do quadril e pivô no pé de apoio."
   },
   {
@@ -826,12 +826,12 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Verde (3º Kyu)",
     "question": "Como se chama a defesa executada com ambas as mãos abertas empurrando lateralmente para abrir a guarda do adversário (usada no Heian Yondan)?",
     "options": [
-      "Hitotsu! Makoto no michi o mamoru koto! (Fidelidade para com o verdadeiro caminho da razão)",
-      "Hitotsu! Jinkaku kansei ni tsutomuru koto! (Esforçar-se para a formação do caráter)",
-      "Hitotsu! Reigi o omonzuru koto! (Respeito acima de tudo)",
-      "Hitotsu! Kekki no yū o imashimuru koto! (Conter o espírito de agressão destrutiva)"
+      "Kakiwake Uke",
+      "Morote Uke",
+      "Juji Uke",
+      "Manji Uke"
     ],
-    "correctIndex": 3,
+    "correctIndex": 0,
     "explanation": "Kakiwake Uke é a defesa de separação em cunha executada simultaneamente com os dois antebraços para neutralizar pegadas ou estrangulamentos."
   },
   {
@@ -913,12 +913,12 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "beltName": "Faixa Roxa (2º Kyu)",
     "question": "Quais são os dois Katas do currículo oficial do 2º Kyu (Roxa para Marrom)?",
     "options": [
-      "Yon-Ju-Ichi, Yon-Ju-Ni, Yon-Ju-San, Yon-Ju-Shi, Yon-Ju-Go, Yon-Ju-Roku, Yon-Ju-Shichi, Yon-Ju-Hachi, Yon-Ju-Ku, Go-Ju",
-      "San-Ju-Ichi, San-Ju-Ni, San-Ju-San, San-Ju-Shi, San-Ju-Go, San-Ju-Roku, San-Ju-Shichi, San-Ju-Hachi, San-Ju-Ku, Yon-Ju",
-      "Roku-Ju-Ichi, Roku-Ju-Ni, Roku-Ju-San, Roku-Ju-Shi, Roku-Ju-Go, Roku-Ju-Roku, Roku-Ju-Shichi, Roku-Ju-Hachi, Roku-Ju-Ku, Nana-Ju",
-      "Go-Ju-Ichi, Go-Ju-Ni, Go-Ju-San, Go-Ju-Shi, Go-Ju-Go, Go-Ju-Roku, Go-Ju-Shichi, Go-Ju-Hachi, Go-Ju-Ku, Roku-Ju"
+      "Heian Godan e Tekki Shodan",
+      "Heian Sandan e Heian Yondan",
+      "Bassai Dai e Kanku Dai",
+      "Heian Shodan e Heian Nidan"
     ],
-    "correctIndex": 3,
+    "correctIndex": 0,
     "explanation": "O 2º Kyu completa a série básica com o último Heian (Heian Godan) e introduz o primeiro Kata com ferro (Tekki Shodan)."
   },
   {

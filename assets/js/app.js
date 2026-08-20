@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let quizSubmissionDetails = [];
   let quizTimerInterval = null;
   let quizAutoAdvanceTimeout = null;
-  let quizTimeRemaining = 7;
+  let quizTimeRemaining = 15;
 
   const mainContent = document.getElementById('mainContent');
   const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
@@ -4422,7 +4422,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // Shuffle pool
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
 
-    currentQuizQuestions = shuffled.slice(0, Math.min(questionCount, shuffled.length));
+    // Filter to guarantee NO duplicate questions and NO duplicate correct answers in the same quiz
+    const uniqueSelected = [];
+    const seenQuestions = new Set();
+    const seenCorrectAnswers = new Set();
+
+    for (const q of shuffled) {
+      if (uniqueSelected.length >= questionCount) break;
+
+      const qKey = (q.question || '').trim().toLowerCase().replace(/[^\w\s]/g, '');
+      const correctAns = (q.options && q.options[q.correctIndex] ? q.options[q.correctIndex] : '').trim().toLowerCase();
+      const ansKey = correctAns.replace(/[^\w\s]/g, '').trim();
+
+      if (qKey && !seenQuestions.has(qKey) && ansKey && !seenCorrectAnswers.has(ansKey)) {
+        seenQuestions.add(qKey);
+        seenCorrectAnswers.add(ansKey);
+        uniqueSelected.push(q);
+      }
+    }
+
+    // Fallback if strict answer uniqueness returned fewer questions than questionCount
+    if (uniqueSelected.length < questionCount) {
+      for (const q of shuffled) {
+        if (uniqueSelected.length >= questionCount) break;
+        const qKey = (q.question || '').trim().toLowerCase().replace(/[^\w\s]/g, '');
+        if (qKey && !seenQuestions.has(qKey)) {
+          seenQuestions.add(qKey);
+          uniqueSelected.push(q);
+        }
+      }
+    }
+
+    currentQuizQuestions = uniqueSelected.length > 0 ? uniqueSelected : shuffled.slice(0, Math.min(questionCount, shuffled.length));
     currentQuizIndex = 0;
     quizScore = 0;
     quizAnswered = false;
@@ -4660,11 +4691,11 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="quiz-card">
-        <!-- Temporizador Visual de 7 Segundos por Questão -->
+        <!-- Temporizador Visual de 15 Segundos por Questão -->
         <div class="quiz-timer-container">
           <div class="quiz-timer-header">
             <span><i class="fas fa-stopwatch" style="color: var(--accent-gold); margin-right: 6px;"></i> Tempo Restante:</span>
-            <span id="quizTimerBadge" class="quiz-timer-badge">7s</span>
+            <span id="quizTimerBadge" class="quiz-timer-badge">15s</span>
           </div>
           <div class="quiz-timer-bar-bg">
             <div id="quizTimerBar" class="quiz-timer-bar-fill" style="width: 100%;"></div>
@@ -4707,7 +4738,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     mainContent.innerHTML = html;
 
-    // Inicia o temporizador oficial de 7 segundos da questão
+    // Inicia o temporizador oficial de 15 segundos da questão
     startQuizTimer();
   }
 
@@ -4716,7 +4747,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (quizAutoAdvanceTimeout) clearTimeout(quizAutoAdvanceTimeout);
 
     const timerStartTime = Date.now();
-    const totalDuration = 7000; // 7 segundos
+    const totalDuration = 15000; // 15 segundos
 
     const timerBadge = document.getElementById('quizTimerBadge');
     const timerBar = document.getElementById('quizTimerBar');
@@ -4734,9 +4765,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (timerBadge) {
         timerBadge.textContent = `${remainingSec}s`;
-        if (remainingSec <= 2) {
+        if (remainingSec <= 4) {
           timerBadge.className = 'quiz-timer-badge critical';
-        } else if (remainingSec <= 4) {
+        } else if (remainingSec <= 8) {
           timerBadge.className = 'quiz-timer-badge warning';
         } else {
           timerBadge.className = 'quiz-timer-badge';
