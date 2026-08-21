@@ -1776,12 +1776,12 @@ body.login-view-active .content-body {
 }
 
 /* ==========================================
-   QUIZ LEVEL SELECTOR 3-COLUMN GRID
+   QUIZ LEVEL SELECTOR 3-COLUMN GRID (COMPACT SCREEN FIT)
    ========================================== */
 .quiz-levels-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 6px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -1791,14 +1791,14 @@ body.login-view-active .content-body {
   background: rgba(18, 23, 34, 0.95);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 12px 8px;
+  padding: 6px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   text-align: center;
-  min-height: 115px;
-  gap: 8px;
+  min-height: 74px;
+  gap: 3px;
   box-sizing: border-box;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   overflow: hidden;
@@ -1806,64 +1806,69 @@ body.login-view-active .content-body {
 
 .quiz-level-card.unlocked:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   border-color: rgba(255, 183, 3, 0.5);
 }
 
 .quiz-level-card.locked {
   background: rgba(18, 23, 34, 0.45);
-  opacity: 0.65;
+  opacity: 0.60;
 }
 
 .quiz-level-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 1px;
   width: 100%;
 }
 
 .quiz-level-dot {
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-  margin-bottom: 2px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1px;
 }
 
 .quiz-level-name {
   font-family: var(--font-heading);
-  font-size: 0.88rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #FFF;
-  line-height: 1.2;
+  line-height: 1.15;
   margin: 0;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .quiz-level-kyu {
-  font-size: 0.70rem;
+  font-size: 0.62rem;
   font-weight: 600;
   color: #94A3B8;
-  line-height: 1.15;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .quiz-level-btn {
   width: 100%;
-  padding: 7px 8px;
-  font-size: 0.78rem;
+  padding: 3.5px 4px;
+  font-size: 0.68rem;
   font-weight: 700;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  border-radius: 3px;
   white-space: nowrap;
+  line-height: 1.1;
 }
 
 .quiz-level-btn.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  font-size: 0.70rem;
-  padding: 6px 6px;
+  font-size: 0.58rem;
+  padding: 3px 2px;
 }
 
 #videoModal {
@@ -3047,47 +3052,47 @@ body.login-view-active .content-body {
 
   .quiz-levels-grid {
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 6px !important;
+    gap: 4px !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
 
   .quiz-level-card {
-    padding: 8px 4px !important;
-    min-height: 102px !important;
+    padding: 5px 3px !important;
+    min-height: 70px !important;
     min-width: 0 !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
-    gap: 4px !important;
+    gap: 2.5px !important;
   }
 
   .quiz-level-dot {
-    width: 11px !important;
-    height: 11px !important;
+    width: 8px !important;
+    height: 8px !important;
     margin-bottom: 0 !important;
   }
 
   .quiz-level-name {
-    font-size: 0.74rem !important;
-    line-height: 1.15 !important;
-  }
-
-  .quiz-level-kyu {
-    font-size: 0.60rem !important;
+    font-size: 0.72rem !important;
     line-height: 1.1 !important;
   }
 
+  .quiz-level-kyu {
+    font-size: 0.58rem !important;
+    line-height: 1.05 !important;
+  }
+
   .quiz-level-btn {
-    font-size: 0.68rem !important;
-    padding: 4px 4px !important;
-    border-radius: 4px !important;
+    font-size: 0.64rem !important;
+    padding: 3px 2px !important;
+    border-radius: 3px !important;
   }
 
   .quiz-level-btn.disabled {
-    font-size: 0.58rem !important;
-    padding: 3px 2px !important;
+    font-size: 0.55rem !important;
+    padding: 2.5px 1px !important;
   }
 
   /* Tables & Admin Containers */

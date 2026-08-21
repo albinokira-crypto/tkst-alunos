@@ -4857,51 +4857,47 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       let html = `
-        <div class="section-header" style="margin-bottom: 14px;">
+        <div class="section-header" style="margin-bottom: 8px;">
           <div class="section-title-group">
-            <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulador de Exame Teórico</h3>
-            <p>Escolha seu nível de graduação ou realize o Simulado Geral</p>
+            <h3 style="font-size: 1.05rem; margin-bottom: 2px;"><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulador de Exame Teórico</h3>
           </div>
         </div>
 
-        <!-- Simulado Geral (Destaque Principal) -->
-        <div class="dashboard-hero" style="margin-bottom: 16px; padding: 14px 16px; position: relative; overflow: hidden;">
-          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 42px; height: 42px; border-radius: var(--radius-sm); background: linear-gradient(135deg, rgba(255,183,3,0.25) 0%, rgba(217,119,6,0.25) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--accent-gold); border: 1.5px solid var(--accent-gold); flex-shrink: 0;">
+        <!-- Simulado Geral (Ultra Compacto) -->
+        <div class="dashboard-hero" style="margin-bottom: 6px; padding: 7px 10px; position: relative; overflow: hidden;">
+          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+              <div style="width: 28px; height: 28px; border-radius: var(--radius-sm); background: linear-gradient(135deg, rgba(255,183,3,0.25) 0%, rgba(217,119,6,0.25) 100%); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; color: var(--accent-gold); border: 1px solid var(--accent-gold); flex-shrink: 0;">
                 🏆
               </div>
-              <div>
-                <span class="badge badge-amarela" style="font-size: 0.68rem; margin-bottom: 2px; font-weight: 800; padding: 2px 6px;">
-                  <i class="fas fa-unlock"></i> Aberto a Todos
-                </span>
-                <h3 style="color: #FFF; font-family: var(--font-heading); font-size: 1.1rem; margin: 0; font-weight: 700;">
-                  Simulado Geral (30 Questões)
-                </h3>
+              <div style="min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <h4 style="color: #FFF; font-family: var(--font-heading); font-size: 0.86rem; margin: 0; font-weight: 700; white-space: nowrap;">
+                    Simulado Geral
+                  </h4>
+                  <span class="badge badge-amarela" style="font-size: 0.58rem; padding: 1px 4px; font-weight: 800;">30 Questões</span>
+                </div>
+                <div style="color: #94A3B8; font-size: 0.64rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Todas as faixas sorteadas</div>
               </div>
             </div>
-            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('all', 'Simulado Geral')" style="padding: 9px 16px; font-weight: 800; font-size: 0.84rem; background: linear-gradient(135deg, #FFB703 0%, #D97706 100%); color: #000; border: none; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.35); cursor: pointer;">
-              <i class="fas fa-play" style="margin-right: 5px;"></i> Iniciar Geral
+            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('all', 'Simulado Geral')" style="padding: 5px 10px; font-weight: 800; font-size: 0.74rem; background: linear-gradient(135deg, #FFB703 0%, #D97706 100%); color: #000; border: none; box-shadow: 0 2px 8px rgba(245, 190, 0, 0.3); cursor: pointer; flex-shrink: 0;">
+              <i class="fas fa-play" style="margin-right: 3px; font-size: 0.62rem;"></i> Iniciar Geral
             </button>
           </div>
         </div>
 
-        <!-- Banner de Regras / Status -->
-        <div class="dashboard-hero" style="margin-bottom: 16px; padding: 12px 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <div>
-              <span class="badge badge-amarela" style="margin-bottom: 4px; font-size: 0.68rem;">Sua Graduação: ${user ? user.currentBelt : 'Faixa Branca'}</span>
-              <div style="color: #94A3B8; font-size: 0.78rem; max-width: 680px; margin: 0; line-height: 1.3;">
-                Acerte <strong>10/10 (100%)</strong> no seu nível para desbloquear as graduações superiores.
-              </div>
+        <!-- Banner de Regras / Status (Compacto) -->
+        <div class="dashboard-hero" style="margin-bottom: 8px; padding: 5px 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 0.68rem;">
+            <div style="color: #CBD5E1; line-height: 1.2;">
+              <span class="badge badge-amarela" style="font-size: 0.58rem; padding: 1px 4px; margin-right: 4px;">Sua Faixa: ${user ? user.currentBelt : 'Faixa Branca'}</span>
+              Acerte <strong style="color: var(--accent-gold);">10/10</strong> para liberar superiores.
             </div>
-            <div>
-              ${hasPerfectInOwnBelt ? `
-                <div style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 5px 10px; border-radius: var(--radius-sm); font-size: 0.74rem; font-weight: 700;">
-                  <i class="fas fa-unlock"></i> Níveis Liberados! 🏆
-                </div>
-              ` : ''}
-            </div>
+            ${hasPerfectInOwnBelt ? `
+              <span style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 1.5px 5px; border-radius: 3px; font-size: 0.60rem; font-weight: 700; white-space: nowrap;">
+                <i class="fas fa-unlock"></i> Liberado!
+              </span>
+            ` : ''}
           </div>
         </div>
 
