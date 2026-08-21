@@ -635,23 +635,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Setup Sidebar & Mobile Nav
   function setupNavigation() {
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+    const closeSidebar = () => {
+      if (sidebar) sidebar.classList.remove('open');
+      if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+    };
+
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const tab = link.getAttribute('data-tab');
         if (tab) {
           switchTab(tab);
-          if (sidebar) sidebar.classList.remove('open');
+          closeSidebar();
         }
       });
     });
 
     const menuBtn = document.getElementById('mobileMenuToggle');
     if (menuBtn && sidebar) {
-      menuBtn.addEventListener('click', () => {
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         sidebar.classList.toggle('open');
+        if (sidebarBackdrop) {
+          sidebarBackdrop.classList.toggle('active', sidebar.classList.contains('open'));
+        }
       });
     }
+
+    if (sidebarBackdrop) {
+      sidebarBackdrop.addEventListener('click', () => {
+        closeSidebar();
+      });
+    }
+
+    // Fechar a aba lateral ao tocar/clicar em qualquer lugar fora dela
+    document.addEventListener('click', (e) => {
+      if (sidebar && sidebar.classList.contains('open')) {
+        if (!sidebar.contains(e.target) && (!menuBtn || !menuBtn.contains(e.target))) {
+          closeSidebar();
+        }
+      }
+    });
+
+    document.addEventListener('touchstart', (e) => {
+      if (sidebar && sidebar.classList.contains('open')) {
+        if (!sidebar.contains(e.target) && (!menuBtn || !menuBtn.contains(e.target))) {
+          closeSidebar();
+        }
+      }
+    }, { passive: true });
   }
 
   function switchTab(tabName) {

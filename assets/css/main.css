@@ -440,6 +440,27 @@ body::before {
     transform: translateX(0);
   }
 
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .sidebar-backdrop.active,
+  .sidebar.open ~ .sidebar-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .main-wrapper {
     margin-left: 0;
     width: 100%;
