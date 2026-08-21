@@ -4832,16 +4832,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. LEVEL SELECTOR SCREEN
     if (!quizActive) {
       const quizLevels = [
-        { kyu: 7, name: "Faixa Branca 7º Kyu", color: "#FFFFFF", textColor: "#000" },
-        { kyu: 6, name: "Faixa Amarela 6º Kyu", color: "#F5BE00", textColor: "#000" },
-        { kyu: 5, name: "Faixa Vermelha 5º Kyu", color: "#E63946", textColor: "#FFF" },
-        { kyu: 4, name: "Faixa Laranja 4º Kyu", color: "#FF7700", textColor: "#FFF" },
-        { kyu: 3, name: "Faixa Verde 3º Kyu", color: "#10B981", textColor: "#FFF" },
-        { kyu: 2, name: "Faixa Roxa 2º Kyu", color: "#8B5CF6", textColor: "#FFF" },
-        { kyu: 1, name: "Faixa Marrom 1º Kyu", color: "#78350F", textColor: "#FFF" },
-        { kyu: 0, name: "Faixa Preta Shodan (1º Dan)", color: "#18181B", textColor: "#FFF" },
-        { kyu: -1, name: "Faixa Preta Nidan (2º Dan)", color: "#1E293B", textColor: "#FFF" },
-        { kyu: -2, name: "Faixa Preta Sandan (3º Dan)", color: "#020617", textColor: "#FFF" }
+        { kyu: 7, name: "Faixa Branca", kyuLabel: "7º Kyu", color: "#FFFFFF" },
+        { kyu: 6, name: "Faixa Amarela", kyuLabel: "6º Kyu", color: "#F5BE00" },
+        { kyu: 5, name: "Faixa Vermelha", kyuLabel: "5º Kyu", color: "#E63946" },
+        { kyu: 4, name: "Faixa Laranja", kyuLabel: "4º Kyu", color: "#FF7700" },
+        { kyu: 3, name: "Faixa Verde", kyuLabel: "3º Kyu", color: "#10B981" },
+        { kyu: 2, name: "Faixa Roxa", kyuLabel: "2º Kyu", color: "#8B5CF6" },
+        { kyu: 1, name: "Faixa Marrom", kyuLabel: "1º Kyu", color: "#78350F" },
+        { kyu: 0, name: "Faixa Preta", kyuLabel: "Shodan (1º Dan)", color: "#18181B" },
+        { kyu: -1, name: "Faixa Preta", kyuLabel: "Nidan (2º Dan)", color: "#1E293B" },
+        { kyu: -2, name: "Faixa Preta", kyuLabel: "Sandan (3º Dan)", color: "#020617" }
       ];
 
       const isLevelUnlocked = (lvlKyu) => {
@@ -4857,82 +4857,75 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       let html = `
-        <div class="section-header" style="margin-bottom: 20px;">
+        <div class="section-header" style="margin-bottom: 14px;">
           <div class="section-title-group">
-            <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulador de Exame Teórico de Graduação</h3>
+            <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulador de Exame Teórico</h3>
+            <p>Escolha seu nível de graduação ou realize o Simulado Geral</p>
           </div>
         </div>
 
-          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 14px;">
-              <div style="width: 52px; height: 52px; border-radius: var(--radius-sm); background: linear-gradient(135deg, rgba(255,183,3,0.25) 0%, rgba(217,119,6,0.25) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--accent-gold); border: 1.5px solid var(--accent-gold); flex-shrink: 0;">
+        <!-- Simulado Geral (Destaque Principal) -->
+        <div class="dashboard-hero" style="margin-bottom: 16px; padding: 14px 16px; position: relative; overflow: hidden;">
+          <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 42px; height: 42px; border-radius: var(--radius-sm); background: linear-gradient(135deg, rgba(255,183,3,0.25) 0%, rgba(217,119,6,0.25) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--accent-gold); border: 1.5px solid var(--accent-gold); flex-shrink: 0;">
                 🏆
               </div>
               <div>
-                <span class="badge badge-amarela" style="font-size: 0.72rem; margin-bottom: 4px; font-weight: 800;">
-                  <i class="fas fa-unlock"></i> Aberto a Todos os Alunos
+                <span class="badge badge-amarela" style="font-size: 0.68rem; margin-bottom: 2px; font-weight: 800; padding: 2px 6px;">
+                  <i class="fas fa-unlock"></i> Aberto a Todos
                 </span>
-                <h3 style="color: #FFF; font-family: var(--font-heading); font-size: 1.3rem; margin: 0; font-weight: 700;">
-                  Simulado Geral
+                <h3 style="color: #FFF; font-family: var(--font-heading); font-size: 1.1rem; margin: 0; font-weight: 700;">
+                  Simulado Geral (30 Questões)
                 </h3>
               </div>
             </div>
-            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('all', 'Simulado Geral')" style="padding: 12px 22px; font-weight: 800; font-size: 0.95rem; background: linear-gradient(135deg, #FFB703 0%, #D97706 100%); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); cursor: pointer;">
-              <i class="fas fa-play" style="margin-right: 6px;"></i> Iniciar Simulado (30 Questões)
+            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('all', 'Simulado Geral')" style="padding: 9px 16px; font-weight: 800; font-size: 0.84rem; background: linear-gradient(135deg, #FFB703 0%, #D97706 100%); color: #000; border: none; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.35); cursor: pointer;">
+              <i class="fas fa-play" style="margin-right: 5px;"></i> Iniciar Geral
             </button>
           </div>
-          <p style="color: #CBD5E1; font-size: 0.88rem; line-height: 1.6; margin: 0; position: relative; z-index: 1;">
-            Desafio teórico completo com <strong>30 perguntas sorteadas aleatoriamente</strong> entre todas as faixas (Branca, Amarela, Vermelha, Laranja, Verde, Roxa, Marrom, Shodan, Nidan e Sandan).
-          </p>
         </div>
 
-        <div class="dashboard-hero" style="margin-bottom: 24px; padding: 20px 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <!-- Banner de Regras / Status -->
+        <div class="dashboard-hero" style="margin-bottom: 16px; padding: 12px 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <div>
-              <span class="badge badge-amarela" style="margin-bottom: 6px;">Sua Graduação Atual: ${user ? user.currentBelt : 'Faixa Branca'}</span>
-              <h3 style="color: #FFF; font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: 4px;">
-                Desafio dos Níveis de Graduação (10 Questões por Faixa)
-              </h3>
-              <p style="color: #94A3B8; font-size: 0.86rem; max-width: 680px; margin: 0;">
-                O simulador da sua graduação (e anteriores) está liberado. Para liberar o simulado das graduações superiores, <strong>acerte 10 de 10 perguntas (100% de acertos)</strong> no simulado da sua faixa atual!
-              </p>
+              <span class="badge badge-amarela" style="margin-bottom: 4px; font-size: 0.68rem;">Sua Graduação: ${user ? user.currentBelt : 'Faixa Branca'}</span>
+              <div style="color: #94A3B8; font-size: 0.78rem; max-width: 680px; margin: 0; line-height: 1.3;">
+                Acerte <strong>10/10 (100%)</strong> no seu nível para desbloquear as graduações superiores.
+              </div>
             </div>
             <div>
               ${hasPerfectInOwnBelt ? `
-                <div style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 700;">
-                  <i class="fas fa-unlock"></i> 100% no seu Simulado! Níveis Avançados Liberados! 🏆
+                <div style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 5px 10px; border-radius: var(--radius-sm); font-size: 0.74rem; font-weight: 700;">
+                  <i class="fas fa-unlock"></i> Níveis Liberados! 🏆
                 </div>
-              ` : `
-                <div style="background: rgba(255,183,3,0.1); border: 1px solid rgba(255,183,3,0.3); color: var(--accent-gold); padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.82rem;">
-                  <i class="fas fa-lock"></i> Acerte 10/10 no seu nível para desbloquear os superiores.
-                </div>
-              `}
+              ` : ''}
             </div>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+        <!-- Grade de Níveis de Graduação em 3 Colunas -->
+        <div class="quiz-levels-grid">
           ${quizLevels.map(lvl => {
             const isUnlocked = isLevelUnlocked(lvl.kyu);
+            const fullName = `${lvl.name} ${lvl.kyuLabel}`;
 
             return `
-              <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 20px; border-top: 5px solid ${lvl.color}; border-left: 1.5px solid ${lvl.color}55; background: ${isUnlocked ? 'rgba(18, 23, 34, 0.95)' : 'rgba(18, 23, 34, 0.45)'}; opacity: ${isUnlocked ? '1' : '0.65'}; gap: 14px;">
-                <!-- Linha 1: Faixa XXX Xº Kyu -->
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;">
-                  <h4 style="color: #FFF; font-size: 1.15rem; font-family: var(--font-heading); margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    ${lvl.name}
-                  </h4>
-                  <span style="width: 14px; height: 14px; border-radius: 50%; background: ${lvl.color}; border: 1.5px solid rgba(255,255,255,0.4); flex-shrink: 0;"></span>
+              <div class="quiz-level-card ${isUnlocked ? 'unlocked' : 'locked'}" style="border-top: 3.5px solid ${lvl.color};">
+                <div class="quiz-level-header">
+                  <span class="quiz-level-dot" style="background: ${lvl.color};"></span>
+                  <h4 class="quiz-level-name">${lvl.name}</h4>
+                  <span class="quiz-level-kyu">${lvl.kyuLabel}</span>
                 </div>
 
-                <!-- Linha 2: Iniciar Simulado -->
                 ${isUnlocked ? `
-                  <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel(${lvl.kyu}, '${lvl.name}')" style="width: 100%; justify-content: center; font-weight: 700; padding: 12px; font-size: 0.95rem; white-space: nowrap;">
-                    <i class="fas fa-play" style="font-size: 0.85rem; margin-right: 6px;"></i> Iniciar Simulado
+                  <button type="button" class="btn btn-primary quiz-level-btn" onclick="window.TKST_APP.startQuizLevel(${lvl.kyu}, '${fullName}')">
+                    <i class="fas fa-play" style="font-size: 0.65rem; margin-right: 3px;"></i> Iniciar
                   </button>
                 ` : `
-                  <button class="btn btn-secondary" disabled style="width: 100%; justify-content: center; opacity: 0.5; cursor: not-allowed; padding: 12px; font-size: 0.86rem; white-space: nowrap;">
-                    <i class="fas fa-lock" style="margin-right: 6px;"></i> Bloqueado (Requer 10/10)
+                  <button type="button" class="btn btn-secondary quiz-level-btn disabled" disabled>
+                    <i class="fas fa-lock" style="font-size: 0.62rem; margin-right: 2px;"></i> Bloqueado
                   </button>
                 `}
               </div>
