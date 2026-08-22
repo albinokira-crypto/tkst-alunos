@@ -57,8 +57,8 @@ let inMemoryData = {
       status: 'approved',
       approvedAt: '2026-01-01T00:00:00.000Z',
       createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: 1786925884100,
-      statusUpdatedAt: 1786925884100
+      updatedAt: 1,
+      statusUpdatedAt: 1
     }
   ],
   custom_videos: {},
@@ -196,17 +196,17 @@ module.exports = async (req, res) => {
           name: 'Sensei Diego',
           username: 'irons365',
           email: 'irons365@tkst.com.br',
-          phone: '(21) 97607-7598',
+          phone: '',
           role: 'admin',
-          currentBelt: 'Faixa Preta (Sensei Master)',
+          currentBelt: 'Faixa Preta',
           currentKyu: 0,
           targetBelt: 'Faixa Preta',
           dojo: 'TKST Central & Diretoria Geral',
           status: 'approved',
           approvedAt: '2026-01-01T00:00:00.000Z',
           createdAt: '2026-01-01T00:00:00.000Z',
-          updatedAt: Date.now(),
-          statusUpdatedAt: Date.now()
+          updatedAt: 1,
+          statusUpdatedAt: 1
         });
       }
 

@@ -178,14 +178,15 @@ module.exports = async (req, res) => {
           email: 'irons365@tkst.com.br',
           name: 'Sensei Diego',
           role: 'admin',
-          currentBelt: 'Faixa Preta (Sensei Master)',
+          currentBelt: 'Faixa Preta',
           targetBelt: 'Faixa Preta',
           currentKyu: 0,
           dojo: 'TKST Central & Diretoria Geral',
           status: 'approved',
           approvedAt: '2026-01-01T00:00:00.000Z',
           createdAt: '2026-01-01T00:00:00.000Z',
-          phone: '(21) 97607-7598'
+          phone: '',
+          updatedAt: 1
         });
       }
 

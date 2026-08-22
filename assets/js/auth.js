@@ -456,10 +456,10 @@
             merged.statusUpdatedAt = cloudStatusTime;
           }
 
-          // Profile fields: update if cloud updatedAt >= local updatedAt
+          // Profile fields: update only if cloud is strictly newer than local edits
           const localUpdateTime = existing.updatedAt || 0;
           const cloudUpdateTime = s.updatedAt || 0;
-          if (cloudUpdateTime >= localUpdateTime) {
+          if (cloudUpdateTime > localUpdateTime) {
             ['name', 'phone', 'currentBelt', 'currentKyu', 'targetBelt', 'dojo', 'notes', 'avatar', 'startDate'].forEach(f => {
               if (s[f] !== undefined && s[f] !== null && s[f] !== '' && s[f] !== merged[f]) {
                 merged[f] = s[f];
@@ -470,7 +470,7 @@
               merged.password = s.password;
               studentModified = true;
             }
-            merged.updatedAt = cloudUpdateTime || Date.now();
+            merged.updatedAt = cloudUpdateTime;
           }
 
           // Presence / Last Active (always take newer)
@@ -765,14 +765,15 @@
       password: 'Irons365.',
       name: 'Sensei Diego',
       role: 'admin',
-      currentBelt: 'Faixa Preta (Sensei Master)',
+      currentBelt: 'Faixa Preta',
       targetBelt: 'Faixa Preta',
       currentKyu: 0,
       dojo: 'TKST Central & Diretoria Geral',
       startDate: '2000-01-01',
       avatar: 'assets/images/logo-tkst.png',
       status: 'approved',
-      phone: '(21) 97607-7598',
+      phone: '',
+      updatedAt: 1,
       notes: 'Administrador Master responsável por todo o sistema, arquivos e aprovações.'
     };
 
@@ -1737,6 +1738,8 @@
 
       localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
       this.setCurrentUser(updatedUser);
+      const deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
+      pushStudentsToServer(students, deleted);
       pushToCloud();
 
       return { success: true, user: updatedUser };
