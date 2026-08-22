@@ -7691,7 +7691,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           </div>
 
           <div style="width: 100%;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="width: 100%; padding: 10px; font-weight: 600; font-size: 0.84rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="width: 100%; padding: 10px; font-weight: 600; font-size: 0.84rem;">
               Fechar
             </button>
           </div>
@@ -8289,14 +8289,68 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         alert((res && res.message) || 'Erro ao atualizar aluno.');
       }
     },
+    closeDetailModal: () => {
+      const modal = document.getElementById('detailModal');
+      if (modal) {
+        modal.removeAttribute('data-prevent-outside-close');
+        modal.classList.remove('active');
+        stopModalMedia(modal);
+      }
+    },
+    closeVideoModal: () => {
+      const modal = document.getElementById('videoModal');
+      if (modal) {
+        modal.classList.remove('active');
+        stopModalMedia(modal);
+      }
+    },
     cancelModalEdit: () => {
       const modal = document.getElementById('detailModal');
       if (modal) {
         modal.removeAttribute('data-prevent-outside-close');
         modal.classList.remove('active');
+        stopModalMedia(modal);
       }
     }
   };
+
+  // Helper para parar imediatamente qualquer áudio / vídeo em execução dentro de modais
+  function stopModalMedia(modalElement) {
+    if (!modalElement) return;
+
+    // 1. Limpa container de player de vídeo dedicado
+    const videoContainer = modalElement.querySelector('#videoModalContainer');
+    if (videoContainer) {
+      videoContainer.innerHTML = '';
+    }
+
+    // 2. Pausa e remove fonte de todos os vídeos HTML5
+    const videos = modalElement.querySelectorAll('video');
+    videos.forEach(v => {
+      try {
+        v.pause();
+        v.currentTime = 0;
+        v.removeAttribute('src');
+        v.load();
+      } catch(e) {}
+    });
+
+    // 3. Remove ou redefine imediatamente iframes de vídeo (YouTube, Vimeo, etc.)
+    const iframes = modalElement.querySelectorAll('iframe');
+    iframes.forEach(f => {
+      try {
+        f.src = 'about:blank';
+      } catch(e) {}
+    });
+
+    // 4. Se houver wrappers de vídeo em cards de detalhe, limpa os iframes dentro deles
+    const videoWrappers = modalElement.querySelectorAll('.modal-video-wrapper');
+    videoWrappers.forEach(w => {
+      if (w.id !== 'videoModalContainer') {
+        w.innerHTML = '';
+      }
+    });
+  }
 
   // Close modals
   document.querySelectorAll('.modal-overlay').forEach(m => {
@@ -8312,20 +8366,22 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       if (e.target === m || e.target.classList.contains('modal-close-btn') || e.target.closest('.modal-close-btn')) {
         m.removeAttribute('data-prevent-outside-close');
         m.classList.remove('active');
-        const container = m.querySelector('#videoModalContainer');
-        if (container) container.innerHTML = '';
-        const iframes = m.querySelectorAll('iframe');
-        iframes.forEach(f => {
-          try {
-            const src = f.src;
-            f.src = '';
-            setTimeout(() => { f.src = src; }, 100);
-          } catch(e) {}
-        });
-        const video = m.querySelector('video');
-        if (video) video.pause();
+        stopModalMedia(m);
       }
     });
+  });
+
+  // ESC key to close active modals and stop media
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      document.querySelectorAll('.modal-overlay.active').forEach(m => {
+        if (m.getAttribute('data-prevent-outside-close') !== 'true' && !m.querySelector('form')) {
+          m.removeAttribute('data-prevent-outside-close');
+          m.classList.remove('active');
+          stopModalMedia(m);
+        }
+      });
+    }
   });
 
   // Close belt mobile dropdown on outside click
