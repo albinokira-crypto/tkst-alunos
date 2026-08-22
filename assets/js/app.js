@@ -7684,15 +7684,10 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             ` : ''}
           </div>
 
-          <div style="display: flex; gap: 8px; width: 100%;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 9px; font-weight: 600; font-size: 0.82rem;">
+          <div style="width: 100%;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="width: 100%; padding: 10px; font-weight: 600; font-size: 0.84rem;">
               Fechar
             </button>
-            ${isAdmin ? `
-              <button type="button" class="btn btn-gold" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="flex: 1; padding: 9px; font-weight: 700; font-size: 0.82rem;">
-                <i class="fas fa-edit"></i> Editar Termo (Admin)
-              </button>
-            ` : ''}
           </div>
 
         </div>
