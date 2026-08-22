@@ -7588,8 +7588,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 <i class="fas fa-volume-up"></i> Ouvir Pronúncia
               </button>
               ${isAdmin ? `
-                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}')" style="font-size: 0.74rem; padding: 6px 10px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703;">
-                  <i class="fas fa-edit"></i> Configurar Mídias
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', false)" title="Editar texto e significado do termo" style="font-size: 0.74rem; padding: 6px 10px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; gap: 5px;">
+                  <i class="fas fa-edit"></i> Editar Termo
+                </button>
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', true)" title="Configurar fotos e vídeos do termo" style="font-size: 0.74rem; padding: 6px 10px; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent-blue); color: #60A5FA; display: inline-flex; align-items: center; gap: 5px;">
+                  <i class="fas fa-photo-video"></i> Configurar Mídias
                 </button>
               ` : ''}
             </div>
@@ -7933,7 +7936,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
     },
 
-    openEditGlossaryTermModal: (categoryKey, japaneseName) => {
+    openEditGlossaryTermModal: (categoryKey, japaneseName, focusMedia = false) => {
       if (!window.TKST_AUTH.isAdmin()) {
         alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
         return;
@@ -7966,7 +7969,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
 
-      modalTitle.innerHTML = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Termo: ${term.japanese} (Admin)</span>`;
+      modalTitle.innerHTML = `<span><i class="fas ${focusMedia ? 'fa-photo-video' : 'fa-edit'}" style="color: var(--accent-gold);"></i> ${focusMedia ? 'Configurar Mídias' : 'Editar Termo'}: ${term.japanese} (Admin)</span>`;
 
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}');" style="display: flex; flex-direction: column; gap: 14px;">
@@ -8054,6 +8057,16 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       `;
 
       detailModal.classList.add('active');
+
+      if (focusMedia) {
+        setTimeout(() => {
+          const mediaEl = document.getElementById('editGlossaryFileInput') || document.getElementById('editGlossaryImage') || document.getElementById('editGlossaryVideoUrl');
+          if (mediaEl) {
+            mediaEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            mediaEl.focus();
+          }
+        }, 150);
+      }
     },
 
     submitEditGlossaryTerm: (oldCategory, oldJapaneseName) => {
