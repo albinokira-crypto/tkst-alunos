@@ -7571,8 +7571,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           <!-- Top Card: Kanji, Pronunciation & Meaning -->
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 10px;">
             <div>
-              <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-gold); font-weight: 700; margin-bottom: 2px;">
-                Termo Tradicional Shotokan
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; gap: 8px;">
+                <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-gold); font-weight: 700;">
+                  Termo Tradicional Shotokan
+                </div>
+                ${isAdmin ? `
+                  <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', false)" title="Editar texto e significado do termo" style="font-size: 0.70rem; padding: 3px 9px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-sm); margin: 0; cursor: pointer;">
+                    <i class="fas fa-edit"></i> <span>Editar Termo</span>
+                  </button>
+                ` : ''}
               </div>
               <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: #FFF; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 ${term.japanese}
@@ -7583,17 +7590,14 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               </div>
             </div>
 
-            <!-- Single Row Action Buttons Bar (3 Botões perfeitamente alinhados na mesma linha) -->
-            <div style="display: flex; gap: 6px; align-items: center; width: 100%; flex-wrap: nowrap;">
-              <button type="button" class="btn btn-sm" onclick="window.TKST_APP.speakJapanese('${term.japanese.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês" style="flex: 1; min-width: 0; font-size: 0.73rem; padding: 7px 4px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; border-radius: var(--radius-sm); margin: 0;">
-                <i class="fas fa-volume-up"></i> <span>Pronúncia</span>
+            <!-- Action Buttons Bar (Ouvir Pronúncia & Configurar Mídias) -->
+            <div style="display: flex; gap: 8px; align-items: center; width: 100%; flex-wrap: nowrap;">
+              <button type="button" class="btn btn-sm" onclick="window.TKST_APP.speakJapanese('${term.japanese.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês" style="flex: 1; min-width: 0; font-size: 0.76rem; padding: 8px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; border-radius: var(--radius-sm); margin: 0;">
+                <i class="fas fa-volume-up"></i> <span>Ouvir Pronúncia</span>
               </button>
               ${isAdmin ? `
-                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', false)" title="Editar texto e significado do termo" style="flex: 1; min-width: 0; font-size: 0.73rem; padding: 7px 4px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; border-radius: var(--radius-sm); margin: 0;">
-                  <i class="fas fa-edit"></i> <span>Editar Termo</span>
-                </button>
-                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', true)" title="Configurar fotos e vídeos do termo" style="flex: 1; min-width: 0; font-size: 0.73rem; padding: 7px 4px; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent-blue); color: #60A5FA; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; border-radius: var(--radius-sm); margin: 0;">
-                  <i class="fas fa-photo-video"></i> <span>Config. Mídias</span>
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', true)" title="Configurar fotos e vídeos do termo" style="flex: 1; min-width: 0; font-size: 0.76rem; padding: 8px; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent-blue); color: #60A5FA; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; border-radius: var(--radius-sm); margin: 0;">
+                  <i class="fas fa-photo-video"></i> <span>Configurar Mídias</span>
                 </button>
               ` : ''}
             </div>
