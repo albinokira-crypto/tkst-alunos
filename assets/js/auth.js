@@ -223,7 +223,7 @@
         const res = await fetch('/api/student-commit', { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && json.success && json.data) {
+          if (json && json.success && json.data && Array.isArray(json.data.students) && json.data.students.length > 0) {
             applyCloudData({
               students: json.data.students || [],
               deletedStudentIds: json.data.deletedStudentIds || []
@@ -233,7 +233,38 @@
         }
       } catch(e) {}
 
-      // 2. Tenta carregar assets/data/students.json diretamente (CDN/Vercel)
+      // 2. Tenta endpoint /api/sync (Estado em memória serverless)
+      try {
+        const syncRes = await fetch('/api/sync', { cache: 'no-store' });
+        if (syncRes.ok) {
+          const syncJson = await syncRes.json();
+          if (syncJson && syncJson.success && syncJson.data && Array.isArray(syncJson.data.students) && syncJson.data.students.length > 0) {
+            applyCloudData({
+              students: syncJson.data.students || [],
+              deletedStudentIds: syncJson.data.deletedStudentIds || []
+            });
+            return;
+          }
+        }
+      } catch(e) {}
+
+      // 3. Tenta carregar diretamente do GitHub Raw (dados permanentes sem cache)
+      try {
+        const rawUrl = 'https://raw.githubusercontent.com/albinokira-crypto/tkst-alunos/main/assets/data/students.json?_=' + Date.now();
+        const rawRes = await fetch(rawUrl, { cache: 'no-store' });
+        if (rawRes.ok) {
+          const rawJson = await rawRes.json();
+          if (rawJson && Array.isArray(rawJson.students) && rawJson.students.length > 0) {
+            applyCloudData({
+              students: rawJson.students,
+              deletedStudentIds: rawJson.deletedStudentIds || []
+            });
+            return;
+          }
+        }
+      } catch(e) {}
+
+      // 4. Tenta carregar assets/data/students.json diretamente (CDN/Vercel)
       try {
         const res = await fetch('./assets/data/students.json?_=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
@@ -843,6 +874,10 @@
       return pullFromCloud(true);
     },
 
+    pullStudentsFromCloud: function() {
+      return pullStudentsFromCloud();
+    },
+
     pushNow: function() {
       return pushToCloud();
     },
@@ -1110,7 +1145,7 @@
       this.setCurrentUser(null);
     },
 
-    login: function(identifier, password) {
+    login: async function(identifier, password) {
       if (!identifier || !password) {
         return { success: false, message: 'Por favor, preencha o seu Nick de Usuário e a senha.' };
       }
@@ -1137,11 +1172,25 @@
         return { success: true, user: admin };
       }
 
-      const students = this.getAllStudents();
-      const found = students.find(s => 
+      let students = this.getAllStudents();
+      let found = students.find(s => 
         (s.username && s.username.toLowerCase() === cleanId) ||
         (s.email && s.email.toLowerCase() === cleanId)
       );
+
+      // SE NÃO ENCONTROU LOCALMENTE OU ESTÁ COM STATUS 'pending', CONSULTA A NUVEM IMEDIATAMENTE!
+      if (!found || found.status === 'pending') {
+        try {
+          await pullStudentsFromCloud();
+          await pullFromCloud();
+        } catch(e) {}
+
+        students = this.getAllStudents();
+        found = students.find(s => 
+          (s.username && s.username.toLowerCase() === cleanId) ||
+          (s.email && s.email.toLowerCase() === cleanId)
+        );
+      }
 
       if (!found) {
         return { success: false, message: 'Nick ou usuário não encontrado. Verifique a digitação ou cadastre-se.' };

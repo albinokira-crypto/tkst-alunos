@@ -617,6 +617,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = window.TKST_AUTH.getCurrentUser();
     if (!user) {
       switchTab('login');
+      if (window.TKST_AUTH && window.TKST_AUTH.pullStudentsFromCloud) {
+        window.TKST_AUTH.pullStudentsFromCloud();
+      }
       // Auto open registration modal if accessed via invitation link (?cadastro=1, ?convite=1, ?registro=1, etc.)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('cadastro') === '1' || urlParams.get('convite') === '1' || urlParams.get('registro') === '1' || urlParams.has('cadastro') || urlParams.has('convite')) {
@@ -6428,21 +6431,46 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     // Unified Login Handler: automatically gives admin credentials & routes if irons365
-    submitLogin: () => {
+    submitLogin: async () => {
       const idInput = document.getElementById('loginIdentifier');
       const passInput = document.getElementById('loginPassword');
       const alertBox = document.getElementById('authAlertBox');
+      const submitBtn = document.querySelector('#authModal form button[type="submit"]') || document.querySelector('.auth-form button[type="submit"]') || document.querySelector('button[onclick*="submitLogin"]');
 
-      const res = window.TKST_AUTH.login(idInput.value, passInput.value);
-      if (res.success) {
-        if (window.TKST_AUTH.isAdmin()) {
-          switchTab('admin');
+      const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando acesso...';
+      }
+      if (alertBox) {
+        alertBox.className = 'auth-alert';
+        alertBox.textContent = '';
+      }
+
+      try {
+        const res = await window.TKST_AUTH.login(idInput.value, passInput.value);
+        if (res.success) {
+          if (window.TKST_AUTH.isAdmin()) {
+            switchTab('admin');
+          } else {
+            switchTab('dashboard');
+          }
         } else {
-          switchTab('dashboard');
+          if (alertBox) {
+            alertBox.textContent = res.message;
+            alertBox.className = 'auth-alert error';
+          }
         }
-      } else {
-        alertBox.textContent = res.message;
-        alertBox.className = 'auth-alert error';
+      } catch (err) {
+        if (alertBox) {
+          alertBox.textContent = 'Erro ao verificar credenciais. Tente novamente.';
+          alertBox.className = 'auth-alert error';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+        }
       }
     },
 

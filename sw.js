@@ -1,16 +1,16 @@
-const CACHE_NAME = 'tkst-alunos-v127';
+const CACHE_NAME = 'tkst-alunos-v128';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './assets/css/main.css?v=127',
-  './assets/css/components.css?v=127',
-  './assets/js/auth.js?v=127',
-  './assets/js/data-curriculum.js?v=127',
-  './assets/js/data-katas.js?v=127',
-  './assets/js/data-kumite.js?v=127',
-  './assets/js/data-glossary.js?v=127',
-  './assets/js/data-quiz.js?v=127',
-  './assets/js/app.js?v=127',
+  './assets/css/main.css?v=128',
+  './assets/css/components.css?v=128',
+  './assets/js/auth.js?v=128',
+  './assets/js/data-curriculum.js?v=128',
+  './assets/js/data-katas.js?v=128',
+  './assets/js/data-kumite.js?v=128',
+  './assets/js/data-glossary.js?v=128',
+  './assets/js/data-quiz.js?v=128',
+  './assets/js/app.js?v=128',
   './assets/audio/interstellar-ticktock-15s.mp3',
   './assets/images/logo-tkst.png',
   './assets/images/icon-192.png',
@@ -64,8 +64,12 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Bypass cache for Cloud Sync API, external videos and non-GET requests
+  // Bypass cache for Cloud Sync API, student authentication, external videos and non-GET requests
   if (event.request.method !== 'GET' || 
+      event.request.url.includes('/api/') ||
+      event.request.url.includes('ntfy.sh') ||
+      event.request.url.includes('github') ||
+      event.request.url.includes('assets/data/') ||
       event.request.url.includes('api.restful-api.dev') || 
       event.request.url.includes('youtube.com') || 
       event.request.url.includes('vimeo.com') ||
