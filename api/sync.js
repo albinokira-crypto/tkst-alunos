@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const TMP_QUIZ_FILE = path.join('/tmp', 'tkst_sync_quiz_bank.json');
 const TMP_FULL_STATE_FILE = path.join('/tmp', 'tkst_sync_full_state.json');
+const TMP_GLOSSARY_FILE = path.join('/tmp', 'tkst_glossary.json');
 
 function readFullStateFromTmp() {
   try {
@@ -33,6 +34,22 @@ function readQuizBankFromTmp() {
 function writeQuizBankToTmp(bank) {
   try {
     fs.writeFileSync(TMP_QUIZ_FILE, JSON.stringify(bank), 'utf8');
+  } catch (e) {}
+}
+
+function readGlossaryFromTmp() {
+  try {
+    if (fs.existsSync(TMP_GLOSSARY_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(TMP_GLOSSARY_FILE, 'utf8'));
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function writeGlossaryToTmp(data) {
+  try {
+    fs.writeFileSync(TMP_GLOSSARY_FILE, JSON.stringify(data), 'utf8');
   } catch (e) {}
 }
 
@@ -93,6 +110,15 @@ module.exports = async (req, res) => {
     if (!inMemoryData.custom_quiz_bank || inMemoryData.custom_quiz_bank.length === 0) {
       const tmpBank = readQuizBankFromTmp();
       if (tmpBank) inMemoryData.custom_quiz_bank = tmpBank;
+    }
+    if (!inMemoryData.custom_glossary || Object.keys(inMemoryData.custom_glossary).length === 0) {
+      const tmpGlossary = readGlossaryFromTmp();
+      if (tmpGlossary && tmpGlossary.glossary) {
+        inMemoryData.custom_glossary = tmpGlossary.glossary;
+        if (Array.isArray(tmpGlossary.deletedGlossaryTerms)) {
+          inMemoryData.deletedGlossaryTerms = tmpGlossary.deletedGlossaryTerms;
+        }
+      }
     }
 
     // Hidrata base de alunos do assets/data/students.json se a lista em memória só tiver o admin
@@ -252,6 +278,44 @@ module.exports = async (req, res) => {
       let quizSubmissionsList = Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []);
       quizSubmissionsList = quizSubmissionsList.filter(s => !deletedSubSet.has(s.id));
 
+      // 6. Merge deleted Glossary Terms (tombstones)
+      let deletedGlossarySet = new Set(inMemoryData.deletedGlossaryTerms || []);
+      if (Array.isArray(incoming.deletedGlossaryTerms)) {
+        incoming.deletedGlossaryTerms.forEach(t => { if (t) deletedGlossarySet.add(t.toLowerCase().trim()); });
+      }
+      const allDeletedGlossary = Array.from(deletedGlossarySet);
+
+      // 7. Intelligent Custom Glossary Merge
+      const existingGlossary = inMemoryData.custom_glossary || (readGlossaryFromTmp()?.glossary) || {};
+      let mergedGlossary = { ...existingGlossary };
+      if (incoming.custom_glossary && typeof incoming.custom_glossary === 'object' && Object.keys(incoming.custom_glossary).length > 0) {
+        const categories = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+        categories.forEach(cat => {
+          if (!mergedGlossary[cat]) mergedGlossary[cat] = [];
+          const catMap = new Map();
+          (mergedGlossary[cat] || []).forEach(t => {
+            if (t && t.japanese) catMap.set(t.japanese.toLowerCase().trim(), t);
+          });
+          (incoming.custom_glossary[cat] || []).forEach(t => {
+            if (t && t.japanese) {
+              const key = t.japanese.toLowerCase().trim();
+              const existing = catMap.get(key);
+              if (!existing || !existing.updatedAt || (t.updatedAt && t.updatedAt >= existing.updatedAt) || t._edited) {
+                catMap.set(key, t);
+              }
+            }
+          });
+          mergedGlossary[cat] = Array.from(catMap.values()).filter(t => t && t.japanese && !deletedGlossarySet.has(t.japanese.toLowerCase().trim()));
+        });
+      } else if (Object.keys(mergedGlossary).length > 0) {
+        const categories = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+        categories.forEach(cat => {
+          if (mergedGlossary[cat]) {
+            mergedGlossary[cat] = mergedGlossary[cat].filter(t => t && t.japanese && !deletedGlossarySet.has(t.japanese.toLowerCase().trim()));
+          }
+        });
+      }
+
       inMemoryData = {
         dojos: dojosList,
         students: studentsList,
@@ -259,18 +323,19 @@ module.exports = async (req, res) => {
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
         quiz_submissions: quizSubmissionsList,
         custom_quiz_bank: customQuizBank,
-        custom_glossary: incoming.custom_glossary || inMemoryData.custom_glossary || {},
+        custom_glossary: mergedGlossary,
         deletedStudentIds: allDeleted,
         deletedQuizIds: allDeletedQuizzes,
         deletedQuizSubIds: allDeletedSubs,
-        deletedGlossaryTerms: incoming.deletedGlossaryTerms || inMemoryData.deletedGlossaryTerms || [],
+        deletedGlossaryTerms: allDeletedGlossary,
         deletedDojos: allDeletedDojos,
         lastSync: new Date().toISOString()
       };
 
-      // Persiste estado completo e quiz bank no /tmp para sobreviver ao próximo cold-start
+      // Persiste estado completo, quiz bank e glossário no /tmp para sobreviver ao próximo cold-start
       writeFullStateToTmp(inMemoryData);
       if (customQuizBank.length > 0) writeQuizBankToTmp(customQuizBank);
+      if (Object.keys(mergedGlossary).length > 0) writeGlossaryToTmp({ glossary: mergedGlossary, deletedGlossaryTerms: allDeletedGlossary });
 
       return res.status(200).json({
         success: true,

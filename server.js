@@ -83,6 +83,35 @@ const server = http.createServer(async (req, res) => {
             }
           }
 
+          // Special local persistence for glossary-commit
+          if (apiName === 'glossary-commit' && (req.method === 'POST' || req.method === 'PUT') && req.body) {
+            try {
+              const glossaryPath = path.join(PUBLIC_DIR, 'assets', 'js', 'data-glossary.js');
+              if (fs.existsSync(glossaryPath)) {
+                const currentContent = fs.readFileSync(glossaryPath, 'utf8');
+                const MARKER_START = '// ==TKST_CUSTOM_GLOSSARY_START==';
+                const MARKER_END = '// ==TKST_CUSTOM_GLOSSARY_END==';
+                const incomingGlossary = req.body.customGlossary || req.body.glossary || req.body.data || {};
+                const deletedTerms = Array.isArray(req.body.deletedGlossaryTerms) ? req.body.deletedGlossaryTerms : [];
+                const delSet = new Set(deletedTerms.map(t => (t || '').toLowerCase().trim()));
+                const cleanGlossary = {};
+                ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+                  if (incomingGlossary && Array.isArray(incomingGlossary[cat])) {
+                    cleanGlossary[cat] = incomingGlossary[cat].filter(t => t && t.japanese && !delSet.has(t.japanese.toLowerCase().trim()));
+                  }
+                });
+                const block = `${MARKER_START}\nwindow.TKST_CUSTOM_GLOSSARY = ${JSON.stringify(cleanGlossary, null, 2)};\n${MARKER_END}`;
+                if (currentContent.includes(MARKER_START) && currentContent.includes(MARKER_END)) {
+                  const sIdx = currentContent.indexOf(MARKER_START);
+                  const eIdx = currentContent.indexOf(MARKER_END) + MARKER_END.length;
+                  fs.writeFileSync(glossaryPath, currentContent.slice(0, sIdx) + block + currentContent.slice(eIdx), 'utf8');
+                }
+              }
+            } catch(e) {
+              console.error('Local glossary-commit save error:', e);
+            }
+          }
+
           const handler = require(apiFile);
           await handler(req, res);
         } catch(err) {

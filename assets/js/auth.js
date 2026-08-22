@@ -300,6 +300,138 @@
     }
   }
 
+  // =========================================================================
+  // GLOSSARY PERMANENT CLOUD SYNC & GITHUB STORAGE
+  // =========================================================================
+  async function pullGlossaryFromCloud() {
+    try {
+      const deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
+      const defaultGlossary = window.TKST_DEFAULT_GLOSSARY || window.TKST_GLOSSARY || {};
+      let baseGlossary = JSON.parse(JSON.stringify(defaultGlossary));
+      let localGlossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY));
+      const fileCustom = window.TKST_CUSTOM_GLOSSARY || {};
+      const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+
+      let cloudGlossary = null;
+      let cloudDeleted = [];
+
+      // 1. Tenta endpoint dedicado /api/glossary
+      try {
+        const res = await fetch('/api/glossary', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.success && json.data && typeof json.data === 'object' && Object.keys(json.data).length > 0) {
+            cloudGlossary = json.data;
+            if (Array.isArray(json.deletedGlossaryTerms)) {
+              cloudDeleted = json.deletedGlossaryTerms;
+            }
+          }
+        }
+      } catch(e) {}
+
+      // 2. Mescla deleted terms
+      const allDeleted = Array.from(new Set([...deletedTerms, ...cloudDeleted]));
+      if (allDeleted.length !== deletedTerms.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED_GLOSSARY, JSON.stringify(allDeleted));
+      }
+
+      // 3. Monta dicionário mesclado
+      cats.forEach(cat => {
+        if (!baseGlossary[cat]) baseGlossary[cat] = [];
+        const termMap = new Map();
+
+        // 3.1 Termos base padrão
+        baseGlossary[cat].forEach(t => {
+          if (t && t.japanese) termMap.set(t.japanese.toLowerCase().trim(), { ...t });
+        });
+
+        // 3.2 Termos do arquivo bundle (GitHub commits estáticos)
+        if (fileCustom && Array.isArray(fileCustom[cat])) {
+          fileCustom[cat].forEach(t => {
+            if (t && t.japanese && !allDeleted.includes(t.japanese.toLowerCase().trim())) {
+              termMap.set(t.japanese.toLowerCase().trim(), t);
+            }
+          });
+        }
+
+        // 3.3 Termos da nuvem (/api/glossary)
+        if (cloudGlossary && Array.isArray(cloudGlossary[cat])) {
+          cloudGlossary[cat].forEach(t => {
+            if (t && t.japanese && !allDeleted.includes(t.japanese.toLowerCase().trim())) {
+              const existing = termMap.get(t.japanese.toLowerCase().trim());
+              if (!existing || !existing.updatedAt || (t.updatedAt && t.updatedAt >= existing.updatedAt)) {
+                termMap.set(t.japanese.toLowerCase().trim(), t);
+              }
+            }
+          });
+        }
+
+        // 3.4 Termos locais (preserva edições locais recentes)
+        if (localGlossary && Array.isArray(localGlossary[cat])) {
+          localGlossary[cat].forEach(t => {
+            if (t && t.japanese && !allDeleted.includes(t.japanese.toLowerCase().trim())) {
+              const existing = termMap.get(t.japanese.toLowerCase().trim());
+              if (!existing || !existing.updatedAt || (t.updatedAt && t.updatedAt >= existing.updatedAt) || t._edited) {
+                termMap.set(t.japanese.toLowerCase().trim(), t);
+              }
+            }
+          });
+        }
+
+        baseGlossary[cat] = Array.from(termMap.values()).filter(t => t && t.japanese && !allDeleted.includes(t.japanese.toLowerCase().trim()));
+      });
+
+      const localStr = localStorage.getItem(STORAGE_KEY_GLOSSARY);
+      const newStr = JSON.stringify(baseGlossary);
+      if (localStr !== newStr) {
+        localStorage.setItem(STORAGE_KEY_GLOSSARY, newStr);
+        window.TKST_GLOSSARY = baseGlossary;
+        window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
+      }
+    } catch(err) {
+      console.warn('Glossary pull notice:', err);
+    }
+  }
+
+  async function pushGlossaryToServer(glossary, deletedTerms) {
+    if (!glossary || typeof glossary !== 'object') return;
+    const deleted = Array.isArray(deletedTerms) ? deletedTerms : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || []);
+
+    // 1. Post para endpoint dedicado /api/glossary
+    try {
+      fetch('/api/glossary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          glossary,
+          deletedGlossaryTerms: deleted
+        })
+      }).catch(() => {});
+    } catch(e) {}
+
+    // 2. Post para commit permanente no GitHub /api/glossary-commit
+    try {
+      const res = await fetch('/api/glossary-commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customGlossary: glossary,
+          deletedGlossaryTerms: deleted
+        })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.success) {
+          window.dispatchEvent(new CustomEvent('tkst_glossary_committed', {
+            detail: { commitUrl: json.commitUrl }
+          }));
+        }
+      }
+    } catch(err) {
+      console.warn('Glossary server commit notice:', err);
+    }
+  }
+
   async function pushToCloud() {
     if (isSyncing) {
       syncPending = true;
@@ -611,19 +743,43 @@
       }
     }
 
-    if (cloudData.custom_glossary && typeof cloudData.custom_glossary === 'object') {
+    if (cloudData.custom_glossary && typeof cloudData.custom_glossary === 'object' && Object.keys(cloudData.custom_glossary).length > 0) {
       const defaultGlossary = window.TKST_DEFAULT_GLOSSARY || window.TKST_GLOSSARY || {};
       let baseGlossary = JSON.parse(JSON.stringify(defaultGlossary));
       let localGlossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || baseGlossary;
+      const fileCustom = window.TKST_CUSTOM_GLOSSARY || {};
 
       ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
         if (!baseGlossary[cat]) baseGlossary[cat] = [];
         const termMap = new Map();
-        baseGlossary[cat].forEach(t => termMap.set(t.japanese.toLowerCase().trim(), { ...t }));
-        (localGlossary[cat] || []).forEach(t => termMap.set(t.japanese.toLowerCase().trim(), t));
-        (cloudData.custom_glossary[cat] || []).forEach(t => termMap.set(t.japanese.toLowerCase().trim(), t));
+        baseGlossary[cat].forEach(t => {
+          if (t && t.japanese) termMap.set(t.japanese.toLowerCase().trim(), { ...t });
+        });
+        if (fileCustom && Array.isArray(fileCustom[cat])) {
+          fileCustom[cat].forEach(t => {
+            if (t && t.japanese && !localDeletedTerms.includes(t.japanese.toLowerCase().trim())) {
+              termMap.set(t.japanese.toLowerCase().trim(), t);
+            }
+          });
+        }
+        (cloudData.custom_glossary[cat] || []).forEach(t => {
+          if (t && t.japanese && !localDeletedTerms.includes(t.japanese.toLowerCase().trim())) {
+            const existing = termMap.get(t.japanese.toLowerCase().trim());
+            if (!existing || !existing.updatedAt || (t.updatedAt && t.updatedAt >= existing.updatedAt)) {
+              termMap.set(t.japanese.toLowerCase().trim(), t);
+            }
+          }
+        });
+        (localGlossary[cat] || []).forEach(t => {
+          if (t && t.japanese && !localDeletedTerms.includes(t.japanese.toLowerCase().trim())) {
+            const existing = termMap.get(t.japanese.toLowerCase().trim());
+            if (!existing || !existing.updatedAt || (t.updatedAt && t.updatedAt >= existing.updatedAt) || t._edited) {
+              termMap.set(t.japanese.toLowerCase().trim(), t);
+            }
+          }
+        });
 
-        baseGlossary[cat] = Array.from(termMap.values()).filter(t => !localDeletedTerms.includes(t.japanese.toLowerCase().trim()));
+        baseGlossary[cat] = Array.from(termMap.values()).filter(t => t && t.japanese && !localDeletedTerms.includes(t.japanese.toLowerCase().trim()));
       });
 
       const localGStr = localStorage.getItem(STORAGE_KEY_GLOSSARY);
@@ -639,6 +795,7 @@
       window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'pull', time: new Date() } }));
       window.dispatchEvent(new CustomEvent('tkst_user_changed'));
       window.dispatchEvent(new CustomEvent('tkst_videos_updated'));
+      window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
     }
   }
 
@@ -649,6 +806,9 @@
 
       // 2. Endpoint dedicado de alunos permanentes no GitHub
       pullStudentsFromCloud().catch(() => {});
+
+      // 3. Endpoint dedicado de glossário japonês permanente no GitHub
+      pullGlossaryFromCloud().catch(() => {});
 
       // 3. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
       try {
@@ -1907,42 +2067,67 @@
       const deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
       const defaultGlossary = window.TKST_DEFAULT_GLOSSARY || window.TKST_GLOSSARY || {};
       let baseGlossary = JSON.parse(JSON.stringify(defaultGlossary));
+      const fileCustom = window.TKST_CUSTOM_GLOSSARY || {};
+      const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
 
       try {
         let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY));
-        if (saved && typeof saved === 'object') {
-          ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
-            if (!baseGlossary[cat]) baseGlossary[cat] = [];
-            const termMap = new Map();
-            baseGlossary[cat].forEach(t => termMap.set(t.japanese.toLowerCase().trim(), { ...t }));
-            (saved[cat] || []).forEach(t => {
-              if (!deletedTerms.includes(t.japanese.toLowerCase().trim())) {
+        cats.forEach(cat => {
+          if (!baseGlossary[cat]) baseGlossary[cat] = [];
+          const termMap = new Map();
+          
+          // 1. Termos padrão
+          baseGlossary[cat].forEach(t => {
+            if (t && t.japanese) termMap.set(t.japanese.toLowerCase().trim(), { ...t });
+          });
+
+          // 2. Termos do arquivo bundle (GitHub)
+          if (fileCustom && Array.isArray(fileCustom[cat])) {
+            fileCustom[cat].forEach(t => {
+              if (t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim())) {
                 termMap.set(t.japanese.toLowerCase().trim(), t);
               }
             });
-            baseGlossary[cat] = Array.from(termMap.values()).filter(t => !deletedTerms.includes(t.japanese.toLowerCase().trim()));
-          });
-          localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(baseGlossary));
-          window.TKST_GLOSSARY = baseGlossary;
-          return baseGlossary;
-        }
-      } catch(e) {}
+          }
 
-      ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
-        if (baseGlossary[cat]) {
-          baseGlossary[cat] = baseGlossary[cat].filter(t => !deletedTerms.includes(t.japanese.toLowerCase().trim()));
-        }
-      });
-      localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(baseGlossary));
-      window.TKST_GLOSSARY = baseGlossary;
-      return baseGlossary;
+          // 3. Termos salvos localmente
+          if (saved && Array.isArray(saved[cat])) {
+            saved[cat].forEach(t => {
+              if (t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim())) {
+                const existing = termMap.get(t.japanese.toLowerCase().trim());
+                if (!existing || !existing.updatedAt || (t.updatedAt && t.updatedAt >= existing.updatedAt) || t._edited) {
+                  termMap.set(t.japanese.toLowerCase().trim(), t);
+                }
+              }
+            });
+          }
+
+          baseGlossary[cat] = Array.from(termMap.values()).filter(t => t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim()));
+        });
+
+        localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(baseGlossary));
+        window.TKST_GLOSSARY = baseGlossary;
+        return baseGlossary;
+      } catch(e) {
+        cats.forEach(cat => {
+          if (baseGlossary[cat]) {
+            baseGlossary[cat] = baseGlossary[cat].filter(t => t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim()));
+          }
+        });
+        localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(baseGlossary));
+        window.TKST_GLOSSARY = baseGlossary;
+        return baseGlossary;
+      }
     },
 
     saveCustomGlossary: function(glossary) {
       if (!glossary || typeof glossary !== 'object') return false;
+      const deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
       localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(glossary));
       window.TKST_GLOSSARY = glossary;
+      pushGlossaryToServer(glossary, deletedTerms);
       pushToCloud();
+      window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
       return true;
     },
 
@@ -1960,15 +2145,22 @@
       const glossary = this.getCustomGlossary();
       if (!glossary[category]) glossary[category] = [];
 
-      const existingIdx = glossary[category].findIndex(t => t.japanese.toLowerCase().trim() === cleanKey);
+      const finalTerm = {
+        ...term,
+        _custom: true,
+        _edited: true,
+        updatedAt: Date.now()
+      };
+
+      const existingIdx = glossary[category].findIndex(t => t.japanese && t.japanese.toLowerCase().trim() === cleanKey);
       if (existingIdx !== -1) {
-        glossary[category][existingIdx] = { ...term };
+        glossary[category][existingIdx] = finalTerm;
       } else {
-        glossary[category].unshift({ ...term });
+        glossary[category].unshift(finalTerm);
       }
 
       this.saveCustomGlossary(glossary);
-      return { success: true, term };
+      return { success: true, term: finalTerm };
     },
 
     deleteGlossaryTerm: function(category, japaneseName) {
@@ -1980,9 +2172,12 @@
       localStorage.setItem(STORAGE_KEY_DELETED_GLOSSARY, JSON.stringify(deletedTerms));
 
       const glossary = this.getCustomGlossary();
-      if (glossary[category]) {
-        glossary[category] = glossary[category].filter(t => t.japanese.toLowerCase().trim() !== cleanKey);
-      }
+      const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+      cats.forEach(c => {
+        if (glossary[c]) {
+          glossary[c] = glossary[c].filter(t => (t.japanese || '').toLowerCase().trim() !== cleanKey);
+        }
+      });
       this.saveCustomGlossary(glossary);
       return { success: true };
     },
@@ -1997,7 +2192,7 @@
       const newCleanKey = newTermData.japanese.toLowerCase().trim();
 
       let deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
-      if (oldCleanKey !== newCleanKey) {
+      if (oldCleanKey && oldCleanKey !== newCleanKey) {
         if (!deletedTerms.includes(oldCleanKey)) deletedTerms.push(oldCleanKey);
         deletedTerms = deletedTerms.filter(k => k !== newCleanKey);
         localStorage.setItem(STORAGE_KEY_DELETED_GLOSSARY, JSON.stringify(deletedTerms));
@@ -2005,19 +2200,28 @@
 
       const glossary = this.getCustomGlossary();
 
-      // Remove from old category if exists
+      // Recupera propriedades técnicas anteriores caso não tenham sido enviadas
+      let existingTerm = null;
       if (glossary[oldCategory]) {
-        glossary[oldCategory] = glossary[oldCategory].filter(t => t.japanese.toLowerCase().trim() !== oldCleanKey);
+        existingTerm = glossary[oldCategory].find(t => (t.japanese || '').toLowerCase().trim() === oldCleanKey);
+        glossary[oldCategory] = glossary[oldCategory].filter(t => (t.japanese || '').toLowerCase().trim() !== oldCleanKey);
       }
 
       if (!glossary[newCategory]) glossary[newCategory] = [];
 
-      // Remove any existing in new category and insert
-      glossary[newCategory] = glossary[newCategory].filter(t => t.japanese.toLowerCase().trim() !== newCleanKey);
-      glossary[newCategory].unshift({ ...newTermData });
+      const finalTerm = {
+        ...(existingTerm || {}),
+        ...newTermData,
+        _edited: true,
+        updatedAt: Date.now()
+      };
+
+      // Remove duplicatas em newCategory e insere no topo
+      glossary[newCategory] = glossary[newCategory].filter(t => (t.japanese || '').toLowerCase().trim() !== newCleanKey);
+      glossary[newCategory].unshift(finalTerm);
 
       this.saveCustomGlossary(glossary);
-      return { success: true, term: newTermData };
+      return { success: true, term: finalTerm };
     },
 
     getFirebaseUrl: function() {

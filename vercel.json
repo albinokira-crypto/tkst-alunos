@@ -14,6 +14,18 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/student-commit.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/glossary.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/glossary-commit.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "**/*",
       "use": "@vercel/static"
     }
@@ -30,6 +42,18 @@
     {
       "src": "/api/quiz-commit",
       "dest": "/api/quiz-commit.js"
+    },
+    {
+      "src": "/api/student-commit",
+      "dest": "/api/student-commit.js"
+    },
+    {
+      "src": "/api/glossary",
+      "dest": "/api/glossary.js"
+    },
+    {
+      "src": "/api/glossary-commit",
+      "dest": "/api/glossary-commit.js"
     },
     {
       "handle": "filesystem"

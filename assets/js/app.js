@@ -855,6 +855,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderView(currentTab);
       }
     });
+
+    window.addEventListener('tkst_glossary_updated', () => {
+      if (!shouldSkipRerender() && currentTab === 'glossary') {
+        renderGlossary();
+      }
+    });
   }
 
   // Master View Switcher
