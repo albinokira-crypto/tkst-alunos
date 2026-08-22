@@ -7569,7 +7569,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           
           <!-- Top Card: Kanji, Pronunciation & Meaning -->
-          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 10px;">
             <div>
               <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-gold); font-weight: 700; margin-bottom: 2px;">
                 Termo Tradicional Shotokan
@@ -7583,16 +7583,17 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               </div>
             </div>
 
-            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-              <button type="button" class="audio-pronounce-btn" onclick="window.TKST_APP.speakJapanese('${term.japanese.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês" style="font-size: 0.76rem; padding: 6px 12px;">
-                <i class="fas fa-volume-up"></i> Ouvir Pronúncia
+            <!-- Single Row Action Buttons Bar (3 Botões perfeitamente alinhados na mesma linha) -->
+            <div style="display: flex; gap: 6px; align-items: center; width: 100%; flex-wrap: nowrap;">
+              <button type="button" class="btn btn-sm" onclick="window.TKST_APP.speakJapanese('${term.japanese.replace(/'/g, "\\'")}')" title="Ouvir pronúncia em Japonês" style="flex: 1; min-width: 0; font-size: 0.73rem; padding: 7px 4px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; border-radius: var(--radius-sm); margin: 0;">
+                <i class="fas fa-volume-up"></i> <span>Pronúncia</span>
               </button>
               ${isAdmin ? `
-                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', false)" title="Editar texto e significado do termo" style="font-size: 0.74rem; padding: 6px 10px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; gap: 5px;">
-                  <i class="fas fa-edit"></i> Editar Termo
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', false)" title="Editar texto e significado do termo" style="flex: 1; min-width: 0; font-size: 0.73rem; padding: 7px 4px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; border-radius: var(--radius-sm); margin: 0;">
+                  <i class="fas fa-edit"></i> <span>Editar Termo</span>
                 </button>
-                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', true)" title="Configurar fotos e vídeos do termo" style="font-size: 0.74rem; padding: 6px 10px; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent-blue); color: #60A5FA; display: inline-flex; align-items: center; gap: 5px;">
-                  <i class="fas fa-photo-video"></i> Configurar Mídias
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', true)" title="Configurar fotos e vídeos do termo" style="flex: 1; min-width: 0; font-size: 0.73rem; padding: 7px 4px; background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent-blue); color: #60A5FA; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; border-radius: var(--radius-sm); margin: 0;">
+                  <i class="fas fa-photo-video"></i> <span>Config. Mídias</span>
                 </button>
               ` : ''}
             </div>
