@@ -2712,6 +2712,13 @@ body.login-view-active .content-body {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+.quiz-option-btn.selected {
+  background: rgba(255, 183, 3, 0.2) !important;
+  border-color: var(--accent-gold) !important;
+  color: #FFF !important;
+  box-shadow: 0 0 12px rgba(255, 183, 3, 0.25);
+}
+
 .quiz-option-btn.correct {
   background: rgba(16, 185, 129, 0.18) !important;
   border-color: var(--accent-emerald) !important;

@@ -692,6 +692,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function switchTab(tabName) {
+    if (currentTab === 'quiz' && quizActive && currentQuizQuestions.length > 0 && currentQuizIndex < currentQuizQuestions.length && tabName !== 'quiz') {
+      const remainingCount = currentQuizQuestions.length - quizSubmissionDetails.length;
+      const confirmExit = confirm(`⚠️ ATENÇÃO: Sair desta tela encerrará o simulado em andamento!\n\nAs ${remainingCount} questão(ões) restantes serão computadas como ERROS no Ranking Oficial (-1 ponto por erro).\n\nDeseja realmente sair?`);
+      if (!confirmExit) {
+        return;
+      }
+      exitQuiz(false);
+    }
+
     if (tabName !== 'quiz') {
       if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
       if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
@@ -4839,13 +4848,51 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function exitQuiz() {
+  function exitQuiz(forceQuitWithoutPenalty) {
     if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
     if (quizAutoAdvanceTimeout) { clearTimeout(quizAutoAdvanceTimeout); quizAutoAdvanceTimeout = null; }
     if (quizCountdownTimeout) { clearTimeout(quizCountdownTimeout); quizCountdownTimeout = null; }
     TKST_AUDIO.stopInterstellarTrack();
     const overlay = document.getElementById('quizCountdownOverlay');
     if (overlay) overlay.remove();
+
+    // Se o simulado estiver em andamento, alerta o aluno e computa as questões restantes como erros
+    if (quizActive && currentQuizQuestions.length > 0 && currentQuizIndex < currentQuizQuestions.length && !forceQuitWithoutPenalty) {
+      const remainingCount = currentQuizQuestions.length - quizSubmissionDetails.length;
+      const confirmExit = confirm(`⚠️ ATENÇÃO: Abandonar o simulado em andamento!\n\nAs ${remainingCount} questão(ões) restantes serão computadas como ERROS no Ranking Oficial (-1 ponto por erro).\n\nDeseja realmente desistir desta tentativa?`);
+      if (!confirmExit) {
+        return;
+      }
+
+      // Preenche as questões restantes como erro/desistência
+      for (let i = quizSubmissionDetails.length; i < currentQuizQuestions.length; i++) {
+        const remQ = currentQuizQuestions[i];
+        quizSubmissionDetails.push({
+          question: remQ.question,
+          image: remQ.image || '',
+          options: remQ.options,
+          selectedIndex: -1,
+          selectedText: 'Desistência / Não respondida',
+          correctIndex: remQ.correctIndex,
+          correctText: remQ.options[remQ.correctIndex],
+          isCorrect: false
+        });
+      }
+
+      window.TKST_AUTH.saveQuizSubmission({
+        beltLevel: currentQuizBelt,
+        beltKyu: currentQuizKyu,
+        score: quizScore,
+        total: currentQuizQuestions.length,
+        details: quizSubmissionDetails
+      });
+
+      quizActive = false;
+      currentQuizIndex = currentQuizQuestions.length; // Redireciona direto para a tela de resultado
+      renderQuiz();
+      return;
+    }
+
     quizActive = false;
     currentQuizQuestions = [];
     renderQuiz();
@@ -4940,8 +4987,9 @@ document.addEventListener('DOMContentLoaded', () => {
               </span>
             ` : ''}
           </div>
-          <div style="color: #94A3B8; font-size: 0.68rem; line-height: 1.25;">
-            Acerte <strong style="color: var(--accent-gold);">10/10 (100%)</strong> no seu nível para desbloquear as graduações superiores.
+          <div style="color: #94A3B8; font-size: 0.68rem; line-height: 1.25; margin-top: 2px;">
+            Acerte <strong style="color: var(--accent-gold);">10/10 (100%)</strong> no seu nível para desbloquear as graduações superiores.<br>
+            <span style="color: #CBD5E1;"><i class="fas fa-shield-alt" style="color: var(--accent-gold); margin-right: 3px;"></i> <strong>Modo Exame Oficial:</strong> Gabarito ao final • Abandonar computa erro no Ranking.</span>
           </div>
         </div>
 
@@ -5186,7 +5234,7 @@ document.addEventListener('DOMContentLoaded', () => {
       image: q.image || '',
       options: q.options,
       selectedIndex: -1,
-      selectedText: 'Tempo Esgotado (0s - Não respondeu)',
+      selectedText: 'Tempo Esgotado (15s)',
       correctIndex: q.correctIndex,
       correctText: q.options[q.correctIndex],
       isCorrect: false
@@ -5194,12 +5242,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     q.options.forEach((_, idx) => {
       const btn = document.getElementById(`quizOpt_${idx}`);
-      if (btn) {
-        btn.disabled = true;
-        if (idx === q.correctIndex) {
-          btn.classList.add('correct');
-        }
-      }
+      if (btn) btn.disabled = true;
     });
 
     const timerBadge = document.getElementById('quizTimerBadge');
@@ -5216,14 +5259,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (feedbackArea) {
       feedbackArea.innerHTML = `
         <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-crimson);">
-          <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-            <i class="fas fa-hourglass-end"></i> Tempo Esgotado (15s) — Questão não respondida!
+          <div style="font-weight: 600; color: #FF808A; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-hourglass-end"></i> Tempo Esgotado (15s) — Resposta não computada a tempo.
           </div>
-          <div style="color: #6EE7B7; font-size: 0.88rem; font-weight: 600; margin-top: 6px;">
-            Resposta correta: ${q.options[q.correctIndex]}
-          </div>
-          <div style="color: #CBD5E1; font-size: 0.82rem; margin-top: 8px; line-height: 1.4;">
-            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 4px;"></i> Veja a resposta correta acima e toque no botão <strong>Próxima Questão</strong> abaixo quando estiver pronto(a).
+          <div style="color: #94A3B8; font-size: 0.78rem; margin-top: 4px;">
+            <i class="fas fa-forward"></i> Avançando para a próxima questão...
           </div>
         </div>
       `;
@@ -5232,11 +5272,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('quizNextBtn');
     if (nextBtn) nextBtn.style.display = 'inline-flex';
 
-    // Aguarda o aluno ler com calma e clicar no botão (sem pular automático em erro/tempo esgotado)
-    if (quizAutoAdvanceTimeout) {
-      clearTimeout(quizAutoAdvanceTimeout);
-      quizAutoAdvanceTimeout = null;
-    }
+    quizAutoAdvanceTimeout = setTimeout(() => {
+      if (quizActive) {
+        nextQuizQuestion();
+      }
+    }, 900);
   }
 
   function answerQuiz(optionIndex) {
@@ -5265,60 +5305,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const btn = document.getElementById(`quizOpt_${idx}`);
       if (btn) {
         btn.disabled = true;
-        if (idx === q.correctIndex) {
-          btn.classList.add('correct');
-        } else if (idx === optionIndex && !isCorrect) {
-          btn.classList.add('wrong');
+        if (idx === optionIndex) {
+          btn.classList.add('selected');
         }
       }
     });
 
     const feedbackArea = document.getElementById('quizFeedbackArea');
     if (feedbackArea) {
-      if (isCorrect) {
-        feedbackArea.innerHTML = `
-          <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-emerald);">
-            <div style="font-weight: 700; color: var(--accent-emerald); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <i class="fas fa-check-circle"></i> ✓ Resposta Correta!
-            </div>
-            <div style="color: #94A3B8; font-size: 0.78rem; margin-top: 6px;">
-              <i class="fas fa-forward"></i> Avançando automaticamente em 2 segundos...
-            </div>
+      feedbackArea.innerHTML = `
+        <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-gold);">
+          <div style="font-weight: 600; color: #FFF; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-check"></i> Resposta Registrada!
           </div>
-        `;
-      } else {
-        feedbackArea.innerHTML = `
-          <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-crimson);">
-            <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <i class="fas fa-times-circle"></i> ✗ Resposta Incorreta
-            </div>
-            <div style="color: #6EE7B7; font-size: 0.88rem; font-weight: 600; margin-top: 6px;">
-              Resposta correta: ${q.options[q.correctIndex]}
-            </div>
-            <div style="color: #CBD5E1; font-size: 0.82rem; margin-top: 8px; line-height: 1.4;">
-              <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 4px;"></i> Analise a resposta correta acima e toque no botão <strong>Próxima Questão</strong> abaixo para prosseguir.
-            </div>
+          <div style="color: #94A3B8; font-size: 0.78rem; margin-top: 4px;">
+            <i class="fas fa-forward"></i> Avançando para a próxima questão...
           </div>
-        `;
-      }
+        </div>
+      `;
     }
 
     const nextBtn = document.getElementById('quizNextBtn');
     if (nextBtn) nextBtn.style.display = 'inline-flex';
 
-    // Regra de transição: Se acertou, pula automático em 2 segundos. Se errou, espera o aluno clicar.
-    if (isCorrect) {
-      quizAutoAdvanceTimeout = setTimeout(() => {
-        if (quizActive) {
-          nextQuizQuestion();
-        }
-      }, 2000);
-    } else {
-      if (quizAutoAdvanceTimeout) {
-        clearTimeout(quizAutoAdvanceTimeout);
-        quizAutoAdvanceTimeout = null;
+    // Avança suavemente em 650ms sem revelar o gabarito
+    quizAutoAdvanceTimeout = setTimeout(() => {
+      if (quizActive) {
+        nextQuizQuestion();
       }
-    }
+    }, 650);
   }
 
   function nextQuizQuestion() {
