@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let adminQuizSelectedKyu = 6;
   let examGeneratorSelectedKyu = 6;
   let examGeneratorFormat = 'official'; // 'official' (Dissertativo com imagens), 'quiz' (Múltipla escolha)
+  let examPreviewGenerated = false; // false, 'exam', 'key'
   let quizModalTempImage = '';
   
   // Quiz State
@@ -1086,10 +1087,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const currentExamMeta = (window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu)) || { title: "Exame", targetBelt: "Faixa Amarela (6º Kyu)", kataName: "Heian Shodan", color: "#F5BE00" };
     let examPreviewHtml = '';
-    if (window.TKST_EXAM_GENERATOR) {
-      examPreviewHtml = examGeneratorFormat === 'quiz'
-        ? window.TKST_EXAM_GENERATOR.buildQuizExamHtml(examGeneratorSelectedKyu)
-        : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+    if (examPreviewGenerated && window.TKST_EXAM_GENERATOR) {
+      if (examPreviewGenerated === 'key') {
+        examPreviewHtml = window.TKST_EXAM_GENERATOR.buildAnswerKeyHtml(examGeneratorSelectedKyu, examGeneratorFormat);
+      } else {
+        examPreviewHtml = examGeneratorFormat === 'quiz'
+          ? window.TKST_EXAM_GENERATOR.buildQuizExamHtml(examGeneratorSelectedKyu)
+          : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+      }
     }
 
     let html = `
@@ -1922,10 +1927,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <div>
               <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 2px;">
-                <i class="fas fa-file-pdf" style="color: var(--accent-gold);"></i> Gerador de Provas & Gabaritos Oficiais (PDF / Impressão A4)
+                <i class="fas fa-file-pdf" style="color: var(--accent-gold);"></i> Gerador de Provas & Gabaritos (Impressão / PDF A4)
               </h4>
               <div style="font-size: 0.82rem; color: #94A3B8;">
-                Gere e imprima avaliações teóricas diagramadas para cada faixa com cabeçalho oficial, ilustrações técnicas e folhas de gabarito para correção.
+                Selecione a graduação e o modelo desejado, e clique em <strong>Gerar Prova</strong> para visualizar e imprimir em 1 folha A4.
               </div>
             </div>
             
@@ -1934,7 +1939,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas fa-key"></i> Imprimir Gabarito Geral (Todas as Faixas)
               </button>
               <button class="btn btn-secondary" onclick="window.TKST_APP.printAllExams()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; border-color: rgba(255,255,255,0.2);">
-                <i class="fas fa-print"></i> Imprimir Caderno com Todas as Provas
+                <i class="fas fa-print"></i> Imprimir Todas as Provas (Lote)
               </button>
             </div>
           </div>
@@ -1943,20 +1948,20 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="padding: 12px 18px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <span style="font-size: 0.84rem; font-weight: 700; color: #E2E8F0;">
-                <i class="fas fa-sliders-h" style="color: var(--accent-gold);"></i> Modelo da Prova:
+                <i class="fas fa-sliders-h" style="color: var(--accent-gold);"></i> Modelo:
               </span>
               <div style="display: inline-flex; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); padding: 3px; gap: 4px;">
                 <button type="button" class="btn btn-sm ${examGeneratorFormat === 'official' ? 'btn-primary' : 'btn-secondary'}" onclick="window.TKST_APP.setExamGeneratorFormat('official')" style="font-size: 0.78rem; padding: 6px 12px; border: none; font-weight: 700;">
-                  <i class="fas fa-pen-fancy"></i> Modelo Dissertativo Oficial (Padrão Word com Imagens)
+                  <i class="fas fa-pen-fancy"></i> Modelo Oficial Dissertativo (Word / Imagens)
                 </button>
                 <button type="button" class="btn btn-sm ${examGeneratorFormat === 'quiz' ? 'btn-primary' : 'btn-secondary'}" onclick="window.TKST_APP.setExamGeneratorFormat('quiz')" style="font-size: 0.78rem; padding: 6px 12px; border: none; font-weight: 700;">
-                  <i class="fas fa-list-check"></i> Modelo Simulado (Múltipla Escolha + Cartão-Resposta)
+                  <i class="fas fa-list-check"></i> Modelo Simulado (Múltipla Escolha)
                 </button>
               </div>
             </div>
 
             <div style="font-size: 0.78rem; color: #94A3B8;">
-              Orientação: Diagramação em tamanho A4 padrão com cabeçalho oficial TKST.
+              Layout: Diagramação compacta de <strong>1 página única A4</strong>.
             </div>
           </div>
 
@@ -1985,7 +1990,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `).join('')}
           </div>
 
-          <!-- BARRA DE AÇÕES PARA A FAIXA SELECIONADA -->
+          <!-- BARRA DE AÇÕES PRINCIPAL COM BOTÕES DE GERAR -->
           <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: rgba(255, 183, 3, 0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div>
               <div style="font-size: 1.05rem; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 8px;">
@@ -2000,25 +2005,50 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-primary" onclick="window.TKST_APP.printCurrentExam()" style="font-size: 0.85rem; padding: 10px 18px; font-weight: 800; box-shadow: 0 4px 14px rgba(255, 183, 3, 0.35);">
-                <i class="fas fa-print"></i> Imprimir / Salvar PDF Desta Prova
+              <button class="btn btn-primary" onclick="window.TKST_APP.generateExamPreview('exam')" style="font-size: 0.85rem; padding: 10px 18px; font-weight: 800; box-shadow: 0 4px 14px rgba(255, 183, 3, 0.35);">
+                <i class="fas fa-file-alt"></i> Gerar Prova
               </button>
-              <button class="btn btn-success" onclick="window.TKST_APP.printCurrentAnswerKey()" style="font-size: 0.85rem; padding: 10px 16px; font-weight: 700; background: #059669; color: #FFF; border: none;">
-                <i class="fas fa-check-double"></i> Imprimir Gabarito Desta Faixa
+              <button class="btn btn-success" onclick="window.TKST_APP.generateExamPreview('key')" style="font-size: 0.85rem; padding: 10px 16px; font-weight: 700; background: #059669; color: #FFF; border: none;">
+                <i class="fas fa-check-double"></i> Gerar Gabarito
+              </button>
+              <button class="btn btn-secondary" onclick="window.TKST_APP.printCurrentExam()" style="font-size: 0.85rem; padding: 10px 14px; font-weight: 700;">
+                <i class="fas fa-print"></i> Imprimir Direto
               </button>
             </div>
           </div>
 
-          <!-- PRÉVIA VISUAL DA FOLHA DE PROVA (EMULADOR A4) -->
-          <div style="padding: 24px 14px; background: rgba(0,0,0,0.5); overflow-x: auto;">
-            <div style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; max-width: 850px; margin-left: auto; margin-right: auto;">
-              <i class="fas fa-eye" style="color: var(--accent-gold);"></i> <strong>Prévia da Folha A4 em Tempo Real:</strong> (Exatamente como sairá na impressão ou PDF)
+          <!-- ÁREA DA PRÉVIA OU INSTRUÇÃO -->
+          ${examPreviewGenerated ? `
+            <div style="padding: 20px 14px; background: rgba(0,0,0,0.5); overflow-x: auto;">
+              <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto 12px auto; flex-wrap: wrap; gap: 8px;">
+                <div style="font-size: 0.82rem; color: #94A3B8; display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-eye" style="color: var(--accent-gold);"></i> <strong>${examPreviewGenerated === 'key' ? 'Gabarito Oficial do Sensei' : 'Prova Oficial Diagramada'} (1 Folha A4):</strong>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-sm btn-primary" onclick="${examPreviewGenerated === 'key' ? 'window.TKST_APP.printCurrentAnswerKey()' : 'window.TKST_APP.printCurrentExam()'}" style="font-size: 0.78rem; padding: 6px 14px; font-weight: 800;">
+                    <i class="fas fa-print"></i> Imprimir Esta Folha A4
+                  </button>
+                  <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.closeExamPreview()" style="font-size: 0.78rem; padding: 6px 10px;">
+                    <i class="fas fa-times"></i> Fechar Prévia
+                  </button>
+                </div>
+              </div>
+              
+              <div class="exam-preview-container" style="background: #FFF; color: #0F172A; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.7); max-width: 800px; margin: 0 auto; padding: 16px; font-size: 0.88rem;">
+                ${examPreviewHtml}
+              </div>
             </div>
-            
-            <div class="exam-preview-container" style="background: #FFF; color: #0F172A; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); max-width: 850px; margin: 0 auto; padding: 20px; font-size: 0.92rem;">
-              ${examPreviewHtml}
+          ` : `
+            <div style="padding: 40px 20px; text-align: center; color: #94A3B8; background: rgba(0,0,0,0.2);">
+              <i class="fas fa-file-invoice" style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 12px; display: block; opacity: 0.7;"></i>
+              <div style="font-size: 1rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
+                Selecione a faixa acima e clique em <strong>"Gerar Prova"</strong> ou <strong>"Gerar Gabarito"</strong>
+              </div>
+              <div style="font-size: 0.82rem; color: #64748B;">
+                A prova será gerada compactada em formato oficial para visualização e impressão em folha única A4.
+              </div>
             </div>
-          </div>
+          `}
         </div>
       ` : ''}
     `;
@@ -6036,6 +6066,14 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     setExamGeneratorFormat: (fmt) => {
       examGeneratorFormat = fmt;
+      renderAdminMaster();
+    },
+    generateExamPreview: (mode = 'exam') => {
+      examPreviewGenerated = mode;
+      renderAdminMaster();
+    },
+    closeExamPreview: () => {
+      examPreviewGenerated = false;
       renderAdminMaster();
     },
     printCurrentExam: () => {
