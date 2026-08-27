@@ -738,7 +738,7 @@ window.TKST_EXAM_GENERATOR = {
         bodyHtml = `
           <div class="exam-print-img-row">
             <div class="exam-print-img-wrapper">
-              <img src="${imgSrc}" alt="Técnica" class="exam-print-img" onerror="this.src='${q.fallbackImage}'">
+              <img src="${imgSrc}" alt="Técnica" class="exam-print-img" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 65px !important; object-fit: contain !important; display: block !important;" onerror="this.src='${q.fallbackImage}'">
             </div>
             <div class="exam-print-fields-col">
               ${fieldsHtml}
@@ -752,7 +752,7 @@ window.TKST_EXAM_GENERATOR = {
         bodyHtml = `
           <div class="exam-print-img-row">
             <div class="exam-print-img-wrapper">
-              <img src="${imgSrc}" alt="Técnica" class="exam-print-img" onerror="this.src='${q.fallbackImage}'">
+              <img src="${imgSrc}" alt="Técnica" class="exam-print-img" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 65px !important; object-fit: contain !important; display: block !important;" onerror="this.src='${q.fallbackImage}'">
             </div>
             <div class="exam-print-fields-col">
               <div class="exam-print-field-row">
@@ -812,12 +812,12 @@ window.TKST_EXAM_GENERATOR = {
       <div class="exam-sheet-a4 single-page-a4">
         <!-- HEADER COMPACTO -->
         <div class="exam-print-header">
-          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" onerror="this.src='assets/images/logo-tkst.png'">
+          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
           <div class="exam-print-header-center">
             <div class="exam-print-assoc">TRADICIONAL KARATE-DO SHOTOKAN TSUYOI (TKST)</div>
             <div class="exam-print-exam-title">${exam.title.toUpperCase()} (${exam.targetBelt.toUpperCase()})</div>
           </div>
-          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" onerror="this.style.display='none'">
+          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" style="height: 34px !important; max-height: 34px !important; width: auto !important; max-width: 42px !important; object-fit: contain !important; display: block !important;" onerror="this.style.display='none'">
         </div>
 
         <!-- QUADRO DE DADOS DO ALUNO -->
@@ -918,12 +918,12 @@ window.TKST_EXAM_GENERATOR = {
       <div class="exam-sheet-a4 single-page-a4">
         <!-- HEADER COMPACTO -->
         <div class="exam-print-header">
-          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" onerror="this.src='assets/images/logo-tkst.png'">
+          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
           <div class="exam-print-header-center">
             <div class="exam-print-assoc">TRADICIONAL KARATE-DO SHOTOKAN TSUYOI (TKST)</div>
             <div class="exam-print-exam-title">AVALIAÇÃO TEÓRICA / SIMULADO — ${exam.targetBelt.toUpperCase()}</div>
           </div>
-          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" onerror="this.style.display='none'">
+          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" style="height: 34px !important; max-height: 34px !important; width: auto !important; max-width: 42px !important; object-fit: contain !important; display: block !important;" onerror="this.style.display='none'">
         </div>
 
         <!-- QUADRO DE DADOS DO ALUNO -->
@@ -995,7 +995,7 @@ window.TKST_EXAM_GENERATOR = {
       return `
         <div class="exam-sheet-a4 single-page-a4">
           <div class="exam-print-header" style="border-bottom: 2px solid #059669;">
-            <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" onerror="this.src='assets/images/logo-tkst.png'">
+            <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
             <div class="exam-print-header-center">
               <div class="exam-print-assoc" style="color: #059669;">GABARITO OFICIAL DO SENSEI (MÚLTIPLA ESCOLHA)</div>
               <div class="exam-print-exam-title">${exam.title.toUpperCase()} — (${exam.targetBelt.toUpperCase()})</div>
@@ -1055,7 +1055,7 @@ window.TKST_EXAM_GENERATOR = {
     return `
       <div class="exam-sheet-a4 single-page-a4">
         <div class="exam-print-header" style="border-bottom: 2px solid #059669;">
-          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" onerror="this.src='assets/images/logo-tkst.png'">
+          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
           <div class="exam-print-header-center">
             <div class="exam-print-assoc" style="color: #059669;">FOLHA DE CORREÇÃO DO SENSEI (GABARITO OFICIAL)</div>
             <div class="exam-print-exam-title">${exam.title.toUpperCase()} — (${exam.targetBelt.toUpperCase()})</div>
@@ -1118,12 +1118,12 @@ window.TKST_EXAM_GENERATOR = {
     return `
       <div class="exam-sheet-a4">
         <div class="exam-print-header" style="border-bottom: 2px solid #D97706; padding-bottom: 4px; margin-bottom: 6px;">
-          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" onerror="this.src='assets/images/logo-tkst.png'">
+          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
           <div class="exam-print-header-center">
             <div class="exam-print-assoc" style="color: #B45309;">TRADICIONAL KARATE-DO SHOTOKAN TSUYOI (TKST)</div>
             <div class="exam-print-exam-title">GABARITO MESTRE GERAL — TODAS AS FAIXAS (6º KYU AO 3º DAN)</div>
           </div>
-          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" onerror="this.style.display='none'">
+          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" style="height: 34px !important; max-height: 34px !important; width: auto !important; max-width: 42px !important; object-fit: contain !important; display: block !important;" onerror="this.style.display='none'">
         </div>
 
         <div style="margin-top: 8px;">
