@@ -835,11 +835,11 @@ window.TKST_EXAM_GENERATOR = {
               <strong>${qNum}.</strong> ${q.question}
             </div>
             <div class="exam-q-side-row">
-              <div class="exam-q-img-wrap">
-                <img src="${q.image}" alt="Ilustração Técnica" class="exam-side-img">
-              </div>
               <div class="exam-mcq-options-col" style="flex: 1;">
                 ${optionsHtml}
+              </div>
+              <div class="exam-q-img-wrap">
+                <img src="${q.image}" alt="Ilustração Técnica" class="exam-side-img">
               </div>
             </div>
           </div>
@@ -876,18 +876,15 @@ window.TKST_EXAM_GENERATOR = {
             <div class="exam-print-row">
               <div style="flex: 1;"><strong>Aluno(a):</strong> __________________________________________</div>
             </div>
-            <div class="exam-print-row" style="margin-top: 3px;">
+            <div class="exam-print-row" style="margin-top: 4px;">
               <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
               <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
             </div>
           </div>
 
-          <!-- QUADRADO 3D COM A CITAÇÃO DE GICHIN FUNAKOSHI (LADO DIREITO SUPERIOR) -->
-          <div class="exam-quote-3d-box">
-            <div class="exam-quote-3d-text">
-              "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes."
-            </div>
-            <div class="exam-quote-3d-author">— Gichin Funakoshi</div>
+          <!-- QUADRO 3D COM A CITAÇÃO DE GICHIN FUNAKOSHI (LADO DIREITO SUPERIOR) -->
+          <div class="exam-quote-3d-wrap">
+            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-3d-img">
           </div>
         </div>
 
@@ -1063,18 +1060,15 @@ window.TKST_EXAM_GENERATOR = {
             <div class="exam-print-row">
               <div style="flex: 1;"><strong>Aluno(a):</strong> __________________________________________</div>
             </div>
-            <div class="exam-print-row" style="margin-top: 3px;">
+            <div class="exam-print-row" style="margin-top: 4px;">
               <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
               <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
             </div>
           </div>
 
-          <!-- QUADRADO 3D COM A CITAÇÃO DE GICHIN FUNAKOSHI (LADO DIREITO SUPERIOR) -->
-          <div class="exam-quote-3d-box">
-            <div class="exam-quote-3d-text">
-              "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes."
-            </div>
-            <div class="exam-quote-3d-author">— Gichin Funakoshi</div>
+          <!-- QUADRO 3D COM A CITAÇÃO DE GICHIN FUNAKOSHI (LADO DIREITO SUPERIOR) -->
+          <div class="exam-quote-3d-wrap">
+            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-3d-img">
           </div>
         </div>
 
@@ -1268,31 +1262,31 @@ window.TKST_EXAM_GENERATOR = {
         position: relative !important;
         z-index: 1 !important;
         text-align: center;
-        margin-bottom: 3px;
+        margin-bottom: 2px;
         padding-bottom: 1px;
       }
       .exam-main-header-logo {
         height: auto !important;
-        max-height: 48px !important;
+        max-height: 64px !important;
         width: auto !important;
-        max-width: 85% !important;
+        max-width: 95% !important;
         object-fit: contain !important;
         display: block !important;
         margin: 0 auto 2px auto !important;
         background: transparent !important;
       }
       .exam-clean-title {
-        font-size: 9.8pt;
+        font-size: 9.2pt;
         font-weight: 900;
         letter-spacing: 0.3px;
         color: #0F172A;
         line-height: 1.15;
       }
       .exam-clean-subtitle {
-        font-size: 8.5pt;
+        font-size: 8.2pt;
         font-weight: 800;
         color: #B45309;
-        line-height: 1.15;
+        line-height: 1.1;
         margin-top: 1px;
       }
 
@@ -1301,16 +1295,16 @@ window.TKST_EXAM_GENERATOR = {
         position: relative !important;
         z-index: 1 !important;
         display: flex !important;
-        gap: 8px !important;
-        align-items: stretch !important;
-        margin-bottom: 5px !important;
+        gap: 10px !important;
+        align-items: center !important;
+        margin-bottom: 4px !important;
       }
 
       /* QUADRO DE ALUNO */
       .exam-print-student-box {
         position: relative !important;
         z-index: 1 !important;
-        flex: 1.35 !important;
+        flex: 1 !important;
         border: 1.5px solid #0F172A !important;
         border-radius: 4px !important;
         padding: 4px 8px !important;
@@ -1328,72 +1322,61 @@ window.TKST_EXAM_GENERATOR = {
         gap: 6px;
       }
 
-      /* QUADRADO 3D DA CITAÇÃO DO MESTRE FUNAKOSHI */
-      .exam-quote-3d-box {
+      /* QUADRO 3D DA CITAÇÃO DO MESTRE FUNAKOSHI */
+      .exam-quote-3d-wrap {
         position: relative !important;
         z-index: 1 !important;
-        flex: 1 !important;
-        border: 1.5px solid #0F172A !important;
-        border-radius: 4px !important;
-        padding: 3px 6px !important;
-        background: #FFFFFF !important;
-        box-shadow: 2.5px 2.5px 0px #0F172A, 3.5px 3.5px 4px rgba(0, 0, 0, 0.12) !important;
+        flex-shrink: 0 !important;
         display: flex !important;
-        flex-direction: column !important;
+        align-items: center !important;
         justify-content: center !important;
-        text-align: center !important;
       }
-      .exam-quote-3d-text {
-        font-size: 6.8pt !important;
-        line-height: 1.15 !important;
-        color: #0F172A !important;
-        font-style: italic !important;
-        font-weight: 600 !important;
-      }
-      .exam-quote-3d-author {
-        font-size: 6.5pt !important;
-        font-weight: 800 !important;
-        color: #B45309 !important;
-        margin-top: 2px !important;
+      .exam-quote-3d-img {
+        height: 52px !important;
+        max-height: 56px !important;
+        width: auto !important;
+        object-fit: contain !important;
+        display: block !important;
+        border-radius: 2px !important;
       }
 
       /* FLUXO VERTICAL DE QUESTÕES */
       .exam-vertical-questions-flow {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 3.5px;
       }
 
       .exam-vertical-q-item {
         page-break-inside: avoid;
         border-bottom: 1px dashed #E2E8F0;
-        padding-bottom: 3.5px;
+        padding-bottom: 2.5px;
       }
       .exam-vertical-q-item:last-child {
         border-bottom: none;
       }
 
       .exam-q-title-row {
-        font-size: 8.5pt;
-        line-height: 1.25;
+        font-size: 8.2pt;
+        line-height: 1.2;
         font-weight: 700;
         color: #0F172A;
-        margin-bottom: 2px;
+        margin-bottom: 1.5px;
       }
 
       /* MÚLTIPLA ESCOLHA: ALTERNATIVAS UMA EMBAIXO DA OUTRA */
       .exam-mcq-options-col {
         display: flex;
         flex-direction: column;
-        gap: 1.5px;
-        margin-top: 2px;
+        gap: 1px;
+        margin-top: 1px;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
         gap: 6px;
-        font-size: 7.8pt;
-        line-height: 1.25;
+        font-size: 7.5pt;
+        line-height: 1.2;
         white-space: normal;
       }
       .exam-mcq-checkbox {
@@ -1406,12 +1389,13 @@ window.TKST_EXAM_GENERATOR = {
         color: #1E293B;
       }
 
-      /* ILUSTRAÇÃO LADO A LADO: IMAGEM À ESQUERDA, RESPOSTAS À FRENTE */
+      /* ILUSTRAÇÃO LADO A LADO: RESPOSTAS À ESQUERDA, IMAGEM À DIREITA */
       .exam-q-side-row {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-top: 2px;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 1px;
       }
       .exam-q-img-wrap {
         border: 1px solid #CBD5E1;
@@ -1419,12 +1403,13 @@ window.TKST_EXAM_GENERATOR = {
         padding: 2px;
         background: #FFF;
         flex-shrink: 0;
+        margin-left: auto;
       }
       .exam-side-img {
-        height: 52px !important;
-        max-height: 56px !important;
+        height: 48px !important;
+        max-height: 52px !important;
         width: auto !important;
-        max-width: 90px !important;
+        max-width: 85px !important;
         object-fit: contain !important;
         display: block !important;
       }
