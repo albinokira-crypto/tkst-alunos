@@ -870,18 +870,25 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
-        <!-- QUADRO DE DADOS DO ALUNO -->
-        <div class="exam-print-student-box">
-          <div class="exam-print-row">
-            <div style="flex: 2.3;"><strong>Aluno(a):</strong> __________________________________________________</div>
-            <div style="flex: 0.9;"><strong>Data:</strong> ${dateStr}</div>
-            <div style="flex: 0.7; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
+        <!-- LINHA SUPERIOR: QUADRO DO ALUNO + CITAÇÃO 3D DO MESTRE FUNAKOSHI -->
+        <div class="exam-top-info-row">
+          <div class="exam-print-student-box">
+            <div class="exam-print-row">
+              <div style="flex: 1;"><strong>Aluno(a):</strong> __________________________________________</div>
+            </div>
+            <div class="exam-print-row" style="margin-top: 3px;">
+              <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
+              <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
+            </div>
           </div>
-        </div>
 
-        <!-- CITAÇÃO DO MESTRE FUNAKOSHI -->
-        <div class="exam-print-quote">
-          "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes." — Gichin Funakoshi
+          <!-- QUADRADO 3D COM A CITAÇÃO DE GICHIN FUNAKOSHI (LADO DIREITO SUPERIOR) -->
+          <div class="exam-quote-3d-box">
+            <div class="exam-quote-3d-text">
+              "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes."
+            </div>
+            <div class="exam-quote-3d-author">— Gichin Funakoshi</div>
+          </div>
         </div>
 
         <!-- 10 QUESTÕES EM FLUXO VERTICAL COM ALTERNATIVAS UMA EMBAIXO DA OUTRA -->
@@ -1050,18 +1057,25 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
-        <!-- QUADRO DE DADOS DO ALUNO -->
-        <div class="exam-print-student-box">
-          <div class="exam-print-row">
-            <div style="flex: 2.3;"><strong>Aluno(a):</strong> __________________________________________________</div>
-            <div style="flex: 0.9;"><strong>Data:</strong> ${dateStr}</div>
-            <div style="flex: 0.7; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
+        <!-- LINHA SUPERIOR: QUADRO DO ALUNO + CITAÇÃO 3D DO MESTRE FUNAKOSHI -->
+        <div class="exam-top-info-row">
+          <div class="exam-print-student-box">
+            <div class="exam-print-row">
+              <div style="flex: 1;"><strong>Aluno(a):</strong> __________________________________________</div>
+            </div>
+            <div class="exam-print-row" style="margin-top: 3px;">
+              <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
+              <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
+            </div>
           </div>
-        </div>
 
-        <!-- CITAÇÃO DO MESTRE FUNAKOSHI -->
-        <div class="exam-print-quote">
-          "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes." — Gichin Funakoshi
+          <!-- QUADRADO 3D COM A CITAÇÃO DE GICHIN FUNAKOSHI (LADO DIREITO SUPERIOR) -->
+          <div class="exam-quote-3d-box">
+            <div class="exam-quote-3d-text">
+              "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes."
+            </div>
+            <div class="exam-quote-3d-author">— Gichin Funakoshi</div>
+          </div>
         </div>
 
         <!-- QUESTÕES VERTICAIS (UMA EMBAIXO DA OUTRA) -->
@@ -1234,14 +1248,14 @@ window.TKST_EXAM_GENERATOR = {
         page-break-after: auto;
       }
 
-      /* MARCA D'ÁGUA CENTRAL DA FOLHA */
+      /* MARCA D'ÁGUA CENTRAL DA FOLHA (DE UM LADO A OUTRO DA FOLHA) */
       .exam-sheet-watermark {
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        width: 140mm !important;
-        max-width: 85% !important;
+        width: 100% !important;
+        max-width: 188mm !important;
         height: auto !important;
         opacity: 0.08 !important;
         pointer-events: none !important;
@@ -1249,49 +1263,64 @@ window.TKST_EXAM_GENERATOR = {
         z-index: 0 !important;
       }
 
-      /* HEADER LIMPO COM LOGO CENTRALIZADA 3X MAIOR */
+      /* HEADER LIMPO COM BANNER HORIZONTAL */
       .exam-clean-header {
         position: relative !important;
         z-index: 1 !important;
         text-align: center;
-        margin-bottom: 4px;
-        padding-bottom: 2px;
+        margin-bottom: 3px;
+        padding-bottom: 1px;
       }
       .exam-main-header-logo {
-        height: 160px !important;
-        max-height: 175px !important;
+        height: auto !important;
+        max-height: 48px !important;
         width: auto !important;
-        max-width: 90% !important;
+        max-width: 85% !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 auto 4px auto !important;
+        margin: 0 auto 2px auto !important;
         background: transparent !important;
       }
       .exam-clean-title {
-        font-size: 10pt;
+        font-size: 9.8pt;
         font-weight: 900;
         letter-spacing: 0.3px;
         color: #0F172A;
         line-height: 1.15;
       }
       .exam-clean-subtitle {
-        font-size: 8.8pt;
+        font-size: 8.5pt;
         font-weight: 800;
         color: #B45309;
-        line-height: 1.2;
+        line-height: 1.15;
         margin-top: 1px;
+      }
+
+      /* LINHA SUPERIOR COM ALUNO + CITAÇÃO 3D */
+      .exam-top-info-row {
+        position: relative !important;
+        z-index: 1 !important;
+        display: flex !important;
+        gap: 8px !important;
+        align-items: stretch !important;
+        margin-bottom: 5px !important;
       }
 
       /* QUADRO DE ALUNO */
       .exam-print-student-box {
         position: relative !important;
         z-index: 1 !important;
-        border: 1.2px solid #0F172A;
-        border-radius: 4px;
-        padding: 3px 8px;
-        margin-bottom: 4px;
-        font-size: 8pt;
-        background: #F8FAFC;
+        flex: 1.35 !important;
+        border: 1.5px solid #0F172A !important;
+        border-radius: 4px !important;
+        padding: 4px 8px !important;
+        margin-bottom: 0 !important;
+        font-size: 7.8pt !important;
+        background: #F8FAFC !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        box-shadow: 2px 2px 0px #0F172A !important;
       }
       .exam-print-row {
         display: flex;
@@ -1299,17 +1328,33 @@ window.TKST_EXAM_GENERATOR = {
         gap: 6px;
       }
 
-      /* CITAÇÃO */
-      .exam-print-quote {
-        text-align: center;
-        font-style: italic;
-        font-size: 6.8pt;
-        color: #334155;
-        border-top: 1px dashed #CBD5E1;
-        border-bottom: 1px dashed #CBD5E1;
-        padding: 2px 0;
-        margin-bottom: 5px;
-        line-height: 1.15;
+      /* QUADRADO 3D DA CITAÇÃO DO MESTRE FUNAKOSHI */
+      .exam-quote-3d-box {
+        position: relative !important;
+        z-index: 1 !important;
+        flex: 1 !important;
+        border: 1.5px solid #0F172A !important;
+        border-radius: 4px !important;
+        padding: 3px 6px !important;
+        background: #FFFFFF !important;
+        box-shadow: 2.5px 2.5px 0px #0F172A, 3.5px 3.5px 4px rgba(0, 0, 0, 0.12) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        text-align: center !important;
+      }
+      .exam-quote-3d-text {
+        font-size: 6.8pt !important;
+        line-height: 1.15 !important;
+        color: #0F172A !important;
+        font-style: italic !important;
+        font-weight: 600 !important;
+      }
+      .exam-quote-3d-author {
+        font-size: 6.5pt !important;
+        font-weight: 800 !important;
+        color: #B45309 !important;
+        margin-top: 2px !important;
       }
 
       /* FLUXO VERTICAL DE QUESTÕES */

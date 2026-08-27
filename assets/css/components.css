@@ -3931,14 +3931,14 @@ body.login-view-active .content-body {
   max-height: none;
 }
 
-/* MARCA D'ÁGUA CENTRAL DA FOLHA */
+/* MARCA D'ÁGUA CENTRAL DA FOLHA (DE UM LADO A OUTRO DA FOLHA) */
 .exam-sheet-watermark {
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
-  width: 140mm !important;
-  max-width: 85% !important;
+  width: 100% !important;
+  max-width: 188mm !important;
   height: auto !important;
   opacity: 0.08 !important;
   pointer-events: none !important;
@@ -3946,27 +3946,28 @@ body.login-view-active .content-body {
   z-index: 0 !important;
 }
 
+/* HEADER LIMPO COM BANNER HORIZONTAL */
 .exam-clean-header {
   position: relative !important;
   z-index: 1 !important;
   text-align: center !important;
-  margin-bottom: 5px !important;
-  padding-bottom: 2px !important;
+  margin-bottom: 3px !important;
+  padding-bottom: 1px !important;
 }
 
 .exam-main-header-logo {
-  height: 160px !important;
-  max-height: 175px !important;
+  height: auto !important;
+  max-height: 48px !important;
   width: auto !important;
-  max-width: 90% !important;
+  max-width: 85% !important;
   object-fit: contain !important;
   display: block !important;
-  margin: 0 auto 4px auto !important;
+  margin: 0 auto 2px auto !important;
   background: transparent !important;
 }
 
 .exam-clean-title {
-  font-size: 10pt !important;
+  font-size: 9.8pt !important;
   font-weight: 900 !important;
   letter-spacing: 0.3px !important;
   color: #0F172A !important;
@@ -3974,20 +3975,38 @@ body.login-view-active .content-body {
 }
 
 .exam-clean-subtitle {
-  font-size: 8.8pt !important;
+  font-size: 8.5pt !important;
   font-weight: 800 !important;
   color: #B45309 !important;
-  line-height: 1.2 !important;
+  line-height: 1.15 !important;
   margin-top: 1px !important;
 }
 
+/* LINHA SUPERIOR COM ALUNO + CITAÇÃO 3D */
+.exam-top-info-row {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+  margin-bottom: 5px !important;
+}
+
+/* QUADRO DE ALUNO */
 .exam-print-student-box {
-  border: 1.2px solid #0F172A !important;
+  position: relative !important;
+  z-index: 1 !important;
+  flex: 1.35 !important;
+  border: 1.5px solid #0F172A !important;
   border-radius: 4px !important;
   padding: 4px 8px !important;
-  margin-bottom: 4px !important;
-  font-size: 8pt !important;
+  margin-bottom: 0 !important;
+  font-size: 7.8pt !important;
   background: #F8FAFC !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  box-shadow: 2px 2px 0px #0F172A !important;
 }
 
 .exam-print-row {
@@ -3996,16 +4015,35 @@ body.login-view-active .content-body {
   gap: 6px !important;
 }
 
-.exam-print-quote {
+/* QUADRADO 3D DA CITAÇÃO DO MESTRE FUNAKOSHI */
+.exam-quote-3d-box {
+  position: relative !important;
+  z-index: 1 !important;
+  flex: 1 !important;
+  border: 1.5px solid #0F172A !important;
+  border-radius: 4px !important;
+  padding: 3px 6px !important;
+  background: #FFFFFF !important;
+  box-shadow: 2.5px 2.5px 0px #0F172A, 3.5px 3.5px 4px rgba(0, 0, 0, 0.12) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
   text-align: center !important;
+}
+
+.exam-quote-3d-text {
+  font-size: 6.8pt !important;
+  line-height: 1.15 !important;
+  color: #0F172A !important;
   font-style: italic !important;
-  font-size: 7pt !important;
-  color: #334155 !important;
-  border-top: 1px dashed #CBD5E1 !important;
-  border-bottom: 1px dashed #CBD5E1 !important;
-  padding: 2px 0 !important;
-  margin-bottom: 6px !important;
-  line-height: 1.2 !important;
+  font-weight: 600 !important;
+}
+
+.exam-quote-3d-author {
+  font-size: 6.5pt !important;
+  font-weight: 800 !important;
+  color: #B45309 !important;
+  margin-top: 2px !important;
 }
 
 .exam-vertical-questions-flow {
