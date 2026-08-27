@@ -693,7 +693,33 @@ window.TKST_EXAM_GENERATOR = {
     return false;
   },
 
-  // Obtém 10 questões aleatórias da faixa a partir do banco de questões (excluindo contagem)
+  // Extrai assinatura conceitual da resposta para evitar repetições na mesma prova
+  getAnswerSignature: function(ans) {
+    if (!ans) return '';
+    let str = String(ans).toLowerCase().trim();
+    str = str.replace(/\(.*?\)/g, '').trim();
+    str = str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    const mainKeywords = [
+      'heian shodan', 'heian nidan', 'heian sandan', 'heian yondan', 'heian godan', 'tekki shodan', 'bassai dai', 'kanku dai', 'jion', 'empi', 'sochin',
+      'zenkutsu', 'kokutsu', 'kiba dachi', 'fudo dachi', 'sanchin', 'hangetsu', 'kosa dachi', 'heisoku', 'musubi',
+      'nukite', 'uraken', 'tetsui', 'empi uchi', 'hiji', 'shuto uke', 'gedan barai', 'age uke', 'soto uke', 'uchi uke', 'morote uke', 'kakiwake', 'juji uke', 'osae uke', 'kosa uke', 'manji uke',
+      'mae geri', 'mawashi geri', 'yoko geri', 'ushiro geri', 'mikazuki', 'hiza geri', 'ura mawashi',
+      'oi tsuki', 'gyaku tsuki', 'kizami', 'sanbon tsuki', 'ren zuki', 'uraken uchi', 'teisho', 'haito',
+      'dojo kun', 'gichin funakoshi', 'kiai', 'kime', 'zanshin', 'bunkai', 'embusen', 'kara te'
+    ];
+
+    for (const kw of mainKeywords) {
+      if (str.includes(kw)) {
+        return kw;
+      }
+    }
+
+    const words = str.split(' ').filter(w => w.length > 2);
+    return words.slice(0, 3).join(' ');
+  },
+
+  // Obtém 10 questões aleatórias da faixa a partir do banco de questões (excluindo contagem e respostas repetidas)
   getRandomQuizQuestionsForKyu: function(kyu, count = 10) {
     const all = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_DEFAULT_QUIZ_BANK || []);
     const kyuNum = parseInt(kyu);
@@ -718,7 +744,58 @@ window.TKST_EXAM_GENERATOR = {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
-    return shuffled.slice(0, count);
+    const selected = [];
+    const seenSignatures = new Set();
+
+    // Seleciona questões evitando respostas corretas com o mesmo conceito/texto
+    for (const q of shuffled) {
+      const correctText = (q.options && q.options[q.correctIndex] != null)
+        ? q.options[q.correctIndex]
+        : (q.id || '');
+      const sig = this.getAnswerSignature(correctText);
+
+      if (!seenSignatures.has(sig)) {
+        seenSignatures.add(sig);
+        const qClone = JSON.parse(JSON.stringify(q));
+
+        // Embaralha as alternativas para balancear as letras (A, B, C, D)
+        if (qClone.options && qClone.options.length > 1) {
+          const correctStr = qClone.options[qClone.correctIndex || 0];
+          for (let i = qClone.options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [qClone.options[i], qClone.options[j]] = [qClone.options[j], qClone.options[i]];
+          }
+          qClone.correctIndex = qClone.options.indexOf(correctStr);
+        }
+
+        selected.push(qClone);
+      }
+
+      if (selected.length >= count) break;
+    }
+
+    // Se o banco for pequeno e não atingiu 10 conceitos únicos, completa com as restantes sem repetir a mesma questão
+    if (selected.length < count) {
+      const selectedIds = new Set(selected.map(s => s.id));
+      for (const q of shuffled) {
+        if (!selectedIds.has(q.id)) {
+          selectedIds.add(q.id);
+          const qClone = JSON.parse(JSON.stringify(q));
+          if (qClone.options && qClone.options.length > 1) {
+            const correctStr = qClone.options[qClone.correctIndex || 0];
+            for (let i = qClone.options.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [qClone.options[i], qClone.options[j]] = [qClone.options[j], qClone.options[i]];
+            }
+            qClone.correctIndex = qClone.options.indexOf(correctStr);
+          }
+          selected.push(qClone);
+        }
+        if (selected.length >= count) break;
+      }
+    }
+
+    return selected.slice(0, count);
   },
 
   // Gera HTML da Folha 1 (Prova de Múltipla Escolha)
