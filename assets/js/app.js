@@ -88,6 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const videoModal = document.getElementById('videoModal');
   const sidebar = document.getElementById('sidebar');
 
+  // Versão oficial do App exibida no Menu Lateral
+  const APP_DISPLAY_VERSION = 'V-1.52';
+  const appVersionBadgeEl = document.getElementById('appVersionBadge');
+  if (appVersionBadgeEl) appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
+
   // =========================================================================
   // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)
   // =========================================================================
@@ -2238,13 +2243,23 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         `}
 
-        <div class="stat-card" onclick="window.TKST_APP.switchTab('quiz')" style="cursor: pointer;" title="Fazer Simulado Teórico">
-          <div class="stat-icon-box emerald">
-            <i class="fas fa-brain"></i>
+        ${!isAdmin ? `
+          <div class="stat-card" onclick="window.TKST_APP.switchTab('quiz')" style="cursor: pointer;" title="Fazer Simulado Teórico">
+            <div class="stat-icon-box emerald">
+              <i class="fas fa-brain"></i>
+            </div>
+            <div class="stat-value">Simulado</div>
+            <div class="stat-label">Quiz</div>
           </div>
-          <div class="stat-value">Simulado</div>
-          <div class="stat-label">Quiz</div>
-        </div>
+        ` : `
+          <div class="stat-card" onclick="window.TKST_APP.setAdminSubTab('exam-generator'); window.TKST_APP.switchTab('admin');" style="cursor: pointer; border-color: rgba(255, 183, 3, 0.45); background: rgba(255, 183, 3, 0.08);" title="Gerador Oficial de Provas e Gabaritos">
+            <div class="stat-icon-box gold">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="stat-value" style="color: var(--accent-gold);">Provas</div>
+            <div class="stat-label">Gerador</div>
+          </div>
+        `}
 
         <div class="stat-card" onclick="window.TKST_APP.switchTab('glossary')" style="cursor: pointer;" title="Abrir Dicionário Japonês de Karatê">
           <div class="stat-icon-box crimson">
