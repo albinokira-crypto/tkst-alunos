@@ -1,6 +1,8 @@
 /**
  * TKST Alunos - Gerador Oficial de Provas Escritas e Gabaritos em PDF/Impressão (2026)
  * Suporte completo: 6º Kyu (Amarela) até 3º Dan (Sandan)
+ * - Título no formato: "Avaliação teórica \n Faixa XXXX (XKyu) para Faixa XXXX (XKyu)"
+ * - Sem questões de contagem de números em japonês
  * - Seleção aleatória de 10 questões por exame
  * - Alternativas uma embaixo da outra (1 por linha)
  * - Ilustrações com respostas à frente (lado a lado)
@@ -14,7 +16,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Faixa Amarela (6º Kyu)",
     fromBelt: "Faixa Branca",
     toBelt: "Faixa Amarela",
-    title: "Prova de Branca para Amarela",
+    fromBeltWithKyu: "Faixa Branca (7º Kyu)",
+    toBeltWithKyu: "Faixa Amarela (6º Kyu)",
+    title: "Avaliação teórica",
     color: "#F5BE00",
     headerColor: "#D97706",
     kataName: "Heian Shodan",
@@ -78,22 +82,10 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 8,
-        title: "Conte de 1 a 10 em Japonês:",
-        type: "count_grid_2col",
-        col1: [
-          { num: "1", expected: "Ichi" },
-          { num: "2", expected: "Ni" },
-          { num: "3", expected: "San" },
-          { num: "4", expected: "Shi / Yon" },
-          { num: "5", expected: "Go" }
-        ],
-        col2: [
-          { num: "6", expected: "Roku" },
-          { num: "7", expected: "Shichi / Nana" },
-          { num: "8", expected: "Hachi" },
-          { num: "9", expected: "Ku / Kyu" },
-          { num: "10", expected: "Ju" }
-        ]
+        title: "O que significa a palavra KARATÊ-DO?",
+        type: "lines",
+        linesCount: 1,
+        expectedAnswer: "Kara = Vazio / Te = Mão / Dō = Caminho ('Caminho das Mãos Vazias')."
       },
       {
         num: 9,
@@ -110,7 +102,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Faixa Vermelha (5º Kyu)",
     fromBelt: "Faixa Amarela",
     toBelt: "Faixa Vermelha",
-    title: "Prova de Amarela para Vermelha",
+    fromBeltWithKyu: "Faixa Amarela (6º Kyu)",
+    toBeltWithKyu: "Faixa Vermelha (5º Kyu)",
+    title: "Avaliação teórica",
     color: "#E63946",
     headerColor: "#DC2626",
     kataName: "Heian Nidan",
@@ -174,22 +168,10 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 8,
-        title: "Conte de 11 a 20 em Japonês:",
-        type: "count_grid_2col",
-        col1: [
-          { num: "11", expected: "Ju-Ichi" },
-          { num: "12", expected: "Ju-Ni" },
-          { num: "13", expected: "Ju-San" },
-          { num: "14", expected: "Ju-Shi / Ju-Yon" },
-          { num: "15", expected: "Ju-Go" }
-        ],
-        col2: [
-          { num: "16", expected: "Ju-Roku" },
-          { num: "17", expected: "Ju-Shichi / Ju-Nana" },
-          { num: "18", expected: "Ju-Hachi" },
-          { num: "19", expected: "Ju-Ku / Ju-Kyu" },
-          { num: "20", expected: "Ni-Ju" }
-        ]
+        title: "Qual a diferença entre um ataque Jodan e Chudan?",
+        type: "lines",
+        linesCount: 1,
+        expectedAnswer: "Jodan é ataque no nível alto (rosto/cabeça); Chudan é ataque no nível médio (peito/tronco)."
       },
       {
         num: 9,
@@ -206,7 +188,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Faixa Laranja (4º Kyu)",
     fromBelt: "Faixa Vermelha",
     toBelt: "Faixa Laranja",
-    title: "Prova de Vermelha para Laranja",
+    fromBeltWithKyu: "Faixa Vermelha (5º Kyu)",
+    toBeltWithKyu: "Faixa Laranja (4º Kyu)",
+    title: "Avaliação teórica",
     color: "#FF7700",
     headerColor: "#EA580C",
     kataName: "Heian Sandan",
@@ -270,22 +254,10 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 8,
-        title: "Conte de 21 a 30 em Japonês:",
-        type: "count_grid_2col",
-        col1: [
-          { num: "21", expected: "Ni-Ju-Ichi" },
-          { num: "22", expected: "Ni-Ju-Ni" },
-          { num: "23", expected: "Ni-Ju-San" },
-          { num: "24", expected: "Ni-Ju-Shi" },
-          { num: "25", expected: "Ni-Ju-Go" }
-        ],
-        col2: [
-          { num: "26", expected: "Ni-Ju-Roku" },
-          { num: "27", expected: "Ni-Ju-Shichi" },
-          { num: "28", expected: "Ni-Ju-Hachi" },
-          { num: "29", expected: "Ni-Ju-Ku" },
-          { num: "30", expected: "San-Ju" }
-        ]
+        title: "O que é Kime (極め) no Karatê?",
+        type: "lines",
+        linesCount: 1,
+        expectedAnswer: "Foco, contração muscular e concentração de energia máxima no instante do impacto."
       },
       {
         num: 9,
@@ -302,7 +274,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Faixa Verde (3º Kyu)",
     fromBelt: "Faixa Laranja",
     toBelt: "Faixa Verde",
-    title: "Prova de Laranja para Verde",
+    fromBeltWithKyu: "Faixa Laranja (4º Kyu)",
+    toBeltWithKyu: "Faixa Verde (3º Kyu)",
+    title: "Avaliação teórica",
     color: "#10B981",
     headerColor: "#059669",
     kataName: "Heian Yondan",
@@ -378,7 +352,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Faixa Roxa (2º Kyu)",
     fromBelt: "Faixa Verde",
     toBelt: "Faixa Roxa",
-    title: "Prova de Verde para Roxa",
+    fromBeltWithKyu: "Faixa Verde (3º Kyu)",
+    toBeltWithKyu: "Faixa Roxa (2º Kyu)",
+    title: "Avaliação teórica",
     color: "#8B5CF6",
     headerColor: "#7C3AED",
     kataName: "Heian Godan",
@@ -454,7 +430,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Faixa Marrom (1º Kyu)",
     fromBelt: "Faixa Roxa",
     toBelt: "Faixa Marrom",
-    title: "Prova de Roxa para Marrom",
+    fromBeltWithKyu: "Faixa Roxa (2º Kyu)",
+    toBeltWithKyu: "Faixa Marrom (1º Kyu)",
+    title: "Avaliação teórica",
     color: "#78350F",
     headerColor: "#78350F",
     kataName: "Tekki Shodan & Bassai Dai",
@@ -530,7 +508,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Shodan (1º Dan - Faixa Preta)",
     fromBelt: "Faixa Marrom (1º Kyu)",
     toBelt: "Faixa Preta (Shodan)",
-    title: "Exame Oficial para Shodan (1º Dan)",
+    fromBeltWithKyu: "Faixa Marrom (1º Kyu)",
+    toBeltWithKyu: "Faixa Preta (1º Dan - Shodan)",
+    title: "Avaliação teórica",
     color: "#18181B",
     headerColor: "#0F172A",
     kataName: "9 Katas Avaliados",
@@ -606,7 +586,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Nidan (2º Dan - Faixa Preta)",
     fromBelt: "Shodan (1º Dan)",
     toBelt: "Nidan (2º Dan)",
-    title: "Exame Oficial para Nidan (2º Dan)",
+    fromBeltWithKyu: "Faixa Preta (1º Dan - Shodan)",
+    toBeltWithKyu: "Faixa Preta (2º Dan - Nidan)",
+    title: "Avaliação teórica",
     color: "#1E293B",
     headerColor: "#0F172A",
     kataName: "Katas Superiores Nidan",
@@ -654,7 +636,9 @@ window.TKST_OFFICIAL_EXAMS = {
     targetBelt: "Sandan (3º Dan - Sensei / Mestre)",
     fromBelt: "Nidan (2º Dan)",
     toBelt: "Sandan (3º Dan)",
-    title: "Exame Oficial para Sandan (3º Dan)",
+    fromBeltWithKyu: "Faixa Preta (2º Dan - Nidan)",
+    toBeltWithKyu: "Faixa Preta (3º Dan - Sandan)",
+    title: "Avaliação teórica",
     color: "#020617",
     headerColor: "#020617",
     kataName: "Katas Mestres Sandan",
@@ -696,12 +680,27 @@ window.TKST_EXAM_GENERATOR = {
     return window.TKST_OFFICIAL_EXAMS[kyu] || window.TKST_OFFICIAL_EXAMS[6];
   },
 
-  // Obtém 10 questões aleatórias da faixa a partir do banco de questões
+  // Filtra e elimina questões de contagem de números
+  isCountingQuestion: function(q) {
+    if (!q) return false;
+    if (q.type === 'count_grid_2col') return true;
+    const text = (q.question || q.title || '').toLowerCase();
+    if (text.includes('contagem')) return true;
+    if (text.includes('conte de')) return true;
+    if (text.includes('contar de')) return true;
+    if (/cont(e|ar|agem)\s+(de\s+)?\d+\s*a\s*\d+/i.test(text)) return true;
+    if (/n[úu]meros de \d+ a \d+/i.test(text)) return true;
+    return false;
+  },
+
+  // Obtém 10 questões aleatórias da faixa a partir do banco de questões (excluindo contagem)
   getRandomQuizQuestionsForKyu: function(kyu, count = 10) {
     const all = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_DEFAULT_QUIZ_BANK || []);
     const kyuNum = parseInt(kyu);
 
+    // Filtra questões da faixa e remove questões de contagem
     let pool = all.filter(q => {
+      if (this.isCountingQuestion(q)) return false;
       if (kyuNum === 6) {
         return q.kyuNumber === 6 || q.kyuNumber === 7;
       }
@@ -709,7 +708,7 @@ window.TKST_EXAM_GENERATOR = {
     });
 
     if (pool.length === 0) {
-      pool = all;
+      pool = all.filter(q => !this.isCountingQuestion(q));
     }
 
     // Embaralhamento seguro (Fisher-Yates)
@@ -771,10 +770,11 @@ window.TKST_EXAM_GENERATOR = {
 
     return `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1">
-        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E SEM FUNDO -->
+        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E TÍTULO SOLICITADO -->
         <div class="exam-clean-header">
           <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-main-header-logo">
-          <div class="exam-clean-title">AVALIAÇÃO TEÓRICA / SIMULADO — ${exam.targetBelt.toUpperCase()}</div>
+          <div class="exam-clean-title">Avaliação teórica</div>
+          <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
         <!-- QUADRO DE DADOS DO ALUNO -->
@@ -834,7 +834,8 @@ window.TKST_EXAM_GENERATOR = {
         <!-- HEADER DO GABARITO -->
         <div class="exam-clean-header" style="border-bottom: 2px solid #059669; padding-bottom: 4px;">
           <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
-          <div class="exam-clean-title" style="color: #059669;">GABARITO OFICIAL DO SENSEI — ${exam.targetBelt.toUpperCase()}</div>
+          <div class="exam-clean-title" style="color: #059669;">GABARITO OFICIAL — AVALIAÇÃO TEÓRICA</div>
+          <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
         <div style="background: #F0FDF4; border: 1px solid #86EFAC; padding: 4px 8px; border-radius: 4px; margin-bottom: 6px; font-size: 7.8pt; color: #166534; display: flex; justify-content: space-between; align-items: center;">
@@ -873,9 +874,9 @@ window.TKST_EXAM_GENERATOR = {
     `;
   },
 
-  // Renderiza uma lista de questões dissertativas
+  // Renderiza uma lista de questões dissertativas (sem contagem)
   renderDissertativeQuestions: function(questions) {
-    return questions.map(q => {
+    return questions.filter(q => !this.isCountingQuestion(q)).map(q => {
       let bodyHtml = '';
 
       if (q.type === 'lines') {
@@ -920,26 +921,6 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
         `;
-      } else if (q.type === 'count_grid_2col') {
-        const col1Html = q.col1.map(it => `
-          <div class="exam-print-count-item">
-            <span class="exam-print-count-num">${it.num}-</span>
-            <div class="exam-print-line" style="flex: 1;"></div>
-          </div>
-        `).join('');
-        const col2Html = q.col2.map(it => `
-          <div class="exam-print-count-item">
-            <span class="exam-print-count-num">${it.num}-</span>
-            <div class="exam-print-line" style="flex: 1;"></div>
-          </div>
-        `).join('');
-
-        bodyHtml = `
-          <div class="exam-print-count-2cols">
-            <div class="exam-print-count-subcol">${col1Html}</div>
-            <div class="exam-print-count-subcol">${col2Html}</div>
-          </div>
-        `;
       }
 
       return `
@@ -957,15 +938,17 @@ window.TKST_EXAM_GENERATOR = {
   buildOfficialExamHtml: function(kyu, options = {}) {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
-    const questions = exam.questions || [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
+    const rawQuestions = exam.questions || [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
+    const questions = rawQuestions.filter(q => !this.isCountingQuestion(q));
     const questionsHtml = this.renderDissertativeQuestions(questions);
 
     const page1Html = `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1">
-        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E SEM FUNDO -->
+        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E TÍTULO SOLICITADO -->
         <div class="exam-clean-header">
           <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-main-header-logo">
-          <div class="exam-clean-title">${exam.title.toUpperCase()} (${exam.targetBelt.toUpperCase()})</div>
+          <div class="exam-clean-title">Avaliação teórica</div>
+          <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
         <!-- QUADRO DE DADOS DO ALUNO -->
@@ -994,12 +977,8 @@ window.TKST_EXAM_GENERATOR = {
       let expectedHtml = '';
       if (q.type === 'image_fields') {
         expectedHtml = q.fields.map(f => `<span><strong>${f.label}</strong> ${f.expected}</span>`).join(' | ');
-      } else if (q.type === 'count_grid_2col') {
-        const c1 = q.col1.map(it => `${it.num}:${it.expected}`).join(' ');
-        const c2 = q.col2.map(it => `${it.num}:${it.expected}`).join(' ');
-        expectedHtml = `<span>${c1} | ${c2}</span>`;
       } else {
-        expectedHtml = `<span>${q.expectedAnswer.replace(/\n/g, ' ')}</span>`;
+        expectedHtml = `<span>${(q.expectedAnswer || '').replace(/\n/g, ' ')}</span>`;
       }
 
       return `
@@ -1020,7 +999,8 @@ window.TKST_EXAM_GENERATOR = {
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page2">
         <div class="exam-clean-header" style="border-bottom: 2px solid #059669; padding-bottom: 4px;">
           <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
-          <div class="exam-clean-title" style="color: #059669;">FOLHA DE CORREÇÃO DO SENSEI (GABARITO OFICIAL) — ${exam.targetBelt.toUpperCase()}</div>
+          <div class="exam-clean-title" style="color: #059669;">FOLHA DE CORREÇÃO DO SENSEI (GABARITO OFICIAL)</div>
+          <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
         <div style="background: #F0FDF4; border: 1px solid #86EFAC; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; font-size: 8pt; color: #166534;">
@@ -1051,14 +1031,13 @@ window.TKST_EXAM_GENERATOR = {
 
     const sectionsHtml = kyuKeys.map(kyu => {
       const exam = this.getExamData(kyu);
-      const questions = exam.questions || [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
+      const rawQuestions = exam.questions || [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
+      const questions = rawQuestions.filter(q => !this.isCountingQuestion(q));
 
       const rowsHtml = questions.map(q => {
         let resp = q.expectedAnswer || '';
         if (q.type === 'image_fields') {
           resp = q.fields.map(f => `${f.label} ${f.expected}`).join(' | ');
-        } else if (q.type === 'count_grid_2col') {
-          resp = q.col1.map(it => `${it.num}:${it.expected}`).join(' ') + ' ' + q.col2.map(it => `${it.num}:${it.expected}`).join(' ');
         }
         return `
           <tr>
@@ -1072,7 +1051,7 @@ window.TKST_EXAM_GENERATOR = {
       return `
         <div style="page-break-inside: avoid; margin-bottom: 12px; border: 1px solid #CBD5E1; border-radius: 4px; overflow: hidden;">
           <div style="background: ${exam.headerColor || '#1E293B'}; color: #FFF; padding: 4px 10px; font-weight: 800; font-size: 8.5pt; display: flex; justify-content: space-between; align-items: center;">
-            <span>🥋 ${exam.title.toUpperCase()} (${exam.targetBelt})</span>
+            <span>🥋 Avaliação teórica — ${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</span>
             <span style="font-size: 7.5pt; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 3px;">Kata: ${exam.kataName}</span>
           </div>
           <table class="exam-master-key-table">
@@ -1150,7 +1129,7 @@ window.TKST_EXAM_GENERATOR = {
         page-break-after: auto;
       }
 
-      /* HEADER LIMPO COM LOGO DO USUÁRIO CENTRALIZADA */
+      /* HEADER LIMPO COM LOGO CENTRALIZADA E TÍTULO EM 2 LINHAS */
       .exam-clean-header {
         text-align: center;
         margin-bottom: 4px;
@@ -1163,15 +1142,22 @@ window.TKST_EXAM_GENERATOR = {
         max-width: 250px !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 auto 3px auto !important;
+        margin: 0 auto 2px auto !important;
         background: transparent !important;
       }
       .exam-clean-title {
-        font-size: 9.5pt;
+        font-size: 10pt;
         font-weight: 900;
         letter-spacing: 0.3px;
         color: #0F172A;
         line-height: 1.15;
+      }
+      .exam-clean-subtitle {
+        font-size: 8.8pt;
+        font-weight: 800;
+        color: #B45309;
+        line-height: 1.2;
+        margin-top: 1px;
       }
 
       /* QUADRO DE ALUNO */
@@ -1308,30 +1294,6 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 800;
         color: #1E293B;
         white-space: nowrap;
-      }
-
-      /* CONTAGEM EM 2 SUBCOLUNAS */
-      .exam-print-count-2cols {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-top: 2px;
-      }
-      .exam-print-count-subcol {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5px;
-      }
-      .exam-print-count-item {
-        display: flex;
-        align-items: center;
-        gap: 3px;
-      }
-      .exam-print-count-num {
-        font-size: 7.5pt;
-        font-weight: 800;
-        color: #0F172A;
-        width: 20px;
       }
 
       /* GABARITOS */

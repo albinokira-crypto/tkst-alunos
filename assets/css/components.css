@@ -3947,11 +3947,19 @@ body.login-view-active .content-body {
 }
 
 .exam-clean-title {
-  font-size: 9.5pt !important;
+  font-size: 10pt !important;
   font-weight: 900 !important;
   letter-spacing: 0.3px !important;
   color: #0F172A !important;
   line-height: 1.15 !important;
+}
+
+.exam-clean-subtitle {
+  font-size: 8.8pt !important;
+  font-weight: 800 !important;
+  color: #B45309 !important;
+  line-height: 1.2 !important;
+  margin-top: 1px !important;
 }
 
 .exam-print-student-box {
