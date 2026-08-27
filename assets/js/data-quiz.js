@@ -373,15 +373,15 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "id": "q5-6",
     "kyuNumber": 5,
     "beltName": "Faixa Vermelha (5º Kyu)",
-    "question": "Quais técnicas combinadas são executadas no movimento inicial de chute do Heian Nidan?",
+    "question": "Quais técnicas de defesa e ataque com o cotovelo são introduzidas no Kata Heian Sandan?",
     "options": [
-      "Yoko Geri Keage e Uraken Uchi simultâneos",
-      "Mae Geri e Gyaku Tsuki",
-      "Mawashi Geri e Gedan Barai",
-      "Ushiro Geri e Age Uke"
+      "Morote Uke e Empi Uchi (em base Kiba Dachi)",
+      "Gedan Barai e Oi Tsuki",
+      "Shuto Uke e Mae Geri",
+      "Jodan Age Uke e Gyaku Tsuki"
     ],
     "correctIndex": 0,
-    "explanation": "Executa-se o chute lateral ascendente (Yoko Geri Keage) em harmonia com o golpe de costas do punho (Uraken Uchi)."
+    "explanation": "No Heian Sandan, executam-se defesas reforçadas (Morote Uke) e golpes de cotovelo (Empi Uchi) na base Kiba Dachi."
   },
   {
     "id": "q5-7",
@@ -429,29 +429,29 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     "id": "q5-10",
     "kyuNumber": 5,
     "beltName": "Faixa Vermelha (5º Kyu)",
-    "question": "Quais técnicas combinadas são executadas simultaneamente no movimento inicial de chute do Heian Nidan?",
+    "question": "Qual a distribuição de peso correta na base Kiba Dachi (Base do Cavaleiro) ensinada na Faixa Vermelha?",
     "options": [
-      "Ushiro Geri e Shuto Uke",
-      "Mawashi Geri e Gedan Barai",
-      "Mae Geri e Gyaku Tsuki",
-      "Yoko Geri Keage e Uraken Uchi (com Kiai no retorno)"
+      "70% na perna da frente e 30% atrás",
+      "70% na perna de trás e 30% na frente",
+      "90% na perna de apoio e 10% na frente",
+      "50% do peso em cada perna com pés paralelos e joelhos flexionados para fora"
     ],
     "correctIndex": 3,
-    "explanation": "No Heian Nidan, executa-se o Yoko Geri Keage (chute lateral ascendente) junto com o Uraken Uchi (costas do punho)."
+    "explanation": "A base Kiba Dachi mantém o centro de gravidade baixo e a distribuição de peso equilibrada 50%/50%."
   },
   {
     "id": "q5-11",
     "kyuNumber": 5,
     "beltName": "Faixa Vermelha (5º Kyu)",
-    "question": "Qual técnica de golpe penetrante com a ponta dos dedos é ensinada no Heian Nidan?",
+    "question": "Qual a defesa dupla cruzada com punhos fechados que aparece no Kata Heian Sandan?",
     "options": [
-      "Uraken Uchi (Golpe com o dorso do punho e mão aberta em guarda alta)",
-      "Teisho Uchi (Golpe com a base da palma e apoio da mão na cintura)",
-      "Nukite (Chudan Yonhon Nukite com suporte da outra mão sob o cotovelo)",
-      "Empi Uchi (Cotovelada frontal com rotação e apoio na palma oposta)"
+      "Gedan Barai",
+      "Kakiwake Uke",
+      "Jodan Juji Uke / Morote Kosa Uke",
+      "Shuto Uke"
     ],
     "correctIndex": 2,
-    "explanation": "Yonhon Nukite é o ataque penetrante com as quatro pontas dos dedos estendidos em Zenkutsu Dachi, acompanhado de Kiai."
+    "explanation": "O bloqueio com punhos em cruz protege contra ataques diretos e prepara contra-ataques a curta distância."
   },
   {
     "id": "q5-12",

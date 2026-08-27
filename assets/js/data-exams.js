@@ -719,18 +719,31 @@ window.TKST_EXAM_GENERATOR = {
     return words.slice(0, 3).join(' ');
   },
 
+  // Mapeia o Exame Selecionado para a graduação correspondente no Banco de Questões
+  getQuizBankKyuForExam: function(examKey) {
+    const map = {
+      '6': 7,  // Exame Branca para Amarela -> Questões do 7º Kyu (Heian Shodan)
+      '5': 6,  // Exame Amarela para Vermelha -> Questões do 6º Kyu (Heian Nidan)
+      '4': 5,  // Exame Vermelha para Laranja -> Questões do 5º Kyu (Heian Sandan)
+      '3': 4,  // Exame Laranja para Verde -> Questões do 4º Kyu
+      '2': 3,  // Exame Verde para Roxa -> Questões do 3º Kyu (Heian Yondan)
+      '1': 2,  // Exame Roxa para Marrom -> Questões do 2º Kyu (Heian Godan / Tekki Shodan)
+      '0': 1,  // Exame Marrom para Shodan -> Questões do 1º Kyu (Bassai Dai / Tekki Shodan)
+      '-1': 0, // Exame Shodan para Nidan -> Questões do 0 (Shodan / WKF / Funakoshi)
+      '-2': -1 // Exame Nidan para Sandan -> Questões do -1 (Katas Superiores)
+    };
+    return map[String(examKey)] !== undefined ? map[String(examKey)] : parseInt(examKey);
+  },
+
   // Obtém 10 questões aleatórias da faixa a partir do banco de questões (excluindo contagem e respostas repetidas)
   getRandomQuizQuestionsForKyu: function(kyu, count = 10) {
     const all = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_DEFAULT_QUIZ_BANK || []);
-    const kyuNum = parseInt(kyu);
+    const bankKyu = this.getQuizBankKyuForExam(kyu);
 
-    // Filtra questões da faixa e remove questões de contagem
+    // Filtra questões da graduação correta e remove questões de contagem
     let pool = all.filter(q => {
       if (this.isCountingQuestion(q)) return false;
-      if (kyuNum === 6) {
-        return q.kyuNumber === 6 || q.kyuNumber === 7;
-      }
-      return q.kyuNumber === kyuNum;
+      return q.kyuNumber === bankKyu;
     });
 
     if (pool.length === 0) {

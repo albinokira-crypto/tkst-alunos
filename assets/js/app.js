@@ -1971,25 +1971,25 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
 
-          <!-- SELETOR DE FAIXA / GRADUAÇÃO -->
-          <div style="padding: 12px 14px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; background: rgba(0,0,0,0.2);">
+          <!-- SELETOR DE FAIXA / GRADUAÇÃO (DE FAIXA X PARA FAIXA Y) -->
+          <div style="padding: 12px 14px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; background: rgba(0,0,0,0.2);">
             ${[
-              { kyu: 6, label: "6º Kyu (Amarela)", bg: "#F5BE00", color: "#0A0D14", border: "1px solid #D97706" },
-              { kyu: 5, label: "5º Kyu (Vermelha)", bg: "#E63946", color: "#FFFFFF", border: "1px solid #DC2626" },
-              { kyu: 4, label: "4º Kyu (Laranja)", bg: "#FF7700", color: "#FFFFFF", border: "1px solid #EA580C" },
-              { kyu: 3, label: "3º Kyu (Verde)", bg: "#10B981", color: "#FFFFFF", border: "1px solid #059669" },
-              { kyu: 2, label: "2º Kyu (Roxa)", bg: "#8B5CF6", color: "#FFFFFF", border: "1px solid #7C3AED" },
-              { kyu: 1, label: "1º Kyu (Marrom)", bg: "#78350F", color: "#FFFFFF", border: "1px solid #92400E" },
-              { kyu: 0, label: "1º Dan (Shodan)", bg: "#18181B", color: "#FFFFFF", border: "1px solid #3F3F46" },
-              { kyu: -1, label: "2º Dan (Nidan)", bg: "#1E293B", color: "#FFFFFF", border: "1px solid #475569" },
-              { kyu: -2, label: "3º Dan (Sandan)", bg: "#020617", color: "#FFFFFF", border: "1px solid #334155" }
+              { kyu: 6, label: "Branca para Amarela", bg: "#F5BE00", color: "#0A0D14", border: "1px solid #D97706" },
+              { kyu: 5, label: "Amarela para Vermelha", bg: "#E63946", color: "#FFFFFF", border: "1px solid #DC2626" },
+              { kyu: 4, label: "Vermelha para Laranja", bg: "#FF7700", color: "#FFFFFF", border: "1px solid #EA580C" },
+              { kyu: 3, label: "Laranja para Verde", bg: "#10B981", color: "#FFFFFF", border: "1px solid #059669" },
+              { kyu: 2, label: "Verde para Roxa", bg: "#8B5CF6", color: "#FFFFFF", border: "1px solid #7C3AED" },
+              { kyu: 1, label: "Roxa para Marrom", bg: "#78350F", color: "#FFFFFF", border: "1px solid #92400E" },
+              { kyu: 0, label: "Marrom para Preta (Shodan)", bg: "#18181B", color: "#FFFFFF", border: "1px solid #3F3F46" },
+              { kyu: -1, label: "Shodan para Nidan (2º Dan)", bg: "#1E293B", color: "#FFFFFF", border: "1px solid #475569" },
+              { kyu: -2, label: "Nidan para Sandan (3º Dan)", bg: "#020617", color: "#FFFFFF", border: "1px solid #334155" }
             ].map(b => `
               <button class="btn btn-sm" onclick="window.TKST_APP.setExamGeneratorKyu(${b.kyu})" style="
                 background: ${b.bg};
                 color: ${b.color};
                 border: ${examGeneratorSelectedKyu === b.kyu ? '2px solid #FFB703' : b.border};
                 ${examGeneratorSelectedKyu === b.kyu ? 'box-shadow: 0 0 10px rgba(255, 183, 3, 0.8); transform: scale(1.03); font-weight: 900;' : 'opacity: 0.85; font-weight: 700;'}
-                padding: 8px 6px; font-size: 0.74rem; text-align: center; white-space: nowrap; transition: all 0.2s ease;
+                padding: 8px 6px; font-size: 0.72rem; text-align: center; white-space: normal; line-height: 1.2; transition: all 0.2s ease;
               ">
                 ${examGeneratorSelectedKyu === b.kyu ? '✓ ' : ''}${b.label}
               </button>
@@ -2001,9 +2001,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <div>
               <div style="font-size: 1.05rem; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 8px;">
                 <span class="badge" style="background: ${currentExamMeta.color || '#F5BE00'}; color: ${currentExamMeta.kyu === 6 ? '#000' : '#FFF'}; font-size: 0.8rem; font-weight: 800;">
-                  ${currentExamMeta.targetBelt}
+                  ${currentExamMeta.fromBeltWithKyu || 'Branca'} ➔ ${currentExamMeta.toBeltWithKyu || 'Amarela'}
                 </span>
-                ${currentExamMeta.title}
+                Avaliação Teórica
               </div>
               <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 2px;">
                 Kata Exigido: <strong>${currentExamMeta.kataName}</strong> • ${examGeneratorFormat === 'official' ? 'Modelo Oficial com Imagens & Linhas' : 'Modelo Simulado de Múltipla Escolha'}
