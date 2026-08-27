@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // State
   let currentTab = 'login';
   let selectedBeltKyu = 6;
+  let openStudySections = new Set(['kihon']); // Kihon permanece aberto por padrão e mantém estado persistente
   let kataSearchQuery = '';
   let glossaryCategory = 'all';
   let glossarySearchQuery = '';
@@ -846,6 +847,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('tkst_cloud_synced', () => {
       setupUserDisplay();
       if (!shouldSkipRerender()) {
+        if (currentTab === 'my-exam') {
+          return;
+        }
         renderView(currentTab);
       }
     });
@@ -3217,6 +3221,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const beltTitleText = curr.kyuNumber === 0 ? 'SHODAN (1º DAN)' : (curr.kyuNumber === -1 ? 'NIDAN (2º DAN)' : (curr.kyuNumber === -2 ? 'SANDAN (3º DAN)' : curr.kyuNumber + 'º KYU'));
 
+    const isKihonOpen = openStudySections.has('kihon');
+    const isGeriOpen = openStudySections.has('geri');
+    const isUkemiOpen = openStudySections.has('ukemi');
+    const isKataOpen = openStudySections.has('kata');
+    const isKumiteOpen = openStudySections.has('kumite');
+
     let html = `
       <div class="section-header">
         <div class="section-title-group">
@@ -3324,7 +3334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         <!-- 1. KIHON / TABELA OFICIAL -->
         <div class="study-accordion-card" id="studyCard_kihon">
-          <button type="button" class="study-accordion-header" id="studyHeader_kihon" onclick="window.TKST_APP.toggleStudyAccordion('kihon')">
+          <button type="button" class="study-accordion-header ${isKihonOpen ? 'active' : ''}" id="studyHeader_kihon" onclick="window.TKST_APP.toggleStudyAccordion('kihon')">
             <div class="study-accordion-title">
               <i class="fas fa-fist-raised" style="color: var(--accent-crimson); font-size: 1.25rem;"></i>
               <div>
@@ -3334,10 +3344,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             </div>
-            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kihon"></i>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kihon" style="transform: ${isKihonOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
           </button>
 
-          <div class="study-accordion-body" id="studyBody_kihon">
+          <div class="study-accordion-body ${isKihonOpen ? 'active' : ''}" id="studyBody_kihon">
             ${curr.shodanProgram ? `
               <!-- LEGENDA OFICIAL SHODAN -->
               <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(10,13,20,0.8); padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
@@ -3481,7 +3491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ${curr.geri ? `
           <!-- GERI WAZA (Chutes Especiais) -->
           <div class="study-accordion-card" id="studyCard_geri">
-            <button type="button" class="study-accordion-header" id="studyHeader_geri" onclick="window.TKST_APP.toggleStudyAccordion('geri')">
+            <button type="button" class="study-accordion-header ${isGeriOpen ? 'active' : ''}" id="studyHeader_geri" onclick="window.TKST_APP.toggleStudyAccordion('geri')">
               <div class="study-accordion-title">
                 <i class="fas fa-shoe-prints" style="color: #F5BE00; font-size: 1.25rem;"></i>
                 <div>
@@ -3489,10 +3499,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div style="font-size: 0.78rem; color: #94A3B8;">${curr.geri.length} sequências dinâmicas de chutes exigidas em avaliação • Toque para abrir/fechar</div>
                 </div>
               </div>
-              <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_geri"></i>
+              <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_geri" style="transform: ${isGeriOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
             </button>
 
-            <div class="study-accordion-body" id="studyBody_geri">
+            <div class="study-accordion-body ${isGeriOpen ? 'active' : ''}" id="studyBody_geri">
               <div class="technique-list">
                 ${curr.geri.map(g => `
                   <div class="technique-item" style="border-left: 3px solid #F5BE00;">
@@ -3515,7 +3525,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ${curr.ukemi ? `
           <!-- UKEMI (Quedas e Rolamentos) -->
           <div class="study-accordion-card" id="studyCard_ukemi">
-            <button type="button" class="study-accordion-header" id="studyHeader_ukemi" onclick="window.TKST_APP.toggleStudyAccordion('ukemi')">
+            <button type="button" class="study-accordion-header ${isUkemiOpen ? 'active' : ''}" id="studyHeader_ukemi" onclick="window.TKST_APP.toggleStudyAccordion('ukemi')">
               <div class="study-accordion-title">
                 <i class="fas fa-user-ninja" style="color: #10B981; font-size: 1.25rem;"></i>
                 <div>
@@ -3523,10 +3533,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div style="font-size: 0.78rem; color: #94A3B8;">4 técnicas de amortecimento de impacto e projeção • Toque para abrir/fechar</div>
                 </div>
               </div>
-              <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_ukemi"></i>
+              <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_ukemi" style="transform: ${isUkemiOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
             </button>
 
-            <div class="study-accordion-body" id="studyBody_ukemi">
+            <div class="study-accordion-body ${isUkemiOpen ? 'active' : ''}" id="studyBody_ukemi">
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
                 ${curr.ukemi.map(u => `
                   <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-left: 3px solid #10B981; border-radius: var(--radius-sm); padding: 12px 14px;">
@@ -3541,7 +3551,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- KATA EXIGIDO -->
         <div class="study-accordion-card" id="studyCard_kata">
-          <button type="button" class="study-accordion-header" id="studyHeader_kata" onclick="window.TKST_APP.toggleStudyAccordion('kata')">
+          <button type="button" class="study-accordion-header ${isKataOpen ? 'active' : ''}" id="studyHeader_kata" onclick="window.TKST_APP.toggleStudyAccordion('kata')">
             <div class="study-accordion-title">
               <i class="fas fa-book-open" style="color: var(--accent-gold); font-size: 1.25rem;"></i>
               <div>
@@ -3551,10 +3561,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             </div>
-            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kata"></i>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kata" style="transform: ${isKataOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
           </button>
 
-          <div class="study-accordion-body" id="studyBody_kata">
+          <div class="study-accordion-body ${isKataOpen ? 'active' : ''}" id="studyBody_kata">
             ${curr.shodanProgram ? `
               <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
                 ${curr.shodanProgram.kataList.map(kt => `
@@ -3600,7 +3610,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- KUMITE -->
         <div class="study-accordion-card" id="studyCard_kumite">
-          <button type="button" class="study-accordion-header" id="studyHeader_kumite" onclick="window.TKST_APP.toggleStudyAccordion('kumite')">
+          <button type="button" class="study-accordion-header ${isKumiteOpen ? 'active' : ''}" id="studyHeader_kumite" onclick="window.TKST_APP.toggleStudyAccordion('kumite')">
             <div class="study-accordion-title">
               <i class="fas fa-shield-alt" style="color: var(--accent-blue); font-size: 1.25rem;"></i>
               <div>
@@ -3608,10 +3618,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="font-size: 0.78rem; color: #94A3B8;">${curr.kumite.type} • Toque para ver regras e postura</div>
               </div>
             </div>
-            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kumite"></i>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_kumite" style="transform: ${isKumiteOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
           </button>
 
-          <div class="study-accordion-body" id="studyBody_kumite">
+          <div class="study-accordion-body ${isKumiteOpen ? 'active' : ''}" id="studyBody_kumite">
             <div style="color: var(--accent-gold); font-weight: 700; font-size: 1rem; margin-bottom: 8px;">
               <i class="fas fa-fist-raised" style="margin-right: 6px;"></i> ${curr.kumite.type}
             </div>
@@ -5690,25 +5700,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const icon = document.getElementById(`studyIcon_${sectionId}`);
       if (!body) return;
 
-      const isOpen = body.classList.contains('active');
+      const isOpen = openStudySections.has(sectionId) || body.classList.contains('active');
       if (isOpen) {
+        openStudySections.delete(sectionId);
         body.classList.remove('active');
         header?.classList.remove('active');
         if (icon) icon.style.transform = 'rotate(0deg)';
       } else {
-        // Exclusivo: fecha as outras seções do plano de estudos para focar na clicada
-        const sections = ['kihon', 'kata', 'kumite'];
-        sections.forEach(s => {
-          if (s !== sectionId) {
-            const b = document.getElementById(`studyBody_${s}`);
-            const h = document.getElementById(`studyHeader_${s}`);
-            const i = document.getElementById(`studyIcon_${s}`);
-            if (b) b.classList.remove('active');
-            if (h) h.classList.remove('active');
-            if (i) i.style.transform = 'rotate(0deg)';
-          }
-        });
-
+        openStudySections.add(sectionId);
         body.classList.add('active');
         header?.classList.add('active');
         if (icon) icon.style.transform = 'rotate(180deg)';
