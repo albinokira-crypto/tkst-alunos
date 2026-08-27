@@ -1,59 +1,5 @@
 window.TKST_CURRICULUM = [
   {
-    "id": "kyu-7",
-    "kyuNumber": 7,
-    "beltName": "Faixa Branca",
-    "beltColor": "#F8FAFC",
-    "previousBelt": "Iniciante",
-    "targetBelt": "Faixa Branca (7º Kyu)",
-    "description": "Iniciação ao Karatê-Dō Shotokan. Aprendizado da etiqueta do Dojo (Reigi), posturas fundamentais e técnicas básicas de defesa e ataque.",
-    "kihon": [
-      {
-        "id": "k7-1",
-        "direction": "Mae (Avançando)",
-        "technique": "Choku Tsuki / Oi Tsuki Chudan (Soco direto)",
-        "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
-      },
-      {
-        "id": "k7-2",
-        "direction": "Sagate (Recuando)",
-        "technique": "Age Uke Jodan (Defesa alta)",
-        "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
-      },
-      {
-        "id": "k7-3",
-        "direction": "Mae (Avançando)",
-        "technique": "Gedan Barai (Defesa baixa)",
-        "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
-      },
-      {
-        "id": "k7-4",
-        "direction": "Mae (Avançando)",
-        "technique": "Mae Geri Chudan (Chute frontal)",
-        "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
-      }
-    ],
-    "kata": [
-      {
-        "name": "Taikyoku Shodan / Heian Shodan",
-        "meaning": "Primeira Causa / Paz e Tranquilidade Nível 1",
-        "embusen": "Formato de H ou I",
-        "movements": 20,
-        "kiai": "Movimentos 8 e 16"
-      }
-    ],
-    "kumite": [
-      {
-        "type": "Gohon Kumite (5 Passos)",
-        "description": "Ataque Oi Tsuki Jodan/Chudan e defesas Age Uke e Gedan Barai com contra-ataque Gyaku Tsuki e Kiai."
-      }
-    ]
-  },
-  {
     "id": "kyu-6",
     "kyuNumber": 6,
     "beltName": "Faixa Amarela",
