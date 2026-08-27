@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // State
   let currentTab = 'login';
   let selectedBeltKyu = 6;
-  let openStudySections = new Set(['kihon']); // Kihon permanece aberto por padrão e mantém estado persistente
+  let openStudySections = new Set(); // Inicia fechado por padrão; abre apenas ao clicar e permanece aberto até clicar novamente
   let kataSearchQuery = '';
   let glossaryCategory = 'all';
   let glossarySearchQuery = '';
