@@ -816,7 +816,7 @@ window.TKST_EXAM_GENERATOR = {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
 
-    const questionsListHtml = questions.map((q, idx) => {
+    const renderSingleQuestion = (q, idx) => {
       const qNum = idx + 1;
       const optionsHtml = (q.options || []).map((opt, optIdx) => {
         const letter = String.fromCharCode(65 + optIdx);
@@ -835,7 +835,7 @@ window.TKST_EXAM_GENERATOR = {
               <strong>${qNum}.</strong> ${q.question}
             </div>
             <div class="exam-q-side-row">
-              <div class="exam-mcq-options-col" style="flex: 1;">
+              <div class="exam-mcq-options-col" style="flex: 0 1 auto; min-width: 170px;">
                 ${optionsHtml}
               </div>
               <div class="exam-q-img-wrap">
@@ -856,7 +856,11 @@ window.TKST_EXAM_GENERATOR = {
           </div>
         </div>
       `;
-    }).join('');
+    };
+
+    const q1Html = questions[0] ? renderSingleQuestion(questions[0], 0) : '';
+    const q2Html = questions[1] ? renderSingleQuestion(questions[1], 1) : '';
+    const remainingQuestionsHtml = questions.slice(2).map((q, idx) => renderSingleQuestion(q, idx + 2)).join('');
 
     return `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1">
@@ -870,27 +874,32 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
-        <!-- LINHA SUPERIOR: QUADRO DO ALUNO + CITAÇÃO 3D DO MESTRE FUNAKOSHI -->
-        <div class="exam-top-info-row">
-          <div class="exam-print-student-box">
-            <div class="exam-print-row">
-              <div style="flex: 1;"><strong>Aluno(a):</strong> __________________________________________</div>
-            </div>
-            <div class="exam-print-row" style="margin-top: 4px;">
-              <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
-              <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
-            </div>
+        <!-- QUADRO DE DADOS DO ALUNO COM DOJO -->
+        <div class="exam-print-student-box">
+          <div class="exam-print-row">
+            <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
+            <div style="flex: 1.1;"><strong>Dojô:</strong> ________________________</div>
           </div>
-
-          <!-- QUADRO 3D COM A CITAÇÃO DE GICHIN FUNAKOSHI (LADO DIREITO SUPERIOR) -->
-          <div class="exam-quote-3d-wrap">
-            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-3d-img">
+          <div class="exam-print-row" style="margin-top: 3px;">
+            <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
+            <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
           </div>
         </div>
 
-        <!-- 10 QUESTÕES EM FLUXO VERTICAL COM ALTERNATIVAS UMA EMBAIXO DA OUTRA -->
+        <!-- BLOCO SUPERIOR: QUESTÕES 1 E 2 À ESQUERDA + CITAÇÃO 3D MAIOR NA BORDA DIREITA -->
+        <div class="exam-top-questions-quote-grid">
+          <div class="exam-q1-q2-col">
+            ${q1Html}
+            ${q2Html}
+          </div>
+          <div class="exam-top-quote-large-wrap">
+            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-large-img">
+          </div>
+        </div>
+
+        <!-- QUESTÕES RESTANTES (3 A 10) EM FLUXO COMPLETO -->
         <div class="exam-vertical-questions-flow">
-          ${questionsListHtml}
+          ${remainingQuestionsHtml}
         </div>
       </div>
     `;
@@ -1054,21 +1063,15 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
-        <!-- LINHA SUPERIOR: QUADRO DO ALUNO + CITAÇÃO 3D DO MESTRE FUNAKOSHI -->
-        <div class="exam-top-info-row">
-          <div class="exam-print-student-box">
-            <div class="exam-print-row">
-              <div style="flex: 1;"><strong>Aluno(a):</strong> __________________________________________</div>
-            </div>
-            <div class="exam-print-row" style="margin-top: 4px;">
-              <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
-              <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
-            </div>
+        <!-- QUADRO DE DADOS DO ALUNO COM DOJO -->
+        <div class="exam-print-student-box">
+          <div class="exam-print-row">
+            <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
+            <div style="flex: 1.1;"><strong>Dojô:</strong> ________________________</div>
           </div>
-
-          <!-- QUADRO 3D COM A CITAÇÃO DE GICHIN FUNAKOSHI (LADO DIREITO SUPERIOR) -->
-          <div class="exam-quote-3d-wrap">
-            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-3d-img">
+          <div class="exam-print-row" style="margin-top: 3px;">
+            <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
+            <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
           </div>
         </div>
 
@@ -1290,30 +1293,16 @@ window.TKST_EXAM_GENERATOR = {
         margin-top: 1px;
       }
 
-      /* LINHA SUPERIOR COM ALUNO + CITAÇÃO 3D */
-      .exam-top-info-row {
-        position: relative !important;
-        z-index: 1 !important;
-        display: flex !important;
-        gap: 10px !important;
-        align-items: center !important;
-        margin-bottom: 4px !important;
-      }
-
-      /* QUADRO DE ALUNO */
+      /* QUADRO DE ALUNO COM DOJO */
       .exam-print-student-box {
         position: relative !important;
         z-index: 1 !important;
-        flex: 1 !important;
         border: 1.5px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 4px 8px !important;
-        margin-bottom: 0 !important;
+        padding: 3.5px 8px !important;
+        margin-bottom: 3.5px !important;
         font-size: 7.8pt !important;
         background: #F8FAFC !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
         box-shadow: 2px 2px 0px #0F172A !important;
       }
       .exam-print-row {
@@ -1322,19 +1311,34 @@ window.TKST_EXAM_GENERATOR = {
         gap: 6px;
       }
 
-      /* QUADRO 3D DA CITAÇÃO DO MESTRE FUNAKOSHI */
-      .exam-quote-3d-wrap {
+      /* BLOCO SUPERIOR COM QUESTÕES 1 E 2 À ESQUERDA E CITAÇÃO 3D MAIOR NA BORDA DIREITA */
+      .exam-top-questions-quote-grid {
         position: relative !important;
         z-index: 1 !important;
+        display: flex !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+        margin-bottom: 3.5px !important;
+      }
+      .exam-q1-q2-col {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 3.5px !important;
+      }
+      .exam-top-quote-large-wrap {
+        width: 68mm !important;
+        max-width: 38% !important;
         flex-shrink: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
       }
-      .exam-quote-3d-img {
-        height: 52px !important;
-        max-height: 56px !important;
-        width: auto !important;
+      .exam-quote-large-img {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 125px !important;
         object-fit: contain !important;
         display: block !important;
         border-radius: 2px !important;
@@ -1389,12 +1393,12 @@ window.TKST_EXAM_GENERATOR = {
         color: #1E293B;
       }
 
-      /* ILUSTRAÇÃO LADO A LADO: RESPOSTAS À ESQUERDA, IMAGEM À DIREITA */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DIREITO DAS ALTERNATIVAS (NÃO PREGADA NA BORDA) */
       .exam-q-side-row {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        justify-content: flex-start;
+        gap: 14px;
         margin-top: 1px;
       }
       .exam-q-img-wrap {
@@ -1403,13 +1407,13 @@ window.TKST_EXAM_GENERATOR = {
         padding: 2px;
         background: #FFF;
         flex-shrink: 0;
-        margin-left: auto;
+        margin-left: 0;
       }
       .exam-side-img {
-        height: 48px !important;
-        max-height: 52px !important;
+        height: 46px !important;
+        max-height: 50px !important;
         width: auto !important;
-        max-width: 85px !important;
+        max-width: 82px !important;
         object-fit: contain !important;
         display: block !important;
       }

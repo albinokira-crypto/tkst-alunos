@@ -3982,30 +3982,16 @@ body.login-view-active .content-body {
   margin-top: 1px !important;
 }
 
-/* LINHA SUPERIOR COM ALUNO + CITAÇÃO 3D */
-.exam-top-info-row {
-  position: relative !important;
-  z-index: 1 !important;
-  display: flex !important;
-  gap: 10px !important;
-  align-items: center !important;
-  margin-bottom: 4px !important;
-}
-
-/* QUADRO DE ALUNO */
+/* QUADRO DE ALUNO COM DOJO */
 .exam-print-student-box {
   position: relative !important;
   z-index: 1 !important;
-  flex: 1 !important;
   border: 1.5px solid #0F172A !important;
   border-radius: 4px !important;
-  padding: 4px 8px !important;
-  margin-bottom: 0 !important;
+  padding: 3.5px 8px !important;
+  margin-bottom: 3.5px !important;
   font-size: 7.8pt !important;
   background: #F8FAFC !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
   box-shadow: 2px 2px 0px #0F172A !important;
 }
 
@@ -4015,20 +4001,37 @@ body.login-view-active .content-body {
   gap: 6px !important;
 }
 
-/* QUADRO 3D DA CITAÇÃO DO MESTRE FUNAKOSHI */
-.exam-quote-3d-wrap {
+/* BLOCO SUPERIOR COM QUESTÕES 1 E 2 À ESQUERDA E CITAÇÃO 3D MAIOR NA BORDA DIREITA */
+.exam-top-questions-quote-grid {
   position: relative !important;
   z-index: 1 !important;
+  display: flex !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+  margin-bottom: 3.5px !important;
+}
+
+.exam-q1-q2-col {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 3.5px !important;
+}
+
+.exam-top-quote-large-wrap {
+  width: 68mm !important;
+  max-width: 38% !important;
   flex-shrink: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
-.exam-quote-3d-img {
-  height: 52px !important;
-  max-height: 56px !important;
-  width: auto !important;
+.exam-quote-large-img {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 125px !important;
   object-fit: contain !important;
   display: block !important;
   border-radius: 2px !important;
@@ -4086,12 +4089,12 @@ body.login-view-active .content-body {
   color: #1E293B !important;
 }
 
-/* Imagens à direita e respostas à esquerda alinhadas */
+/* Ilustração técnica: imagem ao lado direito das alternativas (não colada na borda) */
 .exam-q-side-row {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
+  justify-content: flex-start !important;
+  gap: 14px !important;
   margin-top: 1px !important;
 }
 
@@ -4101,14 +4104,14 @@ body.login-view-active .content-body {
   padding: 2px !important;
   background: #FFF !important;
   flex-shrink: 0 !important;
-  margin-left: auto !important;
+  margin-left: 0 !important;
 }
 
 .exam-side-img {
-  height: 48px !important;
-  max-height: 52px !important;
+  height: 46px !important;
+  max-height: 50px !important;
   width: auto !important;
-  max-width: 85px !important;
+  max-width: 82px !important;
   object-fit: contain !important;
   display: block !important;
 }
