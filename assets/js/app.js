@@ -60,8 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let glossaryCategory = 'all';
   let glossarySearchQuery = '';
   let authMode = 'student-login';
-  let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'quizzes', 'files', 'questions'
-  let adminQuizSelectedKyu = 7;
+  let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'quizzes', 'files', 'questions', 'exam-generator'
+  let adminQuizSelectedKyu = 6;
+  let examGeneratorSelectedKyu = 6;
+  let examGeneratorFormat = 'official'; // 'official' (Dissertativo com imagens), 'quiz' (Múltipla escolha)
   let quizModalTempImage = '';
   
   // Quiz State
@@ -1082,6 +1084,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const quizBankList = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
     const quizBankCount = quizBankList.length;
 
+    const currentExamMeta = (window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu)) || { title: "Exame", targetBelt: "Faixa Amarela (6º Kyu)", kataName: "Heian Shodan", color: "#F5BE00" };
+    let examPreviewHtml = '';
+    if (window.TKST_EXAM_GENERATOR) {
+      examPreviewHtml = examGeneratorFormat === 'quiz'
+        ? window.TKST_EXAM_GENERATOR.buildQuizExamHtml(examGeneratorSelectedKyu)
+        : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+    }
+
     let html = `
       <div class="section-header" style="margin-bottom: 20px; position: relative; overflow: hidden;">
         <!-- Subtle Transparent Emblem Watermark -->
@@ -1155,17 +1165,20 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('kata-videos')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Gerenciar Vídeos dos 26 Kata">
-          <i class="fas fa-video" style="color: #60A5FA; font-size: 0.95rem; flex-shrink: 0;"></i>
+        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('exam-generator')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.4); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Gerador de Provas & Gabaritos em PDF">
+          <i class="fas fa-file-pdf" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
           <div style="min-width: 0; line-height: 1.15;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">26</div>
-            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Vídeos Kata</div>
+            <div style="font-size: 0.95rem; font-weight: 800; color: #FFD166;">PDF</div>
+            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Provas PDF</div>
           </div>
         </div>
       </div>
 
       <!-- Admin Navigation Sub-Tabs -->
       <div class="filter-chips" style="margin-bottom: 20px; display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px;">
+        <button class="chip-btn ${adminSubTab === 'exam-generator' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('exam-generator')" style="flex-shrink: 0; white-space: nowrap; border: 1.5px solid rgba(245, 190, 0, 0.5); ${adminSubTab === 'exam-generator' ? 'background: var(--accent-gold); color: #000; font-weight: 900;' : 'color: #FFD166; font-weight: 700;'}">
+          <i class="fas fa-file-pdf"></i> Provas & Gabaritos PDF
+        </button>
         <button class="chip-btn ${adminSubTab === 'pending' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('pending')" style="flex-shrink: 0; white-space: nowrap;">
           <i class="fas fa-user-clock"></i> Pendentes (${pendingStudents.length})
         </button>
@@ -1899,6 +1912,112 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
               }).join('');
             })()}
+          </div>
+        </div>
+      ` : ''}
+
+      ${adminSubTab === 'exam-generator' ? `
+        <!-- GERADOR OFICIAL DE PROVAS & GABARITOS (PDF / IMPRESSÃO) -->
+        <div class="admin-table-container">
+          <div style="padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 2px;">
+                <i class="fas fa-file-pdf" style="color: var(--accent-gold);"></i> Gerador de Provas & Gabaritos Oficiais (PDF / Impressão A4)
+              </h4>
+              <div style="font-size: 0.82rem; color: #94A3B8;">
+                Gere e imprima avaliações teóricas diagramadas para cada faixa com cabeçalho oficial, ilustrações técnicas e folhas de gabarito para correção.
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-gold" onclick="window.TKST_APP.printMasterAnswerKey()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; color: #000; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.25);">
+                <i class="fas fa-key"></i> Imprimir Gabarito Geral (Todas as Faixas)
+              </button>
+              <button class="btn btn-secondary" onclick="window.TKST_APP.printAllExams()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; border-color: rgba(255,255,255,0.2);">
+                <i class="fas fa-print"></i> Imprimir Caderno com Todas as Provas
+              </button>
+            </div>
+          </div>
+
+          <!-- SELEÇÃO DE FORMATO DA PROVA -->
+          <div style="padding: 12px 18px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span style="font-size: 0.84rem; font-weight: 700; color: #E2E8F0;">
+                <i class="fas fa-sliders-h" style="color: var(--accent-gold);"></i> Modelo da Prova:
+              </span>
+              <div style="display: inline-flex; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); padding: 3px; gap: 4px;">
+                <button type="button" class="btn btn-sm ${examGeneratorFormat === 'official' ? 'btn-primary' : 'btn-secondary'}" onclick="window.TKST_APP.setExamGeneratorFormat('official')" style="font-size: 0.78rem; padding: 6px 12px; border: none; font-weight: 700;">
+                  <i class="fas fa-pen-fancy"></i> Modelo Dissertativo Oficial (Padrão Word com Imagens)
+                </button>
+                <button type="button" class="btn btn-sm ${examGeneratorFormat === 'quiz' ? 'btn-primary' : 'btn-secondary'}" onclick="window.TKST_APP.setExamGeneratorFormat('quiz')" style="font-size: 0.78rem; padding: 6px 12px; border: none; font-weight: 700;">
+                  <i class="fas fa-list-check"></i> Modelo Simulado (Múltipla Escolha + Cartão-Resposta)
+                </button>
+              </div>
+            </div>
+
+            <div style="font-size: 0.78rem; color: #94A3B8;">
+              Orientação: Diagramação em tamanho A4 padrão com cabeçalho oficial TKST.
+            </div>
+          </div>
+
+          <!-- SELETOR DE FAIXA / GRADUAÇÃO -->
+          <div style="padding: 12px 14px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; background: rgba(0,0,0,0.2);">
+            ${[
+              { kyu: 6, label: "6º Kyu (Amarela)", bg: "#F5BE00", color: "#0A0D14", border: "1px solid #D97706" },
+              { kyu: 5, label: "5º Kyu (Vermelha)", bg: "#E63946", color: "#FFFFFF", border: "1px solid #DC2626" },
+              { kyu: 4, label: "4º Kyu (Laranja)", bg: "#FF7700", color: "#FFFFFF", border: "1px solid #EA580C" },
+              { kyu: 3, label: "3º Kyu (Verde)", bg: "#10B981", color: "#FFFFFF", border: "1px solid #059669" },
+              { kyu: 2, label: "2º Kyu (Roxa)", bg: "#8B5CF6", color: "#FFFFFF", border: "1px solid #7C3AED" },
+              { kyu: 1, label: "1º Kyu (Marrom)", bg: "#78350F", color: "#FFFFFF", border: "1px solid #92400E" },
+              { kyu: 0, label: "1º Dan (Shodan)", bg: "#18181B", color: "#FFFFFF", border: "1px solid #3F3F46" },
+              { kyu: -1, label: "2º Dan (Nidan)", bg: "#1E293B", color: "#FFFFFF", border: "1px solid #475569" },
+              { kyu: -2, label: "3º Dan (Sandan)", bg: "#020617", color: "#FFFFFF", border: "1px solid #334155" }
+            ].map(b => `
+              <button class="btn btn-sm" onclick="window.TKST_APP.setExamGeneratorKyu(${b.kyu})" style="
+                background: ${b.bg};
+                color: ${b.color};
+                border: ${examGeneratorSelectedKyu === b.kyu ? '2px solid #FFB703' : b.border};
+                ${examGeneratorSelectedKyu === b.kyu ? 'box-shadow: 0 0 10px rgba(255, 183, 3, 0.8); transform: scale(1.03); font-weight: 900;' : 'opacity: 0.85; font-weight: 700;'}
+                padding: 8px 6px; font-size: 0.74rem; text-align: center; white-space: nowrap; transition: all 0.2s ease;
+              ">
+                ${examGeneratorSelectedKyu === b.kyu ? '✓ ' : ''}${b.label}
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- BARRA DE AÇÕES PARA A FAIXA SELECIONADA -->
+          <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: rgba(255, 183, 3, 0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="font-size: 1.05rem; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 8px;">
+                <span class="badge" style="background: ${currentExamMeta.color || '#F5BE00'}; color: ${currentExamMeta.kyu === 6 ? '#000' : '#FFF'}; font-size: 0.8rem; font-weight: 800;">
+                  ${currentExamMeta.targetBelt}
+                </span>
+                ${currentExamMeta.title}
+              </div>
+              <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 2px;">
+                Kata Exigido: <strong>${currentExamMeta.kataName}</strong> • ${examGeneratorFormat === 'official' ? 'Modelo Oficial com Imagens & Linhas' : 'Modelo Simulado de Múltipla Escolha'}
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="window.TKST_APP.printCurrentExam()" style="font-size: 0.85rem; padding: 10px 18px; font-weight: 800; box-shadow: 0 4px 14px rgba(255, 183, 3, 0.35);">
+                <i class="fas fa-print"></i> Imprimir / Salvar PDF Desta Prova
+              </button>
+              <button class="btn btn-success" onclick="window.TKST_APP.printCurrentAnswerKey()" style="font-size: 0.85rem; padding: 10px 16px; font-weight: 700; background: #059669; color: #FFF; border: none;">
+                <i class="fas fa-check-double"></i> Imprimir Gabarito Desta Faixa
+              </button>
+            </div>
+          </div>
+
+          <!-- PRÉVIA VISUAL DA FOLHA DE PROVA (EMULADOR A4) -->
+          <div style="padding: 24px 14px; background: rgba(0,0,0,0.5); overflow-x: auto;">
+            <div style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; max-width: 850px; margin-left: auto; margin-right: auto;">
+              <i class="fas fa-eye" style="color: var(--accent-gold);"></i> <strong>Prévia da Folha A4 em Tempo Real:</strong> (Exatamente como sairá na impressão ou PDF)
+            </div>
+            
+            <div class="exam-preview-container" style="background: #FFF; color: #0F172A; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); max-width: 850px; margin: 0 auto; padding: 20px; font-size: 0.92rem;">
+              ${examPreviewHtml}
+            </div>
           </div>
         </div>
       ` : ''}
@@ -5909,6 +6028,39 @@ document.addEventListener('DOMContentLoaded', () => {
     setAdminQuizSelectedKyu: (kyu) => {
       adminQuizSelectedKyu = parseInt(kyu);
       renderAdminMaster();
+    },
+
+    setExamGeneratorKyu: (kyu) => {
+      examGeneratorSelectedKyu = parseInt(kyu);
+      renderAdminMaster();
+    },
+    setExamGeneratorFormat: (fmt) => {
+      examGeneratorFormat = fmt;
+      renderAdminMaster();
+    },
+    printCurrentExam: () => {
+      if (!window.TKST_EXAM_GENERATOR) return;
+      const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
+      const html = examGeneratorFormat === 'quiz'
+        ? window.TKST_EXAM_GENERATOR.buildQuizExamHtml(examGeneratorSelectedKyu)
+        : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+      window.TKST_EXAM_GENERATOR.printHtml(`${exam.title} - ${exam.targetBelt}`, html);
+    },
+    printCurrentAnswerKey: () => {
+      if (!window.TKST_EXAM_GENERATOR) return;
+      const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
+      const html = window.TKST_EXAM_GENERATOR.buildAnswerKeyHtml(examGeneratorSelectedKyu, examGeneratorFormat);
+      window.TKST_EXAM_GENERATOR.printHtml(`Gabarito - ${exam.title}`, html);
+    },
+    printAllExams: () => {
+      if (!window.TKST_EXAM_GENERATOR) return;
+      const html = window.TKST_EXAM_GENERATOR.buildAllExamsHtml(examGeneratorFormat);
+      window.TKST_EXAM_GENERATOR.printHtml("Caderno de Provas Completo (6º Kyu ao 3º Dan)", html);
+    },
+    printMasterAnswerKey: () => {
+      if (!window.TKST_EXAM_GENERATOR) return;
+      const html = window.TKST_EXAM_GENERATOR.buildMasterAnswerKeyHtml();
+      window.TKST_EXAM_GENERATOR.printHtml("Gabarito Geral Unificado de Todas as Faixas", html);
     },
 
     openEditQuizQuestionModal: (qId) => {
