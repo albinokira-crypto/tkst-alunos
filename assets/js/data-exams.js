@@ -1,7 +1,7 @@
 /**
  * TKST Alunos - Gerador Oficial de Provas Escritas e Gabaritos em PDF/Impressão (2026)
  * Suporte completo: 6º Kyu (Amarela) até 3º Dan (Sandan)
- * Diagramação Ultra-Compacta em 2 Colunas (Encaixe Perfeito em 1 Única Página A4)
+ * Diagramação Vertical A4 Completa (1 Coluna Vertical, Imagens Lado a Lado, Sem Cartão-Resposta, Sem Assinaturas)
  */
 
 window.TKST_OFFICIAL_EXAMS = {
@@ -14,7 +14,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#F5BE00",
     headerColor: "#D97706",
     kataName: "Heian Shodan",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Qual o Kata que você deve aprender na sua Faixa?",
@@ -24,14 +24,14 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 2,
-        title: "Qual o nome em japonês das 3 alturas?",
+        title: "Qual o nome em japonês das 3 alturas (Alto, Médio e Baixo)?",
         type: "lines",
         linesCount: 1,
         expectedAnswer: "Jodan (Alto), Chudan (Médio) e Gedan (Baixo)."
       },
       {
         num: 3,
-        title: "Descreva o Golpe e a Base da imagem abaixo:",
+        title: "Descreva o Golpe e a Base da imagem ao lado:",
         type: "image_fields",
         image: "assets/images/exames/branca_img1.png",
         fallbackImage: "assets/images/tecnicas/oi-tsuki.svg",
@@ -42,7 +42,7 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 4,
-        title: "Qual o nome do Chute da imagem abaixo?",
+        title: "Qual o nome do Chute da imagem ao lado?",
         type: "image_lines",
         image: "assets/images/exames/branca_img2.png",
         fallbackImage: "assets/images/tecnicas/mae-geri.svg",
@@ -51,25 +51,23 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 5,
-        title: "Qual o nome da Defesa da imagem abaixo?",
+        title: "Qual o nome da Defesa da imagem ao lado?",
         type: "image_lines",
         image: "assets/images/exames/branca_img3.png",
         fallbackImage: "assets/images/tecnicas/jodan-age-uke.svg",
         linesCount: 1,
         expectedAnswer: "Jodan Age Uke (Defesa alta) ou Gedan Barai."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 6,
         title: "Cite 1 Dojô Kun:",
         type: "lines",
-        linesCount: 2,
+        linesCount: 1,
         expectedAnswer: "Hitotsu! Jinkaku kansei ni tsutomuru koto! (Esforçar-se para a formação do caráter)."
       },
       {
         num: 7,
-        title: "Qual o nome do 8º movimento do Heian Shodan?",
+        title: "Qual o nome do 8º movimento do Kata Heian Shodan?",
         type: "lines",
         linesCount: 1,
         expectedAnswer: "Jodan Age Uke com KIAI! (3º avanço de defesa alta)."
@@ -97,7 +95,7 @@ window.TKST_OFFICIAL_EXAMS = {
         num: 9,
         title: "O que você mais gosta no Karatê?",
         type: "essay",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "Resposta reflexiva do aluno avaliando dedicação, respeito e motivação com a arte marcial."
       }
     ]
@@ -112,7 +110,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#E63946",
     headerColor: "#DC2626",
     kataName: "Heian Nidan",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Qual o Kata que você deve aprender na sua Faixa?",
@@ -129,7 +127,7 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 3,
-        title: "Descreva a Técnica e a Base da imagem abaixo:",
+        title: "Descreva a Técnica e a Base da imagem ao lado:",
         type: "image_fields",
         image: "assets/images/exames/amarela_img1.png",
         fallbackImage: "assets/images/tecnicas/kokutsu-dachi.svg",
@@ -140,7 +138,7 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 4,
-        title: "Qual o nome do Chute da imagem abaixo?",
+        title: "Qual o nome do Chute da imagem ao lado?",
         type: "image_lines",
         image: "assets/images/exames/amarela_img2.png",
         fallbackImage: "assets/images/tecnicas/mawashi-geri.svg",
@@ -149,15 +147,13 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 5,
-        title: "Qual o nome da Defesa da imagem abaixo?",
+        title: "Qual o nome da Defesa da imagem ao lado?",
         type: "image_lines",
         image: "assets/images/exames/amarela_img3.png",
         fallbackImage: "assets/images/tecnicas/zenkutsu-dachi.svg",
         linesCount: 1,
         expectedAnswer: "Soto Uke Chudan (De fora para dentro) ou Uchi Uke."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 6,
         title: "Cite 2 Dojô Kun:",
@@ -195,7 +191,7 @@ window.TKST_OFFICIAL_EXAMS = {
         num: 9,
         title: "Por que você começou a fazer Karatê?",
         type: "essay",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "Resposta reflexiva do aluno avaliando seus objetivos e disciplina."
       }
     ]
@@ -210,7 +206,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#FF7700",
     headerColor: "#EA580C",
     kataName: "Heian Sandan",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Qual o Kata que você deve aprender na sua Faixa?",
@@ -227,7 +223,7 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 3,
-        title: "Descreva o Golpe e a Base da imagem abaixo:",
+        title: "Descreva o Golpe e a Base da imagem ao lado:",
         type: "image_fields",
         image: "assets/images/exames/vermelha_img1.png",
         fallbackImage: "assets/images/tecnicas/kiba-dachi.svg",
@@ -238,7 +234,7 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 4,
-        title: "Qual o nome do Chute da imagem abaixo?",
+        title: "Qual o nome do Chute da imagem ao lado?",
         type: "image_lines",
         image: "assets/images/exames/vermelha_img2.png",
         fallbackImage: "assets/images/tecnicas/yoko-geri.svg",
@@ -247,15 +243,13 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 5,
-        title: "Qual o nome do Ataque da imagem abaixo?",
+        title: "Qual o nome do Ataque da imagem ao lado?",
         type: "image_lines",
         image: "assets/images/exames/vermelha_img3.png",
         fallbackImage: "assets/images/tecnicas/gyaku-tsuki.png",
         linesCount: 1,
         expectedAnswer: "Gyaku Tsuki Chudan (Soco contrário à perna da frente)."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 6,
         title: "Cite 3 Dojô Kun:",
@@ -293,7 +287,7 @@ window.TKST_OFFICIAL_EXAMS = {
         num: 9,
         title: "Qual a importância do Karatê para você?",
         type: "essay",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "Resposta reflexiva do aluno avaliando autocontrole e autoconfiança."
       }
     ]
@@ -308,7 +302,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#10B981",
     headerColor: "#059669",
     kataName: "Heian Yondan",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Qual o Kata oficial exigido na sua Faixa?",
@@ -341,11 +335,9 @@ window.TKST_OFFICIAL_EXAMS = {
         num: 5,
         title: "O que é Kihon Ippon Kumite?",
         type: "lines",
-        linesCount: 2,
+        linesCount: 1,
         expectedAnswer: "Combate pré-determinado de 1 passo em Kamae visando tempo, distância e foco."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 6,
         title: "Cite 4 Dojô Kun:",
@@ -364,14 +356,14 @@ window.TKST_OFFICIAL_EXAMS = {
         num: 8,
         title: "Traduza: Mae, Sagate, Mawate e Yame:",
         type: "lines",
-        linesCount: 2,
+        linesCount: 1,
         expectedAnswer: "Mae = Avançar; Sagate = Recuar; Mawate = Girar; Yame = Parar."
       },
       {
         num: 9,
-        title: "Como a disciplina do Karatê ajuda nos seus estudos/trabalho?",
+        title: "Como a disciplina do Karatê ajuda nos seus estudos ou trabalho?",
         type: "essay",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "Dissertação reflexiva sobre foco, postura e determinação."
       }
     ]
@@ -386,7 +378,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#8B5CF6",
     headerColor: "#7C3AED",
     kataName: "Heian Godan",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Qual o Kata oficial exigido na sua Faixa?",
@@ -419,16 +411,14 @@ window.TKST_OFFICIAL_EXAMS = {
         num: 5,
         title: "O que significa o termo Bunkai (分解)?",
         type: "lines",
-        linesCount: 2,
+        linesCount: 1,
         expectedAnswer: "Desmontagem, estudo e aplicação prática de combate de cada movimento do Kata."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 6,
         title: "Escreva os 5 princípios do Dojô Kun:",
         type: "lines",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "1) Caráter; 2) Fidelidade; 3) Esforço; 4) Respeito; 5) Conter o espírito de agressão."
       },
       {
@@ -442,14 +432,14 @@ window.TKST_OFFICIAL_EXAMS = {
         num: 8,
         title: "Traduza: Mokuso, Sensei ni Rei e Otagai ni Rei:",
         type: "lines",
-        linesCount: 2,
+        linesCount: 1,
         expectedAnswer: "Mokuso = Meditação; Sensei ni Rei = Saudação ao Professor; Otagai = Saudação mútua."
       },
       {
         num: 9,
-        title: "Como você aplica 'Conter o espírito de agressão' no dia a dia?",
+        title: "Como você aplica 'Conter o espírito de agressão' no seu dia a dia?",
         type: "essay",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "Reflexão sobre inteligência emocional, paciência e prevenção de conflitos."
       }
     ]
@@ -464,7 +454,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#78350F",
     headerColor: "#78350F",
     kataName: "Tekki Shodan & Bassai Dai",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Quais os Katas oficiais exigidos no 1º Kyu?",
@@ -488,20 +478,18 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 4,
-        title: "Quem foi Mestre Funakoshi e sua contribuição?",
+        title: "Quem foi Mestre Funakoshi e sua contribuição para o Karatê?",
         type: "lines",
         linesCount: 2,
         expectedAnswer: "Pai do Karatê Moderno, introduziu o Shotokan no Japão e uniu o Budo com a educação."
       },
       {
         num: 5,
-        title: "O que significa 'Karate ni sente nashi'?",
+        title: "O que significa o princípio 'Karate ni sente nashi'?",
         type: "lines",
-        linesCount: 2,
+        linesCount: 1,
         expectedAnswer: "'No Karatê não existe atitude ofensiva inicial' — arte essencialmente de legítima defesa."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 6,
         title: "Quais os 4 Sentei Katas do Shotokan?",
@@ -513,21 +501,21 @@ window.TKST_OFFICIAL_EXAMS = {
         num: 7,
         title: "Descreva a base Fudo Dachi (Sochin Dachi):",
         type: "lines",
-        linesCount: 2,
+        linesCount: 1,
         expectedAnswer: "Base enraizada e inabalável unindo firmeza de Zenkutsu e Kiba Dachi (peso 50/50)."
       },
       {
         num: 8,
         title: "Escreva o Dojô Kun e o significado do termo 'Hitotsu':",
         type: "lines",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "5 princípios + 'Hitotsu' = Item 1 (todos os preceitos têm a mesma prioridade máxima)."
       },
       {
         num: 9,
         title: "O que a Faixa Marrom representa na sua jornada ao Shodan?",
         type: "essay",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "Dissertação sobre responsabilidade, liderança e maturidade técnica."
       }
     ]
@@ -542,7 +530,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#18181B",
     headerColor: "#0F172A",
     kataName: "9 Katas Avaliados",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Quais os 9 Katas avaliados no exame de Shodan?",
@@ -559,53 +547,51 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 3,
-        title: "Importância do Koshi no Kaiten e do Tanden:",
+        title: "Importância do Koshi no Kaiten e do Tanden na geração de potência:",
         type: "lines",
         linesCount: 2,
         expectedAnswer: "O Tanden gera potência transferida pela rotação do quadril e respiração até o impacto."
       },
       {
         num: 4,
-        title: "Cite 2 preceitos do Shōtōkan Nijūkun:",
+        title: "Cite 2 preceitos do Shōtōkan Nijūkun de Gichin Funakoshi:",
         type: "lines",
         linesCount: 2,
         expectedAnswer: "1) O Karatê começa e termina com respeito; 2) O Karatê é como água fervente."
       },
       {
         num: 5,
-        title: "Conduta mental exigida no Jiyu Kumite de Shodan:",
+        title: "Conduta mental e técnica exigida no Jiyu Kumite de Shodan:",
         type: "lines",
         linesCount: 2,
         expectedAnswer: "Zanshin impecável, Sun-dome (controle de impacto), respeito e explosão técnica."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 6,
-        title: "Diferença entre Karatê-Jutsu e Karatê-Dō:",
+        title: "Qual a diferença filosófica entre Karatê-Jutsu e Karatê-Dō?",
         type: "lines",
         linesCount: 2,
         expectedAnswer: "Jutsu foca na eficácia destrutiva marcial; Dō foca no desenvolvimento moral e humano."
       },
       {
         num: 7,
-        title: "Pontos vitais (Kyusho) prioritários em legítima defesa:",
+        title: "Pontos vitais (Kyusho) prioritários em situação de legítima defesa:",
         type: "lines",
-        linesCount: 2,
+        linesCount: 1,
         expectedAnswer: "Olhos, garganta, plexo solar, costelas flutuantes, virilha e têmpora."
       },
       {
         num: 8,
-        title: "Dever ético de um novo Faixa Preta perante o Dojô:",
+        title: "Qual o dever ético e pedagógico de um novo Faixa Preta perante o Dojô?",
         type: "lines",
         linesCount: 2,
         expectedAnswer: "Humildade, liderança exemplar, auxílio ao Sensei e apoio aos alunos iniciantes."
       },
       {
         num: 9,
-        title: "Dissertação: Sua trajetória até a Faixa Preta e compromisso:",
+        title: "Dissertação: Sua trajetória até a Faixa Preta e seu compromisso com a TKST:",
         type: "essay",
-        linesCount: 4,
+        linesCount: 3,
         expectedAnswer: "Dissertação reflexiva sobre superação, lealdade à TKST e maturidade marcial."
       }
     ]
@@ -620,7 +606,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#1E293B",
     headerColor: "#0F172A",
     kataName: "Katas Superiores Nidan",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Katas avaliados na graduação de Nidan:",
@@ -637,25 +623,23 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 3,
-        title: "Metodologia pedagógica para ensino de Kihon:",
+        title: "Metodologia pedagógica para ensino e correção de Kihon para turmas de base:",
         type: "lines",
         linesCount: 2,
         expectedAnswer: "Correção postural segura, progressão pedagógica e reforço dos valores do Budo."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 4,
-        title: "Regras de arbitragem WKF/CBK (Ippon, Waza-ari, Penalidades):",
+        title: "Regras de arbitragem WKF/CBK (Ippon, Waza-ari, Penalidades C1/C2):",
         type: "lines",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "Critérios de pontuação técnica, controle de contato e penalidades C1/C2."
       },
       {
         num: 5,
-        title: "Dissertação: A responsabilidade do 2º Dan na preservação do Shotokan:",
+        title: "Dissertação: A responsabilidade do 2º Dan na preservação técnica do Shotokan:",
         type: "essay",
-        linesCount: 4,
+        linesCount: 3,
         expectedAnswer: "Monografia sobre liderança ética e aperfeiçoamento contínuo."
       }
     ]
@@ -670,7 +654,7 @@ window.TKST_OFFICIAL_EXAMS = {
     color: "#020617",
     headerColor: "#020617",
     kataName: "Katas Mestres Sandan",
-    leftQuestions: [
+    questions: [
       {
         num: 1,
         title: "Katas mestres avaliados no Sandan:",
@@ -680,25 +664,23 @@ window.TKST_OFFICIAL_EXAMS = {
       },
       {
         num: 2,
-        title: "A tríade marcial Shin - Gi - Tai no Sandan:",
+        title: "A tríade marcial Shin - Gi - Tai no nível de Sandan:",
         type: "lines",
         linesCount: 2,
         expectedAnswer: "Shin: mente serena; Gi: técnica perfeita; Tai: corpo eficiente e saudável."
-      }
-    ],
-    rightQuestions: [
+      },
       {
         num: 3,
-        title: "Responsabilidade de um Sensei Titular na gestão do Dojô:",
+        title: "Responsabilidade de um Sensei Titular na gestão técnica e humana do Dojô:",
         type: "lines",
-        linesCount: 3,
+        linesCount: 2,
         expectedAnswer: "Guardião dos valores do Budo, inclusão, segurança e desenvolvimento social."
       },
       {
         num: 4,
-        title: "Dissertação: O papel do Karatê Shotokan na sociedade contemporânea:",
+        title: "Dissertação: O papel do Karatê Shotokan como agente de transformação social:",
         type: "essay",
-        linesCount: 5,
+        linesCount: 4,
         expectedAnswer: "Dissertação sobre o Karatê como agente de transformação social e humana."
       }
     ]
@@ -715,8 +697,8 @@ window.TKST_EXAM_GENERATOR = {
     return all.filter(q => q.kyuNumber === parseInt(kyu));
   },
 
-  // Renderiza uma lista de questões (dissertativas)
-  renderQuestionsList: function(questions) {
+  // Renderiza uma lista de questões dissertativas verticais com imagens lado a lado
+  renderDissertativeQuestions: function(questions) {
     return questions.map(q => {
       let bodyHtml = '';
 
@@ -724,7 +706,7 @@ window.TKST_EXAM_GENERATOR = {
         const lines = Array(q.linesCount || 1).fill('<div class="exam-print-line"></div>').join('');
         bodyHtml = `<div class="exam-print-lines-box"><span class="exam-r-prefix">R.:</span> ${lines}</div>`;
       } else if (q.type === 'essay') {
-        const lines = Array(q.linesCount || 3).fill('<div class="exam-print-line"></div>').join('');
+        const lines = Array(q.linesCount || 2).fill('<div class="exam-print-line"></div>').join('');
         bodyHtml = `<div class="exam-print-lines-box"><span class="exam-r-prefix">R.:</span> ${lines}</div>`;
       } else if (q.type === 'image_fields') {
         const imgSrc = q.image || q.fallbackImage;
@@ -736,11 +718,11 @@ window.TKST_EXAM_GENERATOR = {
         `).join('');
 
         bodyHtml = `
-          <div class="exam-print-img-row">
-            <div class="exam-print-img-wrapper">
-              <img src="${imgSrc}" alt="Técnica" class="exam-print-img" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 65px !important; object-fit: contain !important; display: block !important;" onerror="this.src='${q.fallbackImage}'">
+          <div class="exam-q-side-row">
+            <div class="exam-q-img-wrap">
+              <img src="${imgSrc}" alt="Técnica" class="exam-side-img" onerror="this.src='${q.fallbackImage}'">
             </div>
-            <div class="exam-print-fields-col">
+            <div class="exam-q-fields-wrap">
               ${fieldsHtml}
             </div>
           </div>
@@ -750,11 +732,11 @@ window.TKST_EXAM_GENERATOR = {
         const lines = Array(q.linesCount || 1).fill('<div class="exam-print-line"></div>').join('');
 
         bodyHtml = `
-          <div class="exam-print-img-row">
-            <div class="exam-print-img-wrapper">
-              <img src="${imgSrc}" alt="Técnica" class="exam-print-img" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 65px !important; object-fit: contain !important; display: block !important;" onerror="this.src='${q.fallbackImage}'">
+          <div class="exam-q-side-row">
+            <div class="exam-q-img-wrap">
+              <img src="${imgSrc}" alt="Técnica" class="exam-side-img" onerror="this.src='${q.fallbackImage}'">
             </div>
-            <div class="exam-print-fields-col">
+            <div class="exam-q-fields-wrap">
               <div class="exam-print-field-row">
                 <span class="exam-print-field-label">R.:</span>
                 ${lines}
@@ -785,9 +767,9 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       return `
-        <div class="exam-print-q-card">
-          <div class="exam-print-q-header">
-            <span class="exam-print-q-text"><strong>${q.num}.</strong> ${q.title}</span>
+        <div class="exam-vertical-q-item">
+          <div class="exam-q-title-row">
+            <strong>${q.num}.</strong> ${q.title}
           </div>
           ${bodyHtml}
         </div>
@@ -795,35 +777,25 @@ window.TKST_EXAM_GENERATOR = {
     }).join('');
   },
 
-  // Gera HTML da Prova Oficial em 2 Colunas Ultra-Compacta (1 Folha A4)
+  // Gera HTML da Prova Oficial Dissertativa Vertical (1 Coluna A4 Completa)
   buildOfficialExamHtml: function(kyu, options = {}) {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
-    const dojoName = options.dojo || "TKST - Shotokan";
-    const senseiName = options.sensei || "Sensei Diego Albino (3º Dan)";
-
-    const leftQuestions = exam.leftQuestions || (exam.questions ? exam.questions.slice(0, 5) : []);
-    const rightQuestions = exam.rightQuestions || (exam.questions ? exam.questions.slice(5) : []);
-
-    const leftColHtml = this.renderQuestionsList(leftQuestions);
-    const rightColHtml = this.renderQuestionsList(rightQuestions);
+    const questions = exam.questions || [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
+    const questionsHtml = this.renderDissertativeQuestions(questions);
 
     return `
       <div class="exam-sheet-a4 single-page-a4">
-        <!-- HEADER COMPACTO -->
-        <div class="exam-print-header">
-          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
-          <div class="exam-print-header-center">
-            <div class="exam-print-assoc">TRADICIONAL KARATE-DO SHOTOKAN TSUYOI (TKST)</div>
-            <div class="exam-print-exam-title">${exam.title.toUpperCase()} (${exam.targetBelt.toUpperCase()})</div>
-          </div>
-          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" style="height: 34px !important; max-height: 34px !important; width: auto !important; max-width: 42px !important; object-fit: contain !important; display: block !important;" onerror="this.style.display='none'">
+        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E SEM FUNDO -->
+        <div class="exam-clean-header">
+          <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-main-header-logo">
+          <div class="exam-clean-title">${exam.title.toUpperCase()} (${exam.targetBelt.toUpperCase()})</div>
         </div>
 
         <!-- QUADRO DE DADOS DO ALUNO -->
         <div class="exam-print-student-box">
           <div class="exam-print-row">
-            <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
+            <div style="flex: 2.3;"><strong>Aluno(a):</strong> __________________________________________________</div>
             <div style="flex: 0.9;"><strong>Data:</strong> ${dateStr}</div>
             <div style="flex: 0.7; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
           </div>
@@ -834,32 +806,15 @@ window.TKST_EXAM_GENERATOR = {
           "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes." — Gichin Funakoshi
         </div>
 
-        <!-- CORPO EM 2 COLUNAS COMPACTAS -->
-        <div class="exam-2col-layout">
-          <div class="exam-col-left">
-            ${leftColHtml}
-          </div>
-          <div class="exam-col-right">
-            ${rightColHtml}
-          </div>
-        </div>
-
-        <!-- ASSINATURAS COMPACTAS NO RODAPÉ -->
-        <div class="exam-print-footer">
-          <div class="exam-print-sig-col">
-            <div class="exam-print-sig-line"></div>
-            <div>Assinatura do Aluno(a)</div>
-          </div>
-          <div class="exam-print-sig-col">
-            <div class="exam-print-sig-line"></div>
-            <div>Assinatura do Sensei Examinador</div>
-          </div>
+        <!-- QUESTÕES VERTICAIS (UMA EMBAIXO DA OUTRA) -->
+        <div class="exam-vertical-questions-flow">
+          ${questionsHtml}
         </div>
       </div>
     `;
   },
 
-  // Gera HTML da Prova em Múltipla Escolha em 2 Colunas (1 Folha A4)
+  // Gera HTML da Prova Múltipla Escolha Vertical (1 Coluna A4 Completa com Imagens Lado a Lado)
   buildQuizExamHtml: function(kyu, options = {}) {
     const exam = this.getExamData(kyu);
     const questions = this.getQuizQuestionsForKyu(kyu);
@@ -869,21 +824,8 @@ window.TKST_EXAM_GENERATOR = {
       return `<div style="padding: 20px; text-align: center; color: red;">Nenhuma questão cadastrada para esta faixa no banco de dados.</div>`;
     }
 
-    const answerCardRows = questions.slice(0, 10).map((q, idx) => `
-      <div class="exam-answer-card-item">
-        <span class="exam-card-q-num">Q${idx + 1 < 10 ? '0' + (idx + 1) : (idx + 1)}:</span>
-        <span class="exam-card-bubble">(A)</span>
-        <span class="exam-card-bubble">(B)</span>
-        <span class="exam-card-bubble">(C)</span>
-        <span class="exam-card-bubble">(D)</span>
-      </div>
-    `).join('');
-
-    const leftQuestions = questions.slice(0, 5);
-    const rightQuestions = questions.slice(5, 10);
-
-    const renderQuizCols = (list, offset) => list.map((q, idx) => {
-      const qNum = offset + idx + 1;
+    const questionsListHtml = questions.slice(0, 10).map((q, idx) => {
+      const qNum = idx + 1;
       const optionsHtml = (q.options || []).map((opt, optIdx) => {
         const letter = String.fromCharCode(65 + optIdx);
         return `
@@ -894,89 +836,73 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }).join('');
 
-      return `
-        <div class="exam-print-q-card mcq-card">
-          <div class="exam-print-q-header">
-            <span class="exam-print-q-text"><strong>${qNum}.</strong> ${q.question}</span>
-          </div>
-          ${q.image ? `
-            <div style="margin: 2px 0; text-align: center;">
-              <img src="${q.image}" alt="Img" style="max-height: 48px; border: 1px solid #CCC; padding: 1px;">
+      if (q.image) {
+        return `
+          <div class="exam-vertical-q-item with-image-layout">
+            <div class="exam-q-title-row">
+              <strong>${qNum}.</strong> ${q.question}
             </div>
-          ` : ''}
-          <div class="exam-mcq-grid">
+            <div class="exam-q-side-row">
+              <div class="exam-q-img-wrap">
+                <img src="${q.image}" alt="Ilustração Técnica" class="exam-side-img">
+              </div>
+              <div class="exam-q-options-grid-2col" style="flex: 1;">
+                ${optionsHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="exam-vertical-q-item">
+          <div class="exam-q-title-row">
+            <strong>${qNum}.</strong> ${q.question}
+          </div>
+          <div class="exam-q-options-grid-2col">
             ${optionsHtml}
           </div>
         </div>
       `;
     }).join('');
 
-    const leftColHtml = renderQuizCols(leftQuestions, 0);
-    const rightColHtml = renderQuizCols(rightQuestions, 5);
-
     return `
       <div class="exam-sheet-a4 single-page-a4">
-        <!-- HEADER COMPACTO -->
-        <div class="exam-print-header">
-          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
-          <div class="exam-print-header-center">
-            <div class="exam-print-assoc">TRADICIONAL KARATE-DO SHOTOKAN TSUYOI (TKST)</div>
-            <div class="exam-print-exam-title">AVALIAÇÃO TEÓRICA / SIMULADO — ${exam.targetBelt.toUpperCase()}</div>
-          </div>
-          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" style="height: 34px !important; max-height: 34px !important; width: auto !important; max-width: 42px !important; object-fit: contain !important; display: block !important;" onerror="this.style.display='none'">
+        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E SEM FUNDO -->
+        <div class="exam-clean-header">
+          <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-main-header-logo">
+          <div class="exam-clean-title">AVALIAÇÃO TEÓRICA / SIMULADO — ${exam.targetBelt.toUpperCase()}</div>
         </div>
 
         <!-- QUADRO DE DADOS DO ALUNO -->
         <div class="exam-print-student-box">
           <div class="exam-print-row">
-            <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
+            <div style="flex: 2.3;"><strong>Aluno(a):</strong> __________________________________________________</div>
             <div style="flex: 0.9;"><strong>Data:</strong> ${dateStr}</div>
             <div style="flex: 0.7; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
           </div>
         </div>
 
-        <!-- CARTÃO RESPOSTA COMPACTO -->
-        <div class="exam-answer-card-wrapper">
-          <div class="exam-answer-card-title">
-            CARTÃO-RESPOSTA OFICIAL (Preencha completamente o círculo da alternativa correta):
-          </div>
-          <div class="exam-answer-card-grid">
-            ${answerCardRows}
-          </div>
+        <!-- CITAÇÃO DO MESTRE FUNAKOSHI -->
+        <div class="exam-print-quote">
+          "O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes." — Gichin Funakoshi
         </div>
 
-        <!-- 2 COLUNAS DE QUESTÕES -->
-        <div class="exam-2col-layout">
-          <div class="exam-col-left">
-            ${leftColHtml}
-          </div>
-          <div class="exam-col-right">
-            ${rightColHtml}
-          </div>
-        </div>
-
-        <!-- ASSINATURAS -->
-        <div class="exam-print-footer">
-          <div class="exam-print-sig-col">
-            <div class="exam-print-sig-line"></div>
-            <div>Assinatura do Aluno(a)</div>
-          </div>
-          <div class="exam-print-sig-col">
-            <div class="exam-print-sig-line"></div>
-            <div>Assinatura do Sensei Examinador</div>
-          </div>
+        <!-- 10 QUESTÕES UMA EMBAIXO DA OUTRA PREENCHENDO TODA A FOLHA A4 -->
+        <div class="exam-vertical-questions-flow">
+          ${questionsListHtml}
         </div>
       </div>
     `;
   },
 
-  // Gera Gabarito Oficial de Correção para uma Faixa Específica
+  // Gera Gabarito Oficial do Sensei
   buildAnswerKeyHtml: function(kyu, format = 'official') {
     const exam = this.getExamData(kyu);
 
     if (format === 'quiz') {
       const questions = this.getQuizQuestionsForKyu(kyu);
-      const itemsHtml = questions.map((q, idx) => {
+      const itemsHtml = questions.slice(0, 10).map((q, idx) => {
         const letter = String.fromCharCode(65 + (q.correctIndex || 0));
         const correctText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
         return `
@@ -994,19 +920,13 @@ window.TKST_EXAM_GENERATOR = {
 
       return `
         <div class="exam-sheet-a4 single-page-a4">
-          <div class="exam-print-header" style="border-bottom: 2px solid #059669;">
-            <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
-            <div class="exam-print-header-center">
-              <div class="exam-print-assoc" style="color: #059669;">GABARITO OFICIAL DO SENSEI (MÚLTIPLA ESCOLHA)</div>
-              <div class="exam-print-exam-title">${exam.title.toUpperCase()} — (${exam.targetBelt.toUpperCase()})</div>
-            </div>
-            <div style="text-align: right; font-size: 7pt; font-weight: 800; color: #059669; border: 1.5px solid #059669; padding: 3px 6px; border-radius: 3px;">
-              GABARITO SENSEI
-            </div>
+          <div class="exam-clean-header" style="border-bottom: 2px solid #059669; padding-bottom: 6px;">
+            <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
+            <div class="exam-clean-title" style="color: #059669;">GABARITO OFICIAL DO SENSEI (MÚLTIPLA ESCOLHA) — ${exam.targetBelt.toUpperCase()}</div>
           </div>
 
           <div class="exam-key-summary-grid">
-            ${questions.map((q, idx) => {
+            ${questions.slice(0, 10).map((q, idx) => {
               const letter = String.fromCharCode(65 + (q.correctIndex || 0));
               return `
                 <div class="exam-key-pill">
@@ -1024,9 +944,9 @@ window.TKST_EXAM_GENERATOR = {
       `;
     }
 
-    // Gabarito do Modelo Dissertativo Oficial
-    const allQuestions = [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
-    const itemsHtml = allQuestions.map(q => {
+    // Gabarito Dissertativo
+    const questions = exam.questions || [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
+    const itemsHtml = questions.map(q => {
       let expectedHtml = '';
       if (q.type === 'image_fields') {
         expectedHtml = q.fields.map(f => `<span><strong>${f.label}</strong> ${f.expected}</span>`).join(' | ');
@@ -1039,13 +959,13 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       return `
-        <div class="exam-key-card" style="margin-bottom: 4px; padding: 4px 6px;">
-          <div class="exam-key-card-header" style="margin-bottom: 1px;">
+        <div class="exam-key-card">
+          <div class="exam-key-card-header">
             <span class="exam-key-q-num">Q${q.num}.</span>
-            <span class="exam-key-q-title" style="font-size: 8pt;">${q.title}</span>
-            <span style="font-size: 7pt; font-weight: 700; color: #059669;">1,0 pt</span>
+            <span class="exam-key-q-title">${q.title}</span>
+            <span style="font-size: 7.5pt; font-weight: 800; color: #059669;">1,0 pt</span>
           </div>
-          <div class="exam-key-answer-box" style="font-size: 7.5pt; color: #065F46;">
+          <div class="exam-key-answer-box">
             <strong>Resposta Esperada:</strong> ${expectedHtml}
           </div>
         </div>
@@ -1054,18 +974,12 @@ window.TKST_EXAM_GENERATOR = {
 
     return `
       <div class="exam-sheet-a4 single-page-a4">
-        <div class="exam-print-header" style="border-bottom: 2px solid #059669;">
-          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
-          <div class="exam-print-header-center">
-            <div class="exam-print-assoc" style="color: #059669;">FOLHA DE CORREÇÃO DO SENSEI (GABARITO OFICIAL)</div>
-            <div class="exam-print-exam-title">${exam.title.toUpperCase()} — (${exam.targetBelt.toUpperCase()})</div>
-          </div>
-          <div style="text-align: right; font-size: 7pt; font-weight: 800; color: #059669; border: 1.5px solid #059669; padding: 3px 6px; border-radius: 3px;">
-            GABARITO SENSEI
-          </div>
+        <div class="exam-clean-header" style="border-bottom: 2px solid #059669; padding-bottom: 6px;">
+          <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
+          <div class="exam-clean-title" style="color: #059669;">FOLHA DE CORREÇÃO DO SENSEI (GABARITO OFICIAL) — ${exam.targetBelt.toUpperCase()}</div>
         </div>
 
-        <div style="background: #F0FDF4; border: 1px solid #86EFAC; padding: 4px 8px; border-radius: 4px; margin-bottom: 6px; font-size: 7.5pt; color: #166534;">
+        <div style="background: #F0FDF4; border: 1px solid #86EFAC; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; font-size: 8pt; color: #166534;">
           <strong>Critério:</strong> Cada questão possui valor de 1,0 ponto (Total = 10,0 pontos). Pontuar integralmente respostas com grafia aproximada ou terminologia técnica correta.
         </div>
 
@@ -1076,15 +990,15 @@ window.TKST_EXAM_GENERATOR = {
     `;
   },
 
-  // Gera o Gabarito Mestre Geral Unificado de TODAS as Faixas em folha única/dupla compacta
+  // Gera o Gabarito Mestre Geral Unificado de TODAS as Faixas
   buildMasterAnswerKeyHtml: function() {
     const kyuKeys = [6, 5, 4, 3, 2, 1, 0, -1, -2];
 
     const sectionsHtml = kyuKeys.map(kyu => {
       const exam = this.getExamData(kyu);
-      const allQuestions = [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
+      const questions = exam.questions || [...(exam.leftQuestions || []), ...(exam.rightQuestions || [])];
 
-      const rowsHtml = allQuestions.map(q => {
+      const rowsHtml = questions.map(q => {
         let resp = q.expectedAnswer || '';
         if (q.type === 'image_fields') {
           resp = q.fields.map(f => `${f.label} ${f.expected}`).join(' | ');
@@ -1093,18 +1007,18 @@ window.TKST_EXAM_GENERATOR = {
         }
         return `
           <tr>
-            <td style="font-weight: 900; width: 32px; text-align: center; padding: 2px 4px; font-size: 7pt;">Q${q.num}</td>
-            <td style="font-size: 7pt; width: 38%; padding: 2px 4px;"><strong>${q.title}</strong></td>
-            <td style="font-size: 7pt; color: #065F46; font-weight: 600; padding: 2px 4px;">${resp}</td>
+            <td style="font-weight: 900; width: 32px; text-align: center; padding: 3px 5px; font-size: 7.5pt;">Q${q.num}</td>
+            <td style="font-size: 7.5pt; width: 38%; padding: 3px 5px;"><strong>${q.title}</strong></td>
+            <td style="font-size: 7.5pt; color: #065F46; font-weight: 600; padding: 3px 5px;">${resp}</td>
           </tr>
         `;
       }).join('');
 
       return `
-        <div style="page-break-inside: avoid; margin-bottom: 12px; border: 1px solid #CBD5E1; border-radius: 3px; overflow: hidden;">
-          <div style="background: ${exam.headerColor || '#1E293B'}; color: #FFF; padding: 3px 8px; font-weight: 800; font-size: 8pt; display: flex; justify-content: space-between; align-items: center;">
+        <div style="page-break-inside: avoid; margin-bottom: 12px; border: 1px solid #CBD5E1; border-radius: 4px; overflow: hidden;">
+          <div style="background: ${exam.headerColor || '#1E293B'}; color: #FFF; padding: 4px 10px; font-weight: 800; font-size: 8.5pt; display: flex; justify-content: space-between; align-items: center;">
             <span>🥋 ${exam.title.toUpperCase()} (${exam.targetBelt})</span>
-            <span style="font-size: 7pt; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 2px;">Kata: ${exam.kataName}</span>
+            <span style="font-size: 7.5pt; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 3px;">Kata: ${exam.kataName}</span>
           </div>
           <table class="exam-master-key-table">
             <tbody>
@@ -1117,13 +1031,9 @@ window.TKST_EXAM_GENERATOR = {
 
     return `
       <div class="exam-sheet-a4">
-        <div class="exam-print-header" style="border-bottom: 2px solid #D97706; padding-bottom: 4px; margin-bottom: 6px;">
-          <img src="assets/images/logo-tkst-clean.png" alt="TKST" class="exam-print-logo" style="height: 38px !important; max-height: 38px !important; width: auto !important; max-width: 48px !important; object-fit: contain !important; display: block !important;" onerror="this.src='assets/images/logo-tkst.png'">
-          <div class="exam-print-header-center">
-            <div class="exam-print-assoc" style="color: #B45309;">TRADICIONAL KARATE-DO SHOTOKAN TSUYOI (TKST)</div>
-            <div class="exam-print-exam-title">GABARITO MESTRE GERAL — TODAS AS FAIXAS (6º KYU AO 3º DAN)</div>
-          </div>
-          <img src="assets/images/tigre.png" alt="Tigre" class="exam-print-logo-tiger" style="height: 34px !important; max-height: 34px !important; width: auto !important; max-width: 42px !important; object-fit: contain !important; display: block !important;" onerror="this.style.display='none'">
+        <div class="exam-clean-header" style="border-bottom: 2px solid #D97706; padding-bottom: 6px; margin-bottom: 8px;">
+          <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
+          <div class="exam-clean-title" style="color: #B45309;">GABARITO MESTRE GERAL — TODAS AS FAIXAS (6º KYU AO 3º DAN)</div>
         </div>
 
         <div style="margin-top: 8px;">
@@ -1133,7 +1043,7 @@ window.TKST_EXAM_GENERATOR = {
     `;
   },
 
-  // Gera o Caderno Completo com Todas as Provas em Sequência (1 página por prova)
+  // Gera o Caderno Completo com Todas as Provas em Sequência
   buildAllExamsHtml: function(format = 'official', options = {}) {
     const kyuKeys = [6, 5, 4, 3, 2, 1, 0, -1, -2];
     return kyuKeys.map(kyu => {
@@ -1144,12 +1054,12 @@ window.TKST_EXAM_GENERATOR = {
     }).join('');
   },
 
-  // CSS Ultra-Otimizado para 1 Página A4 Sem Desperdício de Espaço
+  // CSS de Impressão Direta A4
   getPrintStyles: function() {
     return `
       @page {
         size: A4 portrait;
-        margin: 6mm 8mm 6mm 8mm;
+        margin: 8mm 12mm 8mm 12mm;
       }
       * {
         box-sizing: border-box;
@@ -1162,12 +1072,12 @@ window.TKST_EXAM_GENERATOR = {
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
         color: #0F172A;
         background: #FFF;
-        font-size: 8pt;
-        line-height: 1.25;
+        font-size: 8.5pt;
+        line-height: 1.3;
       }
       .exam-sheet-a4 {
         width: 100%;
-        max-width: 200mm;
+        max-width: 190mm;
         margin: 0 auto;
         padding: 0;
         background: #FFF;
@@ -1185,53 +1095,36 @@ window.TKST_EXAM_GENERATOR = {
         page-break-after: auto;
       }
 
-      /* HEADER ULTRA COMPACTO */
-      .exam-print-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 2px solid #0F172A;
-        padding-bottom: 3px;
-        margin-bottom: 3px;
-        gap: 8px;
-      }
-      .exam-print-logo {
-        height: 38px;
-        width: auto;
-        object-fit: contain;
-      }
-      .exam-print-logo-tiger {
-        height: 34px;
-        width: auto;
-        object-fit: contain;
-        opacity: 0.85;
-      }
-      .exam-print-header-center {
-        flex: 1;
+      /* HEADER LIMPO COM LOGO DO USUÁRIO CENTRALIZADA */
+      .exam-clean-header {
         text-align: center;
+        margin-bottom: 5px;
+        padding-bottom: 2px;
       }
-      .exam-print-assoc {
-        font-size: 9pt;
+      .exam-main-header-logo {
+        height: 60px !important;
+        max-height: 65px !important;
+        width: auto !important;
+        max-width: 250px !important;
+        object-fit: contain !important;
+        display: block !important;
+        margin: 0 auto 3px auto !important;
+      }
+      .exam-clean-title {
+        font-size: 9.5pt;
         font-weight: 900;
         letter-spacing: 0.3px;
         color: #0F172A;
-        line-height: 1.1;
-      }
-      .exam-print-exam-title {
-        font-size: 8.5pt;
-        font-weight: 800;
-        color: #B45309;
-        line-height: 1.1;
-        margin-top: 1px;
+        line-height: 1.15;
       }
 
       /* QUADRO DE ALUNO */
       .exam-print-student-box {
         border: 1.2px solid #0F172A;
-        border-radius: 3px;
-        padding: 3px 6px;
-        margin-bottom: 3px;
-        font-size: 7.5pt;
+        border-radius: 4px;
+        padding: 4px 8px;
+        margin-bottom: 4px;
+        font-size: 8pt;
         background: #F8FAFC;
       }
       .exam-print-row {
@@ -1244,88 +1137,108 @@ window.TKST_EXAM_GENERATOR = {
       .exam-print-quote {
         text-align: center;
         font-style: italic;
-        font-size: 6.8pt;
+        font-size: 7pt;
         color: #334155;
-        border-top: 1px dashed #94A3B8;
-        border-bottom: 1px dashed #94A3B8;
+        border-top: 1px dashed #CBD5E1;
+        border-bottom: 1px dashed #CBD5E1;
         padding: 2px 0;
-        margin-bottom: 4px;
-        line-height: 1.15;
+        margin-bottom: 6px;
+        line-height: 1.2;
       }
 
-      /* LAYOUT EM 2 COLUNAS */
-      .exam-2col-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-      }
-      .exam-col-left, .exam-col-right {
+      /* FLUXO VERTICAL DE QUESTÕES (UMA EMBAIXO DA OUTRA) */
+      .exam-vertical-questions-flow {
         display: flex;
         flex-direction: column;
-        gap: 3.5px;
+        gap: 6px;
       }
 
-      /* CARD DE QUESTÃO */
-      .exam-print-q-card {
+      .exam-vertical-q-item {
         page-break-inside: avoid;
-        border-bottom: 1px dotted #CBD5E1;
-        padding-bottom: 2.5px;
+        border-bottom: 1px dashed #E2E8F0;
+        padding-bottom: 4.5px;
       }
-      .exam-print-q-card:last-child {
+      .exam-vertical-q-item:last-child {
         border-bottom: none;
       }
-      .exam-print-q-header {
-        font-size: 7.5pt;
-        line-height: 1.2;
-        margin-bottom: 1.5px;
-      }
-      .exam-print-q-text {
+
+      .exam-q-title-row {
+        font-size: 8.5pt;
+        line-height: 1.25;
+        font-weight: 700;
         color: #0F172A;
-      }
-      .exam-r-prefix {
-        font-weight: 900;
-        font-size: 7.5pt;
-        margin-right: 2px;
-        flex-shrink: 0;
+        margin-bottom: 2px;
       }
 
-      /* LINHAS DE RESPOSTA */
-      .exam-print-lines-box {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-      }
-      .exam-print-line {
-        border-bottom: 1px solid #475569;
-        height: 13px;
-        width: 100%;
-      }
-
-      /* IMAGENS E CAMPOS */
-      .exam-print-img-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
+      /* MÚLTIPLA ESCOLHA EM GRID 2 COLUNAS */
+      .exam-q-options-grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px 12px;
         margin-top: 1px;
       }
-      .exam-print-img-wrapper {
+      .exam-mcq-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 4px;
+        font-size: 7.8pt;
+        line-height: 1.2;
+      }
+      .exam-mcq-checkbox {
+        font-weight: 800;
+        color: #0F172A;
+        flex-shrink: 0;
+      }
+      .exam-mcq-opt-text {
+        color: #1E293B;
+      }
+
+      /* IMAGEM LADO A LADO COM ALTERNATIVAS / CAMPOS */
+      .exam-q-side-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 2px;
+      }
+      .exam-q-img-wrap {
         border: 1px solid #CBD5E1;
-        border-radius: 2px;
+        border-radius: 3px;
         padding: 2px;
         background: #FFF;
         flex-shrink: 0;
       }
-      .exam-print-img {
-        height: 38px;
-        max-width: 65px;
-        object-fit: contain;
-        display: block;
+      .exam-side-img {
+        height: 46px !important;
+        max-height: 50px !important;
+        width: auto !important;
+        max-width: 80px !important;
+        object-fit: contain !important;
+        display: block !important;
       }
-      .exam-print-fields-col {
+      .exam-q-fields-wrap {
         flex: 1;
         display: flex;
         flex-direction: column;
+        gap: 3px;
+      }
+
+      /* LINHAS DE RESPOSTA DISSERTATIVA */
+      .exam-print-lines-box {
+        display: flex;
+        flex-direction: column;
         gap: 2px;
+        margin-top: 2px;
+      }
+      .exam-r-prefix {
+        font-weight: 900;
+        font-size: 8pt;
+        margin-right: 2px;
+        flex-shrink: 0;
+      }
+      .exam-print-line {
+        border-bottom: 1px solid #475569;
+        height: 14px;
+        width: 100%;
       }
       .exam-print-field-row {
         display: flex;
@@ -1333,107 +1246,51 @@ window.TKST_EXAM_GENERATOR = {
         gap: 4px;
       }
       .exam-print-field-label {
-        font-size: 7pt;
+        font-size: 7.5pt;
         font-weight: 800;
         color: #1E293B;
         white-space: nowrap;
       }
 
-      /* GRID DE CONTAGEM EM 2 SUBCOLUNAS */
+      /* CONTAGEM EM 2 SUBCOLUNAS */
       .exam-print-count-2cols {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 6px;
-        margin-top: 1px;
+        gap: 8px;
+        margin-top: 2px;
       }
       .exam-print-count-subcol {
         display: flex;
         flex-direction: column;
-        gap: 1px;
+        gap: 1.5px;
       }
       .exam-print-count-item {
         display: flex;
         align-items: center;
-        gap: 2px;
+        gap: 3px;
       }
       .exam-print-count-num {
-        font-size: 7pt;
+        font-size: 7.5pt;
         font-weight: 800;
         color: #0F172A;
-        width: 18px;
-      }
-
-      /* MÚLTIPLA ESCOLHA */
-      .exam-answer-card-wrapper {
-        border: 1px solid #059669;
-        border-radius: 3px;
-        background: #F0FDF4;
-        padding: 3px 6px;
-        margin-bottom: 4px;
-      }
-      .exam-answer-card-title {
-        font-size: 7pt;
-        font-weight: 800;
-        color: #065F46;
-        margin-bottom: 2px;
-      }
-      .exam-answer-card-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 2px 6px;
-      }
-      .exam-answer-card-item {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-        font-size: 6.8pt;
-        font-weight: 700;
-      }
-      .exam-card-q-num {
         width: 20px;
-        color: #0F172A;
-      }
-      .exam-card-bubble {
-        color: #475569;
-      }
-      .exam-mcq-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-        margin-top: 1px;
-      }
-      .exam-mcq-option {
-        display: flex;
-        align-items: flex-start;
-        gap: 4px;
-        font-size: 7pt;
-        line-height: 1.15;
-      }
-      .exam-mcq-checkbox {
-        font-weight: bold;
-        color: #0F172A;
-        flex-shrink: 0;
-        font-size: 6.8pt;
-      }
-      .exam-mcq-opt-text {
-        color: #334155;
       }
 
-      /* GABARITO SENSEI */
+      /* GABARITOS */
       .exam-key-card {
         page-break-inside: avoid;
         border: 1px solid #E2E8F0;
         border-left: 3px solid #10B981;
-        border-radius: 3px;
-        padding: 3px 5px;
-        margin-bottom: 3px;
+        border-radius: 4px;
+        padding: 4px 6px;
+        margin-bottom: 4px;
         background: #FAFAFA;
       }
       .exam-key-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 7.5pt;
+        font-size: 8pt;
       }
       .exam-key-q-num {
         font-weight: 900;
@@ -1444,86 +1301,66 @@ window.TKST_EXAM_GENERATOR = {
         background: #10B981;
         color: #FFF;
         font-weight: 800;
-        font-size: 6.8pt;
-        padding: 1px 4px;
+        font-size: 7pt;
+        padding: 1px 5px;
         border-radius: 2px;
       }
       .exam-key-answer-box {
-        font-size: 7.2pt;
+        font-size: 7.8pt;
         color: #1E293B;
+        margin-top: 1px;
       }
       .exam-key-expl-box {
-        font-size: 6.8pt;
+        font-size: 7.2pt;
         color: #64748B;
         font-style: italic;
       }
       .exam-key-summary-grid {
         display: grid;
         grid-template-columns: repeat(10, 1fr);
-        gap: 2px;
+        gap: 3px;
         background: #F8FAFC;
         border: 1px solid #CBD5E1;
         padding: 4px;
-        border-radius: 3px;
-        margin-bottom: 6px;
+        border-radius: 4px;
+        margin-bottom: 8px;
       }
       .exam-key-pill {
         background: #FFF;
         border: 1px solid #10B981;
-        border-radius: 2px;
+        border-radius: 3px;
         text-align: center;
-        padding: 1px;
+        padding: 2px 1px;
       }
       .exam-key-pill-num {
         color: #64748B;
-        font-size: 6pt;
+        font-size: 6.5pt;
       }
       .exam-key-pill-val {
         color: #065F46;
         font-weight: 900;
-        font-size: 7pt;
+        font-size: 7.5pt;
       }
 
-      /* MASTER KEY TABLE */
       .exam-master-key-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 6.8pt;
+        font-size: 7.5pt;
       }
       .exam-master-key-table td {
         border: 1px solid #CBD5E1;
-        padding: 2px 4px;
+        padding: 3px 5px;
         vertical-align: top;
       }
       .exam-master-key-table tr:nth-child(even) {
         background: #F8FAFC;
-      }
-
-      /* FOOTER & ASSINATURAS */
-      .exam-print-footer {
-        display: flex;
-        justify-content: space-around;
-        align-items: flex-end;
-        margin-top: 4px;
-        padding-top: 2px;
-        page-break-inside: avoid;
-      }
-      .exam-print-sig-col {
-        text-align: center;
-        font-size: 7pt;
-        color: #334155;
-      }
-      .exam-print-sig-line {
-        border-top: 1px solid #0F172A;
-        width: 180px;
-        margin-bottom: 2px;
       }
     `;
   },
 
   // Impressão / Abertura de Janela de Impressão PDF
   printHtml: function(title, bodyContent) {
-    const printWindow = window.open('', '_blank', 'width=950,height=800');
+    const printWindow = window.open('', '_blank', 'width=950,height=850');
     if (!printWindow) {
       alert("Aviso: O navegador bloqueou a janela de impressão. Por favor, permita pop-ups para este site para gerar o PDF.");
       return;
@@ -1552,13 +1389,13 @@ window.TKST_EXAM_GENERATOR = {
             }
             .exam-sheet-a4 {
               box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-              padding: 15px;
-              border-radius: 4px;
+              padding: 20px 24px;
+              border-radius: 6px;
               margin-bottom: 20px;
             }
             .no-print-bar {
               width: 100%;
-              max-width: 200mm;
+              max-width: 190mm;
               background: #1E293B;
               border: 1px solid #334155;
               padding: 10px 16px;
@@ -1597,7 +1434,7 @@ window.TKST_EXAM_GENERATOR = {
         <div class="no-print-bar">
           <div>
             <strong style="font-size: 0.95rem;">📄 ${title}</strong>
-            <div style="font-size: 0.75rem; color: #94A3B8;">Diagramação exata de 1 folha A4</div>
+            <div style="font-size: 0.75rem; color: #94A3B8;">Folha A4 Completa (Vertical)</div>
           </div>
           <div style="display: flex; gap: 8px;">
             <button class="print-btn-action" onclick="window.print()">

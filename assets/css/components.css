@@ -3889,23 +3889,23 @@ body.login-view-active .content-body {
   max-width: 800px;
   width: 100%;
   margin: 0 auto;
-  padding: 16px;
-  font-size: 8pt;
-  line-height: 1.25;
+  padding: 20px 24px;
+  font-size: 8.5pt;
+  line-height: 1.3;
   box-sizing: border-box;
 }
 
 .exam-sheet-a4 {
   width: 100%;
-  max-width: 200mm;
+  max-width: 190mm;
   margin: 0 auto;
   padding: 0;
   background: #FFFFFF !important;
   color: #0F172A !important;
   box-sizing: border-box;
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
-  font-size: 8pt;
-  line-height: 1.25;
+  font-size: 8.5pt;
+  line-height: 1.3;
 }
 
 .single-page-a4 {
@@ -3913,63 +3913,37 @@ body.login-view-active .content-body {
   max-height: none;
 }
 
-.exam-print-header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  border-bottom: 2px solid #0F172A !important;
-  padding-bottom: 3px !important;
-  margin-bottom: 3px !important;
-  gap: 8px !important;
-}
-
-.exam-print-logo {
-  height: 38px !important;
-  max-height: 38px !important;
-  width: auto !important;
-  max-width: 48px !important;
-  object-fit: contain !important;
-  display: block !important;
-}
-
-.exam-print-logo-tiger {
-  height: 34px !important;
-  max-height: 34px !important;
-  width: auto !important;
-  max-width: 42px !important;
-  object-fit: contain !important;
-  opacity: 0.85 !important;
-  display: block !important;
-}
-
-.exam-print-header-center {
-  flex: 1 !important;
+.exam-clean-header {
   text-align: center !important;
-  min-width: 0 !important;
+  margin-bottom: 5px !important;
+  padding-bottom: 2px !important;
 }
 
-.exam-print-assoc {
-  font-size: 8.5pt !important;
+.exam-main-header-logo {
+  height: 60px !important;
+  max-height: 65px !important;
+  width: auto !important;
+  max-width: 250px !important;
+  object-fit: contain !important;
+  display: block !important;
+  margin: 0 auto 3px auto !important;
+  background: transparent !important;
+}
+
+.exam-clean-title {
+  font-size: 9.5pt !important;
   font-weight: 900 !important;
-  letter-spacing: 0.2px !important;
+  letter-spacing: 0.3px !important;
   color: #0F172A !important;
-  line-height: 1.1 !important;
-}
-
-.exam-print-exam-title {
-  font-size: 8pt !important;
-  font-weight: 800 !important;
-  color: #B45309 !important;
-  line-height: 1.1 !important;
-  margin-top: 1px !important;
+  line-height: 1.15 !important;
 }
 
 .exam-print-student-box {
   border: 1.2px solid #0F172A !important;
-  border-radius: 3px !important;
-  padding: 3px 6px !important;
-  margin-bottom: 3px !important;
-  font-size: 7.5pt !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  margin-bottom: 4px !important;
+  font-size: 8pt !important;
   background: #F8FAFC !important;
 }
 
@@ -3982,104 +3956,120 @@ body.login-view-active .content-body {
 .exam-print-quote {
   text-align: center !important;
   font-style: italic !important;
-  font-size: 6.8pt !important;
+  font-size: 7pt !important;
   color: #334155 !important;
-  border-top: 1px dashed #94A3B8 !important;
-  border-bottom: 1px dashed #94A3B8 !important;
+  border-top: 1px dashed #CBD5E1 !important;
+  border-bottom: 1px dashed #CBD5E1 !important;
   padding: 2px 0 !important;
-  margin-bottom: 4px !important;
-  line-height: 1.15 !important;
+  margin-bottom: 6px !important;
+  line-height: 1.2 !important;
 }
 
-.exam-2col-layout {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 8px !important;
-}
-
-@media (max-width: 580px) {
-  .exam-2col-layout {
-    grid-template-columns: 1fr !important;
-    gap: 6px !important;
-  }
-}
-
-.exam-col-left, .exam-col-right {
+.exam-vertical-questions-flow {
   display: flex !important;
   flex-direction: column !important;
-  gap: 3.5px !important;
-  min-width: 0 !important;
+  gap: 6px !important;
 }
 
-.exam-print-q-card {
+.exam-vertical-q-item {
   page-break-inside: avoid !important;
-  border-bottom: 1px dotted #CBD5E1 !important;
-  padding-bottom: 2.5px !important;
+  border-bottom: 1px dashed #E2E8F0 !important;
+  padding-bottom: 4.5px !important;
 }
 
-.exam-print-q-card:last-child {
+.exam-vertical-q-item:last-child {
   border-bottom: none !important;
 }
 
-.exam-print-q-header {
-  font-size: 7.5pt !important;
-  line-height: 1.2 !important;
-  margin-bottom: 1.5px !important;
-}
-
-.exam-print-q-text {
+.exam-q-title-row {
+  font-size: 8.5pt !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
   color: #0F172A !important;
+  margin-bottom: 2px !important;
 }
 
-.exam-r-prefix {
-  font-weight: 900 !important;
-  font-size: 7.5pt !important;
-  margin-right: 2px !important;
-  flex-shrink: 0 !important;
-}
-
-.exam-print-lines-box {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 1px !important;
-}
-
-.exam-print-line {
-  border-bottom: 1px solid #475569 !important;
-  height: 13px !important;
-  width: 100% !important;
-}
-
-.exam-print-img-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+.exam-q-options-grid-2col {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 2px 12px !important;
   margin-top: 1px !important;
 }
 
-.exam-print-img-wrapper {
+@media (max-width: 540px) {
+  .exam-q-options-grid-2col {
+    grid-template-columns: 1fr !important;
+    gap: 2px !important;
+  }
+}
+
+.exam-mcq-option {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+  font-size: 7.8pt !important;
+  line-height: 1.2 !important;
+}
+
+.exam-mcq-checkbox {
+  font-weight: 800 !important;
+  color: #0F172A !important;
+  flex-shrink: 0 !important;
+}
+
+.exam-mcq-opt-text {
+  color: #1E293B !important;
+}
+
+.exam-q-side-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 2px !important;
+}
+
+.exam-q-img-wrap {
   border: 1px solid #CBD5E1 !important;
-  border-radius: 2px !important;
+  border-radius: 3px !important;
   padding: 2px !important;
   background: #FFF !important;
   flex-shrink: 0 !important;
 }
 
-.exam-print-img {
-  height: 38px !important;
-  max-height: 38px !important;
+.exam-side-img {
+  height: 46px !important;
+  max-height: 50px !important;
   width: auto !important;
-  max-width: 65px !important;
+  max-width: 80px !important;
   object-fit: contain !important;
   display: block !important;
 }
 
-.exam-print-fields-col {
+.exam-q-fields-wrap {
   flex: 1 !important;
   display: flex !important;
   flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.exam-print-lines-box {
+  display: flex !important;
+  flex-direction: column !important;
   gap: 2px !important;
-  min-width: 0 !important;
+  margin-top: 2px !important;
+}
+
+.exam-r-prefix {
+  font-weight: 900 !important;
+  font-size: 8pt !important;
+  margin-right: 2px !important;
+  flex-shrink: 0 !important;
+}
+
+.exam-print-line {
+  border-bottom: 1px solid #475569 !important;
+  height: 14px !important;
+  width: 100% !important;
 }
 
 .exam-print-field-row {
@@ -4089,7 +4079,7 @@ body.login-view-active .content-body {
 }
 
 .exam-print-field-label {
-  font-size: 7pt !important;
+  font-size: 7.5pt !important;
   font-weight: 800 !important;
   color: #1E293B !important;
   white-space: nowrap !important;
@@ -4098,100 +4088,36 @@ body.login-view-active .content-body {
 .exam-print-count-2cols {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 6px !important;
-  margin-top: 1px !important;
+  gap: 8px !important;
+  margin-top: 2px !important;
 }
 
 .exam-print-count-subcol {
   display: flex !important;
   flex-direction: column !important;
-  gap: 1px !important;
+  gap: 1.5px !important;
 }
 
 .exam-print-count-item {
   display: flex !important;
   align-items: center !important;
-  gap: 2px !important;
+  gap: 3px !important;
 }
 
 .exam-print-count-num {
-  font-size: 7pt !important;
+  font-size: 7.5pt !important;
   font-weight: 800 !important;
   color: #0F172A !important;
-  width: 18px !important;
-}
-
-.exam-answer-card-wrapper {
-  border: 1px solid #059669 !important;
-  border-radius: 3px !important;
-  background: #F0FDF4 !important;
-  padding: 3px 6px !important;
-  margin-bottom: 4px !important;
-}
-
-.exam-answer-card-title {
-  font-size: 7pt !important;
-  font-weight: 800 !important;
-  color: #065F46 !important;
-  margin-bottom: 2px !important;
-}
-
-.exam-answer-card-grid {
-  display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
-  gap: 2px 6px !important;
-}
-
-.exam-answer-card-item {
-  display: flex !important;
-  align-items: center !important;
-  gap: 2px !important;
-  font-size: 6.8pt !important;
-  font-weight: 700 !important;
-}
-
-.exam-card-q-num {
   width: 20px !important;
-  color: #0F172A !important;
-}
-
-.exam-card-bubble {
-  color: #475569 !important;
-}
-
-.exam-mcq-grid {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 1px !important;
-  margin-top: 1px !important;
-}
-
-.exam-mcq-option {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 4px !important;
-  font-size: 7pt !important;
-  line-height: 1.15 !important;
-}
-
-.exam-mcq-checkbox {
-  font-weight: bold !important;
-  color: #0F172A !important;
-  flex-shrink: 0 !important;
-  font-size: 6.8pt !important;
-}
-
-.exam-mcq-opt-text {
-  color: #334155 !important;
 }
 
 .exam-key-card {
   page-break-inside: avoid !important;
   border: 1px solid #E2E8F0 !important;
   border-left: 3px solid #10B981 !important;
-  border-radius: 3px !important;
-  padding: 3px 5px !important;
-  margin-bottom: 3px !important;
+  border-radius: 4px !important;
+  padding: 4px 6px !important;
+  margin-bottom: 4px !important;
   background: #FAFAFA !important;
 }
 
@@ -4199,7 +4125,7 @@ body.login-view-active .content-body {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  font-size: 7.5pt !important;
+  font-size: 8pt !important;
 }
 
 .exam-key-q-num {
@@ -4212,87 +4138,67 @@ body.login-view-active .content-body {
   background: #10B981 !important;
   color: #FFF !important;
   font-weight: 800 !important;
-  font-size: 6.8pt !important;
-  padding: 1px 4px !important;
+  font-size: 7pt !important;
+  padding: 1px 5px !important;
   border-radius: 2px !important;
 }
 
 .exam-key-answer-box {
-  font-size: 7.2pt !important;
+  font-size: 7.8pt !important;
   color: #1E293B !important;
+  margin-top: 1px !important;
 }
 
 .exam-key-expl-box {
-  font-size: 6.8pt !important;
+  font-size: 7.2pt !important;
   color: #64748B !important;
   font-style: italic !important;
 }
 
 .exam-key-summary-grid {
   display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
-  gap: 2px !important;
+  grid-template-columns: repeat(10, 1fr) !important;
+  gap: 3px !important;
   background: #F8FAFC !important;
   border: 1px solid #CBD5E1 !important;
   padding: 4px !important;
-  border-radius: 3px !important;
-  margin-bottom: 6px !important;
+  border-radius: 4px !important;
+  margin-bottom: 8px !important;
 }
 
 .exam-key-pill {
   background: #FFF !important;
   border: 1px solid #10B981 !important;
-  border-radius: 2px !important;
+  border-radius: 3px !important;
   text-align: center !important;
-  padding: 1px !important;
+  padding: 2px 1px !important;
 }
 
 .exam-key-pill-num {
   color: #64748B !important;
-  font-size: 6pt !important;
+  font-size: 6.5pt !important;
 }
 
 .exam-key-pill-val {
   color: #065F46 !important;
   font-weight: 900 !important;
-  font-size: 7pt !important;
+  font-size: 7.5pt !important;
 }
 
 .exam-master-key-table {
   width: 100% !important;
   border-collapse: collapse !important;
-  font-size: 6.8pt !important;
+  font-size: 7.5pt !important;
 }
 
 .exam-master-key-table td {
   border: 1px solid #CBD5E1 !important;
-  padding: 2px 4px !important;
+  padding: 3px 5px !important;
   vertical-align: top !important;
 }
 
 .exam-master-key-table tr:nth-child(even) {
   background: #F8FAFC !important;
-}
-
-.exam-print-footer {
-  display: flex !important;
-  justify-content: space-around !important;
-  align-items: flex-end !important;
-  margin-top: 4px !important;
-  padding-top: 2px !important;
-  page-break-inside: avoid !important;
-}
-
-.exam-print-sig-col {
-  text-align: center !important;
-  font-size: 7pt !important;
-  color: #334155 !important;
-}
-
-.exam-print-sig-line {
-  border-top: 1px solid #0F172A !important;
-  width: 140px !important;
-  margin-bottom: 2px !important;
 }
 
 
