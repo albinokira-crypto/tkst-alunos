@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let examGeneratorSelectedKyu = 6;
   let examGeneratorFormat = 'official'; // 'official' (Dissertativo com imagens), 'quiz' (Múltipla escolha)
   let examPreviewGenerated = false; // false, 'exam', 'key'
+  let examCurrentRandomQuestions = null; // 10 questões sorteadas ativas
   let quizModalTempImage = '';
   
   // Quiz State
@@ -1088,11 +1089,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentExamMeta = (window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu)) || { title: "Exame", targetBelt: "Faixa Amarela (6º Kyu)", kataName: "Heian Shodan", color: "#F5BE00" };
     let examPreviewHtml = '';
     if (examPreviewGenerated && window.TKST_EXAM_GENERATOR) {
+      if (!examCurrentRandomQuestions) {
+        examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+      }
       if (examPreviewGenerated === 'key') {
-        examPreviewHtml = window.TKST_EXAM_GENERATOR.buildAnswerKeyHtml(examGeneratorSelectedKyu, examGeneratorFormat);
+        examPreviewHtml = examGeneratorFormat === 'quiz'
+          ? window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions)
+          : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
       } else {
         examPreviewHtml = examGeneratorFormat === 'quiz'
-          ? window.TKST_EXAM_GENERATOR.buildQuizExamHtml(examGeneratorSelectedKyu)
+          ? window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions)
           : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
       }
     }
@@ -6062,13 +6068,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setExamGeneratorKyu: (kyu) => {
       examGeneratorSelectedKyu = parseInt(kyu);
+      examCurrentRandomQuestions = null;
       renderAdminMaster();
     },
     setExamGeneratorFormat: (fmt) => {
       examGeneratorFormat = fmt;
+      examCurrentRandomQuestions = null;
       renderAdminMaster();
     },
     generateExamPreview: (mode = 'exam') => {
+      if (window.TKST_EXAM_GENERATOR) {
+        examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+      }
       examPreviewGenerated = mode;
       renderAdminMaster();
     },
@@ -6078,17 +6089,25 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     printCurrentExam: () => {
       if (!window.TKST_EXAM_GENERATOR) return;
+      if (!examCurrentRandomQuestions) {
+        examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+      }
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
       const html = examGeneratorFormat === 'quiz'
-        ? window.TKST_EXAM_GENERATOR.buildQuizExamHtml(examGeneratorSelectedKyu)
+        ? window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions)
         : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
-      window.TKST_EXAM_GENERATOR.printHtml(`${exam.title} - ${exam.targetBelt}`, html);
+      window.TKST_EXAM_GENERATOR.printHtml(`${exam.title} (Prova + Gabarito) - ${exam.targetBelt}`, html);
     },
     printCurrentAnswerKey: () => {
       if (!window.TKST_EXAM_GENERATOR) return;
+      if (!examCurrentRandomQuestions) {
+        examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+      }
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
-      const html = window.TKST_EXAM_GENERATOR.buildAnswerKeyHtml(examGeneratorSelectedKyu, examGeneratorFormat);
-      window.TKST_EXAM_GENERATOR.printHtml(`Gabarito - ${exam.title}`, html);
+      const html = examGeneratorFormat === 'quiz'
+        ? window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions)
+        : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+      window.TKST_EXAM_GENERATOR.printHtml(`Gabarito Oficial - ${exam.title}`, html);
     },
     printAllExams: () => {
       if (!window.TKST_EXAM_GENERATOR) return;

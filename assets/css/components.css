@@ -3895,6 +3895,22 @@ body.login-view-active .content-body {
   box-sizing: border-box;
 }
 
+.exam-print-bundle {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+  width: 100% !important;
+}
+
+.exam-page-break-wrapper {
+  page-break-after: always !important;
+  page-break-inside: avoid !important;
+}
+
+.exam-page-break-wrapper:last-child {
+  page-break-after: auto !important;
+}
+
 .exam-sheet-a4 {
   width: 100%;
   max-width: 190mm;
@@ -3989,58 +4005,55 @@ body.login-view-active .content-body {
   margin-bottom: 2px !important;
 }
 
-.exam-q-options-grid-2col {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 2px 12px !important;
+/* Alternativas uma embaixo da outra (1 por linha) */
+.exam-mcq-options-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
   margin-top: 1px !important;
-}
-
-@media (max-width: 540px) {
-  .exam-q-options-grid-2col {
-    grid-template-columns: 1fr !important;
-    gap: 2px !important;
-  }
 }
 
 .exam-mcq-option {
   display: flex !important;
-  align-items: flex-start !important;
-  gap: 4px !important;
+  align-items: baseline !important;
+  gap: 6px !important;
   font-size: 7.8pt !important;
-  line-height: 1.2 !important;
+  line-height: 1.25 !important;
+  white-space: normal !important;
 }
 
 .exam-mcq-checkbox {
   font-weight: 800 !important;
   color: #0F172A !important;
   flex-shrink: 0 !important;
+  font-family: monospace, sans-serif !important;
 }
 
 .exam-mcq-opt-text {
   color: #1E293B !important;
 }
 
+/* Imagens à esquerda e respostas à frente */
 .exam-q-side-row {
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
+  gap: 14px !important;
   margin-top: 2px !important;
 }
 
 .exam-q-img-wrap {
   border: 1px solid #CBD5E1 !important;
-  border-radius: 3px !important;
-  padding: 2px !important;
+  border-radius: 4px !important;
+  padding: 3px !important;
   background: #FFF !important;
   flex-shrink: 0 !important;
 }
 
 .exam-side-img {
-  height: 46px !important;
-  max-height: 50px !important;
+  height: 52px !important;
+  max-height: 56px !important;
   width: auto !important;
-  max-width: 80px !important;
+  max-width: 90px !important;
   object-fit: contain !important;
   display: block !important;
 }
