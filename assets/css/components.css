@@ -3912,6 +3912,7 @@ body.login-view-active .content-body {
 }
 
 .exam-sheet-a4 {
+  position: relative !important;
   width: 100%;
   max-width: 190mm;
   margin: 0 auto;
@@ -3925,24 +3926,42 @@ body.login-view-active .content-body {
 }
 
 .single-page-a4 {
+  position: relative !important;
   height: auto;
   max-height: none;
 }
 
+/* MARCA D'ÁGUA CENTRAL DA FOLHA */
+.exam-sheet-watermark {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 140mm !important;
+  max-width: 85% !important;
+  height: auto !important;
+  opacity: 0.08 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 0 !important;
+}
+
 .exam-clean-header {
+  position: relative !important;
+  z-index: 1 !important;
   text-align: center !important;
   margin-bottom: 5px !important;
   padding-bottom: 2px !important;
 }
 
 .exam-main-header-logo {
-  height: 60px !important;
-  max-height: 65px !important;
+  height: 160px !important;
+  max-height: 175px !important;
   width: auto !important;
-  max-width: 250px !important;
+  max-width: 90% !important;
   object-fit: contain !important;
   display: block !important;
-  margin: 0 auto 3px auto !important;
+  margin: 0 auto 4px auto !important;
   background: transparent !important;
 }
 

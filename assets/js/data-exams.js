@@ -860,6 +860,9 @@ window.TKST_EXAM_GENERATOR = {
 
     return `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1">
+        <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
+        <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
+
         <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E TÍTULO SOLICITADO -->
         <div class="exam-clean-header">
           <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-main-header-logo">
@@ -921,6 +924,9 @@ window.TKST_EXAM_GENERATOR = {
 
     return `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page2">
+        <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
+        <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
+
         <!-- HEADER DO GABARITO -->
         <div class="exam-clean-header" style="border-bottom: 2px solid #059669; padding-bottom: 4px;">
           <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
@@ -1034,6 +1040,9 @@ window.TKST_EXAM_GENERATOR = {
 
     const page1Html = `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1">
+        <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
+        <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
+
         <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E TÍTULO SOLICITADO -->
         <div class="exam-clean-header">
           <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-main-header-logo">
@@ -1087,6 +1096,9 @@ window.TKST_EXAM_GENERATOR = {
 
     const page2Html = `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page2">
+        <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
+        <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
+
         <div class="exam-clean-header" style="border-bottom: 2px solid #059669; padding-bottom: 4px;">
           <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
           <div class="exam-clean-title" style="color: #059669;">FOLHA DE CORREÇÃO DO SENSEI (GABARITO OFICIAL)</div>
@@ -1155,6 +1167,9 @@ window.TKST_EXAM_GENERATOR = {
 
     return `
       <div class="exam-sheet-a4">
+        <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
+        <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
+
         <div class="exam-clean-header" style="border-bottom: 2px solid #D97706; padding-bottom: 6px; margin-bottom: 8px;">
           <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
           <div class="exam-clean-title" style="color: #B45309;">GABARITO MESTRE GERAL — TODAS AS FAIXAS (6º KYU AO 3º DAN)</div>
@@ -1171,9 +1186,7 @@ window.TKST_EXAM_GENERATOR = {
   buildAllExamsHtml: function(format = 'quiz', options = {}) {
     const kyuKeys = [6, 5, 4, 3, 2, 1, 0, -1, -2];
     return kyuKeys.map(kyu => {
-      const content = format === 'official'
-        ? this.buildOfficialExamHtml(kyu, options)
-        : this.buildQuizExamWithKeyHtml(kyu, null, options);
+      const content = this.buildQuizExamWithKeyHtml(kyu, null, options);
       return `<div class="exam-page-break-wrapper">${content}</div>`;
     }).join('');
   },
@@ -1200,6 +1213,7 @@ window.TKST_EXAM_GENERATOR = {
         line-height: 1.3;
       }
       .exam-sheet-a4 {
+        position: relative !important;
         width: 100%;
         max-width: 190mm;
         margin: 0 auto;
@@ -1207,6 +1221,7 @@ window.TKST_EXAM_GENERATOR = {
         background: #FFF;
       }
       .single-page-a4 {
+        position: relative !important;
         height: auto;
         min-height: 270mm;
         box-sizing: border-box;
@@ -1219,20 +1234,37 @@ window.TKST_EXAM_GENERATOR = {
         page-break-after: auto;
       }
 
-      /* HEADER LIMPO COM LOGO CENTRALIZADA E TÍTULO EM 2 LINHAS */
+      /* MARCA D'ÁGUA CENTRAL DA FOLHA */
+      .exam-sheet-watermark {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 140mm !important;
+        max-width: 85% !important;
+        height: auto !important;
+        opacity: 0.08 !important;
+        pointer-events: none !important;
+        user-select: none !important;
+        z-index: 0 !important;
+      }
+
+      /* HEADER LIMPO COM LOGO CENTRALIZADA 3X MAIOR */
       .exam-clean-header {
+        position: relative !important;
+        z-index: 1 !important;
         text-align: center;
         margin-bottom: 4px;
         padding-bottom: 2px;
       }
       .exam-main-header-logo {
-        height: 58px !important;
-        max-height: 62px !important;
+        height: 160px !important;
+        max-height: 175px !important;
         width: auto !important;
-        max-width: 250px !important;
+        max-width: 90% !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 auto 2px auto !important;
+        margin: 0 auto 4px auto !important;
         background: transparent !important;
       }
       .exam-clean-title {
@@ -1252,6 +1284,8 @@ window.TKST_EXAM_GENERATOR = {
 
       /* QUADRO DE ALUNO */
       .exam-print-student-box {
+        position: relative !important;
+        z-index: 1 !important;
         border: 1.2px solid #0F172A;
         border-radius: 4px;
         padding: 3px 8px;

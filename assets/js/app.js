@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'quizzes', 'files', 'questions', 'exam-generator'
   let adminQuizSelectedKyu = 6;
   let examGeneratorSelectedKyu = 6;
-  let examGeneratorFormat = 'official'; // 'official' (Dissertativo com imagens), 'quiz' (Múltipla escolha)
+  let examGeneratorFormat = 'quiz'; // Modelo oficial de múltipla escolha
   let examPreviewGenerated = false; // false, 'exam', 'key'
   let examCurrentRandomQuestions = null; // 10 questões sorteadas ativas
   let quizModalTempImage = '';
@@ -1093,13 +1093,9 @@ document.addEventListener('DOMContentLoaded', () => {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
       if (examPreviewGenerated === 'key') {
-        examPreviewHtml = examGeneratorFormat === 'quiz'
-          ? window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions)
-          : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+        examPreviewHtml = window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
       } else {
-        examPreviewHtml = examGeneratorFormat === 'quiz'
-          ? window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions)
-          : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+        examPreviewHtml = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
       }
     }
 
@@ -1950,26 +1946,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
 
-          <!-- SELEÇÃO DE FORMATO DA PROVA -->
-          <div style="padding: 12px 18px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <span style="font-size: 0.84rem; font-weight: 700; color: #E2E8F0;">
-                <i class="fas fa-sliders-h" style="color: var(--accent-gold);"></i> Modelo:
-              </span>
-              <div style="display: inline-flex; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); padding: 3px; gap: 4px;">
-                <button type="button" class="btn btn-sm ${examGeneratorFormat === 'official' ? 'btn-primary' : 'btn-secondary'}" onclick="window.TKST_APP.setExamGeneratorFormat('official')" style="font-size: 0.78rem; padding: 6px 12px; border: none; font-weight: 700;">
-                  <i class="fas fa-pen-fancy"></i> Modelo Oficial Dissertativo (Word / Imagens)
-                </button>
-                <button type="button" class="btn btn-sm ${examGeneratorFormat === 'quiz' ? 'btn-primary' : 'btn-secondary'}" onclick="window.TKST_APP.setExamGeneratorFormat('quiz')" style="font-size: 0.78rem; padding: 6px 12px; border: none; font-weight: 700;">
-                  <i class="fas fa-list-check"></i> Modelo Simulado (Múltipla Escolha)
-                </button>
-              </div>
-            </div>
 
-            <div style="font-size: 0.78rem; color: #94A3B8;">
-              Layout: Diagramação compacta de <strong>1 página única A4</strong>.
-            </div>
-          </div>
 
           <!-- SELETOR DE FAIXA / GRADUAÇÃO (DE FAIXA X PARA FAIXA Y) -->
           <div style="padding: 12px 14px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; background: rgba(0,0,0,0.2);">
@@ -2006,7 +1983,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 Avaliação Teórica
               </div>
               <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 2px;">
-                Kata Exigido: <strong>${currentExamMeta.kataName}</strong> • ${examGeneratorFormat === 'official' ? 'Modelo Oficial com Imagens & Linhas' : 'Modelo Simulado de Múltipla Escolha'}
+                Kata Exigido: <strong>${currentExamMeta.kataName}</strong> • Avaliação Oficial de Múltipla Escolha (10 Questões)
               </div>
             </div>
 
@@ -6093,9 +6070,7 @@ document.addEventListener('DOMContentLoaded', () => {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
-      const html = examGeneratorFormat === 'quiz'
-        ? window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions)
-        : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+      const html = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
       window.TKST_EXAM_GENERATOR.printHtml(`${exam.title} (Prova + Gabarito) - ${exam.targetBelt}`, html);
     },
     printCurrentAnswerKey: () => {
@@ -6104,14 +6079,12 @@ document.addEventListener('DOMContentLoaded', () => {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
-      const html = examGeneratorFormat === 'quiz'
-        ? window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions)
-        : window.TKST_EXAM_GENERATOR.buildOfficialExamHtml(examGeneratorSelectedKyu);
+      const html = window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
       window.TKST_EXAM_GENERATOR.printHtml(`Gabarito Oficial - ${exam.title}`, html);
     },
     printAllExams: () => {
       if (!window.TKST_EXAM_GENERATOR) return;
-      const html = window.TKST_EXAM_GENERATOR.buildAllExamsHtml(examGeneratorFormat);
+      const html = window.TKST_EXAM_GENERATOR.buildAllExamsHtml('quiz');
       window.TKST_EXAM_GENERATOR.printHtml("Caderno de Provas Completo (6º Kyu ao 3º Dan)", html);
     },
     printMasterAnswerKey: () => {
