@@ -1412,33 +1412,33 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 12pt;
-        line-height: 1.25;
+        font-size: 14pt;
+        line-height: 1.22;
         font-weight: 800;
         color: #0F172A;
-        margin-bottom: 3px;
+        margin-bottom: 2px;
       }
       .exam-q-number {
-        font-size: 12.5pt;
+        font-size: 14.5pt;
         font-weight: 900;
         color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS E MAIORES (11pt) */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS E MAIORES (13pt) */
       .exam-mcq-options-col {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
         flex: 0 0 auto;
-        min-width: 180px;
+        min-width: 200px;
         max-width: 58%;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
         gap: 6px;
-        font-size: 11pt;
-        line-height: 1.32;
+        font-size: 13pt;
+        line-height: 1.24;
         white-space: normal;
       }
       .exam-mcq-checkbox {
@@ -1446,7 +1446,7 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
-        font-size: 11.5pt;
+        font-size: 13.5pt;
         letter-spacing: 0.5px;
       }
       .exam-mcq-opt-text {
@@ -1454,13 +1454,13 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AMPLIADA (94px) COLADA IMEDIATAMENTE AO LADO DAS RESPOSTAS */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AMPLIADA PROPORCIONALMENTE (104px) COLADA ÀS RESPOSTAS */
       .exam-q-side-row {
         display: flex;
         align-items: center;
         justify-content: flex-start;
         gap: 14px;
-        margin-top: 2px;
+        margin-top: 1px;
         width: 100%;
       }
       .exam-q-img-wrap {
@@ -1471,15 +1471,15 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0;
         width: auto;
-        max-width: 235px;
-        height: 94px;
+        max-width: 250px;
+        height: 104px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
       }
       .exam-side-img {
-        max-height: 94px !important;
-        max-width: 230px !important;
+        max-height: 104px !important;
+        max-width: 245px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
