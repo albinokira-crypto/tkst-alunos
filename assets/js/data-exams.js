@@ -1307,8 +1307,9 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1.1 !important;
         display: flex !important;
         flex-direction: column !important;
-        align-items: flex-start !important;
+        align-items: center !important;
         justify-content: center !important;
+        text-align: center !important;
         gap: 1px !important;
       }
       .exam-landscape-logo {
@@ -1318,7 +1319,7 @@ window.TKST_EXAM_GENERATOR = {
         max-width: 100% !important;
         object-fit: contain !important;
         display: block !important;
-        margin-bottom: 1px !important;
+        margin: 0 auto 1px auto !important;
       }
       .exam-clean-title {
         font-size: 11.5pt;
@@ -1327,12 +1328,16 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
         line-height: 1.15;
         text-transform: uppercase;
+        text-align: center !important;
+        width: 100%;
       }
       .exam-clean-subtitle {
         font-size: 9.2pt;
         font-weight: 800;
         color: #B45309;
         line-height: 1.1;
+        text-align: center !important;
+        width: 100%;
       }
 
       /* QUADRO DE ALUNO E CITAÇÃO NO TOPO */
