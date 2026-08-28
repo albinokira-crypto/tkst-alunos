@@ -824,7 +824,8 @@ window.TKST_EXAM_GENERATOR = {
         const letter = String.fromCharCode(65 + optIdx);
         return `
           <div class="exam-mcq-option">
-            <span class="exam-mcq-checkbox">[ &nbsp; ] (${letter})</span>
+            <span class="exam-mcq-square"></span>
+            <span class="exam-mcq-letter">(${letter})</span>
             <span class="exam-mcq-opt-text">${opt}</span>
           </div>
         `;
@@ -1412,7 +1413,7 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS E CALIBRADAS (12pt) */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS COM QUADRADINHO DE MARCAÇÃO PERFEITO */
       .exam-mcq-options-col {
         display: flex;
         flex-direction: column;
@@ -1423,19 +1424,29 @@ window.TKST_EXAM_GENERATOR = {
       }
       .exam-mcq-option {
         display: flex;
-        align-items: baseline;
-        gap: 6px;
+        align-items: center;
+        gap: 5px;
         font-size: 12pt;
         line-height: 1.28;
         white-space: normal;
       }
-      .exam-mcq-checkbox {
+      .exam-mcq-square {
+        width: 13px;
+        height: 13px;
+        min-width: 13px;
+        min-height: 13px;
+        border: 1.5px solid #0F172A;
+        border-radius: 2px;
+        background: #FFF;
+        display: inline-block;
+        flex-shrink: 0;
+      }
+      .exam-mcq-letter {
         font-weight: 900;
         color: #0F172A;
+        font-size: 12pt;
         flex-shrink: 0;
-        font-family: monospace, sans-serif;
-        font-size: 12.5pt;
-        letter-spacing: 0.5px;
+        margin-right: 1px;
       }
       .exam-mcq-opt-text {
         color: #1E293B;
