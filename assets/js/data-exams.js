@@ -873,10 +873,9 @@ window.TKST_EXAM_GENERATOR = {
 
         <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO) -->
         <div class="exam-landscape-top-bar">
-          <!-- LINHA 1: LOGO | LINHA 2: AVALIAÇÃO TEÓRICA | LINHA 3: GRADUAÇÃO -->
+          <!-- LOGO SEM CNPJ AMPLIADA + GRADUAÇÃO REFERENTE À PROVA -->
           <div class="exam-landscape-header-col">
             <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-landscape-logo">
-            <div class="exam-clean-title">Avaliação Teórica</div>
             <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
           </div>
 
@@ -950,12 +949,11 @@ window.TKST_EXAM_GENERATOR = {
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER DO GABARITO EM LINHA (3 LINHAS DE IDENTIFICAÇÃO) -->
+        <!-- HEADER DO GABARITO EM LINHA -->
         <div class="exam-landscape-top-bar" style="border-bottom: 2px solid #059669; padding-bottom: 3px;">
           <div class="exam-landscape-header-col" style="flex: 1.4;">
             <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-landscape-logo">
-            <div class="exam-clean-title" style="color: #059669;">GABARITO OFICIAL — AVALIAÇÃO TEÓRICA</div>
-            <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
+            <div class="exam-clean-subtitle" style="color: #065F46; font-size: 10pt; font-weight: 800;">GABARITO: ${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
           </div>
           <div style="flex: 1; background: #F0FDF4; border: 1.5px solid #86EFAC; padding: 4px 8px; border-radius: 4px; font-size: 8pt; color: #166534; display: flex; flex-direction: column; justify-content: center; text-align: center;">
             <span><strong>Critério:</strong> 1,0 ponto por questão (Total: 10,0).</span>
@@ -1229,7 +1227,7 @@ window.TKST_EXAM_GENERATOR = {
     return `
       @page {
         size: A4 landscape;
-        margin: 4mm 6mm 4mm 6mm;
+        margin: 2mm 3mm 2mm 3mm;
       }
       * {
         box-sizing: border-box;
@@ -1249,7 +1247,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-sheet-a4 {
         position: relative !important;
         width: 100%;
-        max-width: 285mm;
+        max-width: 291mm;
         margin: 0 auto;
         padding: 0;
         background: #FFF;
@@ -1304,40 +1302,30 @@ window.TKST_EXAM_GENERATOR = {
         border-bottom: 1.8px solid #0F172A !important;
       }
       .exam-landscape-header-col {
-        flex: 1.1 !important;
+        flex: 1.25 !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        gap: 1px !important;
+        gap: 3px !important;
       }
       .exam-landscape-logo {
         height: auto !important;
-        max-height: 28px !important;
-        width: auto !important;
-        max-width: 100% !important;
+        max-height: 48px !important;
+        width: 100% !important;
+        max-width: 330px !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 auto 1px auto !important;
-      }
-      .exam-clean-title {
-        font-size: 11.5pt;
-        font-weight: 900;
-        letter-spacing: 0.5px;
-        color: #0F172A;
-        line-height: 1.15;
-        text-transform: uppercase;
-        text-align: center !important;
-        width: 100%;
+        margin: 0 auto !important;
       }
       .exam-clean-subtitle {
-        font-size: 9.2pt;
-        font-weight: 800;
-        color: #B45309;
-        line-height: 1.1;
+        font-size: 10.2pt !important;
+        font-weight: 800 !important;
+        color: #B45309 !important;
+        line-height: 1.15 !important;
         text-align: center !important;
-        width: 100%;
+        width: 100% !important;
       }
 
       /* QUADRO DE ALUNO E CITAÇÃO NO TOPO */
