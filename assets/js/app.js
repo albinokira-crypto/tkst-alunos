@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.61';
+  const APP_DISPLAY_VERSION = 'V-1.62';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
 

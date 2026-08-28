@@ -1455,8 +1455,9 @@ window.TKST_EXAM_GENERATOR = {
         display: flex;
         flex-direction: column;
         gap: 3px;
-        flex: 1;
-        min-width: 150px;
+        flex: 0 0 auto;
+        min-width: 170px;
+        max-width: 58%;
       }
       .exam-mcq-option {
         display: flex;
@@ -1479,12 +1480,12 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AMPLA, NÍTIDA E BEM VISÍVEL (SEM BORDAS/MOLDURAS) */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM COLADA IMEDIATAMENTE AO LADO DAS RESPOSTAS */
       .exam-q-side-row {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        gap: 16px;
+        gap: 14px;
         margin-top: 2px;
         width: 100%;
       }
@@ -1500,7 +1501,7 @@ window.TKST_EXAM_GENERATOR = {
         height: 86px;
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: flex-start;
       }
       .exam-side-img {
         max-height: 86px !important;
