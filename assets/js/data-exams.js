@@ -1212,12 +1212,12 @@ window.TKST_EXAM_GENERATOR = {
     }).join('');
   },
 
-  // CSS de Impressão Direta A4
+  // CSS de Impressão Direta A4 / Carta
   getPrintStyles: function() {
     return `
       @page {
         size: A4 portrait;
-        margin: 5mm 8mm 5mm 8mm;
+        margin: 4mm 8mm 4mm 8mm;
       }
       * {
         box-sizing: border-box;
@@ -1231,8 +1231,8 @@ window.TKST_EXAM_GENERATOR = {
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
         color: #0F172A;
         background: #FFF;
-        font-size: 9.3pt;
-        line-height: 1.28;
+        font-size: 8.8pt;
+        line-height: 1.25;
       }
       .exam-sheet-a4 {
         position: relative !important;
@@ -1245,15 +1245,16 @@ window.TKST_EXAM_GENERATOR = {
       .single-page-a4 {
         position: relative !important;
         box-sizing: border-box;
-        height: auto;
-        min-height: 280mm;
       }
       .exam-sheet-page1 {
-        page-break-after: always;
-        page-break-inside: avoid;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
       .exam-sheet-page2 {
-        page-break-inside: avoid;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
       .exam-page-break-wrapper {
         page-break-after: always;
@@ -1269,7 +1270,7 @@ window.TKST_EXAM_GENERATOR = {
         top: 52% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        width: 175mm !important;
+        width: 165mm !important;
         max-width: 90% !important;
         height: auto !important;
         opacity: 0.06 !important;
@@ -1284,29 +1285,29 @@ window.TKST_EXAM_GENERATOR = {
         position: relative !important;
         z-index: 1 !important;
         text-align: center;
-        margin-bottom: 4px;
-        padding-bottom: 2px;
+        margin-bottom: 2px;
+        padding-bottom: 1px;
       }
       .exam-main-header-logo {
         height: auto !important;
-        max-height: 46px !important;
+        max-height: 38px !important;
         width: auto !important;
         max-width: 90% !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 auto 2px auto !important;
+        margin: 0 auto 1px auto !important;
         background: transparent !important;
       }
       .exam-clean-title {
-        font-size: 11.8pt;
+        font-size: 11.2pt;
         font-weight: 900;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
         color: #0F172A;
         line-height: 1.15;
         text-transform: uppercase;
       }
       .exam-clean-subtitle {
-        font-size: 9.8pt;
+        font-size: 9.2pt;
         font-weight: 800;
         color: #B45309;
         line-height: 1.1;
@@ -1319,114 +1320,116 @@ window.TKST_EXAM_GENERATOR = {
         z-index: 1 !important;
         display: flex !important;
         align-items: stretch !important;
-        gap: 10px !important;
-        margin-bottom: 5px !important;
+        gap: 8px !important;
+        margin-bottom: 4px !important;
       }
       .exam-print-student-box {
         flex: 1.3 !important;
-        border: 1.5px solid #0F172A !important;
-        border-radius: 5px !important;
-        padding: 5px 10px !important;
-        font-size: 9.2pt !important;
+        border: 1.4px solid #0F172A !important;
+        border-radius: 4px !important;
+        padding: 4px 8px !important;
+        font-size: 8.8pt !important;
         background: #F8FAFC !important;
         box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        gap: 3px;
+        gap: 2px;
       }
       .exam-print-row {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
       }
       .exam-header-quote-card {
         flex: 1 !important;
-        border: 1.5px solid #0F172A !important;
-        border-radius: 5px !important;
+        border: 1.4px solid #0F172A !important;
+        border-radius: 4px !important;
         background: #FFF !important;
         box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        padding: 4px 8px !important;
+        padding: 3px 6px !important;
         text-align: center !important;
       }
       .exam-quote-card-header {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 5px;
         margin-bottom: 1px;
       }
       .exam-quote-kanji {
-        font-size: 8.5pt;
+        font-size: 8pt;
         font-weight: 900;
         color: #B45309;
       }
       .exam-quote-dojokun {
-        font-size: 7.5pt;
+        font-size: 7.2pt;
         font-weight: 800;
         color: #64748B;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
       }
       .exam-quote-body {
-        font-size: 8.5pt;
+        font-size: 8.0pt;
         font-weight: 700;
         font-style: italic;
         color: #0F172A;
-        line-height: 1.2;
+        line-height: 1.15;
       }
       .exam-quote-author {
-        font-size: 7.5pt;
+        font-size: 7.0pt;
         font-weight: 800;
         color: #475569;
         margin-top: 1px;
       }
 
-      /* FLUXO VERTICAL DE QUESTÕES - OCUPANDO 100% DA LARGURA E DA ALTURA DA FOLHA */
+      /* FLUXO VERTICAL DE QUESTÕES - COMPACTO E CABENDO PERFEITAMENTE EM 1 PÁGINA */
       .exam-vertical-questions-flow {
         position: relative !important;
         z-index: 1 !important;
         display: flex;
         flex-direction: column;
-        gap: 3.5px;
+        gap: 2.5px;
       }
 
       .exam-vertical-q-item {
         page-break-inside: avoid;
-        border-bottom: 1.2px dashed #CBD5E1;
-        padding-bottom: 3.5px;
+        border-bottom: 1px dashed #CBD5E1;
+        padding-bottom: 2.5px;
       }
       .exam-vertical-q-item:last-child {
         border-bottom: none;
       }
 
       .exam-q-title-row {
-        font-size: 9.8pt;
-        line-height: 1.25;
+        font-size: 9.3pt;
+        line-height: 1.2;
         font-weight: 800;
         color: #0F172A;
-        margin-bottom: 2.5px;
+        margin-bottom: 2px;
       }
       .exam-q-number {
         font-weight: 900;
         color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS E RESPOSTAS */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS */
       .exam-mcq-options-col {
-        flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 1.5px;
+        min-width: 240px;
+        flex: 0 0 auto;
+        max-width: 58%;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
-        gap: 8px;
-        font-size: 9.2pt;
-        line-height: 1.3;
+        gap: 6px;
+        font-size: 8.8pt;
+        line-height: 1.25;
         white-space: normal;
       }
       .exam-mcq-checkbox {
@@ -1434,39 +1437,40 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
-        font-size: 9.5pt;
-        letter-spacing: 0.5px;
+        font-size: 9.0pt;
+        letter-spacing: 0.4px;
       }
       .exam-mcq-opt-text {
         color: #1E293B;
         font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM GRANDE E NÍTIDA À DIREITA DAS ALTERNATIVAS */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM NATURAL AO LADO DAS RESPOSTAS (SEM MOLDURAS/BORDAS) */
       .exam-q-side-row {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        margin-top: 2px;
+        justify-content: flex-start;
+        gap: 20px;
+        margin-top: 1px;
         width: 100%;
       }
       .exam-q-img-wrap {
-        border: 1.5px solid #475569;
-        border-radius: 6px;
-        padding: 3px;
-        background: #FFF;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
         flex-shrink: 0;
-        width: 185px;
-        height: 72px;
+        width: auto;
+        max-width: 190px;
+        height: 62px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        justify-content: flex-start;
       }
       .exam-side-img {
-        max-height: 68px !important;
-        max-width: 178px !important;
+        max-height: 62px !important;
+        max-width: 190px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
@@ -1478,34 +1482,34 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 3px;
       }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */
       .exam-print-lines-box {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
         margin-top: 2px;
       }
       .exam-r-prefix {
         font-weight: 900;
-        font-size: 9.5pt;
+        font-size: 9.0pt;
         margin-right: 4px;
         flex-shrink: 0;
       }
       .exam-print-line {
-        border-bottom: 1.5px solid #334155;
-        height: 16px;
+        border-bottom: 1.4px solid #334155;
+        height: 15px;
         width: 100%;
       }
       .exam-print-field-row {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
       }
       .exam-print-field-label {
-        font-size: 9.2pt;
+        font-size: 8.8pt;
         font-weight: 800;
         color: #1E293B;
         white-space: nowrap;
@@ -1517,14 +1521,14 @@ window.TKST_EXAM_GENERATOR = {
         border: 1px solid #CBD5E1;
         border-left: 3.5px solid #10B981;
         border-radius: 4px;
-        padding: 4px 8px;
+        padding: 3px 6px;
         background: #FAFAFA;
       }
       .exam-key-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 8.5pt;
+        font-size: 8.2pt;
       }
       .exam-key-q-num {
         font-weight: 900;
@@ -1535,17 +1539,17 @@ window.TKST_EXAM_GENERATOR = {
         background: #10B981;
         color: #FFF;
         font-weight: 900;
-        font-size: 7.8pt;
-        padding: 1.5px 6px;
+        font-size: 7.5pt;
+        padding: 1px 5px;
         border-radius: 2px;
       }
       .exam-key-answer-box {
-        font-size: 8.8pt;
+        font-size: 8.5pt;
         color: #1E293B;
-        margin-top: 2px;
+        margin-top: 1.5px;
       }
       .exam-key-expl-box {
-        font-size: 7.8pt;
+        font-size: 7.5pt;
         color: #64748B;
         font-style: italic;
         margin-top: 1px;
@@ -1553,38 +1557,38 @@ window.TKST_EXAM_GENERATOR = {
       .exam-key-summary-grid {
         display: grid;
         grid-template-columns: repeat(10, 1fr);
-        gap: 4px;
+        gap: 3px;
         background: #F8FAFC;
         border: 1px solid #CBD5E1;
-        padding: 5px;
+        padding: 4px;
         border-radius: 4px;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
       }
       .exam-key-pill {
         background: #FFF;
         border: 1px solid #10B981;
         border-radius: 3px;
         text-align: center;
-        padding: 3px 1px;
+        padding: 2px 1px;
       }
       .exam-key-pill-num {
         color: #64748B;
-        font-size: 7pt;
+        font-size: 6.8pt;
       }
       .exam-key-pill-val {
         color: #065F46;
         font-weight: 900;
-        font-size: 9pt;
+        font-size: 8.5pt;
       }
 
       .exam-master-key-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 8pt;
+        font-size: 7.8pt;
       }
       .exam-master-key-table td {
         border: 1px solid #CBD5E1;
-        padding: 4px 6px;
+        padding: 3px 5px;
         vertical-align: top;
       }
       .exam-master-key-table tr:nth-child(even) {
