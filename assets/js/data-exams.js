@@ -1412,14 +1412,14 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 14pt;
-        line-height: 1.22;
+        font-size: 13pt;
+        line-height: 1.24;
         font-weight: 800;
         color: #0F172A;
         margin-bottom: 2px;
       }
       .exam-q-number {
-        font-size: 14.5pt;
+        font-size: 13.5pt;
         font-weight: 900;
         color: #0F172A;
       }
