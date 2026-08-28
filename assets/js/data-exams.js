@@ -1310,20 +1310,20 @@ window.TKST_EXAM_GENERATOR = {
         z-index: 1 !important;
         display: flex !important;
         align-items: stretch !important;
-        gap: 10px !important;
-        margin-bottom: 4px !important;
-        padding-bottom: 3px !important;
-        border-bottom: 1.5px solid #0F172A !important;
+        gap: 12px !important;
+        margin-bottom: 7px !important;
+        padding-bottom: 4px !important;
+        border-bottom: 1.8px solid #0F172A !important;
       }
       .exam-landscape-header-col {
         flex: 1.1 !important;
         display: flex !important;
         align-items: center !important;
-        gap: 8px !important;
+        gap: 10px !important;
       }
       .exam-landscape-logo {
         height: auto !important;
-        max-height: 40px !important;
+        max-height: 44px !important;
         width: auto !important;
         object-fit: contain !important;
       }
@@ -1333,86 +1333,86 @@ window.TKST_EXAM_GENERATOR = {
         justify-content: center;
       }
       .exam-clean-title {
-        font-size: 11pt;
+        font-size: 12pt;
         font-weight: 900;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.5px;
         color: #0F172A;
         line-height: 1.15;
         text-transform: uppercase;
       }
       .exam-clean-subtitle {
-        font-size: 8.8pt;
+        font-size: 9.6pt;
         font-weight: 800;
         color: #B45309;
         line-height: 1.1;
-        margin-top: 1px;
+        margin-top: 2px;
       }
 
       /* QUADRO DE ALUNO E CITAÇÃO NO TOPO */
       .exam-print-student-box {
-        border: 1.4px solid #0F172A !important;
+        border: 1.5px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 3px 8px !important;
-        font-size: 8.6pt !important;
+        padding: 4px 10px !important;
+        font-size: 9.2pt !important;
         background: #F8FAFC !important;
         box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        gap: 2px;
+        gap: 3px;
       }
       .exam-landscape-student-box {
-        flex: 1.3 !important;
+        flex: 1.35 !important;
       }
       .exam-print-row {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .exam-header-quote-card {
-        border: 1.4px solid #0F172A !important;
+        border: 1.5px solid #0F172A !important;
         border-radius: 4px !important;
         background: #FFF !important;
         box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        padding: 3px 6px !important;
+        padding: 4px 8px !important;
         text-align: center !important;
       }
       .exam-landscape-quote-box {
-        flex: 1 !important;
+        flex: 1.05 !important;
       }
       .exam-quote-card-header {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 5px;
-        margin-bottom: 1px;
+        gap: 6px;
+        margin-bottom: 2px;
       }
       .exam-quote-kanji {
-        font-size: 8pt;
+        font-size: 8.8pt;
         font-weight: 900;
         color: #B45309;
       }
       .exam-quote-dojokun {
-        font-size: 7.2pt;
+        font-size: 7.8pt;
         font-weight: 800;
         color: #64748B;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.5px;
       }
       .exam-quote-body {
-        font-size: 7.8pt;
+        font-size: 8.5pt;
         font-weight: 700;
         font-style: italic;
         color: #0F172A;
-        line-height: 1.15;
+        line-height: 1.2;
       }
       .exam-quote-author {
-        font-size: 6.8pt;
+        font-size: 7.4pt;
         font-weight: 800;
         color: #475569;
-        margin-top: 1px;
+        margin-top: 2px;
       }
 
       /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM */
@@ -1421,16 +1421,16 @@ window.TKST_EXAM_GENERATOR = {
         z-index: 1 !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 4px 18px !important;
+        gap: 6px 24px !important;
       }
       .exam-landscape-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 3px !important;
+        gap: 6px !important;
       }
       .exam-landscape-q-card {
-        border-bottom: 1px dashed #CBD5E1 !important;
-        padding-bottom: 2.5px !important;
+        border-bottom: 1.4px dashed #CBD5E1 !important;
+        padding-bottom: 5px !important;
         page-break-inside: avoid !important;
       }
       .exam-landscape-q-card:last-child {
@@ -1438,31 +1438,32 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 9.2pt;
-        line-height: 1.2;
+        font-size: 10.5pt;
+        line-height: 1.28;
         font-weight: 800;
         color: #0F172A;
-        margin-bottom: 2px;
+        margin-bottom: 3px;
       }
       .exam-q-number {
+        font-size: 11pt;
         font-weight: 900;
         color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS E MAIORES */
       .exam-mcq-options-col {
         display: flex;
         flex-direction: column;
-        gap: 1.5px;
+        gap: 3px;
         flex: 1;
-        min-width: 130px;
+        min-width: 150px;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
-        gap: 5px;
-        font-size: 8.6pt;
-        line-height: 1.25;
+        gap: 6px;
+        font-size: 9.8pt;
+        line-height: 1.3;
         white-space: normal;
       }
       .exam-mcq-checkbox {
@@ -1470,21 +1471,21 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
-        font-size: 8.8pt;
-        letter-spacing: 0.4px;
+        font-size: 10.2pt;
+        letter-spacing: 0.5px;
       }
       .exam-mcq-opt-text {
         color: #1E293B;
         font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM NATURAL E AMPLA AO LADO DAS ALTERNATIVAS (SEM BORDAS/MOLDURAS) */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AMPLA, NÍTIDA E BEM VISÍVEL (SEM BORDAS/MOLDURAS) */
       .exam-q-side-row {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        gap: 12px;
-        margin-top: 1px;
+        gap: 16px;
+        margin-top: 2px;
         width: 100%;
       }
       .exam-q-img-wrap {
@@ -1495,15 +1496,15 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0;
         width: auto;
-        max-width: 180px;
-        height: 64px;
+        max-width: 220px;
+        height: 86px;
         display: flex;
         align-items: center;
         justify-content: flex-end;
       }
       .exam-side-img {
-        max-height: 64px !important;
-        max-width: 175px !important;
+        max-height: 86px !important;
+        max-width: 215px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
@@ -1522,27 +1523,27 @@ window.TKST_EXAM_GENERATOR = {
       .exam-print-lines-box {
         display: flex;
         flex-direction: column;
-        gap: 2px;
-        margin-top: 2px;
+        gap: 3px;
+        margin-top: 3px;
       }
       .exam-r-prefix {
         font-weight: 900;
-        font-size: 8.8pt;
+        font-size: 9.6pt;
         margin-right: 4px;
         flex-shrink: 0;
       }
       .exam-print-line {
         border-bottom: 1.4px solid #334155;
-        height: 15px;
+        height: 18px;
         width: 100%;
       }
       .exam-print-field-row {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
       }
       .exam-print-field-label {
-        font-size: 8.6pt;
+        font-size: 9.4pt;
         font-weight: 800;
         color: #1E293B;
         white-space: nowrap;
