@@ -828,78 +828,74 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }).join('');
 
-      if (q.image) {
+      const imgSrc = q.image || q.fallbackImage;
+
+      if (imgSrc) {
         return `
           <div class="exam-vertical-q-item">
             <div class="exam-q-title-row">
               <strong>${qNum}.</strong> ${q.question}
             </div>
             <div class="exam-q-side-row">
-              <div class="exam-mcq-options-col" style="flex: 0 1 auto; min-width: 170px;">
+              <div class="exam-mcq-options-col">
                 ${optionsHtml}
               </div>
               <div class="exam-q-img-wrap">
-                <img src="${q.image}" alt="Ilustração Técnica" class="exam-side-img">
+                <img src="${imgSrc}" alt="Ilustração Técnica" class="exam-side-img" onerror="this.style.display='none'">
               </div>
             </div>
           </div>
         `;
       }
 
+      // Questão sem imagem: se opções curtas, organiza em 2 colunas para preencher bem a folha
+      const isShortOptions = (q.options || []).every(opt => (opt || '').length <= 42);
       return `
         <div class="exam-vertical-q-item">
           <div class="exam-q-title-row">
             <strong>${qNum}.</strong> ${q.question}
           </div>
-          <div class="exam-mcq-options-col">
+          <div class="exam-mcq-options-col ${isShortOptions ? 'exam-mcq-grid-2col' : ''}">
             ${optionsHtml}
           </div>
         </div>
       `;
     };
 
-    const q1Html = questions[0] ? renderSingleQuestion(questions[0], 0) : '';
-    const q2Html = questions[1] ? renderSingleQuestion(questions[1], 1) : '';
-    const remainingQuestionsHtml = questions.slice(2).map((q, idx) => renderSingleQuestion(q, idx + 2)).join('');
+    const questionsHtml = questions.map((q, idx) => renderSingleQuestion(q, idx)).join('');
 
     return `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1">
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E TÍTULO SOLICITADO -->
+        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E TÍTULO -->
         <div class="exam-clean-header">
           <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-main-header-logo">
           <div class="exam-clean-title">Avaliação teórica</div>
           <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
-        <!-- QUADRO DE DADOS DO ALUNO COM DOJO -->
-        <div class="exam-print-student-box">
-          <div class="exam-print-row">
-            <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
-            <div style="flex: 1.1;"><strong>Dojô:</strong> ________________________</div>
+        <!-- QUADRO DE DADOS DO ALUNO E QUADRO DE CITAÇÃO FUNAKOSHI LADO A LADO -->
+        <div class="exam-top-info-quote-row">
+          <div class="exam-print-student-box">
+            <div class="exam-print-row">
+              <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
+              <div style="flex: 1.1;"><strong>Dojô:</strong> ________________________</div>
+            </div>
+            <div class="exam-print-row" style="margin-top: 4px;">
+              <div style="flex: 1.2;"><strong>Data:</strong> ${dateStr}</div>
+              <div style="flex: 1.1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
+            </div>
           </div>
-          <div class="exam-print-row" style="margin-top: 3px;">
-            <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
-            <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
-          </div>
-        </div>
-
-        <!-- BLOCO SUPERIOR: QUESTÕES 1 E 2 À ESQUERDA + CITAÇÃO 3D MAIOR NA BORDA DIREITA -->
-        <div class="exam-top-questions-quote-grid">
-          <div class="exam-q1-q2-col">
-            ${q1Html}
-            ${q2Html}
-          </div>
-          <div class="exam-top-quote-large-wrap">
-            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-large-img">
+          <div class="exam-header-quote-card">
+            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-badge-img">
           </div>
         </div>
 
-        <!-- QUESTÕES RESTANTES (3 A 10) EM FLUXO COMPLETO -->
+        <!-- TODAS AS 10 QUESTÕES EM FLUXO COMPLETO E LARGURA TOTAL -->
         <div class="exam-vertical-questions-flow">
-          ${remainingQuestionsHtml}
+          ${questionsHtml}
         </div>
       </div>
     `;
@@ -928,7 +924,7 @@ window.TKST_EXAM_GENERATOR = {
             <span class="exam-key-q-num">Questão ${idx + 1}</span>
             <span class="exam-key-correct-badge">Gabarito: [ ${letter} ]</span>
           </div>
-          <div style="font-size: 8pt; color: #334155; margin-bottom: 2px;"><strong>Pergunta:</strong> ${q.question}</div>
+          <div style="font-size: 8.5pt; color: #334155; margin-bottom: 2px;"><strong>Pergunta:</strong> ${q.question}</div>
           <div class="exam-key-answer-box"><strong>Resposta Correta:</strong> (${letter}) ${correctText}</div>
           ${q.explanation ? `<div class="exam-key-expl-box">${q.explanation}</div>` : ''}
         </div>
@@ -947,8 +943,8 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
-        <div style="background: #F0FDF4; border: 1px solid #86EFAC; padding: 4px 8px; border-radius: 4px; margin-bottom: 6px; font-size: 7.8pt; color: #166534; display: flex; justify-content: space-between; align-items: center;">
-          <span><strong>Critério:</strong> Cada questão correta vale 1,0 ponto (Total: 10,0 pontos).</span>
+        <div style="background: #F0FDF4; border: 1.5px solid #86EFAC; padding: 4px 10px; border-radius: 4px; margin-bottom: 6px; font-size: 8.5pt; color: #166534; display: flex; justify-content: space-between; align-items: center;">
+          <span><strong>Critério de Avaliação:</strong> Cada questão correta vale 1,0 ponto (Total: 10,0 pontos).</span>
           <span style="font-weight: 800; color: #065F46;">FOLHA DO SENSEI</span>
         </div>
 
@@ -958,7 +954,7 @@ window.TKST_EXAM_GENERATOR = {
         </div>
 
         <!-- DETALHAMENTO DE CADA QUESTÃO -->
-        <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 4.5px;">
           ${itemsHtml}
         </div>
       </div>
@@ -1063,15 +1059,20 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
-        <!-- QUADRO DE DADOS DO ALUNO COM DOJO -->
-        <div class="exam-print-student-box">
-          <div class="exam-print-row">
-            <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
-            <div style="flex: 1.1;"><strong>Dojô:</strong> ________________________</div>
+        <!-- QUADRO DE DADOS DO ALUNO E CITAÇÃO FUNAKOSHI -->
+        <div class="exam-top-info-quote-row">
+          <div class="exam-print-student-box">
+            <div class="exam-print-row">
+              <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
+              <div style="flex: 1.1;"><strong>Dojô:</strong> ________________________</div>
+            </div>
+            <div class="exam-print-row" style="margin-top: 4px;">
+              <div style="flex: 1.2;"><strong>Data:</strong> ${dateStr}</div>
+              <div style="flex: 1.1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
+            </div>
           </div>
-          <div class="exam-print-row" style="margin-top: 3px;">
-            <div style="flex: 1;"><strong>Data:</strong> ${dateStr}</div>
-            <div style="flex: 1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
+          <div class="exam-header-quote-card">
+            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-badge-img">
           </div>
         </div>
 
@@ -1096,7 +1097,7 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-key-card-header">
             <span class="exam-key-q-num">Q${q.num}.</span>
             <span class="exam-key-q-title">${q.title}</span>
-            <span style="font-size: 7.5pt; font-weight: 800; color: #059669;">1,0 pt</span>
+            <span style="font-size: 8pt; font-weight: 800; color: #059669;">1,0 pt</span>
           </div>
           <div class="exam-key-answer-box">
             <strong>Resposta Esperada:</strong> ${expectedHtml}
@@ -1116,11 +1117,11 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
         </div>
 
-        <div style="background: #F0FDF4; border: 1px solid #86EFAC; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; font-size: 8pt; color: #166534;">
+        <div style="background: #F0FDF4; border: 1.5px solid #86EFAC; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; font-size: 8.5pt; color: #166534;">
           <strong>Critério:</strong> Cada questão possui valor de 1,0 ponto (Total = 10,0 pontos). Pontuar integralmente respostas com grafia aproximada ou terminologia técnica correta.
         </div>
 
-        <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 4.5px;">
           ${itemsHtml}
         </div>
       </div>
@@ -1154,9 +1155,9 @@ window.TKST_EXAM_GENERATOR = {
         }
         return `
           <tr>
-            <td style="font-weight: 900; width: 32px; text-align: center; padding: 3px 5px; font-size: 7.5pt;">Q${q.num}</td>
-            <td style="font-size: 7.5pt; width: 38%; padding: 3px 5px;"><strong>${q.title}</strong></td>
-            <td style="font-size: 7.5pt; color: #065F46; font-weight: 600; padding: 3px 5px;">${resp}</td>
+            <td style="font-weight: 900; width: 32px; text-align: center; padding: 4px 5px; font-size: 8pt;">Q${q.num}</td>
+            <td style="font-size: 8pt; width: 38%; padding: 4px 5px;"><strong>${q.title}</strong></td>
+            <td style="font-size: 8pt; color: #065F46; font-weight: 600; padding: 4px 5px;">${resp}</td>
           </tr>
         `;
       }).join('');
@@ -1207,12 +1208,13 @@ window.TKST_EXAM_GENERATOR = {
     return `
       @page {
         size: A4 portrait;
-        margin: 8mm 12mm 8mm 12mm;
+        margin: 5mm 8mm 5mm 8mm;
       }
       * {
         box-sizing: border-box;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        color-adjust: exact !important;
       }
       body {
         margin: 0;
@@ -1220,13 +1222,13 @@ window.TKST_EXAM_GENERATOR = {
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
         color: #0F172A;
         background: #FFF;
-        font-size: 8.5pt;
+        font-size: 10pt;
         line-height: 1.3;
       }
       .exam-sheet-a4 {
         position: relative !important;
         width: 100%;
-        max-width: 190mm;
+        max-width: 194mm;
         margin: 0 auto;
         padding: 0;
         background: #FFF;
@@ -1234,7 +1236,7 @@ window.TKST_EXAM_GENERATOR = {
       .single-page-a4 {
         position: relative !important;
         height: auto;
-        min-height: 270mm;
+        min-height: 285mm;
         box-sizing: border-box;
       }
       .exam-page-break-wrapper {
@@ -1245,19 +1247,20 @@ window.TKST_EXAM_GENERATOR = {
         page-break-after: auto;
       }
 
-      /* MARCA D'ÁGUA CENTRAL DA FOLHA (DE UM LADO A OUTRO DA FOLHA) */
+      /* MARCA D'ÁGUA CENTRAL DA FOLHA */
       .exam-sheet-watermark {
         position: absolute !important;
-        top: 50% !important;
+        top: 52% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        width: 100% !important;
-        max-width: 188mm !important;
+        width: 175mm !important;
+        max-width: 92% !important;
         height: auto !important;
-        opacity: 0.08 !important;
+        opacity: 0.06 !important;
         pointer-events: none !important;
         user-select: none !important;
         z-index: 0 !important;
+        display: block !important;
       }
 
       /* HEADER LIMPO COM BANNER HORIZONTAL */
@@ -1265,155 +1268,172 @@ window.TKST_EXAM_GENERATOR = {
         position: relative !important;
         z-index: 1 !important;
         text-align: center;
-        margin-bottom: 2px;
-        padding-bottom: 1px;
+        margin-bottom: 4px;
+        padding-bottom: 2px;
       }
       .exam-main-header-logo {
         height: auto !important;
-        max-height: 64px !important;
+        max-height: 54px !important;
         width: auto !important;
-        max-width: 95% !important;
+        max-width: 90% !important;
         object-fit: contain !important;
         display: block !important;
         margin: 0 auto 2px auto !important;
         background: transparent !important;
       }
       .exam-clean-title {
-        font-size: 9.2pt;
+        font-size: 12.5pt;
         font-weight: 900;
-        letter-spacing: 0.3px;
+        letter-spacing: 0.5px;
         color: #0F172A;
         line-height: 1.15;
+        text-transform: uppercase;
       }
       .exam-clean-subtitle {
-        font-size: 8.2pt;
+        font-size: 10.5pt;
         font-weight: 800;
         color: #B45309;
         line-height: 1.1;
-        margin-top: 1px;
+        margin-top: 2px;
       }
 
-      /* QUADRO DE ALUNO COM DOJO */
-      .exam-print-student-box {
+      /* TOPO: QUADRO DE ALUNO + CITAÇÃO FUNAKOSHI LADO A LADO */
+      .exam-top-info-quote-row {
         position: relative !important;
         z-index: 1 !important;
-        border: 1.5px solid #0F172A !important;
-        border-radius: 4px !important;
-        padding: 3.5px 8px !important;
-        margin-bottom: 3.5px !important;
-        font-size: 7.8pt !important;
+        display: flex !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        margin-bottom: 6px !important;
+      }
+      .exam-print-student-box {
+        flex: 1 !important;
+        border: 2px solid #0F172A !important;
+        border-radius: 5px !important;
+        padding: 6px 12px !important;
+        font-size: 10pt !important;
         background: #F8FAFC !important;
         box-shadow: 2px 2px 0px #0F172A !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
       }
       .exam-print-row {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
-
-      /* BLOCO SUPERIOR COM QUESTÕES 1 E 2 À ESQUERDA E CITAÇÃO 3D MAIOR NA BORDA DIREITA */
-      .exam-top-questions-quote-grid {
-        position: relative !important;
-        z-index: 1 !important;
-        display: flex !important;
-        gap: 12px !important;
-        align-items: stretch !important;
-        margin-bottom: 3.5px !important;
-      }
-      .exam-q1-q2-col {
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        gap: 3.5px !important;
-      }
-      .exam-top-quote-large-wrap {
-        width: 68mm !important;
-        max-width: 38% !important;
+      .exam-header-quote-card {
+        width: 170px !important;
         flex-shrink: 0 !important;
+        border: 2px solid #0F172A !important;
+        border-radius: 5px !important;
+        background: #FFF !important;
+        box-shadow: 2px 2px 0px #0F172A !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        padding: 3px !important;
       }
-      .exam-quote-large-img {
-        width: 100% !important;
+      .exam-quote-badge-img {
+        max-width: 100% !important;
+        max-height: 56px !important;
+        width: auto !important;
         height: auto !important;
-        max-height: 125px !important;
         object-fit: contain !important;
         display: block !important;
-        border-radius: 2px !important;
       }
 
-      /* FLUXO VERTICAL DE QUESTÕES */
+      /* FLUXO VERTICAL DE QUESTÕES - OCUPANDO 100% DA LARGURA E ALTURA DA FOLHA */
       .exam-vertical-questions-flow {
+        position: relative !important;
+        z-index: 1 !important;
         display: flex;
         flex-direction: column;
-        gap: 3.5px;
+        gap: 6px;
       }
 
       .exam-vertical-q-item {
         page-break-inside: avoid;
-        border-bottom: 1px dashed #E2E8F0;
-        padding-bottom: 2.5px;
+        border-bottom: 1.5px dashed #CBD5E1;
+        padding-bottom: 5px;
       }
       .exam-vertical-q-item:last-child {
         border-bottom: none;
       }
 
       .exam-q-title-row {
-        font-size: 8.2pt;
-        line-height: 1.2;
-        font-weight: 700;
+        font-size: 10.8pt;
+        line-height: 1.3;
+        font-weight: 800;
         color: #0F172A;
-        margin-bottom: 1.5px;
+        margin-bottom: 3px;
+      }
+      .exam-q-number {
+        font-weight: 900;
+        color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS UMA EMBAIXO DA OUTRA */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS E RESPOSTAS */
       .exam-mcq-options-col {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 1px;
-        margin-top: 1px;
+        gap: 3px;
+      }
+      .exam-mcq-grid-2col {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 4px 20px !important;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
-        gap: 6px;
-        font-size: 7.5pt;
-        line-height: 1.2;
+        gap: 8px;
+        font-size: 10pt;
+        line-height: 1.3;
         white-space: normal;
       }
       .exam-mcq-checkbox {
-        font-weight: 800;
+        font-weight: 900;
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
+        font-size: 10.5pt;
+        letter-spacing: 0.5px;
       }
       .exam-mcq-opt-text {
         color: #1E293B;
+        font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DIREITO DAS ALTERNATIVAS (NÃO PREGADA NA BORDA) */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM GRANDE E NÍTIDA À DIREITA DAS ALTERNATIVAS */
       .exam-q-side-row {
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        gap: 14px;
-        margin-top: 1px;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 2px;
+        width: 100%;
       }
       .exam-q-img-wrap {
-        border: 1px solid #CBD5E1;
-        border-radius: 4px;
-        padding: 2px;
+        border: 2px solid #64748B;
+        border-radius: 8px;
+        padding: 4px;
         background: #FFF;
         flex-shrink: 0;
-        margin-left: 0;
+        width: 200px;
+        height: 105px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
       }
       .exam-side-img {
-        height: 46px !important;
-        max-height: 50px !important;
+        max-height: 98px !important;
+        max-width: 190px !important;
         width: auto !important;
-        max-width: 82px !important;
+        height: auto !important;
         object-fit: contain !important;
         display: block !important;
       }
@@ -1421,34 +1441,34 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 5px;
       }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */
       .exam-print-lines-box {
         display: flex;
         flex-direction: column;
-        gap: 2px;
-        margin-top: 2px;
+        gap: 4px;
+        margin-top: 3px;
       }
       .exam-r-prefix {
         font-weight: 900;
-        font-size: 8pt;
-        margin-right: 2px;
+        font-size: 10.5pt;
+        margin-right: 4px;
         flex-shrink: 0;
       }
       .exam-print-line {
-        border-bottom: 1px solid #475569;
-        height: 14px;
+        border-bottom: 1.5px solid #334155;
+        height: 18px;
         width: 100%;
       }
       .exam-print-field-row {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
       }
       .exam-print-field-label {
-        font-size: 7.5pt;
+        font-size: 10pt;
         font-weight: 800;
         color: #1E293B;
         white-space: nowrap;
@@ -1457,17 +1477,17 @@ window.TKST_EXAM_GENERATOR = {
       /* GABARITOS */
       .exam-key-card {
         page-break-inside: avoid;
-        border: 1px solid #E2E8F0;
-        border-left: 3px solid #10B981;
-        border-radius: 4px;
-        padding: 3.5px 6px;
+        border: 1.5px solid #CBD5E1;
+        border-left: 4px solid #10B981;
+        border-radius: 5px;
+        padding: 5px 10px;
         background: #FAFAFA;
       }
       .exam-key-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 8pt;
+        font-size: 9.5pt;
       }
       .exam-key-q-num {
         font-weight: 900;
@@ -1477,56 +1497,58 @@ window.TKST_EXAM_GENERATOR = {
       .exam-key-correct-badge {
         background: #10B981;
         color: #FFF;
-        font-weight: 800;
-        font-size: 7pt;
-        padding: 1px 5px;
-        border-radius: 2px;
+        font-weight: 900;
+        font-size: 8.5pt;
+        padding: 2px 8px;
+        border-radius: 3px;
       }
       .exam-key-answer-box {
-        font-size: 7.8pt;
+        font-size: 9.5pt;
         color: #1E293B;
-        margin-top: 1px;
+        margin-top: 3px;
       }
       .exam-key-expl-box {
-        font-size: 7.2pt;
+        font-size: 8.5pt;
         color: #64748B;
         font-style: italic;
+        margin-top: 1px;
       }
       .exam-key-summary-grid {
         display: grid;
         grid-template-columns: repeat(10, 1fr);
-        gap: 3px;
+        gap: 5px;
         background: #F8FAFC;
-        border: 1px solid #CBD5E1;
-        padding: 4px;
-        border-radius: 4px;
-        margin-bottom: 6px;
+        border: 1.5px solid #CBD5E1;
+        padding: 6px;
+        border-radius: 5px;
+        margin-bottom: 8px;
       }
       .exam-key-pill {
         background: #FFF;
-        border: 1px solid #10B981;
-        border-radius: 3px;
+        border: 1.5px solid #10B981;
+        border-radius: 4px;
         text-align: center;
-        padding: 2px 1px;
+        padding: 4px 2px;
       }
       .exam-key-pill-num {
         color: #64748B;
-        font-size: 6.5pt;
+        font-size: 7.5pt;
+        font-weight: 700;
       }
       .exam-key-pill-val {
         color: #065F46;
         font-weight: 900;
-        font-size: 7.5pt;
+        font-size: 10pt;
       }
 
       .exam-master-key-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 7.5pt;
+        font-size: 8.8pt;
       }
       .exam-master-key-table td {
         border: 1px solid #CBD5E1;
-        padding: 3px 5px;
+        padding: 5px 8px;
         vertical-align: top;
       }
       .exam-master-key-table tr:nth-child(even) {
@@ -1544,6 +1566,11 @@ window.TKST_EXAM_GENERATOR = {
     }
 
     const styles = this.getPrintStyles();
+    const baseHref = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+
+    // Converte caminhos relativos de imagens para absolutos com total segurança
+    let processedContent = bodyContent.replace(/src="(assets\/[^"]+)"/g, (m, p) => `src="${baseHref}${p}"`);
+    processedContent = processedContent.replace(/src="(\.\/assets\/[^"]+)"/g, (m, p) => `src="${baseHref}${p.substring(2)}"`);
 
     printWindow.document.open();
     printWindow.document.write(`
@@ -1551,6 +1578,7 @@ window.TKST_EXAM_GENERATOR = {
       <html lang="pt-BR">
       <head>
         <meta charset="UTF-8">
+        <base href="${baseHref}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${title} - TKST Karate</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1633,14 +1661,29 @@ window.TKST_EXAM_GENERATOR = {
           </div>
         </div>
 
-        ${bodyContent}
+        ${processedContent}
 
         <script>
-          window.addEventListener('load', function() {
-            setTimeout(function() {
-              window.print();
-            }, 500);
-          });
+          function waitImagesAndPrint() {
+            var imgs = Array.from(document.images || []);
+            var promises = imgs.map(function(img) {
+              if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+              return new Promise(function(resolve) {
+                img.onload = resolve;
+                img.onerror = resolve;
+              });
+            });
+            Promise.all(promises).then(function() {
+              setTimeout(function() {
+                window.print();
+              }, 300);
+            });
+          }
+          if (document.readyState === 'complete') {
+            waitImagesAndPrint();
+          } else {
+            window.addEventListener('load', waitImagesAndPrint);
+          }
         </script>
       </body>
       </html>

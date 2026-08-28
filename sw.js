@@ -1,17 +1,17 @@
-const CACHE_NAME = 'tkst-alunos-v152';
+const CACHE_NAME = 'tkst-alunos-v155';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './assets/css/main.css?v=152',
-  './assets/css/components.css?v=152',
-  './assets/js/auth.js?v=152',
-  './assets/js/data-curriculum.js?v=152',
-  './assets/js/data-katas.js?v=152',
-  './assets/js/data-kumite.js?v=152',
-  './assets/js/data-glossary.js?v=152',
-  './assets/js/data-quiz.js?v=152',
-  './assets/js/data-exams.js?v=152',
-  './assets/js/app.js?v=152',
+  './assets/css/main.css?v=155',
+  './assets/css/components.css?v=155',
+  './assets/js/auth.js?v=155',
+  './assets/js/data-curriculum.js?v=155',
+  './assets/js/data-katas.js?v=155',
+  './assets/js/data-kumite.js?v=155',
+  './assets/js/data-glossary.js?v=155',
+  './assets/js/data-quiz.js?v=155',
+  './assets/js/data-exams.js?v=155',
+  './assets/js/app.js?v=155',
   './assets/audio/interstellar-ticktock-15s.mp3',
   './assets/images/logo-tkst.png',
   './assets/images/logo-header-tkst.png',
@@ -66,6 +66,12 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', (event) => {
   // Bypass cache for Cloud Sync API, student authentication, external videos and non-GET requests
   if (event.request.method !== 'GET' || 
@@ -80,43 +86,21 @@ self.addEventListener('fetch', (event) => {
     return event.respondWith(fetch(event.request));
   }
 
-  // Network-First for navigation / HTML so mobile phones always get the latest layout
-  if (event.request.mode === 'navigate' || event.request.url.endsWith('/') || event.request.url.endsWith('index.html')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-          }
-          return networkResponse;
-        })
-        .catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html')))
-    );
-    return;
-  }
-
-  // Cache-First with Network Fallback & Update
+  // Network-First for ALL assets and navigations: Always fetch freshest files when online, fallback to cache when offline
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Fetch in background to update cache
-        fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
-          }
-        }).catch(() => {});
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
+    fetch(event.request)
+      .then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         }
         return networkResponse;
-      }).catch(() => {
-        return caches.match('./index.html');
-      });
-    })
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          if (event.request.mode === 'navigate') return caches.match('./index.html');
+        });
+      })
   );
 });
