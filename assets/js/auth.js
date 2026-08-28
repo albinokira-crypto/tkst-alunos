@@ -2025,8 +2025,18 @@
       });
       const cleanBank = Array.from(bankMap.values());
 
-      // 1. Salva localmente
-      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(cleanBank));
+      // 1. Salva localmente com proteção contra estouro de cota (QuotaExceededError)
+      try {
+        localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(cleanBank));
+      } catch (storageErr) {
+        console.warn('LocalStorage QuotaExceeded ao salvar Quiz Bank. Salvando apenas itens customizados...', storageErr);
+        try {
+          const minimalBank = cleanBank.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+          localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(minimalBank));
+        } catch (innerErr) {
+          console.warn('Não foi possível gravar no localStorage, mantendo em memória e nuvem:', innerErr);
+        }
+      }
       window.TKST_QUIZ_BANK = cleanBank;
 
       // 2. Envia ao endpoint DEDICADO /api/quiz-bank (persistência garantida)

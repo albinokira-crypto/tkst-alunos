@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.70';
+  const APP_DISPLAY_VERSION = 'V-1.71';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
 
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return q;
   }
 
-  function compressImageSource(src, maxWidth = 600, maxHeight = 600, quality = 0.78) {
+  function compressImageSource(src, maxWidth = 500, maxHeight = 500, quality = 0.72) {
     return new Promise((resolve) => {
       if (!src || typeof src !== 'string' || !src.trim()) {
         return resolve('');
@@ -359,44 +359,68 @@ document.addEventListener('DOMContentLoaded', () => {
       if (trimmed.startsWith('assets/')) {
         return resolve(trimmed);
       }
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-      img.onload = function() {
-        try {
-          const canvas = document.createElement('canvas');
-          let width = img.width || img.naturalWidth || 600;
-          let height = img.height || img.naturalHeight || 600;
 
-          if (width > height) {
-            if (width > maxWidth) {
-              height = Math.round((height * maxWidth) / width);
-              width = maxWidth;
-            }
-          } else {
-            if (height > maxHeight) {
-              width = Math.round((width * maxHeight) / height);
-              height = maxHeight;
-            }
-          }
+      // Se já for um data URL leve (< 80KB), não precisa reprocessar
+      if (trimmed.startsWith('data:image/') && trimmed.length < 80000) {
+        return resolve(trimmed);
+      }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, width, height);
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Comprime para JPEG ultraleve (~20KB-40KB) com nitidez ideal para telas e impressão
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-          resolve(compressedDataUrl);
-        } catch(err) {
-          resolve(trimmed);
-        }
-      };
-      img.onerror = function() {
+      // Timeout de segurança: se a imagem demorar mais de 1.2s, resolve com o src original
+      const timeoutId = setTimeout(() => {
         resolve(trimmed);
-      };
-      img.src = trimmed;
+      }, 1200);
+
+      try {
+        const img = new Image();
+        // Apenas aplica crossOrigin para URLs externas http/https, nunca para data:
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+          img.crossOrigin = 'anonymous';
+        }
+
+        img.onload = function() {
+          clearTimeout(timeoutId);
+          try {
+            const canvas = document.createElement('canvas');
+            let width = img.width || img.naturalWidth || 500;
+            let height = img.height || img.naturalHeight || 500;
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Comprime para JPEG (~18KB-35KB)
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve(compressedDataUrl);
+          } catch(canvasErr) {
+            resolve(trimmed);
+          }
+        };
+
+        img.onerror = function() {
+          clearTimeout(timeoutId);
+          resolve(trimmed);
+        };
+
+        img.src = trimmed;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        resolve(trimmed);
+      }
     });
   }
 
@@ -404,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!file || !file.type || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = function(e) {
-      compressImageSource(e.target.result, 600, 600, 0.78).then(callback);
+      compressImageSource(e.target.result, 500, 500, 0.72).then(callback);
     };
     reader.readAsDataURL(file);
   }
@@ -6272,7 +6296,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Redução e compressão automática da imagem (evita estouro de armazenamento)
         if (quizModalTempImage) {
-          quizModalTempImage = await compressImageSource(quizModalTempImage, 600, 600, 0.78);
+          try {
+            quizModalTempImage = await compressImageSource(quizModalTempImage, 500, 500, 0.72);
+          } catch(imgErr) {
+            console.warn('Compress image fallback em edit:', imgErr);
+          }
         }
 
         q.question = questionText;
@@ -6445,7 +6473,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Redução e compressão automática da imagem (evita estouro de armazenamento)
         if (quizModalTempImage) {
-          quizModalTempImage = await compressImageSource(quizModalTempImage, 600, 600, 0.78);
+          try {
+            quizModalTempImage = await compressImageSource(quizModalTempImage, 500, 500, 0.72);
+          } catch(imgErr) {
+            console.warn('Compress image fallback em add:', imgErr);
+          }
         }
 
         const beltName = getBeltNameFromKyu(kyu);
