@@ -873,13 +873,11 @@ window.TKST_EXAM_GENERATOR = {
 
         <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO) -->
         <div class="exam-landscape-top-bar">
-          <!-- LOGO E TÍTULO -->
+          <!-- LINHA 1: LOGO | LINHA 2: AVALIAÇÃO TEÓRICA | LINHA 3: GRADUAÇÃO -->
           <div class="exam-landscape-header-col">
-            <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-landscape-logo">
-            <div class="exam-landscape-title-wrap">
-              <div class="exam-clean-title">Avaliação teórica</div>
-              <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
-            </div>
+            <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-landscape-logo">
+            <div class="exam-clean-title">Avaliação Teórica</div>
+            <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
           </div>
 
           <!-- QUADRO DE DADOS DO ALUNO -->
@@ -894,13 +892,9 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
 
-          <!-- CITAÇÃO FUNAKOSHI -->
+          <!-- CITAÇÃO FUNAKOSHI (SEM KANJI) -->
           <div class="exam-header-quote-card exam-landscape-quote-box">
-            <div class="exam-quote-card-header">
-              <span class="exam-quote-kanji">空手道</span>
-              <span class="exam-quote-dojokun">PRINCÍPIO DO KARATÊ-DO</span>
-            </div>
-            <div class="exam-quote-body">“O Karatê começa e termina com respeito.”</div>
+            <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
             <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
           </div>
         </div>
@@ -941,7 +935,7 @@ window.TKST_EXAM_GENERATOR = {
             <span class="exam-key-q-num">Questão ${idx + 1}</span>
             <span class="exam-key-correct-badge">Gabarito: [ ${letter} ]</span>
           </div>
-          <div style="font-size: 8.2pt; color: #334155; margin-bottom: 2px;"><strong>Pergunta:</strong> ${q.question}</div>
+          <div style="font-size: 8.8pt; color: #334155; margin-bottom: 2px;"><strong>Pergunta:</strong> ${q.question}</div>
           <div class="exam-key-answer-box"><strong>Resposta Correta:</strong> (${letter}) ${correctText}</div>
           ${q.explanation ? `<div class="exam-key-expl-box">${q.explanation}</div>` : ''}
         </div>
@@ -956,14 +950,12 @@ window.TKST_EXAM_GENERATOR = {
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER DO GABARITO EM LINHA -->
+        <!-- HEADER DO GABARITO EM LINHA (3 LINHAS DE IDENTIFICAÇÃO) -->
         <div class="exam-landscape-top-bar" style="border-bottom: 2px solid #059669; padding-bottom: 3px;">
           <div class="exam-landscape-header-col" style="flex: 1.4;">
-            <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-landscape-logo">
-            <div class="exam-landscape-title-wrap">
-              <div class="exam-clean-title" style="color: #059669;">GABARITO OFICIAL — AVALIAÇÃO TEÓRICA</div>
-              <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
-            </div>
+            <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-landscape-logo">
+            <div class="exam-clean-title" style="color: #059669;">GABARITO OFICIAL — AVALIAÇÃO TEÓRICA</div>
+            <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
           </div>
           <div style="flex: 1; background: #F0FDF4; border: 1.5px solid #86EFAC; padding: 4px 8px; border-radius: 4px; font-size: 8pt; color: #166534; display: flex; flex-direction: column; justify-content: center; text-align: center;">
             <span><strong>Critério:</strong> 1,0 ponto por questão (Total: 10,0).</span>
@@ -1100,11 +1092,7 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
           <div class="exam-header-quote-card">
-            <div class="exam-quote-card-header">
-              <span class="exam-quote-kanji">空手道</span>
-              <span class="exam-quote-dojokun">PRINCÍPIO DO KARATÊ-DO</span>
-            </div>
-            <div class="exam-quote-body">“O Karatê começa e termina com respeito.”</div>
+            <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
             <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
           </div>
         </div>
@@ -1311,29 +1299,29 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         align-items: stretch !important;
         gap: 12px !important;
-        margin-bottom: 7px !important;
-        padding-bottom: 4px !important;
+        margin-bottom: 6px !important;
+        padding-bottom: 3px !important;
         border-bottom: 1.8px solid #0F172A !important;
       }
       .exam-landscape-header-col {
         flex: 1.1 !important;
         display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        gap: 1px !important;
       }
       .exam-landscape-logo {
         height: auto !important;
-        max-height: 44px !important;
+        max-height: 28px !important;
         width: auto !important;
+        max-width: 100% !important;
         object-fit: contain !important;
-      }
-      .exam-landscape-title-wrap {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        display: block !important;
+        margin-bottom: 1px !important;
       }
       .exam-clean-title {
-        font-size: 12pt;
+        font-size: 11.5pt;
         font-weight: 900;
         letter-spacing: 0.5px;
         color: #0F172A;
@@ -1341,11 +1329,10 @@ window.TKST_EXAM_GENERATOR = {
         text-transform: uppercase;
       }
       .exam-clean-subtitle {
-        font-size: 9.6pt;
+        font-size: 9.2pt;
         font-weight: 800;
         color: #B45309;
         line-height: 1.1;
-        margin-top: 2px;
       }
 
       /* QUADRO DE ALUNO E CITAÇÃO NO TOPO */
@@ -1381,37 +1368,19 @@ window.TKST_EXAM_GENERATOR = {
         text-align: center !important;
       }
       .exam-landscape-quote-box {
-        flex: 1.05 !important;
-      }
-      .exam-quote-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        margin-bottom: 2px;
-      }
-      .exam-quote-kanji {
-        font-size: 8.8pt;
-        font-weight: 900;
-        color: #B45309;
-      }
-      .exam-quote-dojokun {
-        font-size: 7.8pt;
-        font-weight: 800;
-        color: #64748B;
-        letter-spacing: 0.5px;
+        flex: 1.1 !important;
       }
       .exam-quote-body {
-        font-size: 8.5pt;
+        font-size: 8.0pt;
         font-weight: 700;
         font-style: italic;
         color: #0F172A;
-        line-height: 1.2;
+        line-height: 1.22;
       }
       .exam-quote-author {
         font-size: 7.4pt;
         font-weight: 800;
-        color: #475569;
+        color: #B45309;
         margin-top: 2px;
       }
 
@@ -1426,11 +1395,11 @@ window.TKST_EXAM_GENERATOR = {
       .exam-landscape-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 6px !important;
+        gap: 5px !important;
       }
       .exam-landscape-q-card {
         border-bottom: 1.4px dashed #CBD5E1 !important;
-        padding-bottom: 5px !important;
+        padding-bottom: 4.5px !important;
         page-break-inside: avoid !important;
       }
       .exam-landscape-q-card:last-child {
@@ -1438,33 +1407,33 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 10.5pt;
-        line-height: 1.28;
+        font-size: 12pt;
+        line-height: 1.25;
         font-weight: 800;
         color: #0F172A;
         margin-bottom: 3px;
       }
       .exam-q-number {
-        font-size: 11pt;
+        font-size: 12.5pt;
         font-weight: 900;
         color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS E MAIORES */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS E MAIORES (11pt) */
       .exam-mcq-options-col {
         display: flex;
         flex-direction: column;
         gap: 3px;
         flex: 0 0 auto;
-        min-width: 170px;
+        min-width: 180px;
         max-width: 58%;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
         gap: 6px;
-        font-size: 9.8pt;
-        line-height: 1.3;
+        font-size: 11pt;
+        line-height: 1.32;
         white-space: normal;
       }
       .exam-mcq-checkbox {
@@ -1472,7 +1441,7 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
-        font-size: 10.2pt;
+        font-size: 11.5pt;
         letter-spacing: 0.5px;
       }
       .exam-mcq-opt-text {
@@ -1480,7 +1449,7 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM COLADA IMEDIATAMENTE AO LADO DAS RESPOSTAS */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AMPLIADA (94px) COLADA IMEDIATAMENTE AO LADO DAS RESPOSTAS */
       .exam-q-side-row {
         display: flex;
         align-items: center;
@@ -1497,15 +1466,15 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0;
         width: auto;
-        max-width: 220px;
-        height: 86px;
+        max-width: 235px;
+        height: 94px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
       }
       .exam-side-img {
-        max-height: 86px !important;
-        max-width: 215px !important;
+        max-height: 94px !important;
+        max-width: 230px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
