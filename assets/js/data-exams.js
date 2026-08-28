@@ -1424,21 +1424,21 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS E MAIORES (13pt) */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS ALINHADAS E CALIBRADAS (12pt) */
       .exam-mcq-options-col {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 2.5px;
         flex: 0 0 auto;
-        min-width: 200px;
+        min-width: 190px;
         max-width: 58%;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
         gap: 6px;
-        font-size: 13pt;
-        line-height: 1.24;
+        font-size: 12pt;
+        line-height: 1.28;
         white-space: normal;
       }
       .exam-mcq-checkbox {
@@ -1446,7 +1446,7 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
-        font-size: 13.5pt;
+        font-size: 12.5pt;
         letter-spacing: 0.5px;
       }
       .exam-mcq-opt-text {
