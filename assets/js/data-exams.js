@@ -834,7 +834,7 @@ window.TKST_EXAM_GENERATOR = {
         return `
           <div class="exam-vertical-q-item">
             <div class="exam-q-title-row">
-              <strong>${qNum}.</strong> ${q.question}
+              <span class="exam-q-number">${qNum}.</span> ${q.question}
             </div>
             <div class="exam-q-side-row">
               <div class="exam-mcq-options-col">
@@ -848,14 +848,13 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }
 
-      // Questão sem imagem: se opções curtas, organiza em 2 colunas para preencher bem a folha
-      const isShortOptions = (q.options || []).every(opt => (opt || '').length <= 42);
+      // Questão sem imagem: todas as opções empilhadas com espaçamento confortável e uniforme
       return `
         <div class="exam-vertical-q-item">
           <div class="exam-q-title-row">
-            <strong>${qNum}.</strong> ${q.question}
+            <span class="exam-q-number">${qNum}.</span> ${q.question}
           </div>
-          <div class="exam-mcq-options-col ${isShortOptions ? 'exam-mcq-grid-2col' : ''}">
+          <div class="exam-mcq-options-col">
             ${optionsHtml}
           </div>
         </div>
@@ -889,7 +888,12 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
           <div class="exam-header-quote-card">
-            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-badge-img">
+            <div class="exam-quote-card-header">
+              <span class="exam-quote-kanji">空手道</span>
+              <span class="exam-quote-dojokun">PRINCÍPIO DO KARATÊ-DO</span>
+            </div>
+            <div class="exam-quote-body">“O Karatê começa e termina com respeito.”</div>
+            <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
           </div>
         </div>
 
@@ -1072,7 +1076,12 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
           <div class="exam-header-quote-card">
-            <img src="assets/images/quadro-citacao-funakoshi.png" alt="Citação Gichin Funakoshi" class="exam-quote-badge-img">
+            <div class="exam-quote-card-header">
+              <span class="exam-quote-kanji">空手道</span>
+              <span class="exam-quote-dojokun">PRINCÍPIO DO KARATÊ-DO</span>
+            </div>
+            <div class="exam-quote-body">“O Karatê começa e termina com respeito.”</div>
+            <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
           </div>
         </div>
 
@@ -1203,12 +1212,12 @@ window.TKST_EXAM_GENERATOR = {
     }).join('');
   },
 
-  // CSS de Impressão Direta A4 / Carta
+  // CSS de Impressão Direta A4
   getPrintStyles: function() {
     return `
       @page {
         size: A4 portrait;
-        margin: 4mm 6mm 4mm 6mm;
+        margin: 5mm 8mm 5mm 8mm;
       }
       * {
         box-sizing: border-box;
@@ -1222,13 +1231,13 @@ window.TKST_EXAM_GENERATOR = {
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
         color: #0F172A;
         background: #FFF;
-        font-size: 8.5pt;
-        line-height: 1.2;
+        font-size: 9.3pt;
+        line-height: 1.28;
       }
       .exam-sheet-a4 {
         position: relative !important;
         width: 100%;
-        max-width: 198mm;
+        max-width: 194mm;
         margin: 0 auto;
         padding: 0;
         background: #FFF;
@@ -1236,6 +1245,8 @@ window.TKST_EXAM_GENERATOR = {
       .single-page-a4 {
         position: relative !important;
         box-sizing: border-box;
+        height: auto;
+        min-height: 280mm;
       }
       .exam-sheet-page1 {
         page-break-after: always;
@@ -1258,7 +1269,7 @@ window.TKST_EXAM_GENERATOR = {
         top: 52% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        width: 165mm !important;
+        width: 175mm !important;
         max-width: 90% !important;
         height: auto !important;
         opacity: 0.06 !important;
@@ -1273,29 +1284,29 @@ window.TKST_EXAM_GENERATOR = {
         position: relative !important;
         z-index: 1 !important;
         text-align: center;
-        margin-bottom: 2px;
-        padding-bottom: 1px;
+        margin-bottom: 4px;
+        padding-bottom: 2px;
       }
       .exam-main-header-logo {
         height: auto !important;
-        max-height: 38px !important;
+        max-height: 46px !important;
         width: auto !important;
-        max-width: 88% !important;
+        max-width: 90% !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 auto 1px auto !important;
+        margin: 0 auto 2px auto !important;
         background: transparent !important;
       }
       .exam-clean-title {
-        font-size: 10.5pt;
+        font-size: 11.8pt;
         font-weight: 900;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.5px;
         color: #0F172A;
         line-height: 1.15;
         text-transform: uppercase;
       }
       .exam-clean-subtitle {
-        font-size: 8.8pt;
+        font-size: 9.8pt;
         font-weight: 800;
         color: #B45309;
         line-height: 1.1;
@@ -1308,70 +1319,95 @@ window.TKST_EXAM_GENERATOR = {
         z-index: 1 !important;
         display: flex !important;
         align-items: stretch !important;
-        gap: 8px !important;
-        margin-bottom: 3px !important;
+        gap: 10px !important;
+        margin-bottom: 5px !important;
       }
       .exam-print-student-box {
-        flex: 1 !important;
-        border: 1.2px solid #0F172A !important;
-        border-radius: 4px !important;
-        padding: 3px 8px !important;
-        font-size: 8.2pt !important;
+        flex: 1.3 !important;
+        border: 1.5px solid #0F172A !important;
+        border-radius: 5px !important;
+        padding: 5px 10px !important;
+        font-size: 9.2pt !important;
         background: #F8FAFC !important;
         box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
+        gap: 3px;
       }
       .exam-print-row {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
       .exam-header-quote-card {
-        width: 120px !important;
-        flex-shrink: 0 !important;
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
+        flex: 1 !important;
+        border: 1.5px solid #0F172A !important;
+        border-radius: 5px !important;
+        background: #FFF !important;
+        box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
-        align-items: center !important;
+        flex-direction: column !important;
         justify-content: center !important;
-        padding: 0 !important;
+        padding: 4px 8px !important;
+        text-align: center !important;
       }
-      .exam-quote-badge-img {
-        max-width: 100% !important;
-        max-height: 44px !important;
-        width: auto !important;
-        height: auto !important;
-        object-fit: contain !important;
-        display: block !important;
+      .exam-quote-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 1px;
+      }
+      .exam-quote-kanji {
+        font-size: 8.5pt;
+        font-weight: 900;
+        color: #B45309;
+      }
+      .exam-quote-dojokun {
+        font-size: 7.5pt;
+        font-weight: 800;
+        color: #64748B;
+        letter-spacing: 0.5px;
+      }
+      .exam-quote-body {
+        font-size: 8.5pt;
+        font-weight: 700;
+        font-style: italic;
+        color: #0F172A;
+        line-height: 1.2;
+      }
+      .exam-quote-author {
+        font-size: 7.5pt;
+        font-weight: 800;
+        color: #475569;
+        margin-top: 1px;
       }
 
-      /* FLUXO VERTICAL DE QUESTÕES - OCUPANDO 100% DA LARGURA E CABENDO EM 1 PÁGINA */
+      /* FLUXO VERTICAL DE QUESTÕES - OCUPANDO 100% DA LARGURA E DA ALTURA DA FOLHA */
       .exam-vertical-questions-flow {
         position: relative !important;
         z-index: 1 !important;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3.5px;
       }
 
       .exam-vertical-q-item {
         page-break-inside: avoid;
-        border-bottom: 1px dashed #CBD5E1;
-        padding-bottom: 2px;
+        border-bottom: 1.2px dashed #CBD5E1;
+        padding-bottom: 3.5px;
       }
       .exam-vertical-q-item:last-child {
         border-bottom: none;
       }
 
       .exam-q-title-row {
-        font-size: 8.5pt;
-        line-height: 1.2;
+        font-size: 9.8pt;
+        line-height: 1.25;
         font-weight: 800;
         color: #0F172A;
-        margin-bottom: 1.5px;
+        margin-bottom: 2.5px;
       }
       .exam-q-number {
         font-weight: 900;
@@ -1383,56 +1419,54 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 1px;
-      }
-      .exam-mcq-grid-2col {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 1.5px 14px !important;
+        gap: 2px;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
-        gap: 6px;
-        font-size: 8.0pt;
-        line-height: 1.2;
+        gap: 8px;
+        font-size: 9.2pt;
+        line-height: 1.3;
         white-space: normal;
       }
       .exam-mcq-checkbox {
-        font-weight: 800;
+        font-weight: 900;
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
-        font-size: 8.2pt;
+        font-size: 9.5pt;
+        letter-spacing: 0.5px;
       }
       .exam-mcq-opt-text {
         color: #1E293B;
+        font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM NÍTIDA À DIREITA DAS ALTERNATIVAS */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM GRANDE E NÍTIDA À DIREITA DAS ALTERNATIVAS */
       .exam-q-side-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        margin-top: 1px;
+        gap: 16px;
+        margin-top: 2px;
         width: 100%;
       }
       .exam-q-img-wrap {
-        border: 1.2px solid #64748B;
-        border-radius: 4px;
-        padding: 2px;
+        border: 1.5px solid #475569;
+        border-radius: 6px;
+        padding: 3px;
         background: #FFF;
         flex-shrink: 0;
-        width: 135px;
-        height: 60px;
+        width: 185px;
+        height: 72px;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
       }
       .exam-side-img {
-        max-height: 56px !important;
-        max-width: 130px !important;
+        max-height: 68px !important;
+        max-width: 178px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
@@ -1444,34 +1478,34 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
       }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */
       .exam-print-lines-box {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
         margin-top: 2px;
       }
       .exam-r-prefix {
         font-weight: 900;
-        font-size: 8.5pt;
-        margin-right: 3px;
+        font-size: 9.5pt;
+        margin-right: 4px;
         flex-shrink: 0;
       }
       .exam-print-line {
-        border-bottom: 1.2px solid #334155;
-        height: 14px;
+        border-bottom: 1.5px solid #334155;
+        height: 16px;
         width: 100%;
       }
       .exam-print-field-row {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
       }
       .exam-print-field-label {
-        font-size: 8pt;
+        font-size: 9.2pt;
         font-weight: 800;
         color: #1E293B;
         white-space: nowrap;
@@ -1483,14 +1517,14 @@ window.TKST_EXAM_GENERATOR = {
         border: 1px solid #CBD5E1;
         border-left: 3.5px solid #10B981;
         border-radius: 4px;
-        padding: 3px 6px;
+        padding: 4px 8px;
         background: #FAFAFA;
       }
       .exam-key-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 8pt;
+        font-size: 8.5pt;
       }
       .exam-key-q-num {
         font-weight: 900;
@@ -1500,56 +1534,57 @@ window.TKST_EXAM_GENERATOR = {
       .exam-key-correct-badge {
         background: #10B981;
         color: #FFF;
-        font-weight: 800;
-        font-size: 7pt;
-        padding: 1px 5px;
+        font-weight: 900;
+        font-size: 7.8pt;
+        padding: 1.5px 6px;
         border-radius: 2px;
       }
       .exam-key-answer-box {
-        font-size: 8pt;
+        font-size: 8.8pt;
         color: #1E293B;
-        margin-top: 1.5px;
+        margin-top: 2px;
       }
       .exam-key-expl-box {
-        font-size: 7.2pt;
+        font-size: 7.8pt;
         color: #64748B;
         font-style: italic;
+        margin-top: 1px;
       }
       .exam-key-summary-grid {
         display: grid;
         grid-template-columns: repeat(10, 1fr);
-        gap: 3px;
+        gap: 4px;
         background: #F8FAFC;
         border: 1px solid #CBD5E1;
-        padding: 4px;
+        padding: 5px;
         border-radius: 4px;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
       }
       .exam-key-pill {
         background: #FFF;
         border: 1px solid #10B981;
         border-radius: 3px;
         text-align: center;
-        padding: 2px 1px;
+        padding: 3px 1px;
       }
       .exam-key-pill-num {
         color: #64748B;
-        font-size: 6.5pt;
+        font-size: 7pt;
       }
       .exam-key-pill-val {
         color: #065F46;
         font-weight: 900;
-        font-size: 8pt;
+        font-size: 9pt;
       }
 
       .exam-master-key-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 7.5pt;
+        font-size: 8pt;
       }
       .exam-master-key-table td {
         border: 1px solid #CBD5E1;
-        padding: 3px 5px;
+        padding: 4px 6px;
         vertical-align: top;
       }
       .exam-master-key-table tr:nth-child(even) {
