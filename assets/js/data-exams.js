@@ -794,6 +794,7 @@ window.TKST_EXAM_GENERATOR = {
         if (!selectedIds.has(q.id)) {
           selectedIds.add(q.id);
           const qClone = JSON.parse(JSON.stringify(q));
+
           if (qClone.options && qClone.options.length > 1) {
             const correctStr = qClone.options[qClone.correctIndex || 0];
             for (let i = qClone.options.length - 1; i > 0; i--) {
@@ -802,6 +803,7 @@ window.TKST_EXAM_GENERATOR = {
             }
             qClone.correctIndex = qClone.options.indexOf(correctStr);
           }
+
           selected.push(qClone);
         }
         if (selected.length >= count) break;
@@ -832,7 +834,7 @@ window.TKST_EXAM_GENERATOR = {
 
       if (imgSrc) {
         return `
-          <div class="exam-vertical-q-item">
+          <div class="exam-vertical-q-item exam-landscape-q-card">
             <div class="exam-q-title-row">
               <span class="exam-q-number">${qNum}.</span> ${q.question}
             </div>
@@ -848,9 +850,9 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }
 
-      // Questão sem imagem: todas as opções empilhadas com espaçamento confortável e uniforme
+      // Questão sem imagem
       return `
-        <div class="exam-vertical-q-item">
+        <div class="exam-vertical-q-item exam-landscape-q-card">
           <div class="exam-q-title-row">
             <span class="exam-q-number">${qNum}.</span> ${q.question}
           </div>
@@ -861,33 +863,39 @@ window.TKST_EXAM_GENERATOR = {
       `;
     };
 
-    const questionsHtml = questions.map((q, idx) => renderSingleQuestion(q, idx)).join('');
+    const col1Questions = questions.slice(0, 5).map((q, idx) => renderSingleQuestion(q, idx)).join('');
+    const col2Questions = questions.slice(5, 10).map((q, idx) => renderSingleQuestion(q, idx + 5)).join('');
 
     return `
-      <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1">
+      <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1 exam-landscape-sheet">
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER OFICIAL COM LOGO CENTRALIZADA E TÍTULO -->
-        <div class="exam-clean-header">
-          <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-main-header-logo">
-          <div class="exam-clean-title">Avaliação teórica</div>
-          <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
-        </div>
-
-        <!-- QUADRO DE DADOS DO ALUNO E QUADRO DE CITAÇÃO FUNAKOSHI LADO A LADO -->
-        <div class="exam-top-info-quote-row">
-          <div class="exam-print-student-box">
-            <div class="exam-print-row">
-              <div style="flex: 2.2;"><strong>Aluno(a):</strong> __________________________________________________</div>
-              <div style="flex: 1.1;"><strong>Dojô:</strong> ________________________</div>
+        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO) -->
+        <div class="exam-landscape-top-bar">
+          <!-- LOGO E TÍTULO -->
+          <div class="exam-landscape-header-col">
+            <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-landscape-logo">
+            <div class="exam-landscape-title-wrap">
+              <div class="exam-clean-title">Avaliação teórica</div>
+              <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
             </div>
-            <div class="exam-print-row" style="margin-top: 4px;">
+          </div>
+
+          <!-- QUADRO DE DADOS DO ALUNO -->
+          <div class="exam-print-student-box exam-landscape-student-box">
+            <div class="exam-print-row">
+              <div style="flex: 2.2;"><strong>Aluno(a):</strong> ___________________________________</div>
+              <div style="flex: 1.1;"><strong>Dojô:</strong> ________________</div>
+            </div>
+            <div class="exam-print-row" style="margin-top: 3px;">
               <div style="flex: 1.2;"><strong>Data:</strong> ${dateStr}</div>
               <div style="flex: 1.1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
             </div>
           </div>
-          <div class="exam-header-quote-card">
+
+          <!-- CITAÇÃO FUNAKOSHI -->
+          <div class="exam-header-quote-card exam-landscape-quote-box">
             <div class="exam-quote-card-header">
               <span class="exam-quote-kanji">空手道</span>
               <span class="exam-quote-dojokun">PRINCÍPIO DO KARATÊ-DO</span>
@@ -897,9 +905,14 @@ window.TKST_EXAM_GENERATOR = {
           </div>
         </div>
 
-        <!-- TODAS AS 10 QUESTÕES EM FLUXO COMPLETO E LARGURA TOTAL -->
-        <div class="exam-vertical-questions-flow">
-          ${questionsHtml}
+        <!-- 10 QUESTÕES EM 2 COLUNAS (5 À ESQUERDA, 5 À DIREITA) -->
+        <div class="exam-landscape-grid-2col">
+          <div class="exam-landscape-col">
+            ${col1Questions}
+          </div>
+          <div class="exam-landscape-col">
+            ${col2Questions}
+          </div>
         </div>
       </div>
     `;
@@ -919,7 +932,7 @@ window.TKST_EXAM_GENERATOR = {
       `;
     }).join('');
 
-    const itemsHtml = questions.map((q, idx) => {
+    const renderKeyCard = (q, idx) => {
       const letter = String.fromCharCode(65 + (q.correctIndex || 0));
       const correctText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
       return `
@@ -928,38 +941,49 @@ window.TKST_EXAM_GENERATOR = {
             <span class="exam-key-q-num">Questão ${idx + 1}</span>
             <span class="exam-key-correct-badge">Gabarito: [ ${letter} ]</span>
           </div>
-          <div style="font-size: 8.5pt; color: #334155; margin-bottom: 2px;"><strong>Pergunta:</strong> ${q.question}</div>
+          <div style="font-size: 8.2pt; color: #334155; margin-bottom: 2px;"><strong>Pergunta:</strong> ${q.question}</div>
           <div class="exam-key-answer-box"><strong>Resposta Correta:</strong> (${letter}) ${correctText}</div>
           ${q.explanation ? `<div class="exam-key-expl-box">${q.explanation}</div>` : ''}
         </div>
       `;
-    }).join('');
+    };
+
+    const col1Keys = questions.slice(0, 5).map((q, idx) => renderKeyCard(q, idx)).join('');
+    const col2Keys = questions.slice(5, 10).map((q, idx) => renderKeyCard(q, idx + 5)).join('');
 
     return `
-      <div class="exam-sheet-a4 single-page-a4 exam-sheet-page2">
+      <div class="exam-sheet-a4 single-page-a4 exam-sheet-page2 exam-landscape-sheet">
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER DO GABARITO -->
-        <div class="exam-clean-header" style="border-bottom: 2px solid #059669; padding-bottom: 4px;">
-          <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-main-header-logo">
-          <div class="exam-clean-title" style="color: #059669;">GABARITO OFICIAL — AVALIAÇÃO TEÓRICA</div>
-          <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
+        <!-- HEADER DO GABARITO EM LINHA -->
+        <div class="exam-landscape-top-bar" style="border-bottom: 2px solid #059669; padding-bottom: 3px;">
+          <div class="exam-landscape-header-col" style="flex: 1.4;">
+            <img src="assets/images/logo-header-tkst.png" alt="TKST" class="exam-landscape-logo">
+            <div class="exam-landscape-title-wrap">
+              <div class="exam-clean-title" style="color: #059669;">GABARITO OFICIAL — AVALIAÇÃO TEÓRICA</div>
+              <div class="exam-clean-subtitle" style="color: #065F46;">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
+            </div>
+          </div>
+          <div style="flex: 1; background: #F0FDF4; border: 1.5px solid #86EFAC; padding: 4px 8px; border-radius: 4px; font-size: 8pt; color: #166534; display: flex; flex-direction: column; justify-content: center; text-align: center;">
+            <span><strong>Critério:</strong> 1,0 ponto por questão (Total: 10,0).</span>
+            <span style="font-weight: 800; color: #065F46;">FOLHA DE CORREÇÃO DO SENSEI</span>
+          </div>
         </div>
 
-        <div style="background: #F0FDF4; border: 1.5px solid #86EFAC; padding: 4px 10px; border-radius: 4px; margin-bottom: 6px; font-size: 8.5pt; color: #166534; display: flex; justify-content: space-between; align-items: center;">
-          <span><strong>Critério de Avaliação:</strong> Cada questão correta vale 1,0 ponto (Total: 10,0 pontos).</span>
-          <span style="font-weight: 800; color: #065F46;">FOLHA DO SENSEI</span>
-        </div>
-
-        <!-- RESUMO RÁPIDO DO GABARITO (PÍLULAS) -->
-        <div class="exam-key-summary-grid">
+        <!-- RESUMO EM PÍLULAS (10 RESPOSTAS RÁPIDAS) -->
+        <div class="exam-key-summary-grid" style="margin-top: 4px; margin-bottom: 6px;">
           ${summaryPillsHtml}
         </div>
 
-        <!-- DETALHAMENTO DE CADA QUESTÃO -->
-        <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 4.5px;">
-          ${itemsHtml}
+        <!-- DETALHAMENTO EM 2 COLUNAS -->
+        <div class="exam-landscape-grid-2col">
+          <div class="exam-landscape-col">
+            ${col1Keys}
+          </div>
+          <div class="exam-landscape-col">
+            ${col2Keys}
+          </div>
         </div>
       </div>
     `;
@@ -1212,12 +1236,12 @@ window.TKST_EXAM_GENERATOR = {
     }).join('');
   },
 
-  // CSS de Impressão Direta A4 / Carta
+  // CSS de Impressão Direta A4 / Carta (Modo Paisagem / 2 Colunas)
   getPrintStyles: function() {
     return `
       @page {
-        size: A4 portrait;
-        margin: 4mm 8mm 4mm 8mm;
+        size: A4 landscape;
+        margin: 4mm 6mm 4mm 6mm;
       }
       * {
         box-sizing: border-box;
@@ -1237,7 +1261,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-sheet-a4 {
         position: relative !important;
         width: 100%;
-        max-width: 194mm;
+        max-width: 285mm;
         margin: 0 auto;
         padding: 0;
         background: #FFF;
@@ -1270,36 +1294,46 @@ window.TKST_EXAM_GENERATOR = {
         top: 52% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        width: 165mm !important;
-        max-width: 90% !important;
+        width: 155mm !important;
+        max-width: 80% !important;
         height: auto !important;
-        opacity: 0.06 !important;
+        opacity: 0.05 !important;
         pointer-events: none !important;
         user-select: none !important;
         z-index: 0 !important;
         display: block !important;
       }
 
-      /* HEADER LIMPO COM BANNER HORIZONTAL */
-      .exam-clean-header {
+      /* HEADER HORIZONTAL EM LINHA (MODO PAISAGEM) */
+      .exam-landscape-top-bar {
         position: relative !important;
         z-index: 1 !important;
-        text-align: center;
-        margin-bottom: 2px;
-        padding-bottom: 1px;
+        display: flex !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        margin-bottom: 4px !important;
+        padding-bottom: 3px !important;
+        border-bottom: 1.5px solid #0F172A !important;
       }
-      .exam-main-header-logo {
+      .exam-landscape-header-col {
+        flex: 1.1 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+      .exam-landscape-logo {
         height: auto !important;
-        max-height: 38px !important;
+        max-height: 40px !important;
         width: auto !important;
-        max-width: 90% !important;
         object-fit: contain !important;
-        display: block !important;
-        margin: 0 auto 1px auto !important;
-        background: transparent !important;
+      }
+      .exam-landscape-title-wrap {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
       .exam-clean-title {
-        font-size: 11.2pt;
+        font-size: 11pt;
         font-weight: 900;
         letter-spacing: 0.4px;
         color: #0F172A;
@@ -1307,28 +1341,19 @@ window.TKST_EXAM_GENERATOR = {
         text-transform: uppercase;
       }
       .exam-clean-subtitle {
-        font-size: 9.2pt;
+        font-size: 8.8pt;
         font-weight: 800;
         color: #B45309;
         line-height: 1.1;
         margin-top: 1px;
       }
 
-      /* TOPO: QUADRO DE ALUNO + CITAÇÃO FUNAKOSHI LADO A LADO */
-      .exam-top-info-quote-row {
-        position: relative !important;
-        z-index: 1 !important;
-        display: flex !important;
-        align-items: stretch !important;
-        gap: 8px !important;
-        margin-bottom: 4px !important;
-      }
+      /* QUADRO DE ALUNO E CITAÇÃO NO TOPO */
       .exam-print-student-box {
-        flex: 1.3 !important;
         border: 1.4px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 4px 8px !important;
-        font-size: 8.8pt !important;
+        padding: 3px 8px !important;
+        font-size: 8.6pt !important;
         background: #F8FAFC !important;
         box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
@@ -1336,13 +1361,15 @@ window.TKST_EXAM_GENERATOR = {
         justify-content: center !important;
         gap: 2px;
       }
+      .exam-landscape-student-box {
+        flex: 1.3 !important;
+      }
       .exam-print-row {
         display: flex;
         align-items: center;
         gap: 6px;
       }
       .exam-header-quote-card {
-        flex: 1 !important;
         border: 1.4px solid #0F172A !important;
         border-radius: 4px !important;
         background: #FFF !important;
@@ -1352,6 +1379,9 @@ window.TKST_EXAM_GENERATOR = {
         justify-content: center !important;
         padding: 3px 6px !important;
         text-align: center !important;
+      }
+      .exam-landscape-quote-box {
+        flex: 1 !important;
       }
       .exam-quote-card-header {
         display: flex;
@@ -1372,39 +1402,43 @@ window.TKST_EXAM_GENERATOR = {
         letter-spacing: 0.4px;
       }
       .exam-quote-body {
-        font-size: 8.0pt;
+        font-size: 7.8pt;
         font-weight: 700;
         font-style: italic;
         color: #0F172A;
         line-height: 1.15;
       }
       .exam-quote-author {
-        font-size: 7.0pt;
+        font-size: 6.8pt;
         font-weight: 800;
         color: #475569;
         margin-top: 1px;
       }
 
-      /* FLUXO VERTICAL DE QUESTÕES - COMPACTO E CABENDO PERFEITAMENTE EM 1 PÁGINA */
-      .exam-vertical-questions-flow {
+      /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM */
+      .exam-landscape-grid-2col {
         position: relative !important;
         z-index: 1 !important;
-        display: flex;
-        flex-direction: column;
-        gap: 2.5px;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 4px 18px !important;
       }
-
-      .exam-vertical-q-item {
-        page-break-inside: avoid;
-        border-bottom: 1px dashed #CBD5E1;
-        padding-bottom: 2.5px;
+      .exam-landscape-col {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
       }
-      .exam-vertical-q-item:last-child {
-        border-bottom: none;
+      .exam-landscape-q-card {
+        border-bottom: 1px dashed #CBD5E1 !important;
+        padding-bottom: 2.5px !important;
+        page-break-inside: avoid !important;
+      }
+      .exam-landscape-q-card:last-child {
+        border-bottom: none !important;
       }
 
       .exam-q-title-row {
-        font-size: 9.3pt;
+        font-size: 9.2pt;
         line-height: 1.2;
         font-weight: 800;
         color: #0F172A;
@@ -1420,15 +1454,14 @@ window.TKST_EXAM_GENERATOR = {
         display: flex;
         flex-direction: column;
         gap: 1.5px;
-        min-width: 240px;
-        flex: 0 0 auto;
-        max-width: 58%;
+        flex: 1;
+        min-width: 130px;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
-        gap: 6px;
-        font-size: 8.8pt;
+        gap: 5px;
+        font-size: 8.6pt;
         line-height: 1.25;
         white-space: normal;
       }
@@ -1437,7 +1470,7 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
-        font-size: 9.0pt;
+        font-size: 8.8pt;
         letter-spacing: 0.4px;
       }
       .exam-mcq-opt-text {
@@ -1445,12 +1478,12 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM NATURAL AO LADO DAS RESPOSTAS (SEM MOLDURAS/BORDAS) */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM NATURAL E AMPLA AO LADO DAS ALTERNATIVAS (SEM BORDAS/MOLDURAS) */
       .exam-q-side-row {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        gap: 20px;
+        gap: 12px;
         margin-top: 1px;
         width: 100%;
       }
@@ -1462,15 +1495,15 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0;
         width: auto;
-        max-width: 190px;
-        height: 62px;
+        max-width: 180px;
+        height: 64px;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
+        justify-content: flex-end;
       }
       .exam-side-img {
-        max-height: 62px !important;
-        max-width: 190px !important;
+        max-height: 64px !important;
+        max-width: 175px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
@@ -1494,7 +1527,7 @@ window.TKST_EXAM_GENERATOR = {
       }
       .exam-r-prefix {
         font-weight: 900;
-        font-size: 9.0pt;
+        font-size: 8.8pt;
         margin-right: 4px;
         flex-shrink: 0;
       }
@@ -1509,7 +1542,7 @@ window.TKST_EXAM_GENERATOR = {
         gap: 5px;
       }
       .exam-print-field-label {
-        font-size: 8.8pt;
+        font-size: 8.6pt;
         font-weight: 800;
         color: #1E293B;
         white-space: nowrap;
@@ -1528,7 +1561,7 @@ window.TKST_EXAM_GENERATOR = {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 8.2pt;
+        font-size: 8pt;
       }
       .exam-key-q-num {
         font-weight: 900;
@@ -1539,17 +1572,17 @@ window.TKST_EXAM_GENERATOR = {
         background: #10B981;
         color: #FFF;
         font-weight: 900;
-        font-size: 7.5pt;
+        font-size: 7.2pt;
         padding: 1px 5px;
         border-radius: 2px;
       }
       .exam-key-answer-box {
-        font-size: 8.5pt;
+        font-size: 8.2pt;
         color: #1E293B;
         margin-top: 1.5px;
       }
       .exam-key-expl-box {
-        font-size: 7.5pt;
+        font-size: 7.2pt;
         color: #64748B;
         font-style: italic;
         margin-top: 1px;
@@ -1573,7 +1606,7 @@ window.TKST_EXAM_GENERATOR = {
       }
       .exam-key-pill-num {
         color: #64748B;
-        font-size: 6.8pt;
+        font-size: 6.5pt;
       }
       .exam-key-pill-val {
         color: #065F46;
