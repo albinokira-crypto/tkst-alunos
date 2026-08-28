@@ -1203,12 +1203,12 @@ window.TKST_EXAM_GENERATOR = {
     }).join('');
   },
 
-  // CSS de Impressão Direta A4
+  // CSS de Impressão Direta A4 / Carta
   getPrintStyles: function() {
     return `
       @page {
         size: A4 portrait;
-        margin: 5mm 8mm 5mm 8mm;
+        margin: 4mm 6mm 4mm 6mm;
       }
       * {
         box-sizing: border-box;
@@ -1222,22 +1222,27 @@ window.TKST_EXAM_GENERATOR = {
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
         color: #0F172A;
         background: #FFF;
-        font-size: 10pt;
-        line-height: 1.3;
+        font-size: 8.5pt;
+        line-height: 1.2;
       }
       .exam-sheet-a4 {
         position: relative !important;
         width: 100%;
-        max-width: 194mm;
+        max-width: 198mm;
         margin: 0 auto;
         padding: 0;
         background: #FFF;
       }
       .single-page-a4 {
         position: relative !important;
-        height: auto;
-        min-height: 285mm;
         box-sizing: border-box;
+      }
+      .exam-sheet-page1 {
+        page-break-after: always;
+        page-break-inside: avoid;
+      }
+      .exam-sheet-page2 {
+        page-break-inside: avoid;
       }
       .exam-page-break-wrapper {
         page-break-after: always;
@@ -1253,8 +1258,8 @@ window.TKST_EXAM_GENERATOR = {
         top: 52% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        width: 175mm !important;
-        max-width: 92% !important;
+        width: 165mm !important;
+        max-width: 90% !important;
         height: auto !important;
         opacity: 0.06 !important;
         pointer-events: none !important;
@@ -1268,33 +1273,33 @@ window.TKST_EXAM_GENERATOR = {
         position: relative !important;
         z-index: 1 !important;
         text-align: center;
-        margin-bottom: 4px;
-        padding-bottom: 2px;
+        margin-bottom: 2px;
+        padding-bottom: 1px;
       }
       .exam-main-header-logo {
         height: auto !important;
-        max-height: 54px !important;
+        max-height: 38px !important;
         width: auto !important;
-        max-width: 90% !important;
+        max-width: 88% !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 auto 2px auto !important;
+        margin: 0 auto 1px auto !important;
         background: transparent !important;
       }
       .exam-clean-title {
-        font-size: 12.5pt;
+        font-size: 10.5pt;
         font-weight: 900;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
         color: #0F172A;
         line-height: 1.15;
         text-transform: uppercase;
       }
       .exam-clean-subtitle {
-        font-size: 10.5pt;
+        font-size: 8.8pt;
         font-weight: 800;
         color: #B45309;
         line-height: 1.1;
-        margin-top: 2px;
+        margin-top: 1px;
       }
 
       /* TOPO: QUADRO DE ALUNO + CITAÇÃO FUNAKOSHI LADO A LADO */
@@ -1303,17 +1308,17 @@ window.TKST_EXAM_GENERATOR = {
         z-index: 1 !important;
         display: flex !important;
         align-items: stretch !important;
-        gap: 10px !important;
-        margin-bottom: 6px !important;
+        gap: 8px !important;
+        margin-bottom: 3px !important;
       }
       .exam-print-student-box {
         flex: 1 !important;
-        border: 2px solid #0F172A !important;
-        border-radius: 5px !important;
-        padding: 6px 12px !important;
-        font-size: 10pt !important;
+        border: 1.2px solid #0F172A !important;
+        border-radius: 4px !important;
+        padding: 3px 8px !important;
+        font-size: 8.2pt !important;
         background: #F8FAFC !important;
-        box-shadow: 2px 2px 0px #0F172A !important;
+        box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
@@ -1321,53 +1326,52 @@ window.TKST_EXAM_GENERATOR = {
       .exam-print-row {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
       }
       .exam-header-quote-card {
-        width: 170px !important;
+        width: 120px !important;
         flex-shrink: 0 !important;
-        border: 2px solid #0F172A !important;
-        border-radius: 5px !important;
-        background: #FFF !important;
-        box-shadow: 2px 2px 0px #0F172A !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        padding: 3px !important;
+        padding: 0 !important;
       }
       .exam-quote-badge-img {
         max-width: 100% !important;
-        max-height: 56px !important;
+        max-height: 44px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
         display: block !important;
       }
 
-      /* FLUXO VERTICAL DE QUESTÕES - OCUPANDO 100% DA LARGURA E ALTURA DA FOLHA */
+      /* FLUXO VERTICAL DE QUESTÕES - OCUPANDO 100% DA LARGURA E CABENDO EM 1 PÁGINA */
       .exam-vertical-questions-flow {
         position: relative !important;
         z-index: 1 !important;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 2px;
       }
 
       .exam-vertical-q-item {
         page-break-inside: avoid;
-        border-bottom: 1.5px dashed #CBD5E1;
-        padding-bottom: 5px;
+        border-bottom: 1px dashed #CBD5E1;
+        padding-bottom: 2px;
       }
       .exam-vertical-q-item:last-child {
         border-bottom: none;
       }
 
       .exam-q-title-row {
-        font-size: 10.8pt;
-        line-height: 1.3;
+        font-size: 8.5pt;
+        line-height: 1.2;
         font-weight: 800;
         color: #0F172A;
-        margin-bottom: 3px;
+        margin-bottom: 1.5px;
       }
       .exam-q-number {
         font-weight: 900;
@@ -1379,96 +1383,95 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 1px;
       }
       .exam-mcq-grid-2col {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 4px 20px !important;
+        gap: 1.5px 14px !important;
       }
       .exam-mcq-option {
         display: flex;
         align-items: baseline;
-        gap: 8px;
-        font-size: 10pt;
-        line-height: 1.3;
+        gap: 6px;
+        font-size: 8.0pt;
+        line-height: 1.2;
         white-space: normal;
       }
       .exam-mcq-checkbox {
-        font-weight: 900;
+        font-weight: 800;
         color: #0F172A;
         flex-shrink: 0;
         font-family: monospace, sans-serif;
-        font-size: 10.5pt;
-        letter-spacing: 0.5px;
+        font-size: 8.2pt;
       }
       .exam-mcq-opt-text {
         color: #1E293B;
-        font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM GRANDE E NÍTIDA À DIREITA DAS ALTERNATIVAS */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM NÍTIDA À DIREITA DAS ALTERNATIVAS */
       .exam-q-side-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        margin-top: 2px;
+        gap: 12px;
+        margin-top: 1px;
         width: 100%;
       }
       .exam-q-img-wrap {
-        border: 2px solid #64748B;
-        border-radius: 8px;
-        padding: 4px;
+        border: 1.2px solid #64748B;
+        border-radius: 4px;
+        padding: 2px;
         background: #FFF;
         flex-shrink: 0;
-        width: 200px;
-        height: 105px;
+        width: 135px;
+        height: 60px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
       }
       .exam-side-img {
-        max-height: 98px !important;
-        max-width: 190px !important;
+        max-height: 56px !important;
+        max-width: 130px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
         display: block !important;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
       }
       .exam-q-fields-wrap {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 3px;
       }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */
       .exam-print-lines-box {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        margin-top: 3px;
+        gap: 2px;
+        margin-top: 2px;
       }
       .exam-r-prefix {
         font-weight: 900;
-        font-size: 10.5pt;
-        margin-right: 4px;
+        font-size: 8.5pt;
+        margin-right: 3px;
         flex-shrink: 0;
       }
       .exam-print-line {
-        border-bottom: 1.5px solid #334155;
-        height: 18px;
+        border-bottom: 1.2px solid #334155;
+        height: 14px;
         width: 100%;
       }
       .exam-print-field-row {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
       }
       .exam-print-field-label {
-        font-size: 10pt;
+        font-size: 8pt;
         font-weight: 800;
         color: #1E293B;
         white-space: nowrap;
@@ -1477,17 +1480,17 @@ window.TKST_EXAM_GENERATOR = {
       /* GABARITOS */
       .exam-key-card {
         page-break-inside: avoid;
-        border: 1.5px solid #CBD5E1;
-        border-left: 4px solid #10B981;
-        border-radius: 5px;
-        padding: 5px 10px;
+        border: 1px solid #CBD5E1;
+        border-left: 3.5px solid #10B981;
+        border-radius: 4px;
+        padding: 3px 6px;
         background: #FAFAFA;
       }
       .exam-key-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 9.5pt;
+        font-size: 8pt;
       }
       .exam-key-q-num {
         font-weight: 900;
@@ -1497,58 +1500,56 @@ window.TKST_EXAM_GENERATOR = {
       .exam-key-correct-badge {
         background: #10B981;
         color: #FFF;
-        font-weight: 900;
-        font-size: 8.5pt;
-        padding: 2px 8px;
-        border-radius: 3px;
+        font-weight: 800;
+        font-size: 7pt;
+        padding: 1px 5px;
+        border-radius: 2px;
       }
       .exam-key-answer-box {
-        font-size: 9.5pt;
+        font-size: 8pt;
         color: #1E293B;
-        margin-top: 3px;
+        margin-top: 1.5px;
       }
       .exam-key-expl-box {
-        font-size: 8.5pt;
+        font-size: 7.2pt;
         color: #64748B;
         font-style: italic;
-        margin-top: 1px;
       }
       .exam-key-summary-grid {
         display: grid;
         grid-template-columns: repeat(10, 1fr);
-        gap: 5px;
+        gap: 3px;
         background: #F8FAFC;
-        border: 1.5px solid #CBD5E1;
-        padding: 6px;
-        border-radius: 5px;
-        margin-bottom: 8px;
+        border: 1px solid #CBD5E1;
+        padding: 4px;
+        border-radius: 4px;
+        margin-bottom: 4px;
       }
       .exam-key-pill {
         background: #FFF;
-        border: 1.5px solid #10B981;
-        border-radius: 4px;
+        border: 1px solid #10B981;
+        border-radius: 3px;
         text-align: center;
-        padding: 4px 2px;
+        padding: 2px 1px;
       }
       .exam-key-pill-num {
         color: #64748B;
-        font-size: 7.5pt;
-        font-weight: 700;
+        font-size: 6.5pt;
       }
       .exam-key-pill-val {
         color: #065F46;
         font-weight: 900;
-        font-size: 10pt;
+        font-size: 8pt;
       }
 
       .exam-master-key-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 8.8pt;
+        font-size: 7.5pt;
       }
       .exam-master-key-table td {
         border: 1px solid #CBD5E1;
-        padding: 5px 8px;
+        padding: 3px 5px;
         vertical-align: top;
       }
       .exam-master-key-table tr:nth-child(even) {
