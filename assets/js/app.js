@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.69';
+  const APP_DISPLAY_VERSION = 'V-1.70';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
 
@@ -350,40 +350,61 @@ document.addEventListener('DOMContentLoaded', () => {
     return q;
   }
 
+  function compressImageSource(src, maxWidth = 600, maxHeight = 600, quality = 0.78) {
+    return new Promise((resolve) => {
+      if (!src || typeof src !== 'string' || !src.trim()) {
+        return resolve('');
+      }
+      const trimmed = src.trim();
+      if (trimmed.startsWith('assets/')) {
+        return resolve(trimmed);
+      }
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = function() {
+        try {
+          const canvas = document.createElement('canvas');
+          let width = img.width || img.naturalWidth || 600;
+          let height = img.height || img.naturalHeight || 600;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Comprime para JPEG ultraleve (~20KB-40KB) com nitidez ideal para telas e impressão
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedDataUrl);
+        } catch(err) {
+          resolve(trimmed);
+        }
+      };
+      img.onerror = function() {
+        resolve(trimmed);
+      };
+      img.src = trimmed;
+    });
+  }
+
   function compressQuizImage(file, callback) {
-    if (!file || !file.type.startsWith('image/')) return;
+    if (!file || !file.type || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = function(e) {
-      const img = new Image();
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 800;
-        const MAX_HEIGHT = 800;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round((width * MAX_HEIGHT) / height);
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Compress to JPEG with high quality and low file size
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
-        callback(compressedDataUrl);
-      };
-      img.src = e.target.result;
+      compressImageSource(e.target.result, 600, 600, 0.78).then(callback);
     };
     reader.readAsDataURL(file);
   }
@@ -6217,43 +6238,65 @@ document.addEventListener('DOMContentLoaded', () => {
       detailModal.classList.add('active');
     },
 
-    submitEditQuizQuestion: (qId) => {
-      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
-      const q = bank.find(item => item.id === qId);
-      if (!q) return;
-
-      const questionText = document.getElementById('editQuizQuestionInput').value.trim();
-      const correctAnswer = document.getElementById('editQuizCorrectAnswerInput').value.trim();
-      let wrong1 = (document.getElementById('editQuizWrong1Input')?.value || '').trim();
-      let wrong2 = (document.getElementById('editQuizWrong2Input')?.value || '').trim();
-      let wrong3 = (document.getElementById('editQuizWrong3Input')?.value || '').trim();
-
-      if (!questionText || !correctAnswer) {
-        alert('Por favor, preencha a pergunta e a resposta correta.');
-        return;
+    submitEditQuizQuestion: async (qId) => {
+      const submitBtn = document.querySelector('#detailModalBody button[type="submit"]');
+      const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Otimizando e Salvando...';
       }
 
-      if (!wrong1 || !wrong2 || !wrong3) {
-        const smart = generateSmartOptions(questionText, correctAnswer);
-        const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
-        if (!wrong1) wrong1 = fallback[0] || 'Opção B';
-        if (!wrong2) wrong2 = fallback[1] || 'Opção C';
-        if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+      try {
+        const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+        const q = bank.find(item => item.id === qId);
+        if (!q) return;
+
+        const questionText = document.getElementById('editQuizQuestionInput').value.trim();
+        const correctAnswer = document.getElementById('editQuizCorrectAnswerInput').value.trim();
+        let wrong1 = (document.getElementById('editQuizWrong1Input')?.value || '').trim();
+        let wrong2 = (document.getElementById('editQuizWrong2Input')?.value || '').trim();
+        let wrong3 = (document.getElementById('editQuizWrong3Input')?.value || '').trim();
+
+        if (!questionText || !correctAnswer) {
+          alert('Por favor, preencha a pergunta e a resposta correta.');
+          return;
+        }
+
+        if (!wrong1 || !wrong2 || !wrong3) {
+          const smart = generateSmartOptions(questionText, correctAnswer);
+          const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
+          if (!wrong1) wrong1 = fallback[0] || 'Opção B';
+          if (!wrong2) wrong2 = fallback[1] || 'Opção C';
+          if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+        }
+
+        // Redução e compressão automática da imagem (evita estouro de armazenamento)
+        if (quizModalTempImage) {
+          quizModalTempImage = await compressImageSource(quizModalTempImage, 600, 600, 0.78);
+        }
+
+        q.question = questionText;
+        q.image = quizModalTempImage || '';
+        q.options = [correctAnswer, wrong1, wrong2, wrong3];
+        q.correctIndex = 0;
+        delete q.explanation;
+        q._edited = true;
+        q.updatedAt = Date.now();
+
+        window.TKST_AUTH.saveCustomQuizBank(bank);
+        detailModal.removeAttribute('data-prevent-outside-close');
+        detailModal.classList.remove('active');
+        showToast('✅ Questão atualizada e otimizada! Sincronizando...', 'sync');
+        renderAdminMaster();
+      } catch (err) {
+        console.error('Erro ao salvar questão:', err);
+        alert('Ocorreu um erro ao salvar a questão.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHtml;
+        }
       }
-
-      q.question = questionText;
-      q.image = quizModalTempImage || '';
-      q.options = [correctAnswer, wrong1, wrong2, wrong3];
-      q.correctIndex = 0;
-      delete q.explanation;
-      q._edited = true;
-      q.updatedAt = Date.now();
-
-      window.TKST_AUTH.saveCustomQuizBank(bank);
-      detailModal.removeAttribute('data-prevent-outside-close');
-      detailModal.classList.remove('active');
-      showToast('✅ Questão atualizada! Sincronizando com a nuvem...', 'sync');
-      renderAdminMaster();
     },
 
     autoFillWrongOptionsFromInputs: (mode) => {
@@ -6371,43 +6414,67 @@ document.addEventListener('DOMContentLoaded', () => {
       detailModal.classList.add('active');
     },
 
-    submitAddQuizQuestion: (kyu) => {
-      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
-      const questionText = document.getElementById('newQuizQuestionInput').value.trim();
-      const correctAnswer = document.getElementById('newQuizCorrectAnswerInput').value.trim();
-      let wrong1 = (document.getElementById('newQuizWrong1Input')?.value || '').trim();
-      let wrong2 = (document.getElementById('newQuizWrong2Input')?.value || '').trim();
-      let wrong3 = (document.getElementById('newQuizWrong3Input')?.value || '').trim();
-
-      if (!questionText || !correctAnswer) {
-        alert('Por favor, preencha a pergunta e a resposta correta.');
-        return;
+    submitAddQuizQuestion: async (kyu) => {
+      const submitBtn = document.querySelector('#detailModalBody button[type="submit"]');
+      const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Otimizando e Cadastrando...';
       }
 
-      if (!wrong1 || !wrong2 || !wrong3) {
-        const smart = generateSmartOptions(questionText, correctAnswer);
-        const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
-        if (!wrong1) wrong1 = fallback[0] || 'Opção B';
-        if (!wrong2) wrong2 = fallback[1] || 'Opção C';
-        if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+      try {
+        const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+        const questionText = document.getElementById('newQuizQuestionInput').value.trim();
+        const correctAnswer = document.getElementById('newQuizCorrectAnswerInput').value.trim();
+        let wrong1 = (document.getElementById('newQuizWrong1Input')?.value || '').trim();
+        let wrong2 = (document.getElementById('newQuizWrong2Input')?.value || '').trim();
+        let wrong3 = (document.getElementById('newQuizWrong3Input')?.value || '').trim();
+
+        if (!questionText || !correctAnswer) {
+          alert('Por favor, preencha a pergunta e a resposta correta.');
+          return;
+        }
+
+        if (!wrong1 || !wrong2 || !wrong3) {
+          const smart = generateSmartOptions(questionText, correctAnswer);
+          const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
+          if (!wrong1) wrong1 = fallback[0] || 'Opção B';
+          if (!wrong2) wrong2 = fallback[1] || 'Opção C';
+          if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+        }
+
+        // Redução e compressão automática da imagem (evita estouro de armazenamento)
+        if (quizModalTempImage) {
+          quizModalTempImage = await compressImageSource(quizModalTempImage, 600, 600, 0.78);
+        }
+
+        const beltName = getBeltNameFromKyu(kyu);
+        const newQuestion = {
+          id: `q_custom_${kyu}_${Date.now()}`,
+          kyuNumber: kyu,
+          beltName: beltName,
+          question: questionText,
+          image: quizModalTempImage || '',
+          options: [correctAnswer, wrong1, wrong2, wrong3],
+          correctIndex: 0,
+          _edited: true,
+          updatedAt: Date.now()
+        };
+
+        bank.push(newQuestion);
+        window.TKST_AUTH.saveCustomQuizBank(bank);
+        detailModal.classList.remove('active');
+        showToast('✅ Nova questão cadastrada e otimizada! Sincronizando...', 'sync');
+        renderAdminMaster();
+      } catch (err) {
+        console.error('Erro ao cadastrar questão:', err);
+        alert('Ocorreu um erro ao cadastrar a questão.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHtml;
+        }
       }
-
-      const beltName = getBeltNameFromKyu(kyu);
-      const newQuestion = {
-        id: `q_custom_${kyu}_${Date.now()}`,
-        kyuNumber: kyu,
-        beltName: beltName,
-        question: questionText,
-        image: quizModalTempImage || '',
-        options: [correctAnswer, wrong1, wrong2, wrong3],
-        correctIndex: 0
-      };
-
-      bank.push(newQuestion);
-      window.TKST_AUTH.saveCustomQuizBank(bank);
-      detailModal.classList.remove('active');
-      showToast('✅ Nova questão cadastrada! Sincronizando com a nuvem...', 'sync');
-      renderAdminMaster();
     },
 
     handleQuizModalImageUpload: (input) => {
@@ -6416,6 +6483,8 @@ document.addEventListener('DOMContentLoaded', () => {
           quizModalTempImage = dataUrl;
           const previewBox = document.getElementById('quizModalImagePreviewBox');
           const previewImg = document.getElementById('quizModalImagePreview');
+          const urlInput = document.getElementById('quizModalUrlInput');
+          if (urlInput) urlInput.value = '';
           if (previewBox && previewImg) {
             previewImg.src = dataUrl;
             previewBox.style.display = 'block';
@@ -6424,18 +6493,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    handleQuizModalImageUrl: (url) => {
-      const trimmed = url.trim();
-      quizModalTempImage = trimmed;
+    handleQuizModalImageUrl: async (url) => {
+      const trimmed = (url || '').trim();
       const previewBox = document.getElementById('quizModalImagePreviewBox');
       const previewImg = document.getElementById('quizModalImagePreview');
+      if (!trimmed) {
+        quizModalTempImage = '';
+        if (previewBox) previewBox.style.display = 'none';
+        if (previewImg) previewImg.src = '';
+        return;
+      }
       if (previewBox && previewImg) {
-        if (trimmed) {
-          previewImg.src = trimmed;
-          previewBox.style.display = 'block';
-        } else {
-          previewBox.style.display = 'none';
-        }
+        previewImg.src = trimmed;
+        previewBox.style.display = 'block';
+      }
+      if (trimmed.startsWith('data:image/')) {
+        const compressed = await compressImageSource(trimmed, 600, 600, 0.78);
+        quizModalTempImage = compressed;
+        if (previewImg) previewImg.src = compressed;
+      } else {
+        quizModalTempImage = trimmed;
       }
     },
 
