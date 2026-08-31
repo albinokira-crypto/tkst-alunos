@@ -38,8 +38,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1787778376585,
-      "statusUpdatedAt": 1787778376585,
+      "updatedAt": 1788197351002,
+      "statusUpdatedAt": 1788197351002,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -482,6 +482,27 @@
       "statusUpdatedAt": 1787604141657,
       "phone": "21966124627",
       "notes": "Novo cadastro realizado pelo portal."
+    },
+    {
+      "id": "std_1788197460590_w39u4",
+      "username": "nathaliamagalhaesproenca@gmail.com",
+      "email": "nathaliamagalhaesproenca@gmail.com@tkst.local",
+      "password": "031013",
+      "name": "Nathalia Magalhaes Proença",
+      "role": "aluno",
+      "currentBelt": "Faixa Vermelha (5º Kyu)",
+      "targetBelt": "Faixa Preta",
+      "currentKyu": 5,
+      "dojo": "TKST Santo Aleixo",
+      "startDate": "2026-08-31",
+      "avatar": "assets/images/logo-tkst.png",
+      "status": "pending",
+      "approvedAt": null,
+      "createdAt": "2026-08-31T17:31:00.600Z",
+      "updatedAt": 1788197460600,
+      "statusUpdatedAt": 1788197460600,
+      "phone": "21 988516728",
+      "notes": "Novo cadastro realizado pelo portal."
     }
   ],
   "deletedStudentIds": [
@@ -500,5 +521,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1787778493270
+  "updatedAt": 1788197461491
 }
