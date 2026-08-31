@@ -425,8 +425,8 @@
     },
     {
       "id": "std_1787268943201_fpw5o",
-      "username": "vida",
-      "email": "vida@tkst.local",
+      "username": "flamengo",
+      "email": "flamengo@tkst.local",
       "password": "240614",
       "name": "Nicolly ferreira de Souza",
       "role": "aluno",
@@ -437,10 +437,10 @@
       "startDate": "2026-08-20",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "approvedAt": "2026-08-31T22:51:47.161Z",
+      "approvedAt": "2026-08-31T22:52:08.113Z",
       "createdAt": "2026-08-20T23:35:43.204Z",
-      "updatedAt": 1788216707161,
-      "statusUpdatedAt": 1788216707161,
+      "updatedAt": 1788216728113,
+      "statusUpdatedAt": 1788216728113,
       "phone": "5521997096186",
       "notes": "Novo cadastro realizado pelo portal. [Auto-aprovado: Aluno reconhecido na base]",
       "lastActive": 1787778518141
@@ -527,5 +527,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788216708378
+  "updatedAt": 1788216729447
 }
