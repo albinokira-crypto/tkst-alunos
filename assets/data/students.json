@@ -19,7 +19,7 @@
       "phone": "(21) 972114674",
       "notes": "Administrador Master responsável por todo o sistema, arquivos e aprovações.",
       "password": "Irons365.",
-      "lastActive": 1787778485975,
+      "lastActive": 1788199360978,
       "statusUpdatedAt": 1786925884100
     },
     {
@@ -38,8 +38,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1788197351002,
-      "statusUpdatedAt": 1788197351002,
+      "updatedAt": 1788199357612,
+      "statusUpdatedAt": 1788199357612,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -143,7 +143,8 @@
       "updatedAt": 1787521212135,
       "statusUpdatedAt": 1787521212135,
       "phone": "21985684113",
-      "notes": "Novo cadastro realizado pelo portal."
+      "notes": "Novo cadastro realizado pelo portal.",
+      "lastActive": 1787784550136
     },
     {
       "id": "std_1786907524940",
@@ -439,7 +440,8 @@
       "updatedAt": 1787778492661,
       "statusUpdatedAt": 1787778492661,
       "phone": "5521997096186",
-      "notes": "Novo cadastro realizado pelo portal."
+      "notes": "Novo cadastro realizado pelo portal.",
+      "lastActive": 1787778518141
     },
     {
       "id": "std_1787271943441_o09zl",
@@ -460,7 +462,8 @@
       "updatedAt": 1787272026092,
       "statusUpdatedAt": 1787272026092,
       "phone": "21995540589",
-      "notes": "Novo cadastro realizado pelo portal."
+      "notes": "Novo cadastro realizado pelo portal.",
+      "lastActive": 1787840248219
     },
     {
       "id": "std_1787604092193_useog",
@@ -496,11 +499,11 @@
       "dojo": "TKST Santo Aleixo",
       "startDate": "2026-08-31",
       "avatar": "assets/images/logo-tkst.png",
-      "status": "pending",
-      "approvedAt": null,
+      "status": "approved",
+      "approvedAt": "2026-08-31T18:02:48.992Z",
       "createdAt": "2026-08-31T17:31:00.600Z",
-      "updatedAt": 1788197460600,
-      "statusUpdatedAt": 1788197460600,
+      "updatedAt": 1788199368996,
+      "statusUpdatedAt": 1788199368996,
       "phone": "21 988516728",
       "notes": "Novo cadastro realizado pelo portal."
     }
@@ -521,5 +524,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788197461491
+  "updatedAt": 1788199369338
 }
