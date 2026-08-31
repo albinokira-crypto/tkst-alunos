@@ -38,8 +38,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1788199357612,
-      "statusUpdatedAt": 1788199357612,
+      "updatedAt": 1788216350232,
+      "statusUpdatedAt": 1788216350232,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -60,7 +60,7 @@
       "phone": "21981617690",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1786929020214,
+      "updatedAt": 1787239364414,
       "lastActive": 1787427593918
     },
     {
@@ -101,7 +101,7 @@
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1786998590369,
       "statusUpdatedAt": 1,
-      "updatedAt": 1787002858209
+      "updatedAt": 1787239364414
     },
     {
       "id": "std_1787351605155_g3rqr",
@@ -144,7 +144,7 @@
       "statusUpdatedAt": 1787521212135,
       "phone": "21985684113",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1787784550136
+      "lastActive": 1787784685564
     },
     {
       "id": "std_1786907524940",
@@ -202,7 +202,9 @@
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
       "phone": "21979822652",
-      "notes": "Novo cadastro realizado pelo portal."
+      "notes": "Novo cadastro realizado pelo portal.",
+      "statusUpdatedAt": 1,
+      "updatedAt": 1787239626358
     },
     {
       "id": "std_1786982056436_rcskv",
@@ -423,9 +425,9 @@
     },
     {
       "id": "std_1787268943201_fpw5o",
-      "username": "nick",
-      "email": "nicollyferreiradesouza14@gmail.com@tkst.local",
-      "password": "2014@",
+      "username": "colly",
+      "email": "colly@tkst.local",
+      "password": "240614",
       "name": "Nicolly ferreira de Souza",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -435,12 +437,12 @@
       "startDate": "2026-08-20",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "approvedAt": "2026-08-20T23:37:00.322Z",
+      "approvedAt": "2026-08-31T22:46:55.220Z",
       "createdAt": "2026-08-20T23:35:43.204Z",
-      "updatedAt": 1787778492661,
-      "statusUpdatedAt": 1787778492661,
+      "updatedAt": 1788216415223,
+      "statusUpdatedAt": 1788216415223,
       "phone": "5521997096186",
-      "notes": "Novo cadastro realizado pelo portal.",
+      "notes": "Novo cadastro realizado pelo portal. [Auto-aprovado: Aluno reconhecido na base]",
       "lastActive": 1787778518141
     },
     {
@@ -505,7 +507,8 @@
       "updatedAt": 1788199368996,
       "statusUpdatedAt": 1788199368996,
       "phone": "21 988516728",
-      "notes": "Novo cadastro realizado pelo portal."
+      "notes": "Novo cadastro realizado pelo portal.",
+      "lastActive": 1788213312681
     }
   ],
   "deletedStudentIds": [
@@ -524,5 +527,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788199369338
+  "updatedAt": 1788216416825
 }
