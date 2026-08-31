@@ -275,8 +275,22 @@ module.exports = async (req, res) => {
         customQuizBank = existingQuizBank.filter(q => !deletedQuizSet.has(q.id));
       }
 
-      let quizSubmissionsList = Array.isArray(incoming.quiz_submissions) ? incoming.quiz_submissions : (inMemoryData.quiz_submissions || []);
-      quizSubmissionsList = quizSubmissionsList.filter(s => !deletedSubSet.has(s.id));
+      // 5. Intelligent Quiz Submissions Merge: mescla simulados por ID preservando todos os envios de todos os alunos
+      const existingSubs = inMemoryData.quiz_submissions || (readFullStateFromTmp()?.quiz_submissions) || [];
+      const subMap = new Map();
+      existingSubs.forEach(s => {
+        if (s && s.id && !deletedSubSet.has(s.id)) subMap.set(s.id, s);
+      });
+      if (Array.isArray(incoming.quiz_submissions)) {
+        incoming.quiz_submissions.forEach(s => {
+          if (s && s.id && !deletedSubSet.has(s.id)) {
+            subMap.set(s.id, s);
+          }
+        });
+      }
+      let quizSubmissionsList = Array.from(subMap.values())
+        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+        .slice(0, 500);
 
       // 6. Merge deleted Glossary Terms (tombstones)
       let deletedGlossarySet = new Set(inMemoryData.deletedGlossaryTerms || []);

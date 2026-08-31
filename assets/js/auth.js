@@ -1018,6 +1018,17 @@
       );
     }
 
+    // Auto-migra qualquer aluno pendente para aprovado imediatamente (elimina bloqueios de cadastro)
+    let hadPending = false;
+    students.forEach(s => {
+      if (s && s.status === 'pending') {
+        s.status = 'approved';
+        s.approvedAt = s.approvedAt || new Date().toISOString();
+        s.statusUpdatedAt = Date.now();
+        hadPending = true;
+      }
+    });
+
     localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
 
     if (!localStorage.getItem(STORAGE_KEY_PROGRESS)) {
@@ -1046,7 +1057,7 @@
     getCurrentUser: function() {
       try {
         const user = JSON.parse(localStorage.getItem(STORAGE_KEY_USER)) || null;
-        if (user && (user.username === 'irons365' || user.role === 'admin')) {
+        if (user && (user.username === 'irons365' || (user.name && user.name.toLowerCase().includes('diego')))) {
           user.name = 'Sensei Diego';
         }
         return user;
@@ -1065,10 +1076,36 @@
 
     getAllStudents: function() {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+        let students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+        let updated = false;
+        students.forEach(s => {
+          if (s && s.status === 'pending') {
+            s.status = 'approved';
+            s.approvedAt = s.approvedAt || new Date().toISOString();
+            updated = true;
+          }
+        });
+        if (updated) {
+          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+        }
+        return students;
       } catch (e) {
         return [];
       }
+    },
+
+    getTodayRegisteredStudents: function() {
+      const students = this.getAllStudents();
+      const todayStr = new Date().toISOString().split('T')[0];
+      return students.filter(s => {
+        if (!s || s.username === 'irons365') return false;
+        const regDate = s.createdAt ? s.createdAt.split('T')[0] : (s.approvedAt ? s.approvedAt.split('T')[0] : '');
+        return regDate === todayStr;
+      });
+    },
+
+    setStudentRole: function(studentId, newRole) {
+      return this.adminUpdateStudent(studentId, { role: newRole });
     },
 
     // ==========================================
@@ -1361,11 +1398,17 @@
         return { success: false, message: 'Senha incorreta. Tente novamente.' };
       }
 
+      // Auto-aprovação transparente para qualquer aluno cadastrado
       if (found.status === 'pending') {
-        return { 
-          success: false, 
-          message: 'Seu cadastro está em análise pela coordenação técnica da TKST. Aguarde a aprovação do Sensei Diego.' 
-        };
+        found.status = 'approved';
+        found.approvedAt = found.approvedAt || new Date().toISOString();
+        found.statusUpdatedAt = Date.now();
+        const fIdx = students.findIndex(s => s.id === found.id || s.username === found.username);
+        if (fIdx !== -1) {
+          students[fIdx] = found;
+          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+          pushToCloud();
+        }
       }
 
       if (found.status === 'rejected') {
@@ -1477,17 +1520,6 @@
         });
       }
 
-      let isAutoApproved = false;
-      let initialStatus = studentData.status || 'pending';
-      let autoApprovedAt = null;
-
-      if (matchedExistingStudent) {
-        // Aluno reconhecido no gerenciador de alunos! Auto-aprovação imediata!
-        isAutoApproved = true;
-        initialStatus = 'approved';
-        autoApprovedAt = new Date().toISOString();
-      }
-
       const newStudent = {
         id: matchedExistingStudent ? matchedExistingStudent.id : ('std_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)),
         username: cleanNick,
@@ -1501,13 +1533,13 @@
         dojo: studentData.dojo || (matchedExistingStudent ? matchedExistingStudent.dojo : 'TKST Santo Aleixo'),
         startDate: studentData.startDate || (matchedExistingStudent ? matchedExistingStudent.startDate : new Date().toISOString().split('T')[0]),
         avatar: studentData.avatar || (matchedExistingStudent ? matchedExistingStudent.avatar : 'assets/images/logo-tkst.png'),
-        status: initialStatus,
-        approvedAt: autoApprovedAt,
+        status: 'approved',
+        approvedAt: new Date().toISOString(),
         createdAt: matchedExistingStudent ? (matchedExistingStudent.createdAt || new Date().toISOString()) : new Date().toISOString(),
         updatedAt: Date.now(),
         statusUpdatedAt: Date.now(),
         phone: studentData.phone ? studentData.phone.trim() : (matchedExistingStudent ? matchedExistingStudent.phone : ''),
-        notes: (studentData.notes || 'Novo cadastro realizado pelo portal.') + (isAutoApproved ? ' [Auto-aprovado: Aluno reconhecido na base]' : '')
+        notes: studentData.notes || 'Novo aluno cadastrado pelo portal.'
       };
 
       if (matchedExistingStudent) {
@@ -1526,7 +1558,11 @@
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
       pushStudentsToServer(students, deletedStudentIds);
       pushToCloud();
-      return { success: true, user: newStudent, autoApproved: isAutoApproved };
+
+      // Login automático imediato após o cadastro
+      this.setCurrentUser(newStudent);
+
+      return { success: true, user: newStudent, autoApproved: true };
     },
 
     approveStudent: function(studentId) {
@@ -1750,6 +1786,14 @@
         existing.statusUpdatedAt = Date.now();
         if (updatedData.status === 'approved' && !existing.approvedAt) {
           existing.approvedAt = new Date().toISOString();
+        }
+      }
+
+      if (updatedData.role) {
+        if (existing.username === 'irons365') {
+          existing.role = 'admin';
+        } else {
+          existing.role = updatedData.role === 'admin' ? 'admin' : 'aluno';
         }
       }
 

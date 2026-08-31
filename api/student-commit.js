@@ -154,17 +154,23 @@ module.exports = async (req, res) => {
 
       incomingStudents.forEach(s => {
         if (!s || !s.id || deletedSet.has(s.id)) return;
+        const studentObj = { ...s };
+        if (studentObj.status === 'pending') {
+          studentObj.status = 'approved';
+          studentObj.approvedAt = studentObj.approvedAt || new Date().toISOString();
+        }
         const existing = studentMap.get(s.id);
         if (!existing) {
-          studentMap.set(s.id, s);
+          studentMap.set(s.id, studentObj);
         } else {
-          const merged = { ...existing, ...s };
-          // Preserva status mais recente
+          const merged = { ...existing, ...studentObj };
           const exStatusTime = existing.statusUpdatedAt || 0;
-          const inStatusTime = s.statusUpdatedAt || 0;
-          if (exStatusTime > inStatusTime) {
+          const inStatusTime = studentObj.statusUpdatedAt || 0;
+          if (exStatusTime > inStatusTime && existing.status !== 'pending') {
             merged.status = existing.status;
             merged.statusUpdatedAt = exStatusTime;
+          } else {
+            merged.status = studentObj.status || 'approved';
           }
           studentMap.set(s.id, merged);
         }
