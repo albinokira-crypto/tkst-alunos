@@ -6,13 +6,17 @@
 let deferredInstallPrompt = null;
 
 function isAppInstalled() {
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                       window.navigator.standalone === true ||
-                       document.referrer.includes('android-app://') ||
-                       window.matchMedia('(display-mode: fullscreen)').matches ||
-                       window.matchMedia('(display-mode: minimal-ui)').matches ||
-                       localStorage.getItem('tkst_pwa_installed') === 'true';
-  return isStandalone;
+  try {
+    const isStandalone = (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches || 
+                                               window.matchMedia('(display-mode: fullscreen)').matches || 
+                                               window.matchMedia('(display-mode: minimal-ui)').matches)) || 
+                         window.navigator.standalone === true ||
+                         (document.referrer && document.referrer.includes('android-app://')) ||
+                         localStorage.getItem('tkst_pwa_installed') === 'true';
+    return !!isStandalone;
+  } catch (e) {
+    return false;
+  }
 }
 
 function updateInstallPromptsVisibility() {
@@ -2222,9 +2226,10 @@ document.addEventListener('DOMContentLoaded', () => {
       let totalWrong = 0;
       let testsTaken = 0;
 
+      const firstName = (student.fullName || 'Aluno').split(' ')[0] || 'Aluno';
       const normStdName = (student.fullName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       const normStdUser = (student.username || '').toLowerCase().trim();
-      const stdFirstName = student.firstName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const stdFirstName = firstName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
       const studentSubs = submissions.filter(sub => {
         if (!sub) return false;
@@ -2259,7 +2264,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const netPoints = totalCorrect - totalWrong;
-      const firstName = student.fullName.split(' ')[0];
 
       return {
         id: student.id,
