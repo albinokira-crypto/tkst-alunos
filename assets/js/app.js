@@ -1792,9 +1792,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 Gabarito, acertos, erros e percentual de aprovação de cada aluno.
               </div>
             </div>
-            <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600;">
-              ${quizSubmissions.length} prova(s) registrada(s)
-            </span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_AUTH.pullQuizSubmissionsFromCloud().then(() => renderAdminMaster())" style="font-size: 0.78rem; padding: 6px 12px; color: var(--accent-gold); border-color: rgba(255, 183, 3, 0.4); display: inline-flex; align-items: center; gap: 6px;" title="Buscar os simulados mais recentes salvos na nuvem">
+                <i class="fas fa-sync-alt"></i> Atualizar da Nuvem
+              </button>
+              <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600;">
+                ${quizSubmissions.length} prova(s) registrada(s)
+              </span>
+            </div>
           </div>
 
           ${quizSubmissions.length === 0 ? `
@@ -2217,10 +2222,22 @@ document.addEventListener('DOMContentLoaded', () => {
       let totalWrong = 0;
       let testsTaken = 0;
 
+      const normStdName = (student.fullName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const normStdUser = (student.username || '').toLowerCase().trim();
+      const stdFirstName = student.firstName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
       const studentSubs = submissions.filter(sub => {
-        return (sub.studentId && (sub.studentId === student.id || sub.studentId === student.username)) ||
-               (sub.studentUsername && (sub.studentUsername === student.username || sub.studentUsername === student.id)) ||
-               (sub.studentName && sub.studentName.toLowerCase().trim() === student.fullName.toLowerCase().trim());
+        if (!sub) return false;
+        const normSubName = (sub.studentName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        const normSubUser = (sub.studentUsername || '').toLowerCase().trim();
+        const subId = (sub.studentId || '').trim();
+
+        if (subId && (subId === student.id || subId === student.username)) return true;
+        if (normSubUser && (normSubUser === normStdUser || normSubUser === student.id)) return true;
+        if (normSubName && normStdName && (normSubName === normStdName || normSubName.includes(normStdName) || normStdName.includes(normSubName))) return true;
+        if (normSubName && stdFirstName && normSubName.startsWith(stdFirstName)) return true;
+
+        return false;
       });
 
       if (studentSubs.length > 0) {
@@ -5749,6 +5766,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setAdminSubTab: (subTab) => {
       adminSubTab = subTab;
       renderAdminMaster();
+      if (subTab === 'quizzes' && window.TKST_AUTH && window.TKST_AUTH.pullQuizSubmissionsFromCloud) {
+        window.TKST_AUTH.pullQuizSubmissionsFromCloud().then(() => {
+          if (adminSubTab === 'quizzes') renderAdminMaster();
+        }).catch(() => {});
+      }
     },
     selectBelt: (kyu) => {
       selectedBeltKyu = kyu;

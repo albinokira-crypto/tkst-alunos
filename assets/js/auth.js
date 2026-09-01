@@ -432,6 +432,104 @@
     }
   }
 
+  // =========================================================================
+  // QUIZ SUBMISSIONS PERMANENT CLOUD SYNC & GITHUB STORAGE
+  // =========================================================================
+  async function pullQuizSubmissionsFromCloud() {
+    try {
+      const deletedSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+      const deletedSet = new Set(deletedSubIds);
+      let fetchedSubs = null;
+
+      // 1. Tenta endpoint dedicado /api/submission-commit (GitHub API)
+      try {
+        const res = await fetch('/api/submission-commit', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.success && json.data && Array.isArray(json.data.quiz_submissions) && json.data.quiz_submissions.length > 0) {
+            fetchedSubs = json.data.quiz_submissions;
+            if (Array.isArray(json.data.deletedQuizSubIds)) {
+              json.data.deletedQuizSubIds.forEach(id => deletedSet.add(id));
+            }
+          }
+        }
+      } catch(e) {}
+
+      // 2. Tenta carregar diretamente do GitHub Raw (dados permanentes sem cache)
+      if (!fetchedSubs) {
+        try {
+          const rawUrl = 'https://raw.githubusercontent.com/albinokira-crypto/tkst-alunos/main/assets/data/submissions.json?_=' + Date.now();
+          const rawRes = await fetch(rawUrl, { cache: 'no-store' });
+          if (rawRes.ok) {
+            const rawJson = await rawRes.json();
+            if (rawJson && Array.isArray(rawJson.quiz_submissions) && rawJson.quiz_submissions.length > 0) {
+              fetchedSubs = rawJson.quiz_submissions;
+              if (Array.isArray(rawJson.deletedQuizSubIds)) {
+                rawJson.deletedQuizSubIds.forEach(id => deletedSet.add(id));
+              }
+            }
+          }
+        } catch(e) {}
+      }
+
+      // 3. Tenta carregar assets/data/submissions.json diretamente (CDN/Vercel)
+      if (!fetchedSubs) {
+        try {
+          const res = await fetch('./assets/data/submissions.json?_=' + Date.now(), { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && Array.isArray(json.quiz_submissions)) {
+              fetchedSubs = json.quiz_submissions;
+              if (Array.isArray(json.deletedQuizSubIds)) {
+                json.deletedQuizSubIds.forEach(id => deletedSet.add(id));
+              }
+            }
+          }
+        } catch(e) {}
+      }
+
+      if (Array.isArray(fetchedSubs)) {
+        const finalDeleted = Array.from(deletedSet);
+        localStorage.setItem(STORAGE_KEY_DELETED_QUIZ_SUBS, JSON.stringify(finalDeleted));
+
+        const localSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+        const subMap = new Map();
+        localSubs.forEach(s => {
+          if (s && s.id && !deletedSet.has(s.id)) subMap.set(s.id, s);
+        });
+        fetchedSubs.forEach(s => {
+          if (s && s.id && !deletedSet.has(s.id)) subMap.set(s.id, s);
+        });
+
+        const mergedSubs = Array.from(subMap.values())
+          .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+          .slice(0, 500);
+
+        localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(mergedSubs));
+        window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: mergedSubs }));
+      }
+    } catch(err) {
+      console.warn('Quiz submissions pull notice:', err);
+    }
+  }
+
+  async function pushQuizSubmissionsToServer(submissions, deletedIds) {
+    if (!Array.isArray(submissions)) return;
+    const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || []);
+    try {
+      fetch('/api/submission-commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quiz_submissions: submissions,
+          deletedQuizSubIds: deleted
+        })
+      }).catch(() => {});
+    } catch(err) {
+      console.warn('Quiz submissions server commit notice:', err);
+    }
+  }
+
   async function pushToCloud() {
     if (isSyncing) {
       syncPending = true;
@@ -807,10 +905,13 @@
       // 2. Endpoint dedicado de alunos permanentes no GitHub
       pullStudentsFromCloud().catch(() => {});
 
-      // 3. Endpoint dedicado de glossário japonês permanente no GitHub
+      // 3. Endpoint dedicado de simulados permanentes no GitHub
+      pullQuizSubmissionsFromCloud().catch(() => {});
+
+      // 4. Endpoint dedicado de glossário japonês permanente no GitHub
       pullGlossaryFromCloud().catch(() => {});
 
-      // 3. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
+      // 5. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
       try {
         const apiRes = await fetch('/api/sync', { cache: 'no-store' });
         if (apiRes.ok) {
@@ -1048,6 +1149,10 @@
 
     pullStudentsFromCloud: function() {
       return pullStudentsFromCloud();
+    },
+
+    pullQuizSubmissionsFromCloud: function() {
+      return pullQuizSubmissionsFromCloud();
     },
 
     pushNow: function() {
@@ -2001,9 +2106,11 @@
       };
 
       submissions.unshift(submission);
-      if (submissions.length > 200) submissions = submissions.slice(0, 200);
+      if (submissions.length > 500) submissions = submissions.slice(0, 500);
       localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
 
+      const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+      pushQuizSubmissionsToServer(submissions, deletedQuizSubIds);
       pushToCloud();
       return submission;
     },
@@ -2012,7 +2119,7 @@
       try {
         const deletedSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
         const subs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
-        return subs.filter(s => !deletedSubIds.includes(s.id));
+        return subs.filter(s => s && s.id && !deletedSubIds.includes(s.id));
       } catch(e) {
         return [];
       }
@@ -2028,6 +2135,7 @@
       let submissions = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => s.id !== subId);
       localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
 
+      pushQuizSubmissionsToServer(submissions, deletedSubs);
       pushToCloud();
       return { success: true, remaining: submissions.length };
     },
