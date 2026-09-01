@@ -2414,80 +2414,81 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Dashboard 2-Column Grid: Coluna Esquerda (Dojo Kun + Ranking) & Coluna Direita (Niju Kun) -->
-      <div class="dashboard-columns-grid">
-        <!-- Coluna Esquerda: Dojo Kun e Ranking do Simulado alinhados -->
-        <div class="dashboard-col-left">
-          <!-- 1. Dojo Kun -->
-          <div class="kun-compact-card gold-theme" onclick="window.TKST_APP.openDojoKunModal()" title="Toque para ver o Dojo Kun completo">
-            <div class="kun-card-top">
-              <div class="kun-title-box">
-                <div class="kun-icon">
-                  <i class="fas fa-scroll"></i>
-                </div>
-                <div style="min-width: 0;">
-                  <h3 class="kun-name">Dojo Kun</h3>
-                  <span class="kun-kanji">道場訓</span>
-                </div>
+      <!-- Filosofia & Princípios (Dojo Kun e Niju Kun lado a lado) -->
+      <div class="dashboard-kun-grid">
+        <!-- 1. Dojo Kun -->
+        <div class="kun-compact-card gold-theme" onclick="window.TKST_APP.openDojoKunModal()" title="Toque para ver o Dojo Kun completo">
+          <div class="kun-card-top">
+            <div class="kun-title-box">
+              <div class="kun-icon">
+                <i class="fas fa-scroll"></i>
               </div>
-              <span class="kun-btn-view">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
-            </div>
-          </div>
-
-          <!-- Ranking do Simulado Retrátil (Embaixo do Dojo Kun e alinhado na mesma coluna) -->
-          <div class="stat-card ranking-card">
-            <div class="ranking-header">
-              <div class="ranking-header-title">
-                <div class="ranking-header-icon">
-                  <i class="fas fa-trophy"></i>
-                </div>
-                <div style="min-width: 0;">
-                  <h3 class="ranking-title">Ranking do Simulado</h3>
-                  <p class="ranking-subtitle">Top 10 • Acerto +1 | Erro -1</p>
-                </div>
+              <div style="min-width: 0;">
+                <h3 class="kun-name">Dojo Kun</h3>
+                <span class="kun-kanji">道場訓</span>
               </div>
             </div>
-
-            <div class="ranking-list">
-              ${top10Leaderboard.length === 0 ? `
-                <div style="padding: 16px 10px; text-align: center; color: #64748B; font-size: 0.74rem;">
-                  <i class="fas fa-medal" style="font-size: 1.4rem; color: var(--accent-gold); margin-bottom: 4px; display: block; opacity: 0.6;"></i>
-                  Nenhum aluno classificado ainda.<br>Faça um simulado para liderar o ranking!
-                </div>
-              ` : top10Leaderboard.map((item, idx) => `
-                <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
-                  <div class="ranking-row-left">
-                    <span class="ranking-pos-num">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}</span>
-                    <span class="ranking-student-name" title="${item.fullName}">${item.firstName}</span>
-                    <span class="ranking-dot">•</span>
-                    <span class="ranking-student-dojo" title="${item.dojo}">${item.dojo}</span>
-                  </div>
-                  <div class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
-                    ${item.points > 0 ? '+' : ''}${item.points} pts
-                  </div>
-                </div>
-              `).join('')}
-            </div>
+            <span class="kun-btn-view">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
           </div>
         </div>
 
-        <!-- Coluna Direita: Niju Kun -->
-        <div class="dashboard-col-right">
-          <!-- 2. Niju Kun -->
-          <div class="kun-compact-card crimson-theme" onclick="window.TKST_APP.openNijuKunModal()" title="Toque para ver os 20 Preceitos de Gichin Funakoshi">
-            <div class="kun-card-top">
-              <div class="kun-title-box">
-                <div class="kun-icon crimson">
-                  <i class="fas fa-torii-gate"></i>
-                </div>
-                <div style="min-width: 0;">
-                  <h3 class="kun-name">Niju Kun</h3>
-                  <span class="kun-kanji">二十条</span>
-                </div>
+        <!-- 2. Niju Kun -->
+        <div class="kun-compact-card crimson-theme" onclick="window.TKST_APP.openNijuKunModal()" title="Toque para ver os 20 Preceitos de Gichin Funakoshi">
+          <div class="kun-card-top">
+            <div class="kun-title-box">
+              <div class="kun-icon crimson">
+                <i class="fas fa-torii-gate"></i>
               </div>
-              <span class="kun-btn-view crimson">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
+              <div style="min-width: 0;">
+                <h3 class="kun-name">Niju Kun</h3>
+                <span class="kun-kanji">二十条</span>
+              </div>
+            </div>
+            <span class="kun-btn-view crimson">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranking do Simulado (Largura Total 100% sem estouro de informações) -->
+      <div class="stat-card ranking-card">
+        <div class="ranking-header">
+          <div class="ranking-header-title">
+            <div class="ranking-header-icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <div style="min-width: 0;">
+              <h3 class="ranking-title">Ranking Oficial do Simulado</h3>
+              <p class="ranking-subtitle">Top Classificação TKST • Acerto +1 pt | Erro -1 pt</p>
             </div>
           </div>
+          <div class="ranking-header-tag">
+            <i class="fas fa-award"></i> Oficial
+          </div>
+        </div>
+
+        <div class="ranking-list">
+          ${top10Leaderboard.length === 0 ? `
+            <div style="padding: 18px 12px; text-align: center; color: #64748B; font-size: 0.80rem;">
+              <i class="fas fa-medal" style="font-size: 1.6rem; color: var(--accent-gold); margin-bottom: 6px; display: block; opacity: 0.6;"></i>
+              Nenhum aluno classificado ainda.<br>Faça um simulado teórico para liderar o ranking!
+            </div>
+          ` : top10Leaderboard.map((item, idx) => `
+            <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
+              <div class="ranking-row-left">
+                <span class="ranking-pos-num">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}</span>
+                <span class="ranking-student-name" title="${item.fullName}">${item.fullName}</span>
+                <span class="ranking-belt-badge">${item.currentBelt}</span>
+                <span class="ranking-dot">•</span>
+                <span class="ranking-student-dojo" title="${item.dojo}"><i class="fas fa-landmark" style="font-size: 0.60rem; opacity: 0.7; margin-right: 3px;"></i>${item.dojo}</span>
+              </div>
+              <div class="ranking-row-right">
+                <span class="ranking-stat-pill"><i class="fas fa-check-circle" style="color: #34D399; font-size: 0.68rem; margin-right: 3px;"></i>${item.totalCorrect} acertos</span>
+                <div class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
+                  ${item.points > 0 ? '+' : ''}${item.points} pts
+                </div>
+              </div>
+            </div>
+          `).join('')}
         </div>
       </div>
     `;
@@ -7668,19 +7669,12 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (categoryKey && glossary[categoryKey]) {
         term = glossary[categoryKey].find(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim());
       }
-      if (!term) {
-        const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
-        for (const c of cats) {
-          const found = (glossary[c] || []).find(t => t.japanese.toLowerCase().trim() === (japaneseName || '').toLowerCase().trim());
-          if (found) {
-            term = found;
-            break;
-          }
-        }
+      if (!term || !term.videoUrl || !term.videoUrl.trim()) {
+        alert(`O termo "${japaneseName}" ainda não possui vídeo cadastrado.`);
+        return;
       }
-      const title = term ? `${term.japanese} - ${term.meaning}` : japaneseName;
-      const effectiveVideoSource = (term && term.videoUrl) ? term.videoUrl : `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent('karate shotokan ' + (term ? term.japanese : japaneseName))}&rel=0&playsinline=1&modestbranding=1`;
-      openVideoModal(title, effectiveVideoSource);
+      const title = `${term.japanese} - ${term.meaning}`;
+      openVideoModal(title, term.videoUrl.trim());
     },
 
     // Dojo Handlers
@@ -7944,8 +7938,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const modalBody = document.getElementById('detailModalBody');
       const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
 
-      const effectiveVideoSource = term.videoUrl ? term.videoUrl : `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent('karate shotokan ' + term.japanese)}&rel=0&playsinline=1&modestbranding=1`;
-      const embed = getEmbedUrl(effectiveVideoSource);
+      const hasVideo = !!(term.videoUrl && term.videoUrl.trim().length > 0);
+      const embed = hasVideo ? getEmbedUrl(term.videoUrl.trim()) : null;
 
       modalTitle.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -7992,8 +7986,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             </div>
           </div>
 
-          <!-- Media Grid: Illustrated Movement + Video Demonstration (Direct In-App Players) -->
-          <div class="technique-media-grid">
+          <!-- Media Grid: Illustrated Movement + Video Demonstration (Apenas se houver vídeo cadastrado) -->
+          <div class="technique-media-grid" style="${hasVideo ? '' : 'grid-template-columns: 1fr;'}">
             
             <!-- Illustrated Movement / GIF Card -->
             <div class="technique-media-card" style="padding: 10px 12px;">
@@ -8017,29 +8011,31 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               </div>
             </div>
 
-            <!-- Video Demonstration Card (Direct in-app playback) -->
-            <div class="technique-media-card" style="padding: 10px 12px;">
-              <div style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span style="display: inline-flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-video" style="color: var(--accent-crimson);"></i> Vídeo Oficial
-                </span>
-                <span class="badge badge-amarela" style="font-size: 0.62rem; padding: 1px 5px;">Vídeo no Sistema</span>
-              </div>
+            ${hasVideo && embed ? `
+              <!-- Video Demonstration Card (Direct in-app playback) -->
+              <div class="technique-media-card" style="padding: 10px 12px;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                  <span style="display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-video" style="color: var(--accent-crimson);"></i> Vídeo Oficial
+                  </span>
+                  <span class="badge badge-amarela" style="font-size: 0.62rem; padding: 1px 5px;">Vídeo no Sistema</span>
+                </div>
 
-              <div class="modal-video-wrapper" style="margin-bottom: 8px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
-                ${embed.type === 'video' ? `
-                  <video src="${embed.url}" controls playsinline webkit-playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
-                    Seu navegador não suporta este formato de vídeo.
-                  </video>
-                ` : `
-                  <iframe src="${embed.url}" title="${term.japanese}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                `}
-              </div>
+                <div class="modal-video-wrapper" style="margin-bottom: 8px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
+                  ${embed.type === 'video' ? `
+                    <video src="${embed.url}" controls playsinline webkit-playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
+                      Seu navegador não suporta este formato de vídeo.
+                    </video>
+                  ` : `
+                    <iframe src="${embed.url}" title="${term.japanese}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                  `}
+                </div>
 
-              <button type="button" class="btn" onclick="window.TKST_APP.openVideoModal('${term.japanese.replace(/'/g, "\\'")}', '${effectiveVideoSource.replace(/'/g, "\\'")}')" style="width: 100%; font-size: 0.78rem; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; background: #DC2626; color: #FFF; font-weight: 700; border: none; border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35); cursor: pointer;">
-                <i class="fas fa-expand"></i> Assistir Expandido
-              </button>
-            </div>
+                <button type="button" class="btn" onclick="window.TKST_APP.openVideoModal('${term.japanese.replace(/'/g, "\\'")}', '${term.videoUrl.trim().replace(/'/g, "\\'")}')" style="width: 100%; font-size: 0.78rem; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; background: #DC2626; color: #FFF; font-weight: 700; border: none; border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35); cursor: pointer;">
+                  <i class="fas fa-expand"></i> Assistir Expandido
+                </button>
+              </div>
+            ` : ''}
 
           </div>
 
