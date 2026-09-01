@@ -435,6 +435,9 @@
   // =========================================================================
   // QUIZ SUBMISSIONS PERMANENT CLOUD SYNC & GITHUB STORAGE
   // =========================================================================
+  // =========================================================================
+  // QUIZ SUBMISSIONS PERMANENT CLOUD SYNC & GITHUB STORAGE
+  // =========================================================================
   async function pullQuizSubmissionsFromCloud() {
     try {
       const deletedSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
@@ -488,26 +491,109 @@
         } catch(e) {}
       }
 
-      if (Array.isArray(fetchedSubs)) {
-        const finalDeleted = Array.from(deletedSet);
-        localStorage.setItem(STORAGE_KEY_DELETED_QUIZ_SUBS, JSON.stringify(finalDeleted));
+      // 4. Tenta carregar do endpoint /api/sync
+      if (!fetchedSubs) {
+        try {
+          const syncRes = await fetch('/api/sync', { cache: 'no-store' });
+          if (syncRes.ok) {
+            const syncJson = await syncRes.json();
+            if (syncJson && syncJson.data && Array.isArray(syncJson.data.quiz_submissions) && syncJson.data.quiz_submissions.length > 0) {
+              fetchedSubs = syncJson.data.quiz_submissions;
+            }
+          }
+        } catch(e) {}
+      }
 
-        const localSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
-        const subMap = new Map();
-        localSubs.forEach(s => {
-          if (s && s.id && !deletedSet.has(s.id)) subMap.set(s.id, s);
-        });
+      const localSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+      const subMap = new Map();
+      localSubs.forEach(s => {
+        if (s && s.id && !deletedSet.has(s.id)) subMap.set(s.id, s);
+      });
+      if (Array.isArray(fetchedSubs)) {
         fetchedSubs.forEach(s => {
           if (s && s.id && !deletedSet.has(s.id)) subMap.set(s.id, s);
         });
-
-        const mergedSubs = Array.from(subMap.values())
-          .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
-          .slice(0, 500);
-
-        localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(mergedSubs));
-        window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: mergedSubs }));
       }
+
+      // 5. Auto-recupera simulados salvos em tkst_student_progress caso não estejam em submissions
+      try {
+        const allProgress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
+        const allStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+        let recoveredAny = false;
+
+        Object.keys(allProgress).forEach(uid => {
+          const prog = allProgress[uid];
+          if (prog && Array.isArray(prog.quizScores)) {
+            const student = allStudents.find(s => s && (s.id === uid || s.username === uid)) || { id: uid, name: 'Aluno', username: uid, currentBelt: 'Faixa Branca', currentKyu: 7 };
+            prog.quizScores.forEach((qs, qIdx) => {
+              const subId = `quiz_rec_${uid}_${qIdx}_${new Date(qs.date || 0).getTime()}`;
+              if (!subMap.has(subId) && !deletedSet.has(subId)) {
+                const recSub = {
+                  id: subId,
+                  studentId: student.id,
+                  studentName: student.name,
+                  studentUsername: student.username,
+                  studentBelt: student.currentBelt,
+                  studentKyu: student.currentKyu !== undefined ? student.currentKyu : 7,
+                  beltLevel: qs.beltLevel || student.currentBelt,
+                  beltKyu: qs.beltKyu !== undefined ? qs.beltKyu : (student.currentKyu !== undefined ? student.currentKyu : 7),
+                  score: typeof qs.score === 'number' ? qs.score : 10,
+                  total: typeof qs.total === 'number' ? qs.total : 10,
+                  percentage: typeof qs.percentage === 'number' ? qs.percentage : 100,
+                  passed: typeof qs.score === 'number' ? (qs.score / (qs.total || 10)) >= 0.7 : true,
+                  perfect: typeof qs.score === 'number' ? qs.score === (qs.total || 10) : true,
+                  date: qs.date || new Date().toISOString(),
+                  details: []
+                };
+                subMap.set(subId, recSub);
+                recoveredAny = true;
+              }
+            });
+          }
+        });
+
+        // Também varre allStudents.quizScores
+        allStudents.forEach(std => {
+          if (std && Array.isArray(std.quizScores)) {
+            std.quizScores.forEach((qs, qIdx) => {
+              const subId = `quiz_std_${std.id}_${qIdx}_${new Date(qs.date || 0).getTime()}`;
+              if (!subMap.has(subId) && !deletedSet.has(subId)) {
+                const recSub = {
+                  id: subId,
+                  studentId: std.id,
+                  studentName: std.name,
+                  studentUsername: std.username,
+                  studentBelt: std.currentBelt,
+                  studentKyu: std.currentKyu !== undefined ? std.currentKyu : 7,
+                  beltLevel: qs.beltLevel || std.currentBelt,
+                  beltKyu: qs.beltKyu !== undefined ? qs.beltKyu : (std.currentKyu !== undefined ? std.currentKyu : 7),
+                  score: typeof qs.score === 'number' ? qs.score : 10,
+                  total: typeof qs.total === 'number' ? qs.total : 10,
+                  percentage: typeof qs.percentage === 'number' ? qs.percentage : 100,
+                  passed: typeof qs.score === 'number' ? (qs.score / (qs.total || 10)) >= 0.7 : true,
+                  perfect: typeof qs.score === 'number' ? qs.score === (qs.total || 10) : true,
+                  date: qs.date || new Date().toISOString(),
+                  details: []
+                };
+                subMap.set(subId, recSub);
+                recoveredAny = true;
+              }
+            });
+          }
+        });
+
+        if (recoveredAny) {
+          const syncList = Array.from(subMap.values());
+          pushQuizSubmissionsToServer(syncList, Array.from(deletedSet));
+        }
+      } catch(e) {}
+
+      const mergedSubs = Array.from(subMap.values())
+        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+        .slice(0, 500);
+
+      localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(mergedSubs));
+      window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: mergedSubs }));
     } catch(err) {
       console.warn('Quiz submissions pull notice:', err);
     }
@@ -2072,16 +2158,34 @@
       if (!allProgress[user.id].quizScores) {
         allProgress[user.id].quizScores = [];
       }
-      allProgress[user.id].quizScores.push({
+      const scoreItem = {
         date: new Date().toISOString(),
         score: data.score,
         total: data.total,
         percentage: Math.round((data.score / data.total) * 100),
-        beltLevel: data.beltLevel
-      });
+        beltLevel: data.beltLevel,
+        beltKyu: data.beltKyu !== undefined ? data.beltKyu : 7
+      };
+      allProgress[user.id].quizScores.push(scoreItem);
       localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(allProgress));
 
-      // 2. Add to global submissions for admin review
+      // 2. Also record directly into the student profile object in allStudents
+      try {
+        const allStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+        const studentIndex = allStudents.findIndex(s => s && (s.id === user.id || s.username === user.username));
+        if (studentIndex >= 0) {
+          const std = allStudents[studentIndex];
+          std.quizScores = std.quizScores || [];
+          std.quizScores.push(scoreItem);
+          std.updatedAt = Date.now();
+          allStudents[studentIndex] = std;
+          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(allStudents));
+          const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
+          pushStudentsToServer(allStudents, deletedStudentIds);
+        }
+      } catch(e) {}
+
+      // 3. Add to global submissions for admin review
       let submissions = [];
       try {
         submissions = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];

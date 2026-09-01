@@ -137,6 +137,22 @@ module.exports = async (req, res) => {
       } catch(e) {}
     }
 
+    // Hidrata simulados do assets/data/submissions.json se a lista em memória estiver vazia
+    if (!inMemoryData.quiz_submissions || inMemoryData.quiz_submissions.length === 0) {
+      try {
+        const localSubsPath = path.resolve(process.cwd(), 'assets/data/submissions.json');
+        if (fs.existsSync(localSubsPath)) {
+          const subParsed = JSON.parse(fs.readFileSync(localSubsPath, 'utf8'));
+          if (subParsed && Array.isArray(subParsed.quiz_submissions) && subParsed.quiz_submissions.length > 0) {
+            inMemoryData.quiz_submissions = subParsed.quiz_submissions;
+            if (Array.isArray(subParsed.deletedQuizSubIds)) {
+              inMemoryData.deletedQuizSubIds = subParsed.deletedQuizSubIds;
+            }
+          }
+        }
+      } catch(e) {}
+    }
+
     return res.status(200).json({
       success: true,
       data: inMemoryData

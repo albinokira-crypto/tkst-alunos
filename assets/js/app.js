@@ -2253,14 +2253,18 @@ document.addEventListener('DOMContentLoaded', () => {
           totalWrong += Math.max(0, total - score);
           testsTaken++;
         });
-      } else if (allProgress[student.id] && Array.isArray(allProgress[student.id].quizScores)) {
-        allProgress[student.id].quizScores.forEach(item => {
-          const score = typeof item.score === 'number' ? item.score : 0;
-          const total = typeof item.total === 'number' ? item.total : 10;
-          totalCorrect += score;
-          totalWrong += Math.max(0, total - score);
-          testsTaken++;
-        });
+      } else {
+        const rawStudentObj = students.find(s => s && (s.id === student.id || s.username === student.username));
+        const directScores = (rawStudentObj?.quizScores || allProgress[student.id]?.quizScores || allProgress[student.username]?.quizScores || []);
+        if (Array.isArray(directScores) && directScores.length > 0) {
+          directScores.forEach(item => {
+            const score = typeof item.score === 'number' ? item.score : 0;
+            const total = typeof item.total === 'number' ? item.total : 10;
+            totalCorrect += score;
+            totalWrong += Math.max(0, total - score);
+            testsTaken++;
+          });
+        }
       }
 
       const netPoints = totalCorrect - totalWrong;

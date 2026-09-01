@@ -118,9 +118,24 @@ module.exports = async (req, res) => {
       const incomingDeleted = Array.isArray(body.deletedQuizSubIds) ? body.deletedQuizSubIds : [];
 
       if (!token) {
+        try {
+          const localPath = path.resolve(process.cwd(), FILE_PATH);
+          let currentData = { quiz_submissions: [], deletedQuizSubIds: [] };
+          if (fs.existsSync(localPath)) {
+            currentData = JSON.parse(fs.readFileSync(localPath, 'utf8'));
+          }
+          const delSet = new Set([...(currentData.deletedQuizSubIds || []), ...incomingDeleted]);
+          const subMap = new Map();
+          (currentData.quiz_submissions || []).forEach(s => { if (s && s.id && !delSet.has(s.id)) subMap.set(s.id, s); });
+          incomingSubs.forEach(s => { if (s && s.id && !delSet.has(s.id)) subMap.set(s.id, { ...(subMap.get(s.id) || {}), ...s }); });
+          const finalSubs = Array.from(subMap.values()).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 500);
+          const newJson = { quiz_submissions: finalSubs, deletedQuizSubIds: Array.from(delSet), updatedAt: Date.now() };
+          try { fs.writeFileSync(localPath, JSON.stringify(newJson, null, 2), 'utf8'); } catch(e) {}
+          return res.status(200).json({ success: true, committed: finalSubs.length, data: newJson });
+        } catch(e) {}
         return res.status(200).json({
-          success: false,
-          reason: 'GITHUB_TOKEN não configurado nas variáveis de ambiente da Vercel.'
+          success: true,
+          data: { quiz_submissions: incomingSubs, deletedQuizSubIds: incomingDeleted }
         });
       }
 

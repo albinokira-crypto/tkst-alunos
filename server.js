@@ -83,6 +83,33 @@ const server = http.createServer(async (req, res) => {
             }
           }
 
+          // Special local persistence for submission-commit
+          if (apiName === 'submission-commit' && (req.method === 'POST' || req.method === 'PUT') && req.body) {
+            try {
+              const subsPath = path.join(PUBLIC_DIR, 'assets', 'data', 'submissions.json');
+              let currentData = { quiz_submissions: [], deletedQuizSubIds: [] };
+              if (fs.existsSync(subsPath)) {
+                currentData = JSON.parse(fs.readFileSync(subsPath, 'utf8'));
+              }
+              const incomingSubs = Array.isArray(req.body.quiz_submissions) ? req.body.quiz_submissions : (req.body.submission ? [req.body.submission] : []);
+              const incomingDeleted = Array.isArray(req.body.deletedQuizSubIds) ? req.body.deletedQuizSubIds : [];
+              
+              const delSet = new Set([...(currentData.deletedQuizSubIds || []), ...incomingDeleted]);
+              const subMap = new Map();
+              (currentData.quiz_submissions || []).forEach(s => { if (s && s.id && !delSet.has(s.id)) subMap.set(s.id, s); });
+              incomingSubs.forEach(s => { if (s && s.id && !delSet.has(s.id)) subMap.set(s.id, { ...(subMap.get(s.id) || {}), ...s }); });
+
+              const finalSubs = Array.from(subMap.values()).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 500);
+              fs.writeFileSync(subsPath, JSON.stringify({
+                quiz_submissions: finalSubs,
+                deletedQuizSubIds: Array.from(delSet),
+                updatedAt: Date.now()
+              }, null, 2), 'utf8');
+            } catch(e) {
+              console.error('Local submission-commit save error:', e);
+            }
+          }
+
           // Special local persistence for glossary-commit
           if (apiName === 'glossary-commit' && (req.method === 'POST' || req.method === 'PUT') && req.body) {
             try {
