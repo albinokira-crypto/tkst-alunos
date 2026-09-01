@@ -26,6 +26,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/submission-commit.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "**/*",
       "use": "@vercel/static"
     }
@@ -54,6 +58,10 @@
     {
       "src": "/api/glossary-commit",
       "dest": "/api/glossary-commit.js"
+    },
+    {
+      "src": "/api/submission-commit",
+      "dest": "/api/submission-commit.js"
     },
     {
       "handle": "filesystem"
