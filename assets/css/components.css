@@ -2488,14 +2488,14 @@ body.login-view-active .content-body {
 }
 
 /* ==========================================
-   RANKING DO SIMULADO (LARGURA TOTAL / SEM ESTOURO)
+   RANKING DO SIMULADO (COMPACTO 2 LINHAS / TOP 5+ VISÍVEL)
    ========================================== */
 .ranking-card {
   background: linear-gradient(145deg, rgba(22, 28, 42, 0.96) 0%, rgba(10, 13, 20, 0.98) 100%) !important;
   border: 1.5px solid rgba(255, 183, 3, 0.30) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 20px rgba(255, 183, 3, 0.08) !important;
   border-radius: var(--radius-md) !important;
-  padding: 16px 20px !important;
+  padding: 12px 14px !important;
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
@@ -2504,94 +2504,92 @@ body.login-view-active .content-body {
   min-height: auto !important;
   overflow: visible !important;
   transition: all 0.3s ease !important;
-  margin-top: 6px !important;
-  margin-bottom: 24px !important;
+  margin-top: 4px !important;
+  margin-bottom: 20px !important;
 }
 
 .ranking-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  padding-bottom: 12px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .ranking-header-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
 .ranking-header-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: rgba(255, 183, 3, 0.15);
   border: 1px solid rgba(255, 183, 3, 0.40);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent-gold);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   flex-shrink: 0;
-  box-shadow: 0 0 12px rgba(255, 183, 3, 0.2);
+  box-shadow: 0 0 10px rgba(255, 183, 3, 0.2);
 }
 
 .ranking-title {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: #FFF;
   margin: 0;
-  line-height: 1.2;
-  letter-spacing: 0.3px;
+  line-height: 1.15;
+  letter-spacing: 0.2px;
 }
 
 .ranking-subtitle {
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   color: #94A3B8;
-  margin: 3px 0 0 0;
-  line-height: 1.2;
+  margin: 2px 0 0 0;
+  line-height: 1.15;
 }
 
 .ranking-header-tag {
-  font-size: 0.70rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: var(--accent-gold);
   background: rgba(255, 183, 3, 0.12);
   border: 1px solid rgba(255, 183, 3, 0.35);
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  letter-spacing: 0.4px;
+  gap: 4px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .ranking-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   box-sizing: border-box;
 }
 
 .ranking-single-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 10px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   transition: all 0.2s ease;
-  line-height: 1.3;
-  gap: 12px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -2602,9 +2600,9 @@ body.login-view-active .content-body {
 }
 
 .ranking-single-row.top-1 {
-  background: linear-gradient(90deg, rgba(255, 183, 3, 0.14) 0%, rgba(255, 183, 3, 0.04) 100%);
+  background: linear-gradient(90deg, rgba(255, 183, 3, 0.14) 0%, rgba(255, 183, 3, 0.03) 100%);
   border-color: rgba(255, 183, 3, 0.35);
-  box-shadow: 0 0 14px rgba(255, 183, 3, 0.08);
+  box-shadow: 0 0 12px rgba(255, 183, 3, 0.06);
 }
 
 .ranking-single-row.top-2 {
@@ -2617,35 +2615,53 @@ body.login-view-active .content-body {
   border-color: rgba(205, 127, 50, 0.30);
 }
 
-.ranking-row-left {
+/* Linha 1: Lugar + Nome + Graduação */
+.ranking-row-line-1 {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
 }
 
-.ranking-pos-num {
+.ranking-row-user-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ranking-pos-medal {
   font-weight: 800;
-  font-size: 0.90rem;
+  font-size: 0.85rem;
   color: var(--accent-gold);
-  width: 24px;
+  min-width: 22px;
   flex-shrink: 0;
   text-align: center;
+  line-height: 1;
+}
+
+.ranking-pos-medal.is-podium {
+  font-size: 1.25rem !important; /* Medalha um pouco maior nos 3 primeiros lugares */
+  transform: scale(1.05);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 .ranking-student-name {
   font-weight: 700;
   color: #FFF;
-  font-size: 0.88rem;
-  letter-spacing: 0.2px;
+  font-size: 0.84rem;
+  letter-spacing: 0.15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ranking-belt-badge {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 1px 7px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   color: #E2E8F0;
@@ -2654,61 +2670,83 @@ body.login-view-active .content-body {
   flex-shrink: 0;
 }
 
-.ranking-dot {
-  color: #64748B;
-  font-size: 0.65rem;
-  flex-shrink: 0;
+/* Linha 2: Dojo + Acertos + Pontos */
+.ranking-row-line-2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  font-size: 0.70rem;
+  padding-left: 28px;
+  box-sizing: border-box;
 }
 
 .ranking-student-dojo {
   color: #94A3B8;
-  font-size: 0.74rem;
+  font-size: 0.70rem;
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   white-space: nowrap;
-  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
-.ranking-row-right {
+.ranking-student-dojo i {
+  font-size: 0.60rem;
+  opacity: 0.75;
+  color: var(--accent-gold);
+}
+
+.ranking-row-metrics {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .ranking-stat-pill {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   color: #94A3B8;
   font-weight: 600;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 3px 8px;
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 2px 6px;
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
+  gap: 3px;
+}
+
+.ranking-stat-pill i {
+  color: #34D399;
+  font-size: 0.62rem;
 }
 
 .ranking-row-points {
   font-weight: 800;
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   white-space: nowrap;
   flex-shrink: 0;
-  padding: 3px 10px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 7px;
+  border-radius: 4px;
+  line-height: 1.2;
 }
 
 .ranking-row-points.positive {
   color: #34D399;
-  background: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: rgba(52, 211, 153, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.28);
 }
 
 .ranking-row-points.negative {
   color: #F87171;
-  background: rgba(248, 113, 113, 0.12);
-  border: 1px solid rgba(248, 113, 113, 0.25);
+  background: rgba(248, 113, 113, 0.14);
+  border: 1px solid rgba(248, 113, 113, 0.28);
 }
 
 .ranking-row-points.zero {
@@ -2989,50 +3027,72 @@ body.login-view-active .content-body {
   }
 
   /* Ranking do Simulado Retrátil Mobile */
+  /* Ranking do Simulado Compacto Mobile (Top 5 Visível) */
   .ranking-card {
-    padding: 8px 8px !important;
-    margin-bottom: 0 !important;
+    padding: 10px 10px !important;
+    margin-top: 2px !important;
+    margin-bottom: 16px !important;
   }
 
   .ranking-header {
-    margin-bottom: 6px !important;
-    padding-bottom: 5px !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 6px !important;
   }
 
   .ranking-header-icon {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 0.76rem !important;
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.82rem !important;
   }
 
   .ranking-title {
-    font-size: 0.80rem !important;
+    font-size: 0.86rem !important;
   }
 
   .ranking-subtitle {
-    font-size: 0.58rem !important;
-  }
-
-  .ranking-single-row {
-    padding: 4px 6px !important;
-    font-size: 0.68rem !important;
-  }
-
-  .ranking-pos-num {
-    font-size: 0.68rem !important;
-    width: 14px !important;
-  }
-
-  .ranking-student-name {
-    font-size: 0.70rem !important;
-  }
-
-  .ranking-student-dojo {
     font-size: 0.62rem !important;
   }
 
+  .ranking-single-row {
+    padding: 6px 8px !important;
+    gap: 2px !important;
+  }
+
+  .ranking-pos-medal {
+    font-size: 0.78rem !important;
+    min-width: 18px !important;
+  }
+
+  .ranking-pos-medal.is-podium {
+    font-size: 1.18rem !important;
+  }
+
+  .ranking-student-name {
+    font-size: 0.80rem !important;
+  }
+
+  .ranking-belt-badge {
+    font-size: 0.60rem !important;
+    padding: 1px 5px !important;
+  }
+
+  .ranking-row-line-2 {
+    padding-left: 24px !important;
+    font-size: 0.66rem !important;
+  }
+
+  .ranking-student-dojo {
+    font-size: 0.66rem !important;
+  }
+
+  .ranking-stat-pill {
+    font-size: 0.62rem !important;
+    padding: 1px 5px !important;
+  }
+
   .ranking-row-points {
-    font-size: 0.68rem !important;
+    font-size: 0.72rem !important;
+    padding: 1px 5px !important;
   }
 
   /* Section Headers & Filter Chips */

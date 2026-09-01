@@ -2468,23 +2468,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="ranking-list">
           ${top10Leaderboard.length === 0 ? `
-            <div style="padding: 18px 12px; text-align: center; color: #64748B; font-size: 0.80rem;">
-              <i class="fas fa-medal" style="font-size: 1.6rem; color: var(--accent-gold); margin-bottom: 6px; display: block; opacity: 0.6;"></i>
+            <div style="padding: 16px 12px; text-align: center; color: #64748B; font-size: 0.78rem;">
+              <i class="fas fa-medal" style="font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 4px; display: block; opacity: 0.6;"></i>
               Nenhum aluno classificado ainda.<br>Faça um simulado teórico para liderar o ranking!
             </div>
           ` : top10Leaderboard.map((item, idx) => `
             <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
-              <div class="ranking-row-left">
-                <span class="ranking-pos-num">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}</span>
-                <span class="ranking-student-name" title="${item.fullName}">${item.fullName}</span>
+              <!-- Linha 1: Lugar (com medalha um pouco maior nos 3 primeiros lugares), Nome completo, Graduação -->
+              <div class="ranking-row-line-1">
+                <div class="ranking-row-user-block">
+                  <span class="ranking-pos-medal ${idx < 3 ? 'is-podium' : ''}">
+                    ${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}
+                  </span>
+                  <span class="ranking-student-name" title="${item.fullName}">${item.fullName}</span>
+                </div>
                 <span class="ranking-belt-badge">${item.currentBelt}</span>
-                <span class="ranking-dot">•</span>
-                <span class="ranking-student-dojo" title="${item.dojo}"><i class="fas fa-landmark" style="font-size: 0.60rem; opacity: 0.7; margin-right: 3px;"></i>${item.dojo}</span>
               </div>
-              <div class="ranking-row-right">
-                <span class="ranking-stat-pill"><i class="fas fa-check-circle" style="color: #34D399; font-size: 0.68rem; margin-right: 3px;"></i>${item.totalCorrect} acertos</span>
-                <div class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
-                  ${item.points > 0 ? '+' : ''}${item.points} pts
+
+              <!-- Linha 2: Dojo, Quantidade de Acertos, Quantidade de Pontos -->
+              <div class="ranking-row-line-2">
+                <div class="ranking-student-dojo" title="${item.dojo}">
+                  <i class="fas fa-landmark"></i> <span>${item.dojo}</span>
+                </div>
+                <div class="ranking-row-metrics">
+                  <span class="ranking-stat-pill">
+                    <i class="fas fa-check-circle"></i> ${item.totalCorrect} ${item.totalCorrect === 1 ? 'acerto' : 'acertos'}
+                  </span>
+                  <span class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
+                    ${item.points > 0 ? '+' : ''}${item.points} pts
+                  </span>
                 </div>
               </div>
             </div>
