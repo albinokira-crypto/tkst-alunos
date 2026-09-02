@@ -1131,6 +1131,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. RENDER ADMIN MASTER CONTROL CENTER (irons365)
   // =========================================================================
   function renderAdminMaster() {
+    const isMaster = window.TKST_AUTH ? window.TKST_AUTH.isMasterAdmin() : false;
+    const canManageStudents = window.TKST_AUTH ? window.TKST_AUTH.canManageStudents() : false;
+    const canManageCredentials = window.TKST_AUTH ? window.TKST_AUTH.canManageCredentials() : false;
+
+    // Se um admin delegado tentar acessar subtab de alunos ou pendentes, redireciona para 'exam-generator'
+    if (!canManageStudents && (adminSubTab === 'students' || adminSubTab === 'pending')) {
+      adminSubTab = 'exam-generator';
+    }
+
     const students = window.TKST_AUTH.getAllStudents();
     const todayStudents = typeof window.TKST_AUTH.getTodayRegisteredStudents === 'function' 
       ? window.TKST_AUTH.getTodayRegisteredStudents() 
@@ -1169,23 +1178,25 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="section-title-group" style="width: 100%; position: relative; z-index: 1;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
             <div class="admin-badge-ribbon" style="margin-bottom: 0;">
-              <i class="fas fa-crown"></i> Painel Geral do Administrador (Sensei Diego)
+              <i class="fas ${isMaster ? 'fa-crown' : 'fa-user-shield'}"></i> ${isMaster ? 'Painel Geral do Administrador (Sensei Diego)' : 'Painel do Administrador (Instrutor / Sensei)'}
             </div>
             <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #6EE7B7; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.72rem; font-weight: 700;">
               <i class="fas fa-cloud" style="color: #10B981;"></i> Nuvem Conectada (PC ⇄ Celular)
             </div>
           </div>
           <h3 style="font-size: 1.3rem; margin-bottom: 4px;">Gerenciamento Completo TKST</h3>
-          <p style="font-size: 0.85rem; color: #94A3B8;">Controle de alunos, credenciais de administradores, simulados, Dojos e vídeos dos 26 Kata.</p>
+          <p style="font-size: 0.85rem; color: #94A3B8;">${isMaster ? 'Controle de alunos, credenciais de administradores, simulados, Dojos e vídeos dos 26 Kata.' : 'Gerenciamento de simulados, questões, dicionário japonês, Dojos e vídeos dos 26 Kata.'}</p>
         </div>
 
         <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; margin-top: 8px; position: relative; z-index: 1;">
-          <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.82rem; padding: 8px 14px; background: #25D366; color: #FFF; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
-            <i class="fab fa-whatsapp"></i> Convidar Aluno para Cadastro
-          </button>
-          <button class="btn btn-primary" onclick="window.TKST_APP.openManualStudentModal()" style="font-size: 0.82rem; padding: 8px 14px;">
-            <i class="fas fa-user-plus"></i> Novo Aluno Manual
-          </button>
+          ${canManageStudents ? `
+            <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.82rem; padding: 8px 14px; background: #25D366; color: #FFF; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
+              <i class="fab fa-whatsapp"></i> Convidar Aluno para Cadastro
+            </button>
+            <button class="btn btn-primary" onclick="window.TKST_APP.openManualStudentModal()" style="font-size: 0.82rem; padding: 8px 14px;">
+              <i class="fas fa-user-plus"></i> Novo Aluno Manual
+            </button>
+          ` : ''}
           <button class="btn btn-secondary" onclick="window.TKST_APP.exportFullBackup()" style="font-size: 0.82rem; padding: 8px 14px;">
             <i class="fas fa-download"></i> Exportar Backup JSON
           </button>
@@ -1194,29 +1205,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <!-- Admin Stats Grid - Ultra Compact -->
       <div class="stats-mini-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px;">
-        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Alunos Cadastrados Hoje">
-          <i class="fas fa-user-plus" style="color: #34D399; font-size: 0.95rem; flex-shrink: 0;"></i>
-          <div style="min-width: 0; line-height: 1.15;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #34D399;">${todayStudents.length}</div>
-            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Novos Hoje</div>
+        ${canManageStudents ? `
+          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Alunos Cadastrados Hoje">
+            <i class="fas fa-user-plus" style="color: #34D399; font-size: 0.95rem; flex-shrink: 0;"></i>
+            <div style="min-width: 0; line-height: 1.15;">
+              <div style="font-size: 0.95rem; font-weight: 800; color: #34D399;">${todayStudents.length}</div>
+              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Novos Hoje</div>
+            </div>
           </div>
-        </div>
 
-        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
-          <i class="fas fa-users" style="color: var(--accent-emerald); font-size: 0.95rem; flex-shrink: 0;"></i>
-          <div style="min-width: 0; line-height: 1.15;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${students.length}</div>
-            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Total Alunos</div>
+          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-users" style="color: var(--accent-emerald); font-size: 0.95rem; flex-shrink: 0;"></i>
+            <div style="min-width: 0; line-height: 1.15;">
+              <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${students.length}</div>
+              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Total Alunos</div>
+            </div>
           </div>
-        </div>
 
-        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Administradores Designados">
-          <i class="fas fa-user-shield" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
-          <div style="min-width: 0; line-height: 1.15;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #FFD166;">${adminUsers.length}</div>
-            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Admins</div>
+          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Administradores Designados">
+            <i class="fas fa-user-shield" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
+            <div style="min-width: 0; line-height: 1.15;">
+              <div style="font-size: 0.95rem; font-weight: 800; color: #FFD166;">${adminUsers.length}</div>
+              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Admins</div>
+            </div>
           </div>
-        </div>
+        ` : `
+          <div class="stat-mini-pill" style="background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Credencial de Administrador">
+            <i class="fas fa-user-shield" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
+            <div style="min-width: 0; line-height: 1.15;">
+              <div style="font-size: 0.95rem; font-weight: 800; color: #FFD166;">Admin</div>
+              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Credenciado</div>
+            </div>
+          </div>
+
+          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('dojos')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-torii-gate" style="color: var(--accent-emerald); font-size: 0.95rem; flex-shrink: 0;"></i>
+            <div style="min-width: 0; line-height: 1.15;">
+              <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${dojos.length}</div>
+              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dojos</div>
+            </div>
+          </div>
+
+          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('kata-videos')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-video" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
+            <div style="min-width: 0; line-height: 1.15;">
+              <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">26</div>
+              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Katas</div>
+            </div>
+          </div>
+        `}
 
         <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Ver Simulados Realizados">
           <i class="fas fa-clipboard-check" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
@@ -1248,9 +1285,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <button class="chip-btn ${adminSubTab === 'exam-generator' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('exam-generator')" style="flex-shrink: 0; white-space: nowrap; border: 1.5px solid rgba(245, 190, 0, 0.5); ${adminSubTab === 'exam-generator' ? 'background: var(--accent-gold); color: #000; font-weight: 900;' : 'color: #FFD166; font-weight: 700;'}">
           <i class="fas fa-file-pdf"></i> Provas & Gabaritos PDF
         </button>
-        <button class="chip-btn ${adminSubTab === 'students' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('students')" style="flex-shrink: 0; white-space: nowrap;">
-          <i class="fas fa-users"></i> Alunos Matriculados (${students.length})
-        </button>
+        ${canManageStudents ? `
+          <button class="chip-btn ${adminSubTab === 'students' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('students')" style="flex-shrink: 0; white-space: nowrap;">
+            <i class="fas fa-users"></i> Alunos Matriculados (${students.length})
+          </button>
+        ` : ''}
         <button class="chip-btn ${adminSubTab === 'questions' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('questions')" style="flex-shrink: 0; white-space: nowrap;">
           <i class="fas fa-question-circle"></i> Banco de Questões (${quizBankCount})
         </button>
@@ -4760,6 +4799,11 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         ` : terms.map(t => `
           <div class="glossary-card-trio" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Toque para ver detalhes de ${t.japanese}">
+            ${isAdmin ? `
+              <button type="button" class="glossary-card-delete-btn" onclick="event.stopPropagation(); window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir o termo ${t.japanese}">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            ` : ''}
             <div class="glossary-card-line-name" title="${t.japanese}">${t.japanese}</div>
             <div class="glossary-card-line-jp" title="${t.kanji || t.japanese}">${t.kanji || t.japanese}</div>
             <div class="glossary-card-line-link">
@@ -7303,6 +7347,10 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     approveStudent: (studentId) => {
+      if (!window.TKST_AUTH.canManageStudents()) {
+        alert('Apenas o Administrador Master (Sensei Diego) pode aprovar cadastros de alunos.');
+        return;
+      }
       const res = window.TKST_AUTH.approveStudent(studentId);
       if (res.success) {
         alert(`Aluno ${res.student.name} (Login: ${res.student.username}) aprovado com sucesso!`);
@@ -7313,6 +7361,10 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     openDojobookImportModal: () => {
+      if (!window.TKST_AUTH.canManageStudents()) {
+        alert('Apenas o Administrador Master (Sensei Diego) pode importar alunos.');
+        return;
+      }
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
       modalTitle.innerHTML = `<span><i class="fas fa-file-import" style="color: var(--accent-gold);"></i> Importar Alunos do DojôBook</span>`;
@@ -7354,6 +7406,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     },
 
     submitDojobookImport: () => {
+      if (!window.TKST_AUTH.canManageStudents()) {
+        alert('Apenas o Administrador Master (Sensei Diego) pode importar alunos.');
+        return;
+      }
       const text = document.getElementById('dojobookImportText').value;
       const feedback = document.getElementById('dojobookImportFeedback');
       if (!text || !text.trim()) return;
@@ -7401,6 +7457,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     },
 
     rejectStudent: (studentId) => {
+      if (!window.TKST_AUTH.canManageStudents()) {
+        alert('Apenas o Administrador Master (Sensei Diego) pode recusar solicitações de alunos.');
+        return;
+      }
       if (confirm('Deseja recusar esta solicitação de cadastro?')) {
         const res = window.TKST_AUTH.rejectStudent(studentId);
         if (res.success) {
@@ -7411,6 +7471,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     },
 
     deleteStudent: (studentId, studentName) => {
+      if (!window.TKST_AUTH.canManageStudents()) {
+        alert('Apenas o Administrador Master (Sensei Diego) pode excluir alunos.');
+        return;
+      }
       if (confirm(`Tem certeza que deseja excluir o cadastro de "${studentName}" do sistema TKST?`)) {
         const res = window.TKST_AUTH.deleteStudent(studentId);
         if (res.success) {
@@ -7423,6 +7487,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     },
 
     openManualStudentModal: () => {
+      if (!window.TKST_AUTH.canManageStudents()) {
+        alert('Apenas o Administrador Master (Sensei Diego) pode cadastrar alunos manualmente.');
+        return;
+      }
       const name = prompt('Nome Completo do Aluno:');
       if (!name) return;
       const nick = prompt('Nick de Acesso (Matrícula):', name.toLowerCase().replace(/\s+/g, '.'));
@@ -7971,9 +8039,14 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                   Termo Tradicional Shotokan
                 </div>
                 ${isAdmin ? `
-                  <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', false)" title="Editar texto e significado do termo" style="font-size: 0.70rem; padding: 3px 9px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-sm); margin: 0; cursor: pointer;">
-                    <i class="fas fa-edit"></i> <span>Editar Termo</span>
-                  </button>
+                  <div style="display: inline-flex; align-items: center; gap: 6px;">
+                    <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditGlossaryTermModal('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}', false)" title="Editar texto e significado do termo" style="font-size: 0.70rem; padding: 3px 9px; background: rgba(255, 183, 3, 0.2); border: 1px solid var(--accent-gold); color: #FFB703; display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-sm); margin: 0; cursor: pointer;">
+                      <i class="fas fa-edit"></i> <span>Editar</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteGlossaryTerm('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}'); document.getElementById('detailModal').classList.remove('active');" title="Excluir este termo" style="font-size: 0.70rem; padding: 3px 9px; display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-sm); margin: 0; cursor: pointer;">
+                      <i class="fas fa-trash"></i> <span>Excluir</span>
+                    </button>
+                  </div>
                 ` : ''}
               </div>
               <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: #FFF; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -8468,7 +8541,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
     submitEditGlossaryTerm: (oldCategory, oldJapaneseName) => {
       if (!window.TKST_AUTH.isAdmin()) {
-        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+        alert('Acesso restrito aos administradores.');
         return;
       }
 
@@ -8503,8 +8576,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
     },
     openEditStudentModal: (studentId) => {
-      if (!window.TKST_AUTH.isAdmin()) {
-        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+      if (!window.TKST_AUTH.canManageStudents()) {
+        alert('Apenas o Administrador Master (Sensei Diego) pode editar cadastros de alunos.');
         return;
       }
 
@@ -8516,6 +8589,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
 
       const isMaster = s.username === 'irons365';
+      const canManageCreds = window.TKST_AUTH.canManageCredentials();
       const dojos = window.TKST_AUTH.getDojos();
 
       const modal = document.getElementById('detailModal');
@@ -8612,7 +8686,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">
                 <i class="fas fa-user-shield" style="color: var(--accent-gold); margin-right: 6px;"></i> Credencial / Permissão:
               </label>
-              <select id="editStudentRole" class="form-input" style="font-size: 0.82rem; font-weight: 700;" ${isMaster ? 'disabled title="Administrador Master não pode ser alterado"' : ''}>
+              <select id="editStudentRole" class="form-input" style="font-size: 0.82rem; font-weight: 700;" ${(isMaster || !canManageCreds) ? 'disabled title="Apenas o Administrador Master pode alterar credenciais"' : ''}>
                 <option value="aluno" ${s.role !== 'admin' ? 'selected' : ''}>🥋 Aluno (Acesso padrão aos treinos)</option>
                 <option value="admin" ${s.role === 'admin' ? 'selected' : ''}>⭐ Administrador (Acesso ao Painel Sensei)</option>
               </select>
@@ -8641,7 +8715,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     toggleAdminRole: (studentId, newRole) => {
-      if (!window.TKST_AUTH.isAdmin()) {
+      if (!window.TKST_AUTH.canManageCredentials()) {
         alert('Apenas o Sensei Diego pode alterar credenciais de administrador.');
         return;
       }
@@ -8667,8 +8741,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     submitEditStudent: (studentId) => {
-      if (!window.TKST_AUTH.isAdmin()) {
-        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+      if (!window.TKST_AUTH.canManageStudents()) {
+        alert('Apenas o Administrador Master (Sensei Diego) pode salvar alterações de alunos.');
         return;
       }
 

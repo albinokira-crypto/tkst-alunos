@@ -1265,6 +1265,21 @@
       return uRole === 'admin' || uName === 'irons365' || uName === 'admin' || (user.name && user.name.toLowerCase().includes('diego'));
     },
 
+    isMasterAdmin: function() {
+      const user = this.getCurrentUser();
+      if (!user) return false;
+      const uName = (user.username || '').toLowerCase();
+      return uName === 'irons365' || uName === 'admin' || (user.name && user.name.toLowerCase().includes('diego'));
+    },
+
+    canManageStudents: function() {
+      return this.isMasterAdmin();
+    },
+
+    canManageCredentials: function() {
+      return this.isMasterAdmin();
+    },
+
     getAllStudents: function() {
       try {
         let students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
@@ -1296,6 +1311,9 @@
     },
 
     setStudentRole: function(studentId, newRole) {
+      if (!this.canManageCredentials()) {
+        return { success: false, message: 'Apenas o Administrador Master (Sensei Diego) pode alterar credenciais de administradores.' };
+      }
       return this.adminUpdateStudent(studentId, { role: newRole });
     },
 
@@ -1757,7 +1775,7 @@
     },
 
     approveStudent: function(studentId) {
-      if (!this.isAdmin()) return { success: false, message: 'Apenas administradores podem aprovar alunos.' };
+      if (!this.canManageStudents()) return { success: false, message: 'Apenas o Administrador Master (Sensei Diego) pode aprovar alunos.' };
       const students = this.getAllStudents();
       const idx = students.findIndex(s => s.id === studentId);
       if (idx !== -1) {
@@ -1775,6 +1793,7 @@
     },
 
     importDojobookStudents: function(studentsList) {
+      if (!this.canManageStudents()) return { success: false, message: 'Apenas o Administrador Master (Sensei Diego) pode importar alunos.' };
       if (!Array.isArray(studentsList) || studentsList.length === 0) return { success: false, message: 'Nenhum aluno para importar.' };
       let currentStudents = this.getAllStudents();
       const studentMap = new Map();
@@ -1848,7 +1867,7 @@
     },
 
     rejectStudent: function(studentId) {
-      if (!this.isAdmin()) return { success: false, message: 'Apenas administradores podem recusar alunos.' };
+      if (!this.canManageStudents()) return { success: false, message: 'Apenas o Administrador Master (Sensei Diego) pode recusar alunos.' };
       const students = this.getAllStudents();
       const idx = students.findIndex(s => s.id === studentId);
       if (idx !== -1) {
@@ -1866,7 +1885,7 @@
     },
 
     deleteStudent: function(studentId) {
-      if (!this.isAdmin()) return { success: false, message: 'Apenas administradores podem excluir alunos.' };
+      if (!this.canManageStudents()) return { success: false, message: 'Apenas o Administrador Master (Sensei Diego) pode excluir alunos.' };
       let students = this.getAllStudents();
       const target = students.find(s => s.id === studentId);
       if (target && target.username === 'irons365') {
@@ -1888,8 +1907,19 @@
     },
 
     adminUpdateStudent: function(studentId, updatedData) {
-      if (!this.isAdmin()) return { success: false, message: 'Apenas administradores podem editar cadastros de alunos.' };
       if (!studentId) return { success: false, message: 'ID do aluno inválido.' };
+
+      // Se for apenas alteração de credencial/role, exige canManageCredentials
+      const isRoleOnlyChange = updatedData && Object.keys(updatedData).length === 1 && updatedData.role !== undefined;
+      if (isRoleOnlyChange) {
+        if (!this.canManageCredentials()) {
+          return { success: false, message: 'Apenas o Administrador Master (Sensei Diego) pode conceder ou alterar credenciais de administrador.' };
+        }
+      } else {
+        if (!this.canManageStudents()) {
+          return { success: false, message: 'Apenas o Administrador Master (Sensei Diego) pode gerenciar ou editar cadastros de alunos.' };
+        }
+      }
 
       let students = this.getAllStudents();
       const idx = students.findIndex(s => s.id === studentId);
@@ -1981,6 +2011,9 @@
       }
 
       if (updatedData.role) {
+        if (!this.canManageCredentials()) {
+          return { success: false, message: 'Apenas o Administrador Master pode conceder ou alterar credenciais.' };
+        }
         if (existing.username === 'irons365') {
           existing.role = 'admin';
         } else {
