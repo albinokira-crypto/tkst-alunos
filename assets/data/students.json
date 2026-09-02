@@ -19,7 +19,7 @@
       "phone": "(21) 972114674",
       "notes": "Administrador Master responsável por todo o sistema, arquivos e aprovações.",
       "password": "Irons365.",
-      "lastActive": 1788227660308,
+      "lastActive": 1788381805927,
       "statusUpdatedAt": 1786925884100
     },
     {
@@ -38,8 +38,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1788227628565,
-      "statusUpdatedAt": 1788227628565,
+      "updatedAt": 1788381758490,
+      "statusUpdatedAt": 1788381758490,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -49,7 +49,7 @@
       "email": "sensei gabriel@tkst.local",
       "password": "27112021",
       "name": "Gabriel Souza de Oliveira",
-      "role": "aluno",
+      "role": "admin",
       "currentBelt": "Faixa Preta (Sandan - 3º Dan)",
       "targetBelt": "Faixa Preta",
       "currentKyu": 0,
@@ -60,7 +60,7 @@
       "phone": "21981617690",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1786929020214,
+      "updatedAt": 1788381811017,
       "lastActive": 1787427593918
     },
     {
@@ -120,9 +120,10 @@
       "approvedAt": "2026-08-21T22:33:36.441Z",
       "createdAt": "2026-08-21T22:33:25.162Z",
       "updatedAt": 1787351616444,
-      "statusUpdatedAt": 1787351616444,
+      "statusUpdatedAt": 1788379203426,
       "phone": "21967604566",
-      "notes": "Novo cadastro realizado pelo portal."
+      "notes": "Novo cadastro realizado pelo portal.",
+      "lastActive": 1788379363832
     },
     {
       "id": "std_1787521165137_pq6q4",
@@ -527,5 +528,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788227680100
+  "updatedAt": 1788381812504
 }
