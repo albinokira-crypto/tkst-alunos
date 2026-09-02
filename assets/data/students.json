@@ -396,11 +396,11 @@
       "status": "approved",
       "approvedAt": "2026-08-20T16:12:50.800Z",
       "createdAt": "2026-08-20T16:11:05.762Z",
-      "updatedAt": 1788386944722,
+      "updatedAt": 1788386967359,
       "statusUpdatedAt": 1787242370800,
       "phone": "",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1788386926251,
+      "lastActive": 1788386966329,
       "quizScores": [
         {
           "date": "2026-09-02T22:06:42.362Z",
@@ -420,6 +420,14 @@
         },
         {
           "date": "2026-09-02T22:09:04.721Z",
+          "score": 5,
+          "total": 10,
+          "percentage": 50,
+          "beltLevel": "Faixa Verde 3º Kyu",
+          "beltKyu": 3
+        },
+        {
+          "date": "2026-09-02T22:09:27.357Z",
           "score": 5,
           "total": 10,
           "percentage": 50,
@@ -554,5 +562,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788386944314
+  "updatedAt": 1788386968202
 }
