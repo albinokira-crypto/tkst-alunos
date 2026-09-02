@@ -4799,11 +4799,6 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         ` : terms.map(t => `
           <div class="glossary-card-trio" onclick="window.TKST_APP.openGlossaryDetailModal('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Toque para ver detalhes de ${t.japanese}">
-            ${isAdmin ? `
-              <button type="button" class="glossary-card-delete-btn" onclick="event.stopPropagation(); window.TKST_APP.deleteGlossaryTerm('${t.categoryKey}', '${t.japanese.replace(/'/g, "\\'")}')" title="Excluir o termo ${t.japanese}">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            ` : ''}
             <div class="glossary-card-line-name" title="${t.japanese}">${t.japanese}</div>
             <div class="glossary-card-line-jp" title="${t.kanji || t.japanese}">${t.kanji || t.japanese}</div>
             <div class="glossary-card-line-link">
