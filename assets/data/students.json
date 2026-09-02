@@ -38,8 +38,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1788381758490,
-      "statusUpdatedAt": 1788381758490,
+      "updatedAt": 1788385119370,
+      "statusUpdatedAt": 1788385119371,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -49,7 +49,7 @@
       "email": "sensei gabriel@tkst.local",
       "password": "27112021",
       "name": "Gabriel Souza de Oliveira",
-      "role": "admin",
+      "role": "aluno",
       "currentBelt": "Faixa Preta (Sandan - 3º Dan)",
       "targetBelt": "Faixa Preta",
       "currentKyu": 0,
@@ -60,7 +60,7 @@
       "phone": "21981617690",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1788381811017,
+      "updatedAt": 1787239364414,
       "lastActive": 1787427593918
     },
     {
@@ -101,7 +101,7 @@
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1786998590369,
       "statusUpdatedAt": 1,
-      "updatedAt": 1787002858209
+      "updatedAt": 1787239364414
     },
     {
       "id": "std_1787351605155_g3rqr",
@@ -205,7 +205,7 @@
       "phone": "21979822652",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1787239626358
+      "updatedAt": 1787241753822
     },
     {
       "id": "std_1786982056436_rcskv",
@@ -396,11 +396,21 @@
       "status": "approved",
       "approvedAt": "2026-08-20T16:12:50.800Z",
       "createdAt": "2026-08-20T16:11:05.762Z",
-      "updatedAt": 1787242370800,
+      "updatedAt": 1788386802364,
       "statusUpdatedAt": 1787242370800,
       "phone": "",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1787439359745
+      "lastActive": 1788386776506,
+      "quizScores": [
+        {
+          "date": "2026-09-02T22:06:42.362Z",
+          "score": 0,
+          "total": 10,
+          "percentage": 0,
+          "beltLevel": "Faixa Verde 3º Kyu",
+          "beltKyu": 3
+        }
+      ]
     },
     {
       "id": "std_1787242518359_gbipq",
@@ -426,9 +436,9 @@
     },
     {
       "id": "std_1787268943201_fpw5o",
-      "username": "nick",
+      "username": "nicollyferreiradesouza14@gmail.com",
       "email": "nicollyferreiradesouza14@gmail.com@tkst.local",
-      "password": "2014@",
+      "password": "2014",
       "name": "Nicolly ferreira de Souza",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -528,5 +538,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788381812504
+  "updatedAt": 1788386801838
 }
