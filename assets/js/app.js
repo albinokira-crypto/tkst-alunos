@@ -1214,109 +1214,144 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Admin Stats Grid - Ultra Compact -->
-      <div class="stats-mini-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px;">
-        ${canManageStudents ? `
-          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Alunos Cadastrados Hoje">
-            <i class="fas fa-user-plus" style="color: #34D399; font-size: 0.95rem; flex-shrink: 0;"></i>
-            <div style="min-width: 0; line-height: 1.15;">
-              <div style="font-size: 0.95rem; font-weight: 800; color: #34D399;">${todayStudents.length}</div>
-              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Novos Hoje</div>
-            </div>
-          </div>
-
-          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-users" style="color: var(--accent-emerald); font-size: 0.95rem; flex-shrink: 0;"></i>
-            <div style="min-width: 0; line-height: 1.15;">
-              <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${students.length}</div>
-              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Total Alunos</div>
-            </div>
-          </div>
-
-          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('students')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Administradores Designados">
-            <i class="fas fa-user-shield" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
-            <div style="min-width: 0; line-height: 1.15;">
-              <div style="font-size: 0.95rem; font-weight: 800; color: #FFD166;">${adminUsers.length}</div>
-              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Admins</div>
-            </div>
-          </div>
-        ` : `
-          <div class="stat-mini-pill" style="background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Credencial de Administrador">
-            <i class="fas fa-user-shield" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
-            <div style="min-width: 0; line-height: 1.15;">
-              <div style="font-size: 0.95rem; font-weight: 800; color: #FFD166;">Admin</div>
-              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Credenciado</div>
-            </div>
-          </div>
-
-          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('dojos')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-torii-gate" style="color: var(--accent-emerald); font-size: 0.95rem; flex-shrink: 0;"></i>
-            <div style="min-width: 0; line-height: 1.15;">
-              <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${dojos.length}</div>
-              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dojos</div>
-            </div>
-          </div>
-
-          <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('kata-videos')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-video" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
-            <div style="min-width: 0; line-height: 1.15;">
-              <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">26</div>
-              <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Katas</div>
-            </div>
-          </div>
-        `}
-
-        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Ver Simulados Realizados">
-          <i class="fas fa-clipboard-check" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
-          <div style="min-width: 0; line-height: 1.15;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${quizSubmissions.length}</div>
-            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Simulados</div>
-          </div>
+      <!-- Grid de Botões de Navegação da Área do Administrador -->
+      <div style="margin-bottom: 22px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin: 0;">
+            <i class="fas fa-th-large" style="color: var(--accent-gold);"></i> Painel de Controle e Abas
+          </h4>
+          <span style="font-size: 0.75rem; color: #94A3B8;">Toque para abrir</span>
         </div>
 
-        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('questions')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Gerenciar Perguntas & Respostas do Simulado">
-          <i class="fas fa-question-circle" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
-          <div style="min-width: 0; line-height: 1.15;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">${quizBankCount}</div>
-            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Questões</div>
-          </div>
-        </div>
+        <div class="admin-nav-grid">
+          ${canManageStudents ? `
+            <button class="admin-nav-btn ${adminSubTab === 'students' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('students')" title="Gerenciar Alunos Matriculados">
+              <div class="admin-nav-btn-header">
+                <div class="admin-nav-btn-icon" style="background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.4); color: #34D399;">
+                  <i class="fas fa-users"></i>
+                </div>
+                <span class="admin-nav-btn-badge badge-verde">${students.length} Alunos</span>
+              </div>
+              <div class="admin-nav-btn-title">Alunos Matriculados</div>
+              <div class="admin-nav-btn-desc">Cadastros, faixas, edição e credenciais</div>
+            </button>
 
-        <div class="stat-mini-pill" onclick="window.TKST_APP.setAdminSubTab('exam-generator')" style="cursor: pointer; background: rgba(18, 23, 34, 0.85); border: 1px solid rgba(255, 183, 3, 0.4); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 8px;" title="Gerador de Provas & Gabaritos em PDF">
-          <i class="fas fa-file-pdf" style="color: var(--accent-gold); font-size: 0.95rem; flex-shrink: 0;"></i>
-          <div style="min-width: 0; line-height: 1.15;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #FFD166;">PDF</div>
-            <div style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Provas PDF</div>
-          </div>
-        </div>
-      </div>
+            ${pendingStudents.length > 0 ? `
+              <button class="admin-nav-btn ${adminSubTab === 'pending' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('pending')" style="border-color: rgba(239, 68, 68, 0.5); background: linear-gradient(145deg, rgba(239, 68, 68, 0.15), rgba(18, 23, 34, 0.95));" title="Aprovar Alunos Pendentes">
+                <div class="admin-nav-btn-header">
+                  <div class="admin-nav-btn-icon" style="background: rgba(239, 68, 68, 0.25); border: 1px solid rgba(239, 68, 68, 0.6); color: #F87171;">
+                    <i class="fas fa-user-clock"></i>
+                  </div>
+                  <span class="admin-nav-btn-badge badge-vermelha" style="font-weight: 900;">${pendingStudents.length} Pendente(s)</span>
+                </div>
+                <div class="admin-nav-btn-title" style="color: #FCA5A5;">Aprovações Pendentes</div>
+                <div class="admin-nav-btn-desc">Novos alunos aguardando liberação</div>
+              </button>
+            ` : ''}
+          ` : ''}
 
-      <!-- Admin Navigation Sub-Tabs -->
-      <div class="filter-chips" style="margin-bottom: 20px; display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px;">
-        <button class="chip-btn ${adminSubTab === 'exam-generator' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('exam-generator')" style="flex-shrink: 0; white-space: nowrap; border: 1.5px solid rgba(245, 190, 0, 0.5); ${adminSubTab === 'exam-generator' ? 'background: var(--accent-gold); color: #000; font-weight: 900;' : 'color: #FFD166; font-weight: 700;'}">
-          <i class="fas fa-file-pdf"></i> Provas & Gabaritos PDF
-        </button>
-        ${canManageStudents ? `
-          <button class="chip-btn ${adminSubTab === 'students' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('students')" style="flex-shrink: 0; white-space: nowrap;">
-            <i class="fas fa-users"></i> Alunos Matriculados (${students.length})
+          <button class="admin-nav-btn ${adminSubTab === 'kata-videos' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('kata-videos')" title="Gerenciar Vídeos dos 26 Kata">
+            <div class="admin-nav-btn-header">
+              <div class="admin-nav-btn-icon" style="background: rgba(255, 183, 3, 0.18); border: 1px solid rgba(255, 183, 3, 0.4); color: #FFB703;">
+                <i class="fas fa-video"></i>
+              </div>
+              <span class="admin-nav-btn-badge badge-amarela">26 Katas</span>
+            </div>
+            <div class="admin-nav-btn-title">Vídeos dos 26 Kata</div>
+            <div class="admin-nav-btn-desc">Links oficiais do YouTube e mídias</div>
           </button>
-        ` : ''}
-        <button class="chip-btn ${adminSubTab === 'questions' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('questions')" style="flex-shrink: 0; white-space: nowrap;">
-          <i class="fas fa-question-circle"></i> Banco de Questões (${quizBankCount})
-        </button>
-        <button class="chip-btn ${adminSubTab === 'quizzes' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('quizzes')" style="flex-shrink: 0; white-space: nowrap;">
-          <i class="fas fa-clipboard-list"></i> Provas & Simulados (${quizSubmissions.length})
-        </button>
-        <button class="chip-btn ${adminSubTab === 'dojos' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('dojos')" style="flex-shrink: 0; white-space: nowrap;">
-          <i class="fas fa-torii-gate"></i> Dojos / Unidades (${dojos.length})
-        </button>
-        <button class="chip-btn ${adminSubTab === 'kata-videos' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('kata-videos')" style="flex-shrink: 0; white-space: nowrap;">
-          <i class="fas fa-video"></i> Vídeos dos 26 Kata
-        </button>
-        <button class="chip-btn ${adminSubTab === 'files' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('files')" style="flex-shrink: 0; white-space: nowrap;">
-          <i class="fas fa-folder-open"></i> Arquivos & Mídias
-        </button>
+
+          <button class="admin-nav-btn ${adminSubTab === 'questions' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('questions')" title="Banco de Questões Teóricas">
+            <div class="admin-nav-btn-header">
+              <div class="admin-nav-btn-icon" style="background: rgba(56, 189, 248, 0.18); border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8;">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <span class="admin-nav-btn-badge" style="background: rgba(56, 189, 248, 0.2); color: #7DD3FC; border: 1px solid rgba(56, 189, 248, 0.4);">${quizBankCount} Questões</span>
+            </div>
+            <div class="admin-nav-btn-title">Banco de Questões</div>
+            <div class="admin-nav-btn-desc">Perguntas, respostas e ilustrações</div>
+          </button>
+
+          <button class="admin-nav-btn ${adminSubTab === 'exam-generator' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('exam-generator')" title="Gerador de Provas e Gabaritos em PDF">
+            <div class="admin-nav-btn-header">
+              <div class="admin-nav-btn-icon" style="background: rgba(245, 190, 0, 0.2); border: 1px solid rgba(245, 190, 0, 0.5); color: #FFD166;">
+                <i class="fas fa-file-pdf"></i>
+              </div>
+              <span class="admin-nav-btn-badge badge-amarela">Gerador A4</span>
+            </div>
+            <div class="admin-nav-btn-title">Provas & Gabaritos PDF</div>
+            <div class="admin-nav-btn-desc">Criar e imprimir exames em A4/Paisagem</div>
+          </button>
+
+          <button class="admin-nav-btn ${adminSubTab === 'quizzes' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('quizzes')" title="Provas e Simulados Realizados">
+            <div class="admin-nav-btn-header">
+              <div class="admin-nav-btn-icon" style="background: rgba(167, 139, 250, 0.18); border: 1px solid rgba(167, 139, 250, 0.4); color: #C4B5FD;">
+                <i class="fas fa-clipboard-check"></i>
+              </div>
+              <span class="admin-nav-btn-badge" style="background: rgba(167, 139, 250, 0.2); color: #DDD6FE; border: 1px solid rgba(167, 139, 250, 0.4);">${quizSubmissions.length} Feitos</span>
+            </div>
+            <div class="admin-nav-btn-title">Provas & Simulados</div>
+            <div class="admin-nav-btn-desc">Histórico de provas, notas e ranking</div>
+          </button>
+
+          <button class="admin-nav-btn ${adminSubTab === 'dojos' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('dojos')" title="Gerenciar Dojos e Unidades">
+            <div class="admin-nav-btn-header">
+              <div class="admin-nav-btn-icon" style="background: rgba(251, 113, 133, 0.18); border: 1px solid rgba(251, 113, 133, 0.4); color: #FDA4AF;">
+                <i class="fas fa-torii-gate"></i>
+              </div>
+              <span class="admin-nav-btn-badge" style="background: rgba(251, 113, 133, 0.2); color: #FECDD3; border: 1px solid rgba(251, 113, 133, 0.4);">${dojos.length} Dojos</span>
+            </div>
+            <div class="admin-nav-btn-title">Dojos / Unidades</div>
+            <div class="admin-nav-btn-desc">Polos e academias de treino</div>
+          </button>
+
+          <button class="admin-nav-btn ${adminSubTab === 'files' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('files')" title="Central de Arquivos e Mídias">
+            <div class="admin-nav-btn-header">
+              <div class="admin-nav-btn-icon" style="background: rgba(96, 165, 250, 0.18); border: 1px solid rgba(96, 165, 250, 0.4); color: #93C5FD;">
+                <i class="fas fa-folder-open"></i>
+              </div>
+              <span class="admin-nav-btn-badge" style="background: rgba(96, 165, 250, 0.2); color: #BFDBFE; border: 1px solid rgba(96, 165, 250, 0.4);">Downloads</span>
+            </div>
+            <div class="admin-nav-btn-title">Arquivos & Mídias</div>
+            <div class="admin-nav-btn-desc">Apostilas, logos e regulamentos</div>
+          </button>
+
+          <button class="admin-nav-btn" onclick="window.TKST_APP.navigateTo('glossary')" title="Gerenciar Dicionário Japonês">
+            <div class="admin-nav-btn-header">
+              <div class="admin-nav-btn-icon" style="background: rgba(244, 63, 94, 0.18); border: 1px solid rgba(244, 63, 94, 0.4); color: #FB7185;">
+                <i class="fas fa-book-bookmark"></i>
+              </div>
+              <span class="admin-nav-btn-badge" style="background: rgba(244, 63, 94, 0.2); color: #FDA4AF; border: 1px solid rgba(244, 63, 94, 0.4);">Termos</span>
+            </div>
+            <div class="admin-nav-btn-title">Dicionário Japonês</div>
+            <div class="admin-nav-btn-desc">Termos, áudios, ilustrações e exclusão</div>
+          </button>
+        </div>
       </div>
+
+      <!-- Banner Indicador da Aba Ativa -->
+      ${adminSubTab ? `
+        <div class="admin-active-tab-banner">
+          <div style="display: flex; align-items: center; gap: 9px; min-width: 0;">
+            <i class="${adminSubTab === 'students' ? 'fas fa-users' : (adminSubTab === 'kata-videos' ? 'fas fa-video' : (adminSubTab === 'questions' ? 'fas fa-question-circle' : (adminSubTab === 'exam-generator' ? 'fas fa-file-pdf' : (adminSubTab === 'quizzes' ? 'fas fa-clipboard-check' : (adminSubTab === 'dojos' ? 'fas fa-torii-gate' : (adminSubTab === 'files' ? 'fas fa-folder-open' : 'fas fa-user-clock'))))))}" style="color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;"></i>
+            <span style="font-weight: 800; color: #FFF; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${adminSubTab === 'students' ? 'Alunos Matriculados' : (adminSubTab === 'kata-videos' ? 'Vídeos dos 26 Kata' : (adminSubTab === 'questions' ? 'Banco de Questões Teóricas' : (adminSubTab === 'exam-generator' ? 'Gerador de Provas & Gabaritos PDF' : (adminSubTab === 'quizzes' ? 'Provas & Simulados Realizados' : (adminSubTab === 'dojos' ? 'Dojos & Unidades TKST' : (adminSubTab === 'files' ? 'Arquivos & Mídias para Download' : 'Solicitações de Cadastro Pendentes'))))))}
+            </span>
+            <span class="badge badge-verde" style="font-size: 0.68rem; padding: 2px 7px; flex-shrink: 0;">Aba Aberta</span>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.setAdminSubTab(null)" style="font-size: 0.75rem; padding: 5px 12px; border-radius: 6px; flex-shrink: 0;" title="Recolher e fechar aba">
+            <i class="fas fa-times"></i> Fechar Aba
+          </button>
+        </div>
+      ` : `
+        <div style="text-align: center; padding: 32px 18px; background: rgba(18, 23, 34, 0.65); border: 1.5px dashed rgba(255, 183, 3, 0.3); border-radius: var(--radius-lg); margin-top: 6px; margin-bottom: 24px;">
+          <i class="fas fa-hand-pointer" style="font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 12px; display: inline-block;"></i>
+          <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.1rem; margin-bottom: 4px;">Selecione uma opção acima para abrir</h4>
+          <p style="font-size: 0.85rem; color: #94A3B8; margin: 0 auto; max-width: 440px;">
+            Clique nos botões do menu acima (Alunos, Kata, Questões, Provas PDF, etc.) para abrir o gerenciador desejado.
+          </p>
+        </div>
+      `}
 
       ${adminSubTab === 'pending' ? `
         <!-- PENDING STUDENTS APPROVAL LIST -->
@@ -5834,9 +5869,23 @@ document.addEventListener('DOMContentLoaded', () => {
       authMode = mode;
       renderLogin();
     },
-    setAdminSubTab: (subTab) => {
-      adminSubTab = subTab;
+    setAdminSubTab: (subTab, forceOpen = false) => {
+      if (subTab === null) {
+        adminSubTab = null;
+      } else if (adminSubTab === subTab && !forceOpen) {
+        adminSubTab = null;
+      } else {
+        adminSubTab = subTab;
+      }
       renderAdminMaster();
+      if (adminSubTab) {
+        setTimeout(() => {
+          const target = document.querySelector('.admin-active-tab-banner') || document.querySelector('.admin-table-container');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 60);
+      }
       if (subTab === 'quizzes' && window.TKST_AUTH && window.TKST_AUTH.pullQuizSubmissionsFromCloud) {
         window.TKST_AUTH.pullQuizSubmissionsFromCloud().then(() => {
           if (adminSubTab === 'quizzes') renderAdminMaster();
