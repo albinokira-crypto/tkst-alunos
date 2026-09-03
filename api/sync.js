@@ -153,6 +153,19 @@ module.exports = async (req, res) => {
       } catch(e) {}
     }
 
+    // Hidrata vídeos dos Katas do assets/data/kata-videos.json se a lista em memória estiver vazia
+    if (!inMemoryData.custom_videos || Object.keys(inMemoryData.custom_videos).length === 0) {
+      try {
+        const localVideosPath = path.resolve(process.cwd(), 'assets/data/kata-videos.json');
+        if (fs.existsSync(localVideosPath)) {
+          const vParsed = JSON.parse(fs.readFileSync(localVideosPath, 'utf8'));
+          if (vParsed && typeof vParsed === 'object' && Object.keys(vParsed).length > 0) {
+            inMemoryData.custom_videos = vParsed;
+          }
+        }
+      } catch(e) {}
+    }
+
     return res.status(200).json({
       success: true,
       data: inMemoryData

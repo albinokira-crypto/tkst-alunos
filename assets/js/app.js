@@ -475,9 +475,38 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function normalizeKataVideos(videoEntry, kata) {
-    if (!videoEntry) {
-      if (kata && (kata.youtubeUrl || kata.videoUrl || kata.videoFileName)) {
-        const defaultUrl = kata.youtubeUrl || kata.videoUrl || ('videos/' + kata.videoFileName);
+    let list = [];
+    if (typeof videoEntry === 'string' && videoEntry.trim()) {
+      list = [{
+        id: 'vid_1',
+        title: 'Vídeo Técnico Principal',
+        description: 'Demonstração em vídeo do Kata.',
+        url: videoEntry.trim()
+      }];
+    } else if (Array.isArray(videoEntry) && videoEntry.length > 0) {
+      list = videoEntry.filter(v => v && v.url && v.url.trim()).map((v, i) => ({
+        id: v.id || `vid_${i + 1}`,
+        title: (v.title && v.title.trim()) || `Vídeo ${i + 1}`,
+        description: (v.description && v.description.trim()) || '',
+        url: v.url.trim()
+      }));
+    }
+
+    // Se não houver vídeos customizados válidos, utiliza os vídeos técnicos oficiais padrão
+    if (list.length === 0) {
+      if (kata && window.TKST_DEFAULT_KATA_VIDEOS && window.TKST_DEFAULT_KATA_VIDEOS[kata.id]) {
+        return window.TKST_DEFAULT_KATA_VIDEOS[kata.id];
+      }
+      if (kata && kata.youtubeUrl) {
+        return [{
+          id: 'default_1',
+          title: 'Demonstração Oficial TKST',
+          description: 'Vídeo técnico oficial com os movimentos e ritmo tradicional Shotokan.',
+          url: kata.youtubeUrl
+        }];
+      }
+      if (kata && (kata.videoUrl || kata.videoFileName)) {
+        const defaultUrl = kata.videoUrl || ('videos/' + kata.videoFileName);
         return [{
           id: 'default_1',
           title: 'Demonstração Oficial TKST',
@@ -485,26 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
           url: defaultUrl
         }];
       }
-      return [];
     }
-    if (typeof videoEntry === 'string') {
-      if (!videoEntry.trim()) return [];
-      return [{
-        id: 'vid_1',
-        title: 'Vídeo Técnico Principal',
-        description: 'Demonstração em vídeo do Kata.',
-        url: videoEntry.trim()
-      }];
-    }
-    if (Array.isArray(videoEntry)) {
-      return videoEntry.filter(v => v && v.url && v.url.trim()).map((v, i) => ({
-        id: v.id || `vid_${i + 1}`,
-        title: (v.title && v.title.trim()) || `Vídeo ${i + 1}`,
-        description: (v.description && v.description.trim()) || '',
-        url: v.url.trim()
-      }));
-    }
-    return [];
+    return list;
   }
 
   function extractYouTubeId(url) {

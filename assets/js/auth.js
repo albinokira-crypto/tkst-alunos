@@ -616,6 +616,64 @@
     }
   }
 
+  // =========================================================================
+  // KATA VIDEOS PERMANENT CLOUD SYNC & GITHUB STORAGE
+  // =========================================================================
+  async function pullKataVideosFromCloud() {
+    try {
+      let cloudVideos = null;
+      try {
+        const res = await fetch('/api/kata-commit', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.success && json.data && typeof json.data === 'object' && Object.keys(json.data).length > 0) {
+            cloudVideos = json.data;
+          }
+        }
+      } catch(e) {}
+
+      if (!cloudVideos) {
+        try {
+          const res = await fetch('assets/data/kata-videos.json?_=' + Date.now(), { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && typeof json === 'object' && Object.keys(json).length > 0) {
+              cloudVideos = json;
+            }
+          }
+        } catch(e) {}
+      }
+
+      if (cloudVideos) {
+        let localVideos = {};
+        try { localVideos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {}; } catch(e) {}
+        const merged = { ...cloudVideos, ...localVideos };
+        const vStr = JSON.stringify(merged);
+        if (localStorage.getItem(STORAGE_KEY_VIDEOS) !== vStr) {
+          localStorage.setItem(STORAGE_KEY_VIDEOS, vStr);
+          window.dispatchEvent(new CustomEvent('tkst_videos_updated', { detail: merged }));
+        }
+      }
+    } catch(err) {
+      console.warn('Kata videos pull notice:', err);
+    }
+  }
+
+  async function pushKataVideosToServer(videos) {
+    if (!videos || typeof videos !== 'object') return;
+    try {
+      fetch('/api/kata-commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          custom_videos: videos
+        })
+      }).catch(() => {});
+    } catch(err) {
+      console.warn('Kata videos server commit notice:', err);
+    }
+  }
+
   async function pushToCloud() {
     if (isSyncing) {
       syncPending = true;
@@ -997,7 +1055,10 @@
       // 4. Endpoint dedicado de glossário japonês permanente no GitHub
       pullGlossaryFromCloud().catch(() => {});
 
-      // 5. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
+      // 5. Endpoint dedicado de vídeos dos Katas permanente no GitHub
+      pullKataVideosFromCloud().catch(() => {});
+
+      // 6. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
       try {
         const apiRes = await fetch('/api/sync', { cache: 'no-store' });
         if (apiRes.ok) {
@@ -1222,6 +1283,26 @@
       localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify({}));
     }
 
+    // Inicializa vídeos oficiais dos 26 Kata garantindo que nenhum Kata fique sem vídeo
+    try {
+      let currentVideos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS));
+      if (!currentVideos || typeof currentVideos !== 'object' || Object.keys(currentVideos).length === 0) {
+        currentVideos = window.TKST_DEFAULT_KATA_VIDEOS || {};
+        localStorage.setItem(STORAGE_KEY_VIDEOS, JSON.stringify(currentVideos));
+      } else if (window.TKST_DEFAULT_KATA_VIDEOS) {
+        let changedVideos = false;
+        Object.keys(window.TKST_DEFAULT_KATA_VIDEOS).forEach(kId => {
+          if (!currentVideos[kId] || (Array.isArray(currentVideos[kId]) && currentVideos[kId].length === 0)) {
+            currentVideos[kId] = window.TKST_DEFAULT_KATA_VIDEOS[kId];
+            changedVideos = true;
+          }
+        });
+        if (changedVideos) {
+          localStorage.setItem(STORAGE_KEY_VIDEOS, JSON.stringify(currentVideos));
+        }
+      }
+    } catch(e) {}
+
     // Pull from cloud immediately on boot
     pullFromCloud(false);
   }
@@ -1398,15 +1479,25 @@
             }));
           }
         });
+
+        // Garante que todo Kata sem vídeo customizado receba os vídeos oficiais recuperados
+        const defaults = window.TKST_DEFAULT_KATA_VIDEOS || {};
+        Object.keys(defaults).forEach(kataId => {
+          if (!normalized[kataId] || normalized[kataId].length === 0) {
+            normalized[kataId] = defaults[kataId];
+          }
+        });
+
         return normalized;
       } catch (e) {
-        return {};
+        return window.TKST_DEFAULT_KATA_VIDEOS || {};
       }
     },
 
     saveCustomKataVideos: function(videos) {
       localStorage.setItem(STORAGE_KEY_VIDEOS, JSON.stringify(videos || {}));
       pushToCloud();
+      pushKataVideosToServer(videos);
       window.dispatchEvent(new CustomEvent('tkst_videos_updated', { detail: videos }));
     },
 

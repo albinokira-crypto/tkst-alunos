@@ -30,6 +30,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/kata-commit.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "**/*",
       "use": "@vercel/static"
     }
@@ -62,6 +66,10 @@
     {
       "src": "/api/submission-commit",
       "dest": "/api/submission-commit.js"
+    },
+    {
+      "src": "/api/kata-commit",
+      "dest": "/api/kata-commit.js"
     },
     {
       "handle": "filesystem"

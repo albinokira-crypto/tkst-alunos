@@ -1,6 +1,7 @@
 window.TKST_KATAS = [
   {
     "id": "1-heian-shodan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=9D2yOzDsW8k",
     "sheetName": "1-Heian Shodan",
     "name": "Heian Shodan",
     "kanji": "平安初段",
@@ -142,6 +143,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "2-heian-nidan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=_ZPODff5Vew",
     "sheetName": "2-Heian Nidan",
     "name": "Heian Nidan",
     "kanji": "平安二段",
@@ -379,6 +381,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "3-heian-sandan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=28T1JbwbjuE&t=2s",
     "sheetName": "3-Heian Sandan",
     "name": "Heian Sandan",
     "kanji": "平安三段",
@@ -556,6 +559,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "4-heian-yondan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=qxw4Guoogu0&t=24s",
     "sheetName": "4-Heian Yondan",
     "name": "Heian Yondan",
     "kanji": "平安四段",
@@ -817,6 +821,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "5-heian-godan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=dkCHEv5y51A&t=26s",
     "sheetName": "5-Heian Godan",
     "name": "Heian Godan",
     "kanji": "平安五段",
@@ -976,6 +981,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "6-tekki-shodan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=Cx0Qwnxq0q4&t=20s",
     "sheetName": "6-Tekki Shodan",
     "name": "Tekki Shodan",
     "kanji": "鉄騎初段",
@@ -1207,6 +1213,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "13-tekki-nidan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=9uqw0g3E4BY&t=23s",
     "sheetName": "13-Tekki Nidan",
     "name": "Tekki Nidan",
     "kanji": "鉄騎二段",
@@ -1420,6 +1427,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "14-tekki-sandan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=-bmF_F2bDoc",
     "sheetName": "14-Tekki Sandan",
     "name": "Tekki Sandan",
     "kanji": "鉄騎三段",
@@ -1723,6 +1731,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "7-bassai-dai",
+    "youtubeUrl": "https://www.youtube.com/watch?v=tXPZFarJMh0",
     "sheetName": "7-Bassai Dai",
     "name": "Bassai Dai",
     "kanji": "披塞大",
@@ -1990,6 +1999,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "16-bassai-sho",
+    "youtubeUrl": "https://www.youtube.com/watch?v=2VLz6zksKvk",
     "sheetName": "16-Bassai Sho",
     "name": "Bassai Sho",
     "kanji": "披塞小",
@@ -2215,6 +2225,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "8-kanku-dai",
+    "youtubeUrl": "https://www.youtube.com/watch?v=Jkv8Ks_fEqk",
     "sheetName": "8-Kanku Dai",
     "name": "Kanku Dai",
     "kanji": "観空大",
@@ -2398,6 +2409,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "17-kanku-sho",
+    "youtubeUrl": "https://www.youtube.com/watch?v=R1KqSlnu4JE",
     "sheetName": "17-Kanku Sho",
     "name": "Kanku Sho",
     "kanji": "観空小",
@@ -2617,6 +2629,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "11-jitte",
+    "youtubeUrl": "https://www.youtube.com/watch?v=u4Hw9nipExg",
     "sheetName": "11-Jitte",
     "name": "Jitte",
     "kanji": "十手",
@@ -2631,6 +2644,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "12-hangetsu",
+    "youtubeUrl": "https://www.youtube.com/watch?v=52cfzR0S6rU",
     "sheetName": "12-Hangetsu",
     "name": "Hangetsu",
     "kanji": "半月",
@@ -2802,6 +2816,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "10-empi",
+    "youtubeUrl": "https://www.youtube.com/watch?v=SW5907Eeo7c&t=82s",
     "sheetName": "10-Empi",
     "name": "Empi",
     "kanji": "燕飛",
@@ -2816,6 +2831,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "15-gangaku",
+    "youtubeUrl": "https://www.youtube.com/watch?v=4HobC6dj8jA",
     "sheetName": "15-Gangaku",
     "name": "Gankaku",
     "kanji": "岩鶴",
@@ -3047,6 +3063,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "9-jion",
+    "youtubeUrl": "https://www.youtube.com/watch?v=Lrr-c5RCKpo",
     "sheetName": "9-Jion",
     "name": "Jion",
     "kanji": "慈恩",
@@ -3308,6 +3325,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "20-chinte",
+    "youtubeUrl": "https://www.youtube.com/watch?v=ou14EWbogB0",
     "sheetName": "20-Chinte",
     "name": "Chinte",
     "kanji": "珍手",
@@ -3322,6 +3340,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "22-sochin",
+    "youtubeUrl": "https://www.youtube.com/watch?v=jjD5ZqUEeJo",
     "sheetName": "22-Sochin",
     "name": "Sochin",
     "kanji": "壯鎭",
@@ -3499,6 +3518,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "nijushiho",
+    "youtubeUrl": "https://www.youtube.com/watch?v=efxiTKgiXS8",
     "sheetName": "Nijushiho",
     "name": "Nijūshiho",
     "kanji": "二十四歩",
@@ -3658,6 +3678,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "unsu",
+    "youtubeUrl": "https://www.youtube.com/watch?v=X-Dq32yOvSY",
     "sheetName": "Unsu",
     "name": "Unsu",
     "kanji": "雲手",
@@ -3793,6 +3814,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "18-gojushiho-dai",
+    "youtubeUrl": "https://www.youtube.com/watch?v=r-77w9I5kO8",
     "sheetName": "18-Gojushiho Dai",
     "name": "Gojūshiho Dai",
     "kanji": "五十四歩大",
@@ -4024,6 +4046,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "19-gojushiho-sho",
+    "youtubeUrl": "https://www.youtube.com/watch?v=sFAzqnAW9NM",
     "sheetName": "19-Gojushiho Sho",
     "name": "Gojūshiho Sho",
     "kanji": "五十四歩小",
@@ -4237,6 +4260,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "24-meikyo",
+    "youtubeUrl": "https://www.youtube.com/watch?v=MDbZdXCdEVE",
     "sheetName": "24-Meikyo",
     "name": "Meikyō",
     "kanji": "明鏡",
@@ -4426,6 +4450,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "25-jiin",
+    "youtubeUrl": "https://www.youtube.com/watch?v=RiG93fNAmz0",
     "sheetName": "25-Jiin",
     "name": "Ji'in",
     "kanji": "慈陰",
@@ -4693,6 +4718,7 @@ window.TKST_KATAS = [
   },
   {
     "id": "26-wankan",
+    "youtubeUrl": "https://www.youtube.com/watch?v=py_aMWc4HDo",
     "sheetName": "26-Wankan",
     "name": "Wankan",
     "kanji": "王冠",
@@ -4706,3 +4732,20 @@ window.TKST_KATAS = [
     "pdfUrl": "assets/pdf/kata/26- Wankan.pdf"
   }
 ];
+
+// Vídeos Oficiais Padrão dos 26 Kata (Recuperados e Blindados)
+window.TKST_DEFAULT_KATA_VIDEOS = (function() {
+  const map = {};
+  (window.TKST_KATAS || []).forEach(k => {
+    if (k.id && k.youtubeUrl) {
+      map[k.id] = [{
+        id: 'vid_default_' + k.id,
+        title: 'Demonstração Oficial TKST',
+        description: 'Execução técnica tradicional do Kata.',
+        url: k.youtubeUrl
+      }];
+    }
+  });
+  return map;
+})();
+
