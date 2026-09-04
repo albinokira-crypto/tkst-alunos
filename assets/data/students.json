@@ -60,8 +60,18 @@
       "phone": "21981617690",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1788541106890,
-      "lastActive": 1788541086336
+      "updatedAt": 1788541173763,
+      "lastActive": 1788541149890,
+      "quizScores": [
+        {
+          "date": "2026-09-04T16:59:33.760Z",
+          "score": 10,
+          "total": 10,
+          "percentage": 100,
+          "beltLevel": "Faixa Branca 7º Kyu",
+          "beltKyu": 7
+        }
+      ]
     },
     {
       "id": "std_1786839088915",
@@ -593,5 +603,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788541106841
+  "updatedAt": 1788541173743
 }
