@@ -559,7 +559,7 @@
       "status": "approved",
       "approvedAt": "2026-08-31T18:02:48.992Z",
       "createdAt": "2026-08-31T17:31:00.600Z",
-      "updatedAt": 1788618447159,
+      "updatedAt": 1788618448009,
       "statusUpdatedAt": 1788199368996,
       "phone": "21 988516728",
       "notes": "Novo cadastro realizado pelo portal.",
@@ -615,6 +615,14 @@
         },
         {
           "date": "2026-09-05T14:27:27.158Z",
+          "score": 10,
+          "total": 10,
+          "percentage": 100,
+          "beltLevel": "Faixa Branca 7º Kyu",
+          "beltKyu": 7
+        },
+        {
+          "date": "2026-09-05T14:27:28.008Z",
           "score": 10,
           "total": 10,
           "percentage": 100,
@@ -682,5 +690,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788618448380
+  "updatedAt": 1788618449108
 }
