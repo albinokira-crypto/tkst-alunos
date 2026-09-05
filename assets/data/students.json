@@ -38,8 +38,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1788565615147,
-      "statusUpdatedAt": 1788565615147,
+      "updatedAt": 1788618325187,
+      "statusUpdatedAt": 1788618325187,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -111,7 +111,7 @@
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1786998590369,
       "statusUpdatedAt": 1,
-      "updatedAt": 1787239364414
+      "updatedAt": 1787002858209
     },
     {
       "id": "std_1787351605155_g3rqr",
@@ -119,7 +119,7 @@
       "email": "almir@tkst.local",
       "password": "1SGmagrin",
       "name": "Almir Gustavo Silva Werly",
-      "role": "admin",
+      "role": "aluno",
       "currentBelt": "Faixa Preta (Nidan - 2º Dan)",
       "targetBelt": "Faixa Preta",
       "currentKyu": 0,
@@ -559,11 +559,21 @@
       "status": "approved",
       "approvedAt": "2026-08-31T18:02:48.992Z",
       "createdAt": "2026-08-31T17:31:00.600Z",
-      "updatedAt": 1788199368996,
+      "updatedAt": 1788618427410,
       "statusUpdatedAt": 1788199368996,
       "phone": "21 988516728",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1788213312681
+      "lastActive": 1788618426404,
+      "quizScores": [
+        {
+          "date": "2026-09-05T14:27:07.408Z",
+          "score": 10,
+          "total": 10,
+          "percentage": 100,
+          "beltLevel": "Faixa Branca 7º Kyu",
+          "beltKyu": 7
+        }
+      ]
     },
     {
       "id": "std_1788521342680_zfcsv",
@@ -624,5 +634,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788565705264
+  "updatedAt": 1788618429253
 }
