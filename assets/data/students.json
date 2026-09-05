@@ -38,8 +38,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1788618325187,
-      "statusUpdatedAt": 1788618325187,
+      "updatedAt": 1788639263484,
+      "statusUpdatedAt": 1788639263484,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -60,8 +60,8 @@
       "phone": "21981617690",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1788541173763,
-      "lastActive": 1788541149890,
+      "updatedAt": 1788639341708,
+      "lastActive": 1788639327914,
       "quizScores": [
         {
           "date": "2026-09-04T16:59:33.760Z",
@@ -70,6 +70,14 @@
           "percentage": 100,
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
+        },
+        {
+          "date": "2026-09-05T20:15:41.706Z",
+          "score": 9,
+          "total": 10,
+          "percentage": 90,
+          "beltLevel": "Faixa Amarela 6º Kyu",
+          "beltKyu": 6
         }
       ]
     },
@@ -119,7 +127,7 @@
       "email": "almir@tkst.local",
       "password": "1SGmagrin",
       "name": "Almir Gustavo Silva Werly",
-      "role": "aluno",
+      "role": "admin",
       "currentBelt": "Faixa Preta (Nidan - 2º Dan)",
       "targetBelt": "Faixa Preta",
       "currentKyu": 0,
@@ -215,7 +223,7 @@
       "phone": "21979822652",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1787239626358
+      "updatedAt": 1787241753822
     },
     {
       "id": "std_1786982056436_rcskv",
@@ -272,9 +280,9 @@
     },
     {
       "id": "std_1787063008306_96bzm",
-      "username": "havi",
-      "email": "havi@tkst.local",
-      "password": "vitor23",
+      "username": "pietro01",
+      "email": "pietro01@tkst.local",
+      "password": "a1234",
       "name": "Pietro",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha (5º Kyu)",
@@ -284,7 +292,7 @@
       "startDate": "2026-08-18",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "approvedAt": "2026-08-18T14:25:17.232Z",
+      "approvedAt": "2026-09-03T00:56:02.784Z",
       "createdAt": "2026-08-18T14:23:28.307Z",
       "updatedAt": 1788396962784,
       "statusUpdatedAt": 1788396962784,
@@ -770,5 +778,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788618718218
+  "updatedAt": 1788639341477
 }
