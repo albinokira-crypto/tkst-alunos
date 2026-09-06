@@ -4975,5 +4975,306 @@ body.login-view-active .content-body {
   overflow-y: auto;
 }
 
+/* ==========================================================================
+   SISTEMA DE ÁLBUNS & SUBÁLBUNS TKST
+   ========================================================================== */
+.albums-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  .albums-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.album-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.album-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 183, 3, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+.album-card-cover-wrap {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background: #0B0E14;
+  overflow: hidden;
+}
+
+.album-card-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.album-card:hover .album-card-cover {
+  transform: scale(1.05);
+}
+
+.album-card-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(13, 17, 26, 0.95) 0%, rgba(13, 17, 26, 0.3) 60%, rgba(0, 0, 0, 0.1) 100%);
+}
+
+.album-badge-top {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(11, 14, 20, 0.85);
+  border: 1px solid rgba(255, 183, 3, 0.5);
+  color: var(--accent-gold);
+  font-size: 0.72rem;
+  font-weight: 800;
+  backdrop-filter: blur(4px);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.album-count-top {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(11, 14, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFF;
+  font-size: 0.72rem;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+}
+
+.album-card-body {
+  padding: 14px 16px;
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.album-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #FFF;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.album-card-desc {
+  font-size: 0.8rem;
+  color: #94A3B8;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.album-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.76rem;
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+/* Subálbum Card (Para cada exame de faixa) */
+.subalbums-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  .subalbums-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.subalbum-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid rgba(230, 57, 70, 0.35);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.subalbum-card:hover {
+  transform: translateX(4px);
+  border-color: var(--accent-gold);
+  background: rgba(230, 57, 70, 0.08);
+}
+
+.subalbum-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.subalbum-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.subalbum-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #FFF;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subalbum-meta {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Barra de Navegação de Retorno (Breadcrumb) */
+.media-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(18, 23, 34, 0.85);
+  border: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.media-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFF;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.media-back-btn:hover {
+  background: rgba(230, 57, 70, 0.25);
+  border-color: #FF808A;
+  color: #FF808A;
+}
+
+/* Barra de Seleção Múltipla (Batch Delete) */
+.media-selection-bar {
+  position: sticky;
+  top: 70px;
+  z-index: 95;
+  background: linear-gradient(135deg, rgba(230, 57, 70, 0.95), rgba(18, 23, 34, 0.98));
+  border: 1px solid rgba(230, 57, 70, 0.6);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  backdrop-filter: blur(8px);
+}
+
+.media-selection-title {
+  color: #FFF;
+  font-size: 0.86rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.media-selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Checkbox overlay em cada card de mídia */
+.media-card-select-checkbox {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(11, 14, 20, 0.85);
+  border: 2px solid #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.media-card-select-checkbox.selected {
+  background: #E63946;
+  border-color: #FF808A;
+  color: #FFF;
+}
+
+.media-card.is-selected {
+  outline: 3px solid #E63946;
+  box-shadow: 0 0 16px rgba(230, 57, 70, 0.5);
+}
+
+
 
 

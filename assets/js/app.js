@@ -93,14 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.88';
+  const APP_DISPLAY_VERSION = 'V-1.90';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-1.88. Toque para atualizar o app.';
+    appVersionBadgeEl.title = 'Versão atual V-1.90. Toque para atualizar o app.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.88)?')) {
+      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.90)?')) {
         if ('caches' in window) {
           caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))).then(() => {
             window.location.reload(true);
@@ -2548,7 +2548,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Quick Stats (Minimizados em 1 Linha) -->
+      <!-- Quick Stats (Minimizados em 1 Linha: Rigorosamente 5 Botões Lado a Lado) -->
       <div class="stats-grid">
         ${!isAdmin ? `
           <div class="stat-card" onclick="window.TKST_APP.switchTab('my-exam')" style="cursor: pointer;" title="Ver Matéria de Exame">
@@ -2576,23 +2576,13 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="stat-label">Biblioteca</div>
         </div>
 
-        ${!isAdmin ? `
-          <div class="stat-card" onclick="window.TKST_APP.switchTab('kumite')" style="cursor: pointer;" title="Ver Guia de Kumite">
-            <div class="stat-icon-box blue">
-              <i class="fas fa-fist-raised"></i>
-            </div>
-            <div class="stat-value">Kumite</div>
-            <div class="stat-label">5 Modos</div>
+        <div class="stat-card" onclick="window.TKST_APP.switchTab('media')" style="cursor: pointer; border-color: rgba(230, 57, 70, 0.4); background: rgba(230, 57, 70, 0.08);" title="Abrir Álbuns de Fotos e Vídeos">
+          <div class="stat-icon-box crimson">
+            <i class="fas fa-photo-video"></i>
           </div>
-        ` : `
-          <div class="stat-card" onclick="window.TKST_APP.switchTab('admin'); window.TKST_APP.setAdminSubTab('questions');" style="cursor: pointer;" title="Gerenciar Banco de Questões">
-            <div class="stat-icon-box purple">
-              <i class="fas fa-question-circle"></i>
-            </div>
-            <div class="stat-value">${(window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank().length : (window.TKST_DEFAULT_QUIZ_BANK ? window.TKST_DEFAULT_QUIZ_BANK.length : 138))}</div>
-            <div class="stat-label">Questões</div>
-          </div>
-        `}
+          <div class="stat-value" style="color: #FF808A;">Galeria</div>
+          <div class="stat-label">Álbuns</div>
+        </div>
 
         ${!isAdmin ? `
           <div class="stat-card" onclick="window.TKST_APP.switchTab('quiz')" style="cursor: pointer;" title="Fazer Simulado Teórico">
@@ -2619,28 +2609,20 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="stat-value">Dicionário</div>
           <div class="stat-label">Japonês</div>
         </div>
-
-        <div class="stat-card" onclick="window.TKST_APP.switchTab('media')" style="cursor: pointer; border-color: rgba(230, 57, 70, 0.4); background: rgba(230, 57, 70, 0.08);" title="Abrir Galeria de Fotos e Vídeos">
-          <div class="stat-icon-box crimson">
-            <i class="fas fa-photo-video"></i>
-          </div>
-          <div class="stat-value" style="color: #FF808A;">Galeria</div>
-          <div class="stat-label">Fotos & Vídeos</div>
-        </div>
       </div>
 
-      <!-- Banner Oficial de Acesso Direto à Galeria TKST -->
-      <div onclick="window.TKST_APP.switchTab('media')" style="margin-bottom: 20px; padding: 14px 18px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(230, 57, 70, 0.16), rgba(255, 183, 3, 0.12)); border: 1px solid rgba(255, 183, 3, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);" title="Toque para ver e baixar fotos e vídeos oficiais">
+      <!-- Banner Oficial de Acesso Direto aos Álbuns da Galeria TKST -->
+      <div onclick="window.TKST_APP.switchTab('media')" style="margin-bottom: 20px; padding: 14px 18px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(230, 57, 70, 0.16), rgba(255, 183, 3, 0.12)); border: 1px solid rgba(255, 183, 3, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);" title="Toque para ver os álbuns de fotos e vídeos oficiais">
         <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
           <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(230, 57, 70, 0.25); border: 1px solid rgba(230, 57, 70, 0.5); display: flex; align-items: center; justify-content: center; color: #FF808A; font-size: 1.3rem; flex-shrink: 0;">
             <i class="fas fa-photo-video"></i>
           </div>
           <div style="min-width: 0;">
             <div style="font-weight: 800; color: #FFF; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              Galeria Oficial TKST <span class="badge badge-amarela" style="font-size: 0.65rem; padding: 1px 6px;">NOVO</span>
+              Álbuns Oficiais de Fotos & Vídeos <span class="badge badge-amarela" style="font-size: 0.65rem; padding: 1px 6px;">OFICIAL</span>
             </div>
             <div style="font-size: 0.78rem; color: #CBD5E1; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              Fotos e vídeos de exames, treinos e campeonatos. Veja e baixe direto no celular!
+              Exame de Faixa (com subálbuns), Competições e Vídeos Didáticos. Veja e baixe direto no celular!
             </div>
           </div>
         </div>
@@ -6010,25 +5992,250 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // 6.7 GALERIA DE MÍDIA TKST (FOTOS & VÍDEOS) & LIGHTBOX IN-APP
   // =========================================================================
-  let currentMediaFilter = 'all';
+  // =========================================================================
+  // 6.7 SISTEMA DE ÁLBUNS TKST (FOTOS & VÍDEOS) & LIGHTBOX IN-APP
+  // =========================================================================
+  let currentAlbumId = null; // null = Visão Geral dos 3 Álbuns, 'exames', 'competicoes', 'didaticos'
+  let currentSubAlbumName = null; // null = lista de subálbuns (quando em 'exames'), ou string com nome do exame
+  let mediaSelectionMode = false;
+  let selectedMediaIds = new Set();
   let currentMediaSearch = '';
   let currentLightboxMediaId = null;
   let currentLightboxList = [];
 
+  // Normalização de mídias para compatibilidade total
+  function getNormalizedMediaList() {
+    const rawList = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
+    return rawList.map(m => {
+      let album = m.album || m.category || 'exames';
+      if (album === 'campeonatos' || album === 'treinos') album = 'competicoes';
+      let subAlbum = m.subAlbum || '';
+      if (album === 'exames' && !subAlbum) {
+        subAlbum = m.title || 'Exame de Faixa 2026 - Dojô Central';
+      }
+      return {
+        ...m,
+        album,
+        category: album,
+        subAlbum
+      };
+    });
+  }
+
   function renderMedia() {
     const user = window.TKST_AUTH.getCurrentUser();
     const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
-    const allMedia = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
-    
-    // Filtro por categoria
-    let filtered = allMedia;
-    if (currentMediaFilter && currentMediaFilter !== 'all') {
-      filtered = filtered.filter(m => m.category === currentMediaFilter);
+    const allMedia = getNormalizedMediaList();
+
+    const albums = window.TKST_ALBUMS || [
+      { id: 'exames', title: 'Exame de Faixa', icon: 'fas fa-graduation-cap', badge: 'Graduações', description: 'Registros organizados de cada exame de graduação.', cover: 'assets/images/exames/branca_img4.jpeg', hasSubAlbums: true },
+      { id: 'competicoes', title: 'Competições', icon: 'fas fa-trophy', badge: 'Campeonatos', description: 'Torneios, pódios e medalhas dos atletas da TKST.', cover: 'assets/images/exames/vermelha_img4.jpeg', hasSubAlbums: false },
+      { id: 'didaticos', title: 'Vídeos Didáticos', icon: 'fas fa-video', badge: 'Estudo Técnico', description: 'Vídeos didáticos de Katas, Kihon e aplicações práticas.', cover: 'https://img.youtube.com/vi/FqS_tPZ-3kM/hqdefault.jpg', hasSubAlbums: false }
+    ];
+
+    let html = '';
+
+    // =========================================================================
+    // NÍVEL 0: VISÃO GERAL DOS 3 ÁLBUNS PRINCIPAIS
+    // =========================================================================
+    if (!currentAlbumId) {
+      html = `
+        <div class="media-gallery-hero">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-full); background: rgba(230, 57, 70, 0.2); border: 1px solid rgba(230, 57, 70, 0.4); color: #FF808A; font-size: 0.72rem; font-weight: 800; margin-bottom: 6px;">
+                <i class="fas fa-camera-retro"></i> ÁLBUNS OFICIAIS TKST
+              </div>
+              <h2 style="font-size: 1.35rem; color: #FFF; margin: 0; font-family: var(--font-heading);">
+                Galeria de Fotos & Vídeos
+              </h2>
+              <p style="font-size: 0.82rem; color: #CBD5E1; margin-top: 4px; margin-bottom: 0;">
+                Selecione um álbum abaixo para ver e baixar fotos e vídeos direto no seu celular.
+              </p>
+            </div>
+            ${isAdmin ? `
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openAddMediaModal()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;">
+                  <i class="fas fa-plus-circle"></i> Adicionar Mídia
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.promptCreateSubAlbum()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-color: rgba(255, 183, 3, 0.4);">
+                  <i class="fas fa-folder-plus"></i> Novo Exame
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="albums-grid">
+          ${albums.map(alb => {
+            const albMedia = allMedia.filter(m => m.album === alb.id);
+            const count = albMedia.length;
+            let subCountText = '';
+            if (alb.hasSubAlbums) {
+              const uniqueSubs = new Set(albMedia.map(m => m.subAlbum).filter(Boolean));
+              subCountText = `${uniqueSubs.size} ${uniqueSubs.size === 1 ? 'exame' : 'exames'} • `;
+            }
+            const coverImg = (albMedia.length > 0 && albMedia[0].thumbUrl) ? albMedia[0].thumbUrl : alb.cover;
+
+            return `
+              <div class="album-card" onclick="window.TKST_APP.openAlbum('${alb.id}')" title="Toque para abrir o álbum ${alb.title}">
+                <div class="album-card-cover-wrap">
+                  <img src="${coverImg}" alt="${alb.title}" class="album-card-cover" onerror="this.src='assets/images/logo-tkst-2.jpg'">
+                  <div class="album-card-gradient"></div>
+                  <span class="album-badge-top">
+                    <i class="${alb.icon}"></i> ${alb.badge}
+                  </span>
+                  <span class="album-count-top">
+                    ${subCountText}${count} ${count === 1 ? 'mídia' : 'mídias'}
+                  </span>
+                </div>
+                <div class="album-card-body">
+                  <h3 class="album-card-title">
+                    <span>${alb.title}</span>
+                  </h3>
+                  <p class="album-card-desc">${alb.description}</p>
+                  <div class="album-card-footer">
+                    <span>${alb.hasSubAlbums ? 'Ver Exames de Faixa' : 'Acessar Galeria'}</span>
+                    <i class="fas fa-arrow-right"></i>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+      mainContent.innerHTML = html;
+      return;
     }
+
+    // =========================================================================
+    // NÍVEL 1: SUBÁLBUNS DO ÁLBUM "EXAME DE FAIXA"
+    // =========================================================================
+    const currentAlbum = albums.find(a => a.id === currentAlbumId) || albums[0];
+    const albumMedia = allMedia.filter(m => m.album === currentAlbumId);
+
+    if (currentAlbumId === 'exames' && !currentSubAlbumName) {
+      // Agrupar mídias de exame por subálbum
+      const subAlbumMap = new Map();
+      albumMedia.forEach(m => {
+        const subName = m.subAlbum || 'Exame de Faixa Geral';
+        if (!subAlbumMap.has(subName)) {
+          subAlbumMap.set(subName, []);
+        }
+        subAlbumMap.get(subName).push(m);
+      });
+
+      const subAlbumsList = Array.from(subAlbumMap.entries()).map(([name, items]) => {
+        const sortedItems = [...items].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        const latestDate = sortedItems[0]?.date || '';
+        const dojo = sortedItems[0]?.dojo || 'TKST';
+        const cover = sortedItems[0]?.thumbUrl || sortedItems[0]?.url || 'assets/images/exames/branca_img4.jpeg';
+        return {
+          name,
+          items: sortedItems,
+          count: sortedItems.length,
+          latestDate,
+          dojo,
+          cover
+        };
+      });
+
+      html = `
+        <div class="media-nav-header">
+          <button type="button" class="media-back-btn" onclick="window.TKST_APP.openAlbum(null)">
+            <i class="fas fa-arrow-left"></i> Voltar aos Álbuns
+          </button>
+          <div style="font-weight: 800; color: #FFF; font-size: 0.9rem;">
+            🥋 Exame de Faixa
+          </div>
+          ${isAdmin ? `
+            <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.promptCreateSubAlbum()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 0.78rem;">
+              <i class="fas fa-folder-plus"></i> Novo Exame
+            </button>
+          ` : '<span style="width: 20px;"></span>'}
+        </div>
+
+        <div class="media-gallery-hero" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 style="font-size: 1.25rem; color: #FFF; margin: 0; font-family: var(--font-heading);">
+                Exames de Faixa (Subálbuns)
+              </h2>
+              <p style="font-size: 0.8rem; color: #CBD5E1; margin-top: 4px; margin-bottom: 0;">
+                Selecione o exame de graduação desejado para ver as fotos e vídeos.
+              </p>
+            </div>
+            ${isAdmin ? `
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.openAddMediaModal('exames')" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 0.78rem;">
+                <i class="fas fa-plus-circle"></i> Adicionar Foto
+              </button>
+            ` : ''}
+          </div>
+        </div>
+
+        ${subAlbumsList.length === 0 ? `
+          <div style="text-align: center; padding: 40px 20px; background: rgba(18, 23, 34, 0.6); border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+            <i class="fas fa-graduation-cap" style="font-size: 2.5rem; color: #64748B; margin-bottom: 12px; display: block;"></i>
+            <h4 style="color: #FFF; margin-bottom: 6px;">Nenhum exame de faixa cadastrado</h4>
+            <p style="color: #94A3B8; font-size: 0.82rem; margin: 0;">O Sensei pode cadastrar novos exames e adicionar fotos a qualquer momento.</p>
+            ${isAdmin ? `
+              <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.promptCreateSubAlbum()" style="margin-top: 14px; font-size: 0.8rem;">
+                <i class="fas fa-folder-plus"></i> Criar Primeiro Exame
+              </button>
+            ` : ''}
+          </div>
+        ` : `
+          <div class="subalbums-grid">
+            ${subAlbumsList.map(sub => {
+              const formattedDate = sub.latestDate ? sub.latestDate.split('-').reverse().join('/') : '';
+              return `
+                <div class="subalbum-card" onclick="window.TKST_APP.openSubAlbum('${escapeHtml(sub.name)}')" title="Abrir ${escapeHtml(sub.name)}">
+                  <img src="${sub.cover}" alt="${escapeHtml(sub.name)}" class="subalbum-thumb" onerror="this.src='assets/images/logo-tkst-2.jpg'">
+                  <div class="subalbum-info">
+                    <h4 class="subalbum-name">${escapeHtml(sub.name)}</h4>
+                    <div class="subalbum-meta">
+                      <span class="badge badge-amarela" style="font-size: 0.68rem; padding: 1px 6px;">
+                        <i class="fas fa-camera"></i> ${sub.count} ${sub.count === 1 ? 'mídia' : 'mídias'}
+                      </span>
+                      ${formattedDate ? `<span><i class="fas fa-calendar-alt"></i> ${formattedDate}</span>` : ''}
+                      <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(sub.dojo)}</span>
+                    </div>
+                  </div>
+                  <div style="color: var(--accent-gold); font-size: 0.9rem; flex-shrink: 0; padding-left: 6px;">
+                    <i class="fas fa-chevron-right"></i>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `}
+      `;
+      mainContent.innerHTML = html;
+      return;
+    }
+
+    // =========================================================================
+    // NÍVEL 2: GRADE DE MÍDIAS DO ÁLBUM / SUBÁLBUM
+    // =========================================================================
+    let currentTitle = currentAlbum.title;
+    let currentSubtitle = currentAlbum.description;
+    let backAction = "window.TKST_APP.openAlbum(null)";
+    let backLabel = "Voltar aos Álbuns";
+
+    let targetMedia = albumMedia;
+    if (currentAlbumId === 'exames' && currentSubAlbumName) {
+      targetMedia = albumMedia.filter(m => (m.subAlbum || 'Exame de Faixa Geral') === currentSubAlbumName);
+      currentTitle = currentSubAlbumName;
+      currentSubtitle = `Fotos e vídeos oficiais deste exame de faixa.`;
+      backAction = "window.TKST_APP.openSubAlbum(null)";
+      backLabel = "Voltar aos Exames";
+    }
+
     // Filtro por busca textual
+    let filteredMedia = targetMedia;
     if (currentMediaSearch && currentMediaSearch.trim()) {
       const q = currentMediaSearch.toLowerCase().trim();
-      filtered = filtered.filter(m => 
+      filteredMedia = filteredMedia.filter(m => 
         (m.title && m.title.toLowerCase().includes(q)) ||
         (m.description && m.description.toLowerCase().includes(q)) ||
         (m.dojo && m.dojo.toLowerCase().includes(q)) ||
@@ -6037,73 +6244,97 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     }
 
-    currentLightboxList = filtered;
+    currentLightboxList = filteredMedia;
+    const allFilteredIds = filteredMedia.map(m => m.id);
 
-    const categories = [
-      { id: 'all', label: 'Todas as Mídias', icon: 'fas fa-border-all' },
-      { id: 'exames', label: 'Exames de Faixa', icon: 'fas fa-graduation-cap' },
-      { id: 'treinos', label: 'Treinos & Seminários', icon: 'fas fa-fist-raised' },
-      { id: 'campeonatos', label: 'Campeonatos', icon: 'fas fa-trophy' },
-      { id: 'didaticos', label: 'Vídeos Didáticos', icon: 'fas fa-video' }
-    ];
-
-    let html = `
-      <div class="media-gallery-hero">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-          <div>
-            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-full); background: rgba(230, 57, 70, 0.2); border: 1px solid rgba(230, 57, 70, 0.4); color: #FF808A; font-size: 0.72rem; font-weight: 800; margin-bottom: 6px;">
-              <i class="fas fa-camera-retro"></i> ACERVO OFICIAL TKST
-            </div>
-            <h2 style="font-size: 1.35rem; color: #FFF; margin: 0; font-family: var(--font-heading);">
-              Galeria de Fotos & Vídeos
-            </h2>
-            <p style="font-size: 0.82rem; color: #CBD5E1; margin-top: 4px; margin-bottom: 0;">
-              Exames de faixa, treinos especiais, seminários e vídeos didáticos. Veja e baixe direto no seu celular!
-            </p>
-          </div>
+    html = `
+      <div class="media-nav-header">
+        <button type="button" class="media-back-btn" onclick="${backAction}">
+          <i class="fas fa-arrow-left"></i> ${backLabel}
+        </button>
+        <div style="font-weight: 800; color: #FFF; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%;">
+          ${escapeHtml(currentTitle)}
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
           ${isAdmin ? `
-            <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openAddMediaModal()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;">
-              <i class="fas fa-plus-circle"></i> Adicionar Foto / Vídeo
+            <button type="button" class="btn ${mediaSelectionMode ? 'btn-crimson' : 'btn-secondary'} btn-sm" onclick="window.TKST_APP.toggleMediaSelectionMode()" style="font-weight: 700; font-size: 0.76rem; padding: 6px 10px;">
+              <i class="fas ${mediaSelectionMode ? 'fa-times' : 'fa-check-square'}"></i> ${mediaSelectionMode ? 'Cancelar' : 'Selecionar'}
+            </button>
+            <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openAddMediaModal('${currentAlbumId}', '${escapeHtml(currentSubAlbumName || '')}')" style="font-weight: 700; font-size: 0.76rem; padding: 6px 10px;">
+              <i class="fas fa-plus"></i> Adicionar
             </button>
           ` : ''}
         </div>
       </div>
 
-      <!-- Filtro por Categoria (Pill Scroller Horizontal) -->
-      <div class="media-filter-bar">
-        ${categories.map(cat => `
-          <button type="button" class="media-filter-btn ${currentMediaFilter === cat.id ? 'active' : ''}" onclick="window.TKST_APP.setMediaFilter('${cat.id}')">
-            <i class="${cat.icon}"></i> ${cat.label}
-          </button>
-        `).join('')}
+      ${mediaSelectionMode ? `
+        <!-- Barra Fixa de Seleção em Lote (Batch Delete) -->
+        <div class="media-selection-bar">
+          <div class="media-selection-title">
+            <i class="fas fa-check-circle" style="color: #FF808A;"></i>
+            <span>${selectedMediaIds.size} de ${filteredMedia.length} selecionadas</span>
+          </div>
+          <div class="media-selection-actions">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.selectAllMedia()" style="font-size: 0.76rem; padding: 5px 10px;">
+              ${selectedMediaIds.size === filteredMedia.length && filteredMedia.length > 0 ? 'Desmarcar Todas' : 'Selecionar Todas'}
+            </button>
+            ${isAdmin ? `
+              <button type="button" class="btn btn-crimson btn-sm" onclick="window.TKST_APP.deleteSelectedMedia()" style="font-size: 0.76rem; padding: 5px 12px; font-weight: 800; background: #B91C1C;" ${selectedMediaIds.size === 0 ? 'disabled' : ''}>
+                <i class="fas fa-trash-alt"></i> Excluir Selecionadas (${selectedMediaIds.size})
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Header Informativo -->
+      <div class="media-gallery-hero" style="margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 1.25rem; color: #FFF; margin: 0; font-family: var(--font-heading);">
+              ${escapeHtml(currentTitle)}
+            </h2>
+            <p style="font-size: 0.8rem; color: #CBD5E1; margin-top: 3px; margin-bottom: 0;">
+              ${currentSubtitle} • <strong>${filteredMedia.length} ${filteredMedia.length === 1 ? 'mídia' : 'mídias'}</strong>
+            </p>
+          </div>
+        </div>
       </div>
 
-      <!-- Barra de Busca -->
-      <div class="media-search-wrap">
+      <!-- Barra de Busca Rápida -->
+      <div class="media-search-wrap" style="margin-bottom: 16px;">
         <i class="fas fa-search"></i>
-        <input type="text" class="media-search-input" placeholder="Buscar por título, dojô, data ou exame..." value="${escapeHtml(currentMediaSearch)}" oninput="window.TKST_APP.handleMediaSearch(this.value)">
+        <input type="text" class="media-search-input" placeholder="Buscar neste álbum por título, data ou dojô..." value="${escapeHtml(currentMediaSearch)}" oninput="window.TKST_APP.handleMediaSearch(this.value)">
       </div>
 
       <!-- Grid de Mídias -->
-      ${filtered.length === 0 ? `
+      ${filteredMedia.length === 0 ? `
         <div style="text-align: center; padding: 40px 20px; background: rgba(18, 23, 34, 0.6); border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
           <i class="fas fa-images" style="font-size: 2.5rem; color: #64748B; margin-bottom: 12px; display: block;"></i>
-          <h4 style="color: #FFF; margin-bottom: 6px;">Nenhuma mídia encontrada</h4>
-          <p style="color: #94A3B8; font-size: 0.82rem; margin: 0;">Tente buscar por outro termo ou selecione a categoria "Todas as Mídias".</p>
-          ${currentMediaFilter !== 'all' || currentMediaSearch ? `
-            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.resetMediaFilters()" style="margin-top: 14px; font-size: 0.78rem;">
-              Limpar Filtros
+          <h4 style="color: #FFF; margin-bottom: 6px;">Nenhuma foto ou vídeo encontrado</h4>
+          <p style="color: #94A3B8; font-size: 0.82rem; margin: 0;">${currentMediaSearch ? 'Tente limpar os termos de busca.' : 'Este álbum ainda não possui mídias cadastradas.'}</p>
+          ${isAdmin ? `
+            <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openAddMediaModal('${currentAlbumId}', '${escapeHtml(currentSubAlbumName || '')}')" style="margin-top: 14px; font-size: 0.78rem;">
+              <i class="fas fa-plus-circle"></i> Adicionar Primeira Mídia
             </button>
           ` : ''}
         </div>
       ` : `
         <div class="media-grid">
-          ${filtered.map(m => {
+          ${filteredMedia.map(m => {
             const isVideo = m.type === 'video';
             const dateStr = m.date ? m.date.split('-').reverse().slice(0, 2).join('/') : '';
+            const isSelected = selectedMediaIds.has(m.id);
+
             return `
-              <div class="media-card">
-                <div class="media-thumb-box" onclick="window.TKST_APP.openMediaLightbox('${m.id}')">
+              <div class="media-card ${isSelected ? 'is-selected' : ''}" style="position: relative;">
+                ${mediaSelectionMode ? `
+                  <div class="media-card-select-checkbox ${isSelected ? 'selected' : ''}" onclick="event.stopPropagation(); window.TKST_APP.toggleMediaSelection('${m.id}')" title="Marcar/Desmarcar">
+                    <i class="fas ${isSelected ? 'fa-check' : ''}"></i>
+                  </div>
+                ` : ''}
+
+                <div class="media-thumb-box" onclick="${mediaSelectionMode ? `window.TKST_APP.toggleMediaSelection('${m.id}')` : `window.TKST_APP.openMediaLightbox('${m.id}')`}">
                   <span class="media-badge-tag ${isVideo ? 'video' : 'foto'}">
                     <i class="fas ${isVideo ? 'fa-video' : 'fa-camera'}"></i> ${isVideo ? 'Vídeo' : 'Foto'}
                   </span>
@@ -6128,6 +6359,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button type="button" class="btn-dl" onclick="window.TKST_APP.downloadMediaFile('${m.url}', '${escapeHtml(m.title)}', '${m.type}')" title="Baixar foto/vídeo no seu celular">
                       <i class="fas fa-download"></i>
                     </button>
+                    ${isAdmin ? `
+                      <button type="button" class="btn-dl" onclick="window.TKST_APP.deleteSingleMedia('${m.id}')" style="color: #FF808A; border-color: rgba(230, 57, 70, 0.4); background: rgba(230, 57, 70, 0.1);" title="Excluir esta mídia">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    ` : ''}
                   </div>
                 </div>
               </div>
@@ -6140,9 +6376,31 @@ document.addEventListener('DOMContentLoaded', () => {
     mainContent.innerHTML = html;
   }
 
-  function setMediaFilter(category) {
-    currentMediaFilter = category;
+  // =========================================================================
+  // NAVEGAÇÃO DE ÁLBUNS & SUBÁLBUNS
+  // =========================================================================
+  function openAlbum(albumId) {
+    currentAlbumId = albumId;
+    currentSubAlbumName = null;
+    mediaSelectionMode = false;
+    selectedMediaIds.clear();
+    currentMediaSearch = '';
     renderMedia();
+  }
+
+  function openSubAlbum(subAlbumName) {
+    currentSubAlbumName = subAlbumName;
+    mediaSelectionMode = false;
+    selectedMediaIds.clear();
+    currentMediaSearch = '';
+    renderMedia();
+  }
+
+  function promptCreateSubAlbum() {
+    const defaultName = `Exame de Faixa ${new Date().getFullYear()} - Dojô Matriz`;
+    const name = prompt('🥋 Digite o nome do novo Exame de Faixa (Subálbum):', defaultName);
+    if (!name || !name.trim()) return;
+    openAddMediaModal('exames', name.trim());
   }
 
   function handleMediaSearch(query) {
@@ -6150,17 +6408,92 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMedia();
   }
 
-  function resetMediaFilters() {
-    currentMediaFilter = 'all';
-    currentMediaSearch = '';
+  // =========================================================================
+  // SELEÇÃO MÚLTIPLA & EXCLUSÃO (UNITÁRIA E EM LOTE)
+  // =========================================================================
+  function toggleMediaSelectionMode() {
+    mediaSelectionMode = !mediaSelectionMode;
+    selectedMediaIds.clear();
     renderMedia();
+  }
+
+  function toggleMediaSelection(mediaId) {
+    if (selectedMediaIds.has(mediaId)) {
+      selectedMediaIds.delete(mediaId);
+    } else {
+      selectedMediaIds.add(mediaId);
+    }
+    renderMedia();
+  }
+
+  function selectAllMedia() {
+    const allMedia = getNormalizedMediaList();
+    let target = allMedia.filter(m => m.album === currentAlbumId);
+    if (currentAlbumId === 'exames' && currentSubAlbumName) {
+      target = target.filter(m => (m.subAlbum || 'Exame de Faixa Geral') === currentSubAlbumName);
+    }
+    if (currentMediaSearch && currentMediaSearch.trim()) {
+      const q = currentMediaSearch.toLowerCase().trim();
+      target = target.filter(m => 
+        (m.title && m.title.toLowerCase().includes(q)) ||
+        (m.description && m.description.toLowerCase().includes(q)) ||
+        (m.dojo && m.dojo.toLowerCase().includes(q)) ||
+        (m.author && m.author.toLowerCase().includes(q)) ||
+        (m.date && m.date.includes(q))
+      );
+    }
+
+    if (selectedMediaIds.size === target.length && target.length > 0) {
+      selectedMediaIds.clear();
+    } else {
+      target.forEach(m => selectedMediaIds.add(m.id));
+    }
+    renderMedia();
+  }
+
+  function deleteSelectedMedia() {
+    if (selectedMediaIds.size === 0) return;
+    const count = selectedMediaIds.size;
+    const msg = `⚠️ Tem certeza que deseja excluir as ${count} foto(s)/vídeo(s) selecionadas da galeria?`;
+    if (confirm(msg)) {
+      const idsArray = Array.from(selectedMediaIds);
+      if (window.TKST_AUTH && window.TKST_AUTH.deleteMediaItems) {
+        window.TKST_AUTH.deleteMediaItems(idsArray);
+      } else {
+        idsArray.forEach(id => window.TKST_AUTH.deleteMediaItem(id));
+      }
+      selectedMediaIds.clear();
+      mediaSelectionMode = false;
+      renderMedia();
+      alert(`✅ ${count} mídia(s) excluída(s) com sucesso!`);
+    }
+  }
+
+  function deleteSingleMedia(mediaId) {
+    if (confirm('⚠️ Tem certeza que deseja remover esta foto/vídeo da galeria?')) {
+      window.TKST_AUTH.deleteMediaItem(mediaId);
+      if (currentLightboxMediaId === mediaId) {
+        closeMediaLightbox();
+      }
+      renderMedia();
+    }
+  }
+
+  function deleteCurrentLightboxMedia() {
+    if (!currentLightboxMediaId) return;
+    if (confirm('⚠️ Tem certeza que deseja excluir permanentemente esta foto/vídeo da galeria?')) {
+      const idToDelete = currentLightboxMediaId;
+      closeMediaLightbox();
+      window.TKST_AUTH.deleteMediaItem(idToDelete);
+      renderMedia();
+    }
   }
 
   // =========================================================================
   // LIGHTBOX IN-APP VIEWER (NUNCA REDIRECIONA PARA FORA DO APP)
   // =========================================================================
   function openMediaLightbox(mediaId) {
-    const allMedia = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
+    const allMedia = getNormalizedMediaList();
     const item = allMedia.find(m => m.id === mediaId);
     if (!item) return;
 
@@ -6176,21 +6509,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const bodyEl = document.getElementById('mediaLightboxBody');
     const counterEl = document.getElementById('mediaLightboxCounter');
     const descEl = document.getElementById('mediaLightboxDesc');
+    const delBtn = document.getElementById('mediaLightboxDeleteBtn');
 
     if (!modal || !bodyEl) return;
 
+    const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
+    if (delBtn) {
+      delBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    }
+
     const catLabels = {
-      'exames': '🎖️ Exame de Faixa',
-      'treinos': '🥊 Treino & Seminário',
-      'campeonatos': '🏆 Campeonato',
+      'exames': '🥋 Exame de Faixa',
+      'competicoes': '🏆 Competições',
       'didaticos': '🎬 Vídeo Didático'
     };
 
     if (titleEl) titleEl.textContent = item.title;
-    if (catEl) catEl.textContent = catLabels[item.category] || 'TKST';
+    if (catEl) catEl.textContent = catLabels[item.album || item.category] || 'TKST';
     if (dateEl) {
       const dateFormatted = item.date ? item.date.split('-').reverse().join('/') : '';
-      dateEl.textContent = `${dateFormatted}${item.dojo ? ' • ' + item.dojo : ''}`;
+      dateEl.textContent = `${dateFormatted}${item.dojo ? ' • ' + item.dojo : ''}${item.subAlbum ? ' • ' + item.subAlbum : ''}`;
     }
     if (descEl) {
       descEl.innerHTML = item.description 
@@ -6263,7 +6601,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function downloadCurrentLightboxMedia() {
     if (!currentLightboxMediaId) return;
-    const allMedia = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
+    const allMedia = getNormalizedMediaList();
     const item = allMedia.find(m => m.id === currentLightboxMediaId);
     if (item) {
       downloadMediaFile(item.url, item.title, item.type);
@@ -6344,22 +6682,54 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // ADMIN MODAL PARA CADASTRO / EDIÇÃO DE MÍDIA
+  // ADMIN MODAL PARA CADASTRO / EDIÇÃO DE MÍDIA & ÁLBUNS
   // =========================================================================
-  function openAddMediaModal() {
+  function handleMediaAlbumSelectChange(albumVal) {
+    const subGroup = document.getElementById('adminMediaSubAlbumGroup');
+    if (subGroup) {
+      subGroup.style.display = (albumVal === 'exames') ? 'block' : 'none';
+    }
+  }
+
+  function populateSubAlbumDatalist() {
+    const datalist = document.getElementById('adminMediaSubAlbumList');
+    if (!datalist) return;
+    const allMedia = getNormalizedMediaList();
+    const subs = Array.from(new Set(
+      allMedia
+        .filter(m => m.album === 'exames' && m.subAlbum)
+        .map(m => m.subAlbum.trim())
+    ));
+    datalist.innerHTML = subs.map(s => `<option value="${escapeHtml(s)}">`).join('');
+  }
+
+  function openAddMediaModal(defaultAlbum = null, defaultSubAlbum = null) {
     const modal = document.getElementById('adminMediaModal');
     const form = document.getElementById('adminMediaForm');
     const titleEl = document.getElementById('adminMediaModalTitle');
     if (!modal) return;
     if (form) form.reset();
+
+    populateSubAlbumDatalist();
+
+    const targetAlbum = defaultAlbum || currentAlbumId || 'exames';
     document.getElementById('adminMediaId').value = '';
     document.getElementById('adminMediaDateInput').value = new Date().toISOString().split('T')[0];
+    document.getElementById('adminMediaCategorySelect').value = targetAlbum;
+
+    const subInput = document.getElementById('adminMediaSubAlbumInput');
+    if (subInput) {
+      subInput.value = defaultSubAlbum || currentSubAlbumName || 'Exame de Faixa 2026 - Dojô Central';
+    }
+
+    handleMediaAlbumSelectChange(targetAlbum);
+
     if (titleEl) titleEl.innerHTML = `<i class="fas fa-photo-video" style="color: var(--accent-gold); margin-right: 8px;"></i> Cadastrar Nova Mídia`;
     modal.classList.add('active');
   }
 
   function openEditMediaModal(mediaId) {
-    const all = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
+    const all = getNormalizedMediaList();
     const item = all.find(m => m.id === mediaId);
     if (!item) return;
 
@@ -6367,14 +6737,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleEl = document.getElementById('adminMediaModalTitle');
     if (!modal) return;
 
+    populateSubAlbumDatalist();
+
     document.getElementById('adminMediaId').value = item.id;
     document.getElementById('adminMediaTitleInput').value = item.title || '';
     document.getElementById('adminMediaTypeSelect').value = item.type || 'image';
-    document.getElementById('adminMediaCategorySelect').value = item.category || 'exames';
+    document.getElementById('adminMediaCategorySelect').value = item.album || item.category || 'exames';
     document.getElementById('adminMediaUrlInput').value = item.url || '';
     document.getElementById('adminMediaDateInput').value = item.date || '';
     document.getElementById('adminMediaDojoInput').value = item.dojo || '';
     document.getElementById('adminMediaDescInput').value = item.description || '';
+
+    const subInput = document.getElementById('adminMediaSubAlbumInput');
+    if (subInput) {
+      subInput.value = item.subAlbum || '';
+    }
+
+    handleMediaAlbumSelectChange(item.album || item.category || 'exames');
 
     if (titleEl) titleEl.innerHTML = `<i class="fas fa-edit" style="color: var(--accent-gold); margin-right: 8px;"></i> Editar Mídia`;
     modal.classList.add('active');
@@ -6390,11 +6769,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const id = document.getElementById('adminMediaId').value;
     const title = document.getElementById('adminMediaTitleInput').value.trim();
     const type = document.getElementById('adminMediaTypeSelect').value;
-    const category = document.getElementById('adminMediaCategorySelect').value;
+    const album = document.getElementById('adminMediaCategorySelect').value;
     const url = document.getElementById('adminMediaUrlInput').value.trim();
     const date = document.getElementById('adminMediaDateInput').value;
     const dojo = document.getElementById('adminMediaDojoInput').value.trim() || 'TKST Matriz';
     const description = document.getElementById('adminMediaDescInput').value.trim();
+
+    const subInput = document.getElementById('adminMediaSubAlbumInput');
+    let subAlbum = (subInput && album === 'exames') ? subInput.value.trim() : '';
+    if (album === 'exames' && !subAlbum) {
+      subAlbum = 'Exame de Faixa 2026 - Dojô Central';
+    }
 
     if (!title || !url) {
       alert('Por favor, preencha o título e o link da imagem/vídeo.');
@@ -6410,7 +6795,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = {
       title,
       type,
-      category,
+      album,
+      category: album,
+      subAlbum,
       url,
       thumbUrl,
       date,
@@ -6427,22 +6814,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeAdminMediaModal();
     if (currentTab === 'media') {
+      // Se estava em um subálbum de exame, manter ou atualizar
+      if (album === 'exames' && subAlbum) {
+        currentAlbumId = 'exames';
+        currentSubAlbumName = subAlbum;
+      }
       renderMedia();
     } else if (currentTab === 'admin') {
       renderAdminMaster();
     }
     alert(id ? '✅ Mídia atualizada com sucesso!' : '✅ Nova mídia cadastrada com sucesso!');
-  }
-
-  function deleteMediaItemConfirm(mediaId) {
-    if (confirm('Tem certeza que deseja remover esta foto/vídeo da galeria?')) {
-      window.TKST_AUTH.deleteMediaItem(mediaId);
-      if (currentTab === 'media') {
-        renderMedia();
-      } else if (currentTab === 'admin') {
-        renderAdminMaster();
-      }
-    }
   }
 
   // =========================================================================
@@ -6454,19 +6835,27 @@ document.addEventListener('DOMContentLoaded', () => {
     openAdmin: (subTab) => openAdminPanel(subTab),
     openUserAccountOrAdmin,
     renderMedia,
+    openAlbum,
+    openSubAlbum,
+    promptCreateSubAlbum,
+    toggleMediaSelectionMode,
+    toggleMediaSelection,
+    selectAllMedia,
+    deleteSelectedMedia,
+    deleteSingleMedia,
+    deleteCurrentLightboxMedia,
+    handleMediaAlbumSelectChange,
     openMediaLightbox,
     closeMediaLightbox,
     navigateMediaLightbox,
     downloadCurrentLightboxMedia,
     downloadMediaFile,
-    setMediaFilter,
     handleMediaSearch,
-    resetMediaFilters,
     openAddMediaModal,
     openEditMediaModal,
     closeAdminMediaModal,
     handleSaveMediaSubmit,
-    deleteMediaItemConfirm,
+    deleteMediaItemConfirm: deleteSingleMedia,
     setAuthMode: (mode) => {
       authMode = mode;
       renderLogin();

@@ -2937,6 +2937,24 @@
       return true;
     },
 
+    deleteMediaItems: function(ids) {
+      if (!Array.isArray(ids) || ids.length === 0) return false;
+      let deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_MEDIA)) || [];
+      let addedCount = 0;
+      ids.forEach(id => {
+        if (!deleted.includes(id)) {
+          deleted.push(id);
+          addedCount++;
+        }
+      });
+      if (addedCount > 0) {
+        safeLocalStorageSet(STORAGE_KEY_DELETED_MEDIA, JSON.stringify(deleted));
+      }
+      const all = this.getCustomMedia().filter(m => !ids.includes(m.id));
+      this.saveCustomMedia(all);
+      return true;
+    },
+
     getFirebaseUrl: function() {
       return localStorage.getItem(STORAGE_KEY_FIREBASE) || '';
     },
