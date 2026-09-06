@@ -15,11 +15,11 @@
       "status": "approved",
       "approvedAt": "2026-01-01T00:00:00.000Z",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": 1787363396480,
+      "updatedAt": 1788714274983,
       "phone": "(21) 972114674",
       "notes": "Administrador Master responsável por todo o sistema, arquivos e aprovações.",
       "password": "Irons365.",
-      "lastActive": 1788396879460,
+      "lastActive": 1788714254459,
       "statusUpdatedAt": 1786925884100,
       "quizScores": [
         {
@@ -77,6 +77,14 @@
           "percentage": 100,
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
+        },
+        {
+          "date": "2026-09-06T17:04:34.981Z",
+          "score": 10,
+          "total": 10,
+          "percentage": 100,
+          "beltLevel": "Faixa Amarela 6º Kyu",
+          "beltKyu": 6
         }
       ]
     },
@@ -96,8 +104,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1788639263484,
-      "statusUpdatedAt": 1788639263484,
+      "updatedAt": 1788714178585,
+      "statusUpdatedAt": 1788714178585,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -107,7 +115,7 @@
       "email": "sensei gabriel@tkst.local",
       "password": "27112021",
       "name": "Gabriel Souza de Oliveira",
-      "role": "aluno",
+      "role": "admin",
       "currentBelt": "Faixa Preta (Sandan - 3º Dan)",
       "targetBelt": "Faixa Preta",
       "currentKyu": 0,
@@ -472,7 +480,7 @@
       "statusUpdatedAt": 1788396962784,
       "phone": "21999888301",
       "notes": "Novo aluno cadastrado pelo portal.",
-      "lastActive": 1787063181920
+      "lastActive": 1788710261594
     },
     {
       "id": "std_1787167014810_him5t",
@@ -938,5 +946,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788707899811
+  "updatedAt": 1788714275907
 }
