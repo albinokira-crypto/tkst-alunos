@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = window.TKST_AUTH.getCurrentUser();
 
     // Guard: Require login for private tabs
-    if (!user && tabName !== 'login' && tabName !== 'katas' && tabName !== 'glossary' && tabName !== 'philosophy') {
+    if (!user && tabName !== 'login' && tabName !== 'katas' && tabName !== 'glossary' && tabName !== 'philosophy' && tabName !== 'media') {
       tabName = 'login';
     }
 
@@ -1015,6 +1015,10 @@ document.addEventListener('DOMContentLoaded', () => {
         breadcrumbCurrent.textContent = 'Dicionário Japonês de Karatê';
         renderGlossary();
         break;
+      case 'media':
+        breadcrumbCurrent.textContent = 'Galeria Oficial TKST (Fotos & Vídeos)';
+        renderMedia();
+        break;
       case 'quiz':
         breadcrumbCurrent.textContent = 'Simulador de Exame';
         renderQuiz();
@@ -1201,6 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const quizSubmissions = window.TKST_AUTH.getAllQuizSubmissions();
     const quizBankList = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
     const quizBankCount = quizBankList.length;
+    const allMediaList = window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : [];
 
     const currentExamMeta = (window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu)) || { title: "Exame", targetBelt: "Faixa Amarela (6º Kyu)", kataName: "Heian Shodan", color: "#F5BE00" };
     let examPreviewHtml = '';
@@ -1339,6 +1344,17 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="admin-nav-btn-desc">Polos e academias de treino</div>
           </button>
 
+          <button class="admin-nav-btn ${adminSubTab === 'media' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('media')" title="Gerenciar Fotos & Vídeos da Galeria">
+            <div class="admin-nav-btn-header">
+              <div class="admin-nav-btn-icon" style="background: rgba(230, 57, 70, 0.2); border: 1px solid rgba(230, 57, 70, 0.4); color: #FF808A;">
+                <i class="fas fa-photo-video"></i>
+              </div>
+              <span class="admin-nav-btn-badge" style="background: rgba(230, 57, 70, 0.2); color: #FF808A; border: 1px solid rgba(230, 57, 70, 0.4);">${allMediaList.length} Mídias</span>
+            </div>
+            <div class="admin-nav-btn-title">Galeria de Mídia</div>
+            <div class="admin-nav-btn-desc">Fotos de exames, treinos e vídeos</div>
+          </button>
+
           <button class="admin-nav-btn ${adminSubTab === 'files' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('files')" title="Central de Arquivos e Mídias">
             <div class="admin-nav-btn-header">
               <div class="admin-nav-btn-icon" style="background: rgba(96, 165, 250, 0.18); border: 1px solid rgba(96, 165, 250, 0.4); color: #93C5FD;">
@@ -1367,9 +1383,9 @@ document.addEventListener('DOMContentLoaded', () => {
       ${adminSubTab ? `
         <div class="admin-active-tab-banner">
           <div style="display: flex; align-items: center; gap: 9px; min-width: 0;">
-            <i class="${adminSubTab === 'students' ? 'fas fa-users' : (adminSubTab === 'kata-videos' ? 'fas fa-video' : (adminSubTab === 'questions' ? 'fas fa-question-circle' : (adminSubTab === 'exam-generator' ? 'fas fa-file-pdf' : (adminSubTab === 'quizzes' ? 'fas fa-clipboard-check' : (adminSubTab === 'dojos' ? 'fas fa-torii-gate' : (adminSubTab === 'files' ? 'fas fa-folder-open' : 'fas fa-user-clock'))))))}" style="color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;"></i>
+            <i class="${adminSubTab === 'students' ? 'fas fa-users' : (adminSubTab === 'media' ? 'fas fa-photo-video' : (adminSubTab === 'kata-videos' ? 'fas fa-video' : (adminSubTab === 'questions' ? 'fas fa-question-circle' : (adminSubTab === 'exam-generator' ? 'fas fa-file-pdf' : (adminSubTab === 'quizzes' ? 'fas fa-clipboard-check' : (adminSubTab === 'dojos' ? 'fas fa-torii-gate' : (adminSubTab === 'files' ? 'fas fa-folder-open' : 'fas fa-user-clock')))))))}" style="color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;"></i>
             <span style="font-weight: 800; color: #FFF; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              ${adminSubTab === 'students' ? 'Alunos Matriculados' : (adminSubTab === 'kata-videos' ? 'Vídeos dos 26 Kata' : (adminSubTab === 'questions' ? 'Banco de Questões Teóricas' : (adminSubTab === 'exam-generator' ? 'Gerador de Provas & Gabaritos PDF' : (adminSubTab === 'quizzes' ? 'Provas & Simulados Realizados' : (adminSubTab === 'dojos' ? 'Dojos & Unidades TKST' : (adminSubTab === 'files' ? 'Arquivos & Mídias para Download' : 'Solicitações de Cadastro Pendentes'))))))}
+              ${adminSubTab === 'students' ? 'Alunos Matriculados' : (adminSubTab === 'media' ? 'Galeria Oficial TKST (Fotos & Vídeos)' : (adminSubTab === 'kata-videos' ? 'Vídeos dos 26 Kata' : (adminSubTab === 'questions' ? 'Banco de Questões Teóricas' : (adminSubTab === 'exam-generator' ? 'Gerador de Provas & Gabaritos PDF' : (adminSubTab === 'quizzes' ? 'Provas & Simulados Realizados' : (adminSubTab === 'dojos' ? 'Dojos & Unidades TKST' : (adminSubTab === 'files' ? 'Arquivos & Mídias para Download' : 'Solicitações de Cadastro Pendentes')))))))}
             </span>
             <span class="badge badge-verde" style="font-size: 0.68rem; padding: 2px 7px; flex-shrink: 0;">Aba Aberta</span>
           </div>
@@ -1900,6 +1916,68 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
 
+        </div>
+      ` : ''}
+
+      ${adminSubTab === 'media' ? `
+        <!-- MEDIA GALLERY MANAGEMENT -->
+        <div class="admin-table-container">
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h4 style="color: #FFF; font-family: var(--font-heading); margin: 0; font-size: 1.05rem;">
+                <i class="fas fa-photo-video" style="color: var(--accent-gold); margin-right: 8px;"></i>
+                Acervo de Fotos & Vídeos da Galeria (${allMediaList.length})
+              </h4>
+              <p style="font-size: 0.78rem; color: #94A3B8; margin: 4px 0 0 0;">
+                Gerencie fotos de exames, treinos e vídeos técnicos. As mídias aparecem diretamente no app para todos os alunos.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openAddMediaModal()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-plus-circle"></i> Cadastrar Nova Mídia
+              </button>
+            </div>
+          </div>
+
+          <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+            ${allMediaList.length === 0 ? `
+              <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #94A3B8;">
+                Nenhuma foto ou vídeo cadastrado no momento.
+              </div>
+            ` : allMediaList.map(m => `
+              <div style="background: rgba(18, 23, 34, 0.85); border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; display: flex; flex-direction: column;">
+                <div style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden;">
+                  <img src="${m.thumbUrl || m.url}" alt="${escapeHtml(m.title)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='assets/images/logo-tkst-2.jpg'">
+                  <span class="badge ${m.type === 'video' ? 'badge-vermelha' : 'badge-verde'}" style="position: absolute; top: 6px; left: 6px;">
+                    ${m.type === 'video' ? '🎬 Vídeo' : '📷 Foto'}
+                  </span>
+                  <span style="position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.7); font-size: 0.65rem; color: #FFF; padding: 2px 6px; border-radius: 3px;">
+                    ${m.category}
+                  </span>
+                </div>
+                <div style="padding: 10px; flex: 1; display: flex; flex-direction: column;">
+                  <div style="font-weight: 700; color: #FFF; font-size: 0.85rem; margin-bottom: 4px;">${escapeHtml(m.title)}</div>
+                  <div style="font-size: 0.72rem; color: #94A3B8; margin-bottom: 8px;">
+                    ${m.date || ''} • ${escapeHtml(m.dojo || 'TKST')}
+                  </div>
+                  <div style="display: flex; gap: 6px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.openMediaLightbox('${m.id}')" style="flex: 1; font-size: 0.72rem; padding: 4px 8px;" title="Ver no App sem sair">
+                      <i class="fas fa-eye"></i> Ver
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.downloadMediaFile('${m.url}', '${escapeHtml(m.title)}', '${m.type}')" style="font-size: 0.72rem; padding: 4px 8px; color: #34D399;" title="Baixar">
+                      <i class="fas fa-download"></i>
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.openEditMediaModal('${m.id}')" style="font-size: 0.72rem; padding: 4px 8px; color: var(--accent-gold);" title="Editar">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.deleteMediaItemConfirm('${m.id}')" style="font-size: 0.72rem; padding: 4px 8px; color: #F87171;" title="Excluir">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       ` : ''}
 
@@ -2540,6 +2618,34 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="stat-value">Dicionário</div>
           <div class="stat-label">Japonês</div>
+        </div>
+
+        <div class="stat-card" onclick="window.TKST_APP.switchTab('media')" style="cursor: pointer; border-color: rgba(230, 57, 70, 0.4); background: rgba(230, 57, 70, 0.08);" title="Abrir Galeria de Fotos e Vídeos">
+          <div class="stat-icon-box crimson">
+            <i class="fas fa-photo-video"></i>
+          </div>
+          <div class="stat-value" style="color: #FF808A;">Galeria</div>
+          <div class="stat-label">Fotos & Vídeos</div>
+        </div>
+      </div>
+
+      <!-- Banner Oficial de Acesso Direto à Galeria TKST -->
+      <div onclick="window.TKST_APP.switchTab('media')" style="margin-bottom: 20px; padding: 14px 18px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(230, 57, 70, 0.16), rgba(255, 183, 3, 0.12)); border: 1px solid rgba(255, 183, 3, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);" title="Toque para ver e baixar fotos e vídeos oficiais">
+        <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(230, 57, 70, 0.25); border: 1px solid rgba(230, 57, 70, 0.5); display: flex; align-items: center; justify-content: center; color: #FF808A; font-size: 1.3rem; flex-shrink: 0;">
+            <i class="fas fa-photo-video"></i>
+          </div>
+          <div style="min-width: 0;">
+            <div style="font-weight: 800; color: #FFF; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              Galeria Oficial TKST <span class="badge badge-amarela" style="font-size: 0.65rem; padding: 1px 6px;">NOVO</span>
+            </div>
+            <div style="font-size: 0.78rem; color: #CBD5E1; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              Fotos e vídeos de exames, treinos e campeonatos. Veja e baixe direto no celular!
+            </div>
+          </div>
+        </div>
+        <div style="color: var(--accent-gold); font-size: 1rem; flex-shrink: 0;">
+          <i class="fas fa-chevron-right"></i>
         </div>
       </div>
 
@@ -5902,6 +6008,444 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
+  // 6.7 GALERIA DE MÍDIA TKST (FOTOS & VÍDEOS) & LIGHTBOX IN-APP
+  // =========================================================================
+  let currentMediaFilter = 'all';
+  let currentMediaSearch = '';
+  let currentLightboxMediaId = null;
+  let currentLightboxList = [];
+
+  function renderMedia() {
+    const user = window.TKST_AUTH.getCurrentUser();
+    const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
+    const allMedia = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
+    
+    // Filtro por categoria
+    let filtered = allMedia;
+    if (currentMediaFilter && currentMediaFilter !== 'all') {
+      filtered = filtered.filter(m => m.category === currentMediaFilter);
+    }
+    // Filtro por busca textual
+    if (currentMediaSearch && currentMediaSearch.trim()) {
+      const q = currentMediaSearch.toLowerCase().trim();
+      filtered = filtered.filter(m => 
+        (m.title && m.title.toLowerCase().includes(q)) ||
+        (m.description && m.description.toLowerCase().includes(q)) ||
+        (m.dojo && m.dojo.toLowerCase().includes(q)) ||
+        (m.author && m.author.toLowerCase().includes(q)) ||
+        (m.date && m.date.includes(q))
+      );
+    }
+
+    currentLightboxList = filtered;
+
+    const categories = [
+      { id: 'all', label: 'Todas as Mídias', icon: 'fas fa-border-all' },
+      { id: 'exames', label: 'Exames de Faixa', icon: 'fas fa-graduation-cap' },
+      { id: 'treinos', label: 'Treinos & Seminários', icon: 'fas fa-fist-raised' },
+      { id: 'campeonatos', label: 'Campeonatos', icon: 'fas fa-trophy' },
+      { id: 'didaticos', label: 'Vídeos Didáticos', icon: 'fas fa-video' }
+    ];
+
+    let html = `
+      <div class="media-gallery-hero">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-full); background: rgba(230, 57, 70, 0.2); border: 1px solid rgba(230, 57, 70, 0.4); color: #FF808A; font-size: 0.72rem; font-weight: 800; margin-bottom: 6px;">
+              <i class="fas fa-camera-retro"></i> ACERVO OFICIAL TKST
+            </div>
+            <h2 style="font-size: 1.35rem; color: #FFF; margin: 0; font-family: var(--font-heading);">
+              Galeria de Fotos & Vídeos
+            </h2>
+            <p style="font-size: 0.82rem; color: #CBD5E1; margin-top: 4px; margin-bottom: 0;">
+              Exames de faixa, treinos especiais, seminários e vídeos didáticos. Veja e baixe direto no seu celular!
+            </p>
+          </div>
+          ${isAdmin ? `
+            <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openAddMediaModal()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;">
+              <i class="fas fa-plus-circle"></i> Adicionar Foto / Vídeo
+            </button>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- Filtro por Categoria (Pill Scroller Horizontal) -->
+      <div class="media-filter-bar">
+        ${categories.map(cat => `
+          <button type="button" class="media-filter-btn ${currentMediaFilter === cat.id ? 'active' : ''}" onclick="window.TKST_APP.setMediaFilter('${cat.id}')">
+            <i class="${cat.icon}"></i> ${cat.label}
+          </button>
+        `).join('')}
+      </div>
+
+      <!-- Barra de Busca -->
+      <div class="media-search-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" class="media-search-input" placeholder="Buscar por título, dojô, data ou exame..." value="${escapeHtml(currentMediaSearch)}" oninput="window.TKST_APP.handleMediaSearch(this.value)">
+      </div>
+
+      <!-- Grid de Mídias -->
+      ${filtered.length === 0 ? `
+        <div style="text-align: center; padding: 40px 20px; background: rgba(18, 23, 34, 0.6); border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+          <i class="fas fa-images" style="font-size: 2.5rem; color: #64748B; margin-bottom: 12px; display: block;"></i>
+          <h4 style="color: #FFF; margin-bottom: 6px;">Nenhuma mídia encontrada</h4>
+          <p style="color: #94A3B8; font-size: 0.82rem; margin: 0;">Tente buscar por outro termo ou selecione a categoria "Todas as Mídias".</p>
+          ${currentMediaFilter !== 'all' || currentMediaSearch ? `
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.resetMediaFilters()" style="margin-top: 14px; font-size: 0.78rem;">
+              Limpar Filtros
+            </button>
+          ` : ''}
+        </div>
+      ` : `
+        <div class="media-grid">
+          ${filtered.map(m => {
+            const isVideo = m.type === 'video';
+            const dateStr = m.date ? m.date.split('-').reverse().slice(0, 2).join('/') : '';
+            return `
+              <div class="media-card">
+                <div class="media-thumb-box" onclick="window.TKST_APP.openMediaLightbox('${m.id}')">
+                  <span class="media-badge-tag ${isVideo ? 'video' : 'foto'}">
+                    <i class="fas ${isVideo ? 'fa-video' : 'fa-camera'}"></i> ${isVideo ? 'Vídeo' : 'Foto'}
+                  </span>
+                  ${dateStr ? `<span class="media-date-tag">${dateStr}</span>` : ''}
+                  <img src="${m.thumbUrl || m.url}" alt="${escapeHtml(m.title)}" class="media-thumb-img" loading="lazy" onerror="this.src='assets/images/logo-tkst-2.jpg'">
+                  ${isVideo ? `
+                    <div class="media-play-icon-overlay">
+                      <i class="fas fa-play"></i>
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="media-card-body">
+                  <h4 class="media-card-title" title="${escapeHtml(m.title)}">${escapeHtml(m.title)}</h4>
+                  <div class="media-card-sub">
+                    <i class="fas fa-map-marker-alt" style="color: var(--accent-gold); font-size: 0.65rem;"></i>
+                    <span>${escapeHtml(m.dojo || 'TKST')}</span>
+                  </div>
+                  <div class="media-card-actions">
+                    <button type="button" class="btn-view" onclick="window.TKST_APP.openMediaLightbox('${m.id}')" title="Visualizar no app sem sair">
+                      <i class="fas fa-expand"></i> Ver
+                    </button>
+                    <button type="button" class="btn-dl" onclick="window.TKST_APP.downloadMediaFile('${m.url}', '${escapeHtml(m.title)}', '${m.type}')" title="Baixar foto/vídeo no seu celular">
+                      <i class="fas fa-download"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `}
+    `;
+
+    mainContent.innerHTML = html;
+  }
+
+  function setMediaFilter(category) {
+    currentMediaFilter = category;
+    renderMedia();
+  }
+
+  function handleMediaSearch(query) {
+    currentMediaSearch = query;
+    renderMedia();
+  }
+
+  function resetMediaFilters() {
+    currentMediaFilter = 'all';
+    currentMediaSearch = '';
+    renderMedia();
+  }
+
+  // =========================================================================
+  // LIGHTBOX IN-APP VIEWER (NUNCA REDIRECIONA PARA FORA DO APP)
+  // =========================================================================
+  function openMediaLightbox(mediaId) {
+    const allMedia = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
+    const item = allMedia.find(m => m.id === mediaId);
+    if (!item) return;
+
+    currentLightboxMediaId = mediaId;
+    if (!currentLightboxList || currentLightboxList.length === 0) {
+      currentLightboxList = allMedia;
+    }
+
+    const modal = document.getElementById('mediaLightboxModal');
+    const titleEl = document.getElementById('mediaLightboxTitle');
+    const catEl = document.getElementById('mediaLightboxCategory');
+    const dateEl = document.getElementById('mediaLightboxDate');
+    const bodyEl = document.getElementById('mediaLightboxBody');
+    const counterEl = document.getElementById('mediaLightboxCounter');
+    const descEl = document.getElementById('mediaLightboxDesc');
+
+    if (!modal || !bodyEl) return;
+
+    const catLabels = {
+      'exames': '🎖️ Exame de Faixa',
+      'treinos': '🥊 Treino & Seminário',
+      'campeonatos': '🏆 Campeonato',
+      'didaticos': '🎬 Vídeo Didático'
+    };
+
+    if (titleEl) titleEl.textContent = item.title;
+    if (catEl) catEl.textContent = catLabels[item.category] || 'TKST';
+    if (dateEl) {
+      const dateFormatted = item.date ? item.date.split('-').reverse().join('/') : '';
+      dateEl.textContent = `${dateFormatted}${item.dojo ? ' • ' + item.dojo : ''}`;
+    }
+    if (descEl) {
+      descEl.innerHTML = item.description 
+        ? `<i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 5px;"></i> ${item.description}${item.author ? ` <span style="color: #94A3B8;">(Por: ${item.author})</span>` : ''}`
+        : (item.author ? `<span style="color: #94A3B8;">Registro: ${item.author}</span>` : '');
+    }
+
+    const currentIndex = currentLightboxList.findIndex(m => m.id === mediaId);
+    if (counterEl) {
+      counterEl.textContent = `${currentIndex >= 0 ? currentIndex + 1 : 1} de ${currentLightboxList.length}`;
+    }
+
+    // Exibição interna direta (NUNCA redireciona para páginas fora do app)
+    if (item.type === 'video') {
+      const embed = getEmbedUrl(item.url);
+      if (embed.type === 'video') {
+        bodyEl.innerHTML = `
+          <div class="media-lightbox-video-wrap">
+            <video controls autoplay playsinline style="width: 100%; max-height: 65vh; background: #000; border-radius: 6px;">
+              <source src="${embed.url}" type="video/mp4">
+              Seu navegador não suporta reprodução direta.
+            </video>
+          </div>
+        `;
+      } else {
+        bodyEl.innerHTML = `
+          <div class="media-lightbox-video-wrap" style="width: 100%; aspect-ratio: 16/9; max-height: 65vh;">
+            <iframe 
+              src="${embed.url}" 
+              style="width: 100%; height: 100%; border: 0; border-radius: 6px;" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+            </iframe>
+          </div>
+        `;
+      }
+    } else {
+      // Exibição direta da foto em tela cheia no app
+      bodyEl.innerHTML = `
+        <div style="position: relative; max-width: 100%; max-height: 100%; display: flex; align-items: center; justify-content: center;">
+          <img src="${item.url}" alt="${escapeHtml(item.title)}" class="media-lightbox-img" id="mediaLightboxCurrentImg" loading="eager" onerror="this.src='assets/images/logo-tkst-2.jpg'">
+        </div>
+      `;
+    }
+
+    modal.classList.add('active');
+  }
+
+  function closeMediaLightbox() {
+    const modal = document.getElementById('mediaLightboxModal');
+    if (modal) {
+      modal.classList.remove('active');
+      const bodyEl = document.getElementById('mediaLightboxBody');
+      if (bodyEl) bodyEl.innerHTML = '';
+    }
+  }
+
+  function navigateMediaLightbox(step) {
+    if (!currentLightboxList || currentLightboxList.length === 0) return;
+    const currentIndex = currentLightboxList.findIndex(m => m.id === currentLightboxMediaId);
+    if (currentIndex === -1) return;
+    let nextIndex = currentIndex + step;
+    if (nextIndex < 0) nextIndex = currentLightboxList.length - 1;
+    if (nextIndex >= currentLightboxList.length) nextIndex = 0;
+    const nextItem = currentLightboxList[nextIndex];
+    if (nextItem) {
+      openMediaLightbox(nextItem.id);
+    }
+  }
+
+  function downloadCurrentLightboxMedia() {
+    if (!currentLightboxMediaId) return;
+    const allMedia = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
+    const item = allMedia.find(m => m.id === currentLightboxMediaId);
+    if (item) {
+      downloadMediaFile(item.url, item.title, item.type);
+    }
+  }
+
+  // Download direto no celular / dispositivo
+  async function downloadMediaFile(url, title, type) {
+    if (!url) return;
+    const cleanTitle = (title || 'tkst-midia').replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    // Se for YouTube ou Vimeo
+    if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')) {
+      alert('ℹ️ Vídeos hospedados no YouTube ou Vimeo são reproduzidos diretamente dentro do app e não possuem arquivo de mídia direto para download.');
+      return;
+    }
+
+    let ext = 'jpg';
+    if (type === 'video') ext = 'mp4';
+    const matchExt = url.split(/[#?]/)[0].match(/\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i);
+    if (matchExt) ext = matchExt[1].toLowerCase();
+    const filename = `${cleanTitle}.${ext}`;
+
+    const dlBtn = document.getElementById('mediaLightboxDownloadBtn');
+    const prevHtml = dlBtn ? dlBtn.innerHTML : '';
+    if (dlBtn) dlBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Baixando...</span>`;
+
+    try {
+      // 1. Tenta baixar via Fetch + Blob (salva direto no celular na pasta de downloads)
+      const res = await fetch(url, { mode: 'cors' });
+      if (res.ok) {
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 15000);
+        if (dlBtn) {
+          dlBtn.innerHTML = `<i class="fas fa-check"></i> <span>Salvo!</span>`;
+          setTimeout(() => {
+            if (dlBtn) dlBtn.innerHTML = prevHtml || `<i class="fas fa-download"></i> <span>Baixar</span>`;
+          }, 2000);
+        }
+        return;
+      }
+    } catch (e) {
+      console.log('Download via blob bloqueado por CORS, usando fallback nativo:', e);
+    }
+
+    // 2. Fallback direto com atributo download
+    try {
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.setAttribute('download', filename);
+      a.setAttribute('target', '_blank');
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+      }, 1000);
+      if (dlBtn) {
+        dlBtn.innerHTML = `<i class="fas fa-check"></i> <span>Iniciado!</span>`;
+        setTimeout(() => {
+          if (dlBtn) dlBtn.innerHTML = prevHtml || `<i class="fas fa-download"></i> <span>Baixar</span>`;
+        }, 2000);
+      }
+    } catch (e) {
+      if (dlBtn) dlBtn.innerHTML = prevHtml;
+      alert('Não foi possível iniciar o download automático. Toque e segure na imagem para salvar.');
+    }
+  }
+
+  // =========================================================================
+  // ADMIN MODAL PARA CADASTRO / EDIÇÃO DE MÍDIA
+  // =========================================================================
+  function openAddMediaModal() {
+    const modal = document.getElementById('adminMediaModal');
+    const form = document.getElementById('adminMediaForm');
+    const titleEl = document.getElementById('adminMediaModalTitle');
+    if (!modal) return;
+    if (form) form.reset();
+    document.getElementById('adminMediaId').value = '';
+    document.getElementById('adminMediaDateInput').value = new Date().toISOString().split('T')[0];
+    if (titleEl) titleEl.innerHTML = `<i class="fas fa-photo-video" style="color: var(--accent-gold); margin-right: 8px;"></i> Cadastrar Nova Mídia`;
+    modal.classList.add('active');
+  }
+
+  function openEditMediaModal(mediaId) {
+    const all = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
+    const item = all.find(m => m.id === mediaId);
+    if (!item) return;
+
+    const modal = document.getElementById('adminMediaModal');
+    const titleEl = document.getElementById('adminMediaModalTitle');
+    if (!modal) return;
+
+    document.getElementById('adminMediaId').value = item.id;
+    document.getElementById('adminMediaTitleInput').value = item.title || '';
+    document.getElementById('adminMediaTypeSelect').value = item.type || 'image';
+    document.getElementById('adminMediaCategorySelect').value = item.category || 'exames';
+    document.getElementById('adminMediaUrlInput').value = item.url || '';
+    document.getElementById('adminMediaDateInput').value = item.date || '';
+    document.getElementById('adminMediaDojoInput').value = item.dojo || '';
+    document.getElementById('adminMediaDescInput').value = item.description || '';
+
+    if (titleEl) titleEl.innerHTML = `<i class="fas fa-edit" style="color: var(--accent-gold); margin-right: 8px;"></i> Editar Mídia`;
+    modal.classList.add('active');
+  }
+
+  function closeAdminMediaModal() {
+    const modal = document.getElementById('adminMediaModal');
+    if (modal) modal.classList.remove('active');
+  }
+
+  function handleSaveMediaSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('adminMediaId').value;
+    const title = document.getElementById('adminMediaTitleInput').value.trim();
+    const type = document.getElementById('adminMediaTypeSelect').value;
+    const category = document.getElementById('adminMediaCategorySelect').value;
+    const url = document.getElementById('adminMediaUrlInput').value.trim();
+    const date = document.getElementById('adminMediaDateInput').value;
+    const dojo = document.getElementById('adminMediaDojoInput').value.trim() || 'TKST Matriz';
+    const description = document.getElementById('adminMediaDescInput').value.trim();
+
+    if (!title || !url) {
+      alert('Por favor, preencha o título e o link da imagem/vídeo.');
+      return;
+    }
+
+    let thumbUrl = url;
+    if (type === 'video') {
+      const ytId = extractYouTubeId(url);
+      if (ytId) thumbUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+    }
+
+    const payload = {
+      title,
+      type,
+      category,
+      url,
+      thumbUrl,
+      date,
+      dojo,
+      description,
+      author: window.TKST_AUTH.getCurrentUser() ? window.TKST_AUTH.getCurrentUser().name : 'Sensei Diego'
+    };
+
+    if (id) {
+      window.TKST_AUTH.updateMediaItem(id, payload);
+    } else {
+      window.TKST_AUTH.addMediaItem(payload);
+    }
+
+    closeAdminMediaModal();
+    if (currentTab === 'media') {
+      renderMedia();
+    } else if (currentTab === 'admin') {
+      renderAdminMaster();
+    }
+    alert(id ? '✅ Mídia atualizada com sucesso!' : '✅ Nova mídia cadastrada com sucesso!');
+  }
+
+  function deleteMediaItemConfirm(mediaId) {
+    if (confirm('Tem certeza que deseja remover esta foto/vídeo da galeria?')) {
+      window.TKST_AUTH.deleteMediaItem(mediaId);
+      if (currentTab === 'media') {
+        renderMedia();
+      } else if (currentTab === 'admin') {
+        renderAdminMaster();
+      }
+    }
+  }
+
+  // =========================================================================
   // 7. PUBLIC APPLICATION API (Attached to window.TKST_APP)
   // =========================================================================
   window.TKST_APP = {
@@ -5909,6 +6453,20 @@ document.addEventListener('DOMContentLoaded', () => {
     openAdminPanel,
     openAdmin: (subTab) => openAdminPanel(subTab),
     openUserAccountOrAdmin,
+    renderMedia,
+    openMediaLightbox,
+    closeMediaLightbox,
+    navigateMediaLightbox,
+    downloadCurrentLightboxMedia,
+    downloadMediaFile,
+    setMediaFilter,
+    handleMediaSearch,
+    resetMediaFilters,
+    openAddMediaModal,
+    openEditMediaModal,
+    closeAdminMediaModal,
+    handleSaveMediaSubmit,
+    deleteMediaItemConfirm,
     setAuthMode: (mode) => {
       authMode = mode;
       renderLogin();
@@ -9017,6 +9575,12 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         w.innerHTML = '';
       }
     });
+
+    // 5. Limpa Lightbox de Galeria de Mídia
+    const mediaLightboxBody = modalElement.querySelector('#mediaLightboxBody');
+    if (mediaLightboxBody) {
+      mediaLightboxBody.innerHTML = '';
+    }
   }
 
   // Close modals
@@ -9038,7 +9602,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     });
   });
 
-  // ESC key to close active modals and stop media
+  // ESC e teclas de seta no teclado para fechar/navegar no Lightbox
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' || e.key === 'Esc') {
       document.querySelectorAll('.modal-overlay.active').forEach(m => {
@@ -9048,6 +9612,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           stopModalMedia(m);
         }
       });
+    }
+
+    const lightbox = document.getElementById('mediaLightboxModal');
+    if (lightbox && lightbox.classList.contains('active')) {
+      if (e.key === 'ArrowLeft') {
+        navigateMediaLightbox(-1);
+      } else if (e.key === 'ArrowRight') {
+        navigateMediaLightbox(1);
+      }
     }
   });
 

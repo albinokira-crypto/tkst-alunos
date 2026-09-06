@@ -17,6 +17,8 @@
   const STORAGE_KEY_DELETED_QUIZ_SUBS = 'tkst_deleted_quiz_sub_ids';
   const STORAGE_KEY_GLOSSARY = 'tkst_custom_glossary';
   const STORAGE_KEY_DELETED_GLOSSARY = 'tkst_deleted_glossary_terms';
+  const STORAGE_KEY_MEDIA = 'tkst_custom_media';
+  const STORAGE_KEY_DELETED_MEDIA = 'tkst_deleted_media_ids';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_TOPIC = 'tkst_karate_cloud_v2_sync';
@@ -785,6 +787,10 @@
         }
       });
 
+      const deletedMediaIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_MEDIA)) || [];
+      const allMedia = JSON.parse(localStorage.getItem(STORAGE_KEY_MEDIA)) || [];
+      const custom_media = allMedia.filter(m => !deletedMediaIds.includes(m.id));
+
       const payload = {
         dojos,
         students,
@@ -793,6 +799,8 @@
         quiz_submissions,
         custom_quiz_bank,
         custom_glossary,
+        custom_media,
+        deletedMediaIds,
         deletedStudentIds,
         deletedQuizIds,
         deletedQuizSubIds,
@@ -1136,12 +1144,48 @@
       }
     }
 
+    // 9. Sync Deleted Media IDs & Custom Media
+    let localDeletedMediaIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_MEDIA)) || [];
+    if (Array.isArray(cloudData.deletedMediaIds)) {
+      const mergedDelMedia = Array.from(new Set([...localDeletedMediaIds, ...cloudData.deletedMediaIds]));
+      if (mergedDelMedia.length !== localDeletedMediaIds.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED_MEDIA, JSON.stringify(mergedDelMedia));
+        localDeletedMediaIds = mergedDelMedia;
+        changed = true;
+      }
+    }
+
+    if (Array.isArray(cloudData.custom_media)) {
+      let localMedia = JSON.parse(localStorage.getItem(STORAGE_KEY_MEDIA)) || [];
+      const mediaMap = new Map();
+      localMedia.forEach(m => {
+        if (m && m.id && !localDeletedMediaIds.includes(m.id)) mediaMap.set(m.id, m);
+      });
+      cloudData.custom_media.forEach(m => {
+        if (m && m.id && !localDeletedMediaIds.includes(m.id)) {
+          const localM = mediaMap.get(m.id);
+          if (!localM || !localM.updatedAt || (m.updatedAt && m.updatedAt >= localM.updatedAt)) {
+            mediaMap.set(m.id, m);
+          }
+        }
+      });
+      const mergedMedia = Array.from(mediaMap.values());
+      const localMediaStr = localStorage.getItem(STORAGE_KEY_MEDIA);
+      const newMediaStr = JSON.stringify(mergedMedia);
+      if (localMediaStr !== newMediaStr) {
+        localStorage.setItem(STORAGE_KEY_MEDIA, newMediaStr);
+        window.dispatchEvent(new CustomEvent('tkst_media_updated', { detail: mergedMedia }));
+        changed = true;
+      }
+    }
+
     if (changed) {
       window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'pull', time: new Date() } }));
       window.dispatchEvent(new CustomEvent('tkst_user_changed'));
       window.dispatchEvent(new CustomEvent('tkst_videos_updated'));
       window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
       window.dispatchEvent(new CustomEvent('tkst_submissions_updated'));
+      window.dispatchEvent(new CustomEvent('tkst_media_updated'));
     }
   }
 
@@ -2818,6 +2862,79 @@
 
       this.saveCustomGlossary(glossary);
       return { success: true, term: finalTerm };
+    },
+
+    // ==========================================
+    // MEDIA GALLERY (FOTOS & VÍDEOS) MANAGEMENT
+    // ==========================================
+    getCustomMedia: function() {
+      try {
+        const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_MEDIA)) || [];
+        const defaults = (window.TKST_DEFAULT_MEDIA || []).filter(m => !deletedIds.includes(m.id));
+        const saved = (JSON.parse(localStorage.getItem(STORAGE_KEY_MEDIA)) || []).filter(m => !deletedIds.includes(m.id));
+        
+        const mediaMap = new Map();
+        // 1. Base default items
+        defaults.forEach(m => mediaMap.set(m.id, { ...m }));
+        // 2. Saved custom additions/edits
+        saved.forEach(m => mediaMap.set(m.id, { ...m }));
+
+        const list = Array.from(mediaMap.values());
+        // Sort descending by date, then id
+        return list.sort((a, b) => {
+          const dateA = a.date || '';
+          const dateB = b.date || '';
+          if (dateA && dateB) return dateB.localeCompare(dateA);
+          return (b.id || '').localeCompare(a.id || '');
+        });
+      } catch (e) {
+        return window.TKST_DEFAULT_MEDIA || [];
+      }
+    },
+
+    saveCustomMedia: function(mediaList) {
+      safeLocalStorageSet(STORAGE_KEY_MEDIA, JSON.stringify(mediaList || []));
+      pushToCloud();
+      window.dispatchEvent(new CustomEvent('tkst_media_updated', { detail: mediaList }));
+    },
+
+    addMediaItem: function(mediaItem) {
+      const all = this.getCustomMedia();
+      const newItem = {
+        ...mediaItem,
+        id: mediaItem.id || `media_custom_${Date.now()}`,
+        date: mediaItem.date || new Date().toISOString().split('T')[0],
+        updatedAt: Date.now(),
+        _custom: true
+      };
+      all.unshift(newItem);
+      this.saveCustomMedia(all);
+      return newItem;
+    },
+
+    updateMediaItem: function(id, updatedFields) {
+      const all = this.getCustomMedia();
+      const index = all.findIndex(m => m.id === id);
+      if (index === -1) return null;
+      all[index] = {
+        ...all[index],
+        ...updatedFields,
+        updatedAt: Date.now(),
+        _edited: true
+      };
+      this.saveCustomMedia(all);
+      return all[index];
+    },
+
+    deleteMediaItem: function(id) {
+      let deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_MEDIA)) || [];
+      if (!deleted.includes(id)) {
+        deleted.push(id);
+        safeLocalStorageSet(STORAGE_KEY_DELETED_MEDIA, JSON.stringify(deleted));
+      }
+      const all = this.getCustomMedia().filter(m => m.id !== id);
+      this.saveCustomMedia(all);
+      return true;
     },
 
     getFirebaseUrl: function() {

@@ -145,6 +145,13 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" data-tab="media">
+            <i class="fas fa-photo-video"></i>
+            <span>Galeria de Mídia</span>
+            <span class="nav-badge" style="background: rgba(230,57,70,0.2); color: #FF808A;">Fotos & Vídeos</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" data-tab="quiz">
             <i class="fas fa-brain"></i>
             <span>Simulador de Exame</span>
@@ -154,7 +161,7 @@
 
       <div class="nav-section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
         <span>Sessão & Conta</span>
-        <span class="app-version-badge" id="appVersionBadge" title="Versão V-1.88. Toque para atualizar o app.">V-1.88</span>
+        <span class="app-version-badge" id="appVersionBadge" title="Versão V-1.89. Toque para atualizar o app.">V-1.89</span>
       </div>
       <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
         <li class="nav-item">
@@ -312,6 +319,114 @@
     </div>
   </div>
 
+  <!-- Media Lightbox In-App Viewer Modal (Fotos & Vídeos em Tela Cheia sem Sair do App) -->
+  <div class="modal-overlay media-lightbox-overlay" id="mediaLightboxModal">
+    <div class="modal-container media-lightbox-container">
+      <div class="modal-header media-lightbox-header">
+        <div class="media-lightbox-meta-left">
+          <span class="media-lightbox-badge" id="mediaLightboxCategory">Exames de Faixa</span>
+          <h3 id="mediaLightboxTitle">Título da Foto</h3>
+          <span class="media-lightbox-date" id="mediaLightboxDate">01/03/2026</span>
+        </div>
+        <div class="media-lightbox-actions">
+          <button type="button" class="btn btn-gold btn-sm" id="mediaLightboxDownloadBtn" onclick="window.TKST_APP.downloadCurrentLightboxMedia()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;" title="Baixar foto ou vídeo no seu celular">
+            <i class="fas fa-download"></i> <span>Baixar</span>
+          </button>
+          <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeMediaLightbox()" aria-label="Fechar">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body media-lightbox-body" id="mediaLightboxBody">
+        <!-- Injected dynamically via JS: Imagem em alta definição ou Player de Vídeo Integrado -->
+      </div>
+      <div class="media-lightbox-footer">
+        <div class="media-lightbox-nav-row">
+          <button type="button" class="btn btn-secondary btn-sm media-nav-btn" id="mediaLightboxPrevBtn" onclick="window.TKST_APP.navigateMediaLightbox(-1)" title="Mídia Anterior">
+            <i class="fas fa-chevron-left"></i> Anterior
+          </button>
+          <span class="media-lightbox-counter" id="mediaLightboxCounter">1 de 8</span>
+          <button type="button" class="btn btn-secondary btn-sm media-nav-btn" id="mediaLightboxNextBtn" onclick="window.TKST_APP.navigateMediaLightbox(1)" title="Próxima Mídia">
+            Próxima <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="media-lightbox-desc" id="mediaLightboxDesc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Cadastro/Edição de Mídia (Sensei / Admin) -->
+  <div class="modal-overlay" id="adminMediaModal">
+    <div class="modal-container" style="max-width: 600px; width: 95%;">
+      <div class="modal-header">
+        <h3 id="adminMediaModalTitle"><i class="fas fa-photo-video" style="color: var(--accent-gold); margin-right: 8px;"></i> Cadastrar Nova Mídia</h3>
+        <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeAdminMediaModal()" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <form id="adminMediaForm" onsubmit="window.TKST_APP.handleSaveMediaSubmit(event)">
+          <input type="hidden" id="adminMediaId" value="">
+          
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Título da Foto ou Vídeo *</label>
+            <input type="text" id="adminMediaTitleInput" class="form-control" required placeholder="Ex: Exame de Faixa 2026 - Dojô Central" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Tipo de Mídia *</label>
+              <select id="adminMediaTypeSelect" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+                <option value="image">📷 Foto / Imagem</option>
+                <option value="video">🎬 Vídeo Técnico</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Categoria *</label>
+              <select id="adminMediaCategorySelect" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+                <option value="exames">🎖️ Exames de Faixa</option>
+                <option value="treinos">🥊 Treinos & Seminários</option>
+                <option value="campeonatos">🏆 Campeonatos</option>
+                <option value="didaticos">🎬 Vídeos Didáticos</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">
+              Link Direto da Imagem ou Vídeo (URL) *
+            </label>
+            <input type="url" id="adminMediaUrlInput" class="form-control" required placeholder="https://exemplo.com/imagem.jpg ou link do YouTube" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+            <span style="font-size: 0.74rem; color: #94A3B8; margin-top: 4px; display: block;">
+              Dica: Cole links diretos de fotos ou vídeos (ex: ImgBB, Cloudinary, YouTube, Drive, etc.).
+            </span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Data do Evento</label>
+              <input type="date" id="adminMediaDateInput" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+            </div>
+
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Dojô / Unidade</label>
+              <input type="text" id="adminMediaDojoInput" class="form-control" placeholder="Ex: TKST Matriz" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Descrição / Contexto</label>
+            <textarea id="adminMediaDescInput" class="form-control" rows="2" placeholder="Informações adicionais sobre o momento ou técnica..." style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; resize: vertical;"></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeAdminMediaModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="font-weight: 700;">
+              <i class="fas fa-save"></i> Salvar Mídia
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Mozilla PDF.js Engine for Native Mobile & Desktop PDF Rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
@@ -321,14 +436,15 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/auth.js?v=188"></script>
-  <script src="assets/js/data-curriculum.js?v=188"></script>
-  <script src="assets/js/data-katas.js?v=188"></script>
-  <script src="assets/js/data-kumite.js?v=188"></script>
-  <script src="assets/js/data-glossary.js?v=188"></script>
-  <script src="assets/js/data-quiz.js?v=188"></script>
-  <script src="assets/js/data-exams.js?v=188"></script>
-  <script src="assets/js/app.js?v=188"></script>
+  <script src="assets/js/auth.js?v=189"></script>
+  <script src="assets/js/data-curriculum.js?v=189"></script>
+  <script src="assets/js/data-katas.js?v=189"></script>
+  <script src="assets/js/data-kumite.js?v=189"></script>
+  <script src="assets/js/data-glossary.js?v=189"></script>
+  <script src="assets/js/data-quiz.js?v=189"></script>
+  <script src="assets/js/data-exams.js?v=189"></script>
+  <script src="assets/js/data-media.js?v=189"></script>
+  <script src="assets/js/app.js?v=189"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
