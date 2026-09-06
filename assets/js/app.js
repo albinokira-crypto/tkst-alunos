@@ -2402,8 +2402,8 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
-    // Alunos que realizaram pelo menos 1 simulado entram no ranking oficial!
-    const activeRanked = leaderboard.filter(item => item.testsTaken > 0);
+    // Alunos Kyu que realizaram simulados e possuem saldo de pontuação positivo (sem pontuação negativa)
+    const activeRanked = leaderboard.filter(item => item.testsTaken > 0 && item.points > 0);
 
     activeRanked.sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;
