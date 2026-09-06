@@ -158,14 +158,6 @@
         "updatedAt": 1788301672476
       },
       {
-        "japanese": "Shizentai",
-        "kanji": "八字立ち",
-        "meaning": "Base natural (pés na largura dos ombros abertos em formato do kanji oito 八)",
-        "image": "",
-        "videoUrl": "",
-        "technicalTips": ""
-      },
-      {
         "japanese": "Fudo Dachi",
         "kanji": "不動立ち",
         "meaning": "Base imóvel e inabalável (combinação sólida de Zenkutsu e Kiba Dachi com centro baixo)",
@@ -772,7 +764,8 @@
     "tetsui uchi (tettsui)",
     "mae geri keage / kekomi",
     "sagate (ushiro)",
-    "teiji dachi"
+    "teiji dachi",
+    "shizentai"
   ],
-  "updatedAt": 1788721738198
+  "updatedAt": 1788721779386
 }
