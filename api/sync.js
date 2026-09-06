@@ -229,6 +229,9 @@ module.exports = async (req, res) => {
               ['name', 'phone', 'currentBelt', 'currentKyu', 'targetBelt', 'dojo', 'notes', 'avatar', 'startDate'].forEach(f => {
                 if (s[f] !== undefined && s[f] !== null && s[f] !== '') merged[f] = s[f];
               });
+              if (Array.isArray(s.quizScores) && s.quizScores.length > 0) {
+                merged.quizScores = s.quizScores;
+              }
               if (s.password && !merged.password) merged.password = s.password;
               merged.updatedAt = cloudUpdateTime || Date.now();
             }
@@ -313,7 +316,8 @@ module.exports = async (req, res) => {
       if (Array.isArray(incoming.quiz_submissions)) {
         incoming.quiz_submissions.forEach(s => {
           if (s && s.id && !deletedSubSet.has(s.id)) {
-            subMap.set(s.id, s);
+            const { details, ...lightweight } = s;
+            subMap.set(s.id, lightweight);
           }
         });
       }

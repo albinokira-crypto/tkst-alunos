@@ -117,6 +117,26 @@ module.exports = async (req, res) => {
       const incomingSubs = Array.isArray(body.quiz_submissions) ? body.quiz_submissions : (body.submission ? [body.submission] : []);
       const incomingDeleted = Array.isArray(body.deletedQuizSubIds) ? body.deletedQuizSubIds : [];
 
+      function sanitizeSubmission(s) {
+        if (!s) return null;
+        return {
+          id: s.id,
+          studentId: s.studentId,
+          studentName: s.studentName,
+          studentUsername: s.studentUsername,
+          studentBelt: s.studentBelt,
+          studentKyu: s.studentKyu !== undefined ? s.studentKyu : 7,
+          beltLevel: s.beltLevel || 'Geral',
+          beltKyu: s.beltKyu !== undefined ? s.beltKyu : 7,
+          score: typeof s.score === 'number' ? s.score : 0,
+          total: typeof s.total === 'number' ? s.total : 10,
+          percentage: typeof s.percentage === 'number' ? s.percentage : Math.round(((s.score || 0) / (s.total || 10)) * 100),
+          passed: s.passed !== undefined ? !!s.passed : ((s.score || 0) / (s.total || 10) >= 0.7),
+          perfect: s.perfect !== undefined ? !!s.perfect : ((s.score || 0) === (s.total || 10)),
+          date: s.date || new Date().toISOString()
+        };
+      }
+
       if (!token) {
         try {
           const localPath = path.resolve(process.cwd(), FILE_PATH);
@@ -126,8 +146,14 @@ module.exports = async (req, res) => {
           }
           const delSet = new Set([...(currentData.deletedQuizSubIds || []), ...incomingDeleted]);
           const subMap = new Map();
-          (currentData.quiz_submissions || []).forEach(s => { if (s && s.id && !delSet.has(s.id)) subMap.set(s.id, s); });
-          incomingSubs.forEach(s => { if (s && s.id && !delSet.has(s.id)) subMap.set(s.id, { ...(subMap.get(s.id) || {}), ...s }); });
+          (currentData.quiz_submissions || []).forEach(s => {
+            const clean = sanitizeSubmission(s);
+            if (clean && clean.id && !delSet.has(clean.id)) subMap.set(clean.id, clean);
+          });
+          incomingSubs.forEach(s => {
+            const clean = sanitizeSubmission(s);
+            if (clean && clean.id && !delSet.has(clean.id)) subMap.set(clean.id, { ...(subMap.get(clean.id) || {}), ...clean });
+          });
           const finalSubs = Array.from(subMap.values()).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 500);
           const newJson = { quiz_submissions: finalSubs, deletedQuizSubIds: Array.from(delSet), updatedAt: Date.now() };
           try { fs.writeFileSync(localPath, JSON.stringify(newJson, null, 2), 'utf8'); } catch(e) {}
@@ -135,7 +161,7 @@ module.exports = async (req, res) => {
         } catch(e) {}
         return res.status(200).json({
           success: true,
-          data: { quiz_submissions: incomingSubs, deletedQuizSubIds: incomingDeleted }
+          data: { quiz_submissions: incomingSubs.map(sanitizeSubmission).filter(Boolean), deletedQuizSubIds: incomingDeleted }
         });
       }
 
@@ -160,20 +186,21 @@ module.exports = async (req, res) => {
       const finalDeleted = Array.from(deletedSet);
 
       // 3. Mescla simulados por ID preservando todos os envios
-      const subMap = new Map();
       (currentData.quiz_submissions || []).forEach(s => {
-        if (s && s.id && !deletedSet.has(s.id)) {
-          subMap.set(s.id, s);
+        const clean = sanitizeSubmission(s);
+        if (clean && clean.id && !deletedSet.has(clean.id)) {
+          subMap.set(clean.id, clean);
         }
       });
 
       incomingSubs.forEach(s => {
-        if (!s || !s.id || deletedSet.has(s.id)) return;
-        const existing = subMap.get(s.id);
+        const clean = sanitizeSubmission(s);
+        if (!clean || !clean.id || deletedSet.has(clean.id)) return;
+        const existing = subMap.get(clean.id);
         if (!existing) {
-          subMap.set(s.id, s);
+          subMap.set(clean.id, clean);
         } else {
-          subMap.set(s.id, { ...existing, ...s });
+          subMap.set(clean.id, { ...existing, ...clean });
         }
       });
 

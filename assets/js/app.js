@@ -93,14 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.87';
+  const APP_DISPLAY_VERSION = 'V-1.88';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-1.87. Toque para atualizar o app.';
+    appVersionBadgeEl.title = 'Versão atual V-1.88. Toque para atualizar o app.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.87)?')) {
+      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.88)?')) {
         if ('caches' in window) {
           caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))).then(() => {
             window.location.reload(true);
@@ -2360,32 +2360,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (subId && (subId === student.id || subId === student.username)) return true;
         if (normSubUser && (normSubUser === normStdUser || normSubUser === student.id)) return true;
-        if (normSubName && normStdName && normSubName === normStdName) return true;
+        if (normSubName && normStdName && (normSubName === normStdName || normSubName.includes(normStdName) || normStdName.includes(normSubName))) return true;
 
         return false;
       });
 
+      // Coleta submissões ou notas diretas do perfil do aluno
+      let finalScoresList = [];
       if (studentSubs.length > 0) {
-        studentSubs.forEach(sub => {
-          const score = typeof sub.score === 'number' ? sub.score : 0;
-          const total = typeof sub.total === 'number' ? sub.total : 10;
-          totalCorrect += score;
-          totalWrong += Math.max(0, total - score);
-          testsTaken++;
-        });
+        finalScoresList = studentSubs;
       } else {
         const rawStudentObj = students.find(s => s && (s.id === student.id || s.username === student.username));
         const directScores = (rawStudentObj?.quizScores || allProgress[student.id]?.quizScores || allProgress[student.username]?.quizScores || []);
-        if (Array.isArray(directScores) && directScores.length > 0) {
-          directScores.forEach(item => {
-            const score = typeof item.score === 'number' ? item.score : 0;
-            const total = typeof item.total === 'number' ? item.total : 10;
-            totalCorrect += score;
-            totalWrong += Math.max(0, total - score);
-            testsTaken++;
-          });
-        }
+        if (Array.isArray(directScores)) finalScoresList = directScores;
       }
+
+      // Deduplica submissões com mesmo score/total e intervalo inferior a 4 segundos (elimina duplicatas de sincronização)
+      const uniqueScores = [];
+      finalScoresList.forEach(item => {
+        if (!item) return;
+        const score = typeof item.score === 'number' ? item.score : 0;
+        const total = typeof item.total === 'number' ? item.total : 10;
+        const isDup = uniqueScores.some(u => {
+          if (u.id && item.id && u.id === item.id) return true;
+          return u.score === score && u.total === total && Math.abs(new Date(u.date || 0).getTime() - new Date(item.date || 0).getTime()) < 4000;
+        });
+        if (!isDup) uniqueScores.push(item);
+      });
+
+      uniqueScores.forEach(item => {
+        const score = typeof item.score === 'number' ? item.score : 0;
+        const total = typeof item.total === 'number' ? item.total : 10;
+        totalCorrect += score;
+        totalWrong += Math.max(0, total - score);
+        testsTaken++;
+      });
 
       const netPoints = totalCorrect - totalWrong;
 

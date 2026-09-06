@@ -665,10 +665,16 @@
       } catch(e) {}
 
       const mergedSubs = Array.from(subMap.values())
+        .map(s => {
+          if (!s) return null;
+          const { details, ...lightweight } = s;
+          return lightweight;
+        })
+        .filter(Boolean)
         .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
         .slice(0, 500);
 
-      localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(mergedSubs));
+      safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(mergedSubs));
       window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: mergedSubs }));
     } catch(err) {
       console.warn('Quiz submissions pull notice:', err);
@@ -924,11 +930,18 @@
                 studentModified = true;
               }
             });
+            if (Array.isArray(s.quizScores) && s.quizScores.length > 0) {
+              merged.quizScores = s.quizScores;
+              studentModified = true;
+            }
             if (s.password && !merged.password) {
               merged.password = s.password;
               studentModified = true;
             }
             merged.updatedAt = cloudUpdateTime;
+          } else if (Array.isArray(s.quizScores) && (!Array.isArray(merged.quizScores) || s.quizScores.length > merged.quizScores.length)) {
+            merged.quizScores = s.quizScores;
+            studentModified = true;
           }
 
           // Presence / Last Active (always take newer)
@@ -1018,15 +1031,21 @@
       const localSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
       const subMap = new Map();
       localSubs.forEach(s => {
-        if (!localDeletedSubIds.includes(s.id)) subMap.set(s.id, s);
+        if (!localDeletedSubIds.includes(s.id)) {
+          const { details, ...lightweight } = s || {};
+          subMap.set(s.id, lightweight);
+        }
       });
       cloudData.quiz_submissions.forEach(s => {
-        if (!localDeletedSubIds.includes(s.id)) subMap.set(s.id, s);
+        if (!localDeletedSubIds.includes(s.id)) {
+          const { details, ...lightweight } = s || {};
+          subMap.set(s.id, lightweight);
+        }
       });
-      const mergedSubs = Array.from(subMap.values()).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 200);
+      const mergedSubs = Array.from(subMap.values()).sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 500);
       const newSubsStr = JSON.stringify(mergedSubs);
       if (localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS) !== newSubsStr) {
-        localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, newSubsStr);
+        safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, newSubsStr);
         changed = true;
       }
     }
@@ -1387,6 +1406,22 @@
         });
         if (changedVideos) {
           localStorage.setItem(STORAGE_KEY_VIDEOS, JSON.stringify(currentVideos));
+        }
+      }
+    } catch(e) {}
+
+    // Limpeza de emergência para simulados pesados (details) que estouram a cota do localStorage em celulares
+    try {
+      const rawSubs = localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS);
+      if (rawSubs && (rawSubs.length > 30000 || rawSubs.includes('"details":['))) {
+        const parsed = JSON.parse(rawSubs);
+        if (Array.isArray(parsed)) {
+          const lightweight = parsed.map(s => {
+            if (!s) return null;
+            const { details, ...rest } = s;
+            return rest;
+          }).filter(Boolean);
+          safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(lightweight.slice(0, 500)));
         }
       }
     } catch(e) {}
@@ -2417,13 +2452,12 @@
         percentage: Math.round((data.score / data.total) * 100),
         passed: Math.round((data.score / data.total) * 100) >= 70,
         perfect: data.score === data.total,
-        date: new Date().toISOString(),
-        details: data.details || [] // [{ question, options, selectedIndex, correctIndex, isCorrect, explanation }]
+        date: new Date().toISOString()
       };
 
       submissions.unshift(submission);
       if (submissions.length > 500) submissions = submissions.slice(0, 500);
-      localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
+      safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
       window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: submissions }));
 
       const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
@@ -2482,7 +2516,7 @@
 
         const result = Array.from(subMap.values()).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
         if (result.length > subs.length) {
-          localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(result.slice(0, 500)));
+          safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(result.slice(0, 500)));
         }
         return result;
       } catch(e) {
