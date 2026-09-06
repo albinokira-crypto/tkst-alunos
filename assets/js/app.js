@@ -93,9 +93,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.71';
+  const APP_DISPLAY_VERSION = 'V-1.84';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
-  if (appVersionBadgeEl) appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
+  if (appVersionBadgeEl) {
+    appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
+    appVersionBadgeEl.title = 'Versão atual V-1.84. Toque para atualizar o app.';
+    appVersionBadgeEl.style.cursor = 'pointer';
+    appVersionBadgeEl.onclick = () => {
+      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.84)?')) {
+        if ('caches' in window) {
+          caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))).then(() => {
+            window.location.reload(true);
+          }).catch(() => {
+            window.location.reload(true);
+          });
+        } else {
+          window.location.reload(true);
+        }
+      }
+    };
+  }
 
   // =========================================================================
   // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)
@@ -8371,7 +8388,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
               <i class="fas fa-video" style="color: var(--accent-crimson); margin-right: 6px;"></i> URL do Vídeo / YouTube Embed (Opcional):
             </label>
-            <input type="url" id="newGlossaryVideoUrl" class="form-input" placeholder="https://www.youtube.com/embed/... ou link de vídeo" style="font-size: 0.85rem;">
+            <input type="text" id="newGlossaryVideoUrl" class="form-input" placeholder="https://www.youtube.com/embed/... ou link de vídeo" style="font-size: 0.85rem;">
           </div>
 
           <div class="form-group">
@@ -8385,7 +8402,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
               Cancelar
             </button>
-            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
+            <button type="button" id="btnAddGlossaryTerm" onclick="window.TKST_APP.submitAddGlossaryTerm();" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700; cursor: pointer;">
               <i class="fas fa-plus-circle"></i> Cadastrar Termo
             </button>
           </div>
@@ -8396,39 +8413,73 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     submitAddGlossaryTerm: () => {
-      if (!window.TKST_AUTH.isAdmin()) {
-        alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
-        return;
-      }
+      try {
+        if (!window.TKST_AUTH.isAdmin()) {
+          alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+          return;
+        }
 
-      const cat = document.getElementById('newGlossaryCategory').value;
-      const japanese = document.getElementById('newGlossaryJapanese').value.trim();
-      const kanji = document.getElementById('newGlossaryKanji').value.trim();
-      const meaning = document.getElementById('newGlossaryMeaning').value.trim();
-      const image = (document.getElementById('newGlossaryImage') && document.getElementById('newGlossaryImage').value.trim()) || '';
-      const videoUrl = (document.getElementById('newGlossaryVideoUrl') && document.getElementById('newGlossaryVideoUrl').value.trim()) || '';
-      const technicalTips = (document.getElementById('newGlossaryTips') && document.getElementById('newGlossaryTips').value.trim()) || '';
+        const catEl = document.getElementById('newGlossaryCategory');
+        const jpEl = document.getElementById('newGlossaryJapanese');
+        const kanjiEl = document.getElementById('newGlossaryKanji');
+        const meaningEl = document.getElementById('newGlossaryMeaning');
+        const imgEl = document.getElementById('newGlossaryImage');
+        const videoEl = document.getElementById('newGlossaryVideoUrl');
+        const tipsEl = document.getElementById('newGlossaryTips');
 
-      if (!cat || !japanese || !meaning) {
-        alert('Por favor, preencha o termo em japonês e o seu significado.');
-        return;
-      }
+        const cat = catEl ? catEl.value : '';
+        const japanese = jpEl ? jpEl.value.trim() : '';
+        const kanji = kanjiEl ? kanjiEl.value.trim() : '';
+        const meaning = meaningEl ? meaningEl.value.trim() : '';
+        const image = imgEl ? imgEl.value.trim() : '';
+        const videoUrl = videoEl ? videoEl.value.trim() : '';
+        const technicalTips = tipsEl ? tipsEl.value.trim() : '';
 
-      const res = window.TKST_AUTH.addGlossaryTerm(cat, {
-        japanese,
-        kanji,
-        meaning,
-        image,
-        videoUrl,
-        technicalTips
-      });
+        if (!cat || !japanese || !meaning) {
+          alert('Por favor, preencha o termo em japonês e o seu significado.');
+          return;
+        }
 
-      if (res && res.success) {
-        document.getElementById('detailModal').classList.remove('active');
-        alert(`Termo "${japanese}" adicionado com sucesso ao dicionário!`);
-        renderGlossary();
-      } else {
-        alert((res && res.error) || 'Erro ao adicionar termo.');
+        const btn = document.getElementById('btnAddGlossaryTerm');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cadastrando...';
+        }
+
+        const res = window.TKST_AUTH.addGlossaryTerm(cat, {
+          japanese,
+          kanji,
+          meaning,
+          image,
+          videoUrl,
+          technicalTips
+        });
+
+        if (res && res.success) {
+          document.getElementById('detailModal').classList.remove('active');
+          if (typeof showToast === 'function') {
+            showToast(`Termo "${japanese}" adicionado com sucesso!`, 'success');
+          } else {
+            alert(`Termo "${japanese}" adicionado com sucesso ao dicionário!`);
+          }
+          if (typeof renderGlossary === 'function') {
+            renderGlossary();
+          }
+        } else {
+          alert((res && res.error) || 'Erro ao adicionar termo.');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus-circle"></i> Cadastrar Termo';
+          }
+        }
+      } catch(err) {
+        console.error('submitAddGlossaryTerm error:', err);
+        alert('Erro ao cadastrar termo: ' + err.message);
+        const btn = document.getElementById('btnAddGlossaryTerm');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-plus-circle"></i> Cadastrar Termo';
+        }
       }
     },
 
@@ -8497,7 +8548,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       modalTitle.innerHTML = `<span><i class="fas ${focusMedia ? 'fa-photo-video' : 'fa-edit'}" style="color: var(--accent-gold);"></i> ${focusMedia ? 'Configurar Mídias' : 'Editar Termo'}: ${term.japanese} (Admin)</span>`;
 
       modalBody.innerHTML = `
-        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm();" style="display: flex; flex-direction: column; gap: 14px;">
+        <form id="editGlossaryForm" novalidate onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm();" style="display: flex; flex-direction: column; gap: 14px;">
           <input type="hidden" id="editGlossaryOldCategory" value="${actualCat}">
           <input type="hidden" id="editGlossaryOldJapanese" value="${term.japanese.replace(/"/g, '&quot;')}">
 
@@ -8563,7 +8614,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
               <i class="fas fa-video" style="color: var(--accent-crimson); margin-right: 6px;"></i> URL do Vídeo / YouTube Embed (Opcional):
             </label>
-            <input type="url" id="editGlossaryVideoUrl" class="form-input" value="${(term.videoUrl || '').replace(/"/g, '&quot;')}" placeholder="https://www.youtube.com/embed/... ou link de vídeo" style="font-size: 0.85rem;">
+            <input type="text" id="editGlossaryVideoUrl" class="form-input" value="${(term.videoUrl || '').replace(/"/g, '&quot;')}" placeholder="https://www.youtube.com/embed/... ou link de vídeo" style="font-size: 0.85rem;">
           </div>
 
           <div class="form-group">
@@ -8577,7 +8628,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             <button type="button" class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')" style="flex: 1; padding: 12px;">
               Cancelar
             </button>
-            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700;">
+            <button type="button" id="btnSaveGlossaryTerm" onclick="window.TKST_APP.submitEditGlossaryTerm();" class="btn btn-primary" style="flex: 2; padding: 12px; font-weight: 700; cursor: pointer;">
               <i class="fas fa-save"></i> Salvar Alterações
             </button>
           </div>
@@ -8598,42 +8649,76 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     submitEditGlossaryTerm: (oldCategoryArg, oldJapaneseNameArg) => {
-      if (!window.TKST_AUTH.isAdmin()) {
-        alert('Acesso restrito aos administradores.');
-        return;
-      }
+      try {
+        if (!window.TKST_AUTH.isAdmin()) {
+          alert('Acesso restrito aos administradores (Sensei Diego).');
+          return;
+        }
 
-      const oldCategory = oldCategoryArg || (document.getElementById('editGlossaryOldCategory') && document.getElementById('editGlossaryOldCategory').value);
-      const oldJapaneseName = oldJapaneseNameArg || (document.getElementById('editGlossaryOldJapanese') && document.getElementById('editGlossaryOldJapanese').value);
+        const oldCategory = oldCategoryArg || (document.getElementById('editGlossaryOldCategory') && document.getElementById('editGlossaryOldCategory').value);
+        const oldJapaneseName = oldJapaneseNameArg || (document.getElementById('editGlossaryOldJapanese') && document.getElementById('editGlossaryOldJapanese').value);
 
-      const newCategory = document.getElementById('editGlossaryCategory').value;
-      const japanese = document.getElementById('editGlossaryJapanese').value.trim();
-      const kanji = document.getElementById('editGlossaryKanji').value.trim();
-      const meaning = document.getElementById('editGlossaryMeaning').value.trim();
-      const image = (document.getElementById('editGlossaryImage') && document.getElementById('editGlossaryImage').value.trim()) || '';
-      const videoUrl = (document.getElementById('editGlossaryVideoUrl') && document.getElementById('editGlossaryVideoUrl').value.trim()) || '';
-      const technicalTips = (document.getElementById('editGlossaryTips') && document.getElementById('editGlossaryTips').value.trim()) || '';
+        const categoryEl = document.getElementById('editGlossaryCategory');
+        const jpEl = document.getElementById('editGlossaryJapanese');
+        const kanjiEl = document.getElementById('editGlossaryKanji');
+        const meaningEl = document.getElementById('editGlossaryMeaning');
+        const imageEl = document.getElementById('editGlossaryImage');
+        const videoEl = document.getElementById('editGlossaryVideoUrl');
+        const tipsEl = document.getElementById('editGlossaryTips');
 
-      if (!newCategory || !japanese || !meaning) {
-        alert('Por favor, preencha o termo em japonês e o seu significado.');
-        return;
-      }
+        const newCategory = categoryEl ? categoryEl.value : '';
+        const japanese = jpEl ? jpEl.value.trim() : '';
+        const kanji = kanjiEl ? kanjiEl.value.trim() : '';
+        const meaning = meaningEl ? meaningEl.value.trim() : '';
+        const image = imageEl ? imageEl.value.trim() : '';
+        const videoUrl = videoEl ? videoEl.value.trim() : '';
+        const technicalTips = tipsEl ? tipsEl.value.trim() : '';
 
-      const res = window.TKST_AUTH.updateGlossaryTerm(oldCategory, oldJapaneseName, newCategory, {
-        japanese,
-        kanji,
-        meaning,
-        image,
-        videoUrl,
-        technicalTips
-      });
+        if (!newCategory || !japanese || !meaning) {
+          alert('Por favor, preencha o termo em japonês e o seu significado.');
+          return;
+        }
 
-      if (res && res.success) {
-        document.getElementById('detailModal').classList.remove('active');
-        alert(`Termo "${japanese}" atualizado com sucesso no dicionário!`);
-        renderGlossary();
-      } else {
-        alert((res && res.error) || 'Erro ao atualizar termo.');
+        const btn = document.getElementById('btnSaveGlossaryTerm');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        }
+
+        const res = window.TKST_AUTH.updateGlossaryTerm(oldCategory, oldJapaneseName, newCategory, {
+          japanese,
+          kanji,
+          meaning,
+          image,
+          videoUrl,
+          technicalTips
+        });
+
+        if (res && res.success) {
+          document.getElementById('detailModal').classList.remove('active');
+          if (typeof showToast === 'function') {
+            showToast(`Termo "${japanese}" atualizado com sucesso no dicionário!`, 'success');
+          } else {
+            alert(`Termo "${japanese}" atualizado com sucesso no dicionário!`);
+          }
+          if (typeof renderGlossary === 'function') {
+            renderGlossary();
+          }
+        } else {
+          alert((res && res.error) || 'Erro ao atualizar termo.');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+          }
+        }
+      } catch(err) {
+        console.error('submitEditGlossaryTerm error:', err);
+        alert('Erro ao salvar termo: ' + err.message);
+        const btn = document.getElementById('btnSaveGlossaryTerm');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+        }
       }
     },
     openEditStudentModal: (studentId) => {

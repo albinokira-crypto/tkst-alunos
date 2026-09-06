@@ -2634,9 +2634,28 @@
 
       // Recupera propriedades técnicas anteriores caso não tenham sido enviadas
       let existingTerm = null;
-      if (glossary[oldCategory]) {
+      const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+
+      // 1. Procura na categoria de origem informada
+      if (oldCategory && glossary[oldCategory]) {
         existingTerm = glossary[oldCategory].find(t => (t.japanese || '').toLowerCase().trim() === oldCleanKey);
-        glossary[oldCategory] = glossary[oldCategory].filter(t => (t.japanese || '').toLowerCase().trim() !== oldCleanKey);
+        if (existingTerm) {
+          glossary[oldCategory] = glossary[oldCategory].filter(t => (t.japanese || '').toLowerCase().trim() !== oldCleanKey);
+        }
+      }
+
+      // 2. Se não encontrou na categoria informada, busca e remove de qualquer outra categoria onde esteja
+      if (!existingTerm) {
+        for (const c of cats) {
+          if (glossary[c]) {
+            const found = glossary[c].find(t => (t.japanese || '').toLowerCase().trim() === oldCleanKey);
+            if (found) {
+              existingTerm = found;
+              glossary[c] = glossary[c].filter(t => (t.japanese || '').toLowerCase().trim() !== oldCleanKey);
+              break;
+            }
+          }
+        }
       }
 
       if (!glossary[newCategory]) glossary[newCategory] = [];
