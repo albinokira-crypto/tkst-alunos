@@ -93,14 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.86';
+  const APP_DISPLAY_VERSION = 'V-1.87';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-1.86. Toque para atualizar o app.';
+    appVersionBadgeEl.title = 'Versão atual V-1.87. Toque para atualizar o app.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.86)?')) {
+      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.87)?')) {
         if ('caches' in window) {
           caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))).then(() => {
             window.location.reload(true);
@@ -2348,6 +2348,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let totalWrong = 0;
       let testsTaken = 0;
 
+      const firstName = (student.fullName || 'Aluno').split(' ')[0] || 'Aluno';
       const normStdName = (student.fullName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       const normStdUser = (student.username || '').toLowerCase().trim();
 
