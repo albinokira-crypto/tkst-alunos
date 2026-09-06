@@ -24,6 +24,51 @@
   let isSyncing = false;
   let syncPending = false;
 
+  // Gravação segura no LocalStorage com tratamento e limpeza de QuotaExceededError
+  function safeLocalStorageSet(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (err) {
+      console.warn('LocalStorage write notice for', key, err);
+      try {
+        // 1. Reduz quiz submissions no cache local para liberar espaço imediato
+        const rawSubs = localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS);
+        if (rawSubs) {
+          try {
+            let subs = JSON.parse(rawSubs);
+            if (Array.isArray(subs) && subs.length > 25) {
+              localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(subs.slice(0, 25)));
+            }
+          } catch(e) {}
+        }
+
+        // 2. Se for o dicionário, armazena somente os termos customizados/editados (delta)
+        if (key === STORAGE_KEY_GLOSSARY) {
+          try {
+            const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+            const delta = {};
+            ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(c => {
+              if (Array.isArray(parsed[c])) {
+                const editedOnly = parsed[c].filter(t => t && (t._edited || t._custom));
+                if (editedOnly.length > 0) delta[c] = editedOnly;
+              }
+            });
+            localStorage.setItem(key, JSON.stringify(delta));
+            return true;
+          } catch(e) {}
+        }
+
+        // 3. Tenta gravar novamente após limpeza
+        localStorage.setItem(key, value);
+        return true;
+      } catch (innerErr) {
+        console.warn('LocalStorage quota limit reached; proceeding in-memory and server sync:', innerErr);
+        return false;
+      }
+    }
+  }
+
   // Load custom quiz bank on initialization if present
   try {
     const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
@@ -2537,7 +2582,6 @@
           baseGlossary[cat] = Array.from(termMap.values()).filter(t => t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim()));
         });
 
-        localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(baseGlossary));
         window.TKST_GLOSSARY = baseGlossary;
         return baseGlossary;
       } catch(e) {
@@ -2546,7 +2590,6 @@
             baseGlossary[cat] = baseGlossary[cat].filter(t => t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim()));
           }
         });
-        localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(baseGlossary));
         window.TKST_GLOSSARY = baseGlossary;
         return baseGlossary;
       }
@@ -2555,11 +2598,29 @@
     saveCustomGlossary: function(glossary) {
       if (!glossary || typeof glossary !== 'object') return false;
       const deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
-      localStorage.setItem(STORAGE_KEY_GLOSSARY, JSON.stringify(glossary));
+      
+      // 1. Atualiza memória global imediatamente
       window.TKST_GLOSSARY = glossary;
-      pushGlossaryToServer(glossary, deletedTerms);
-      pushToCloud();
-      window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
+
+      // 2. Salva no localStorage com proteção contra QuotaExceededError
+      safeLocalStorageSet(STORAGE_KEY_GLOSSARY, JSON.stringify(glossary));
+
+      // 3. Sincroniza com o servidor (onde não há limitação de localStorage)
+      try {
+        pushGlossaryToServer(glossary, deletedTerms);
+      } catch(e) {
+        console.warn('pushGlossaryToServer notice:', e);
+      }
+      try {
+        pushToCloud();
+      } catch(e) {
+        console.warn('pushToCloud notice:', e);
+      }
+
+      try {
+        window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
+      } catch(e) {}
+
       return true;
     },
 

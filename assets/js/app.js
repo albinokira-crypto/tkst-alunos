@@ -93,14 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.84';
+  const APP_DISPLAY_VERSION = 'V-1.85';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-1.84. Toque para atualizar o app.';
+    appVersionBadgeEl.title = 'Versão atual V-1.85. Toque para atualizar o app.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.84)?')) {
+      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.85)?')) {
         if ('caches' in window) {
           caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))).then(() => {
             window.location.reload(true);
@@ -8247,7 +8247,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const maxDim = 400;
+          const maxDim = 320;
           let width = img.width;
           let height = img.height;
 
@@ -8266,9 +8266,12 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          // Super leve para mobile: ~15KB a 25KB
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.65);
 
           const previewBox = document.getElementById(previewImgId + 'Box');
           const previewImg = document.getElementById(previewImgId);
