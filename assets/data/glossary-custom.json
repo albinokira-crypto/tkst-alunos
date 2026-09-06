@@ -3,12 +3,12 @@
     "bases": [
       {
         "japanese": "Zenkutsu Dachi",
-        "kanji": "????",
+        "kanji": "",
         "meaning": "Base avan�ada frontal (peso 70% na perna dianteira, 30% na traseira)",
         "image": "",
         "videoUrl": "https://www.youtube.com/watch?v=YSePO6k5ico",
         "technicalTips": "Largura dos ombros",
-        "updatedAt": 1788703350000,
+        "updatedAt": 1788721418771,
         "_edited": true
       },
       {
@@ -172,6 +172,12 @@
         "image": "",
         "videoUrl": "",
         "technicalTips": ""
+      },
+      {
+        "japanese": "Test Base Dachi",
+        "meaning": "Base de Teste",
+        "_custom": true,
+        "_edited": true
       }
     ],
     "defesas": [
@@ -766,5 +772,5 @@
     "sagate (ushiro)",
     "teiji dachi"
   ],
-  "updatedAt": 1788704862678
+  "updatedAt": 1788721420881
 }
