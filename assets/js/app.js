@@ -93,14 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.85';
+  const APP_DISPLAY_VERSION = 'V-1.86';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-1.85. Toque para atualizar o app.';
+    appVersionBadgeEl.title = 'Versão atual V-1.86. Toque para atualizar o app.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.85)?')) {
+      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.86)?')) {
         if ('caches' in window) {
           caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))).then(() => {
             window.location.reload(true);
@@ -701,12 +701,19 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Auto-sincronização inicial com a nuvem (alunos e simulados)
+    if (window.TKST_AUTH) {
+      if (typeof window.TKST_AUTH.pullStudentsFromCloud === 'function') {
+        window.TKST_AUTH.pullStudentsFromCloud().catch(() => {});
+      }
+      if (typeof window.TKST_AUTH.pullQuizSubmissionsFromCloud === 'function') {
+        window.TKST_AUTH.pullQuizSubmissionsFromCloud().catch(() => {});
+      }
+    }
+
     const user = window.TKST_AUTH.getCurrentUser();
     if (!user) {
       switchTab('login');
-      if (window.TKST_AUTH && window.TKST_AUTH.pullStudentsFromCloud) {
-        window.TKST_AUTH.pullStudentsFromCloud();
-      }
       // Auto open registration modal if accessed via invitation link (?cadastro=1, ?convite=1, ?registro=1, etc.)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('cadastro') === '1' || urlParams.get('convite') === '1' || urlParams.get('registro') === '1' || urlParams.has('cadastro') || urlParams.has('convite')) {
@@ -949,6 +956,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('tkst_glossary_updated', () => {
       if (!shouldSkipRerender() && currentTab === 'glossary') {
         renderGlossary();
+      }
+    });
+
+    window.addEventListener('tkst_submissions_updated', () => {
+      if (!shouldSkipRerender()) {
+        if (currentTab === 'dashboard') {
+          renderDashboard();
+        } else if (currentTab === 'admin' && adminSubTab === 'quizzes') {
+          renderAdminMaster();
+        }
       }
     });
   }
@@ -2278,7 +2295,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==========================================
     // TOP 10 QUIZ RANKING CALCULATION
-    // Regra: Alunos que realizaram simulados (não faixa preta / não master), acerto = +1 pt, erro = -1 pt
+    // Regra: Alunos que realizaram simulados (exclui apenas Sensei Master irons365 / admins), acerto = +1 pt, erro = -1 pt
     // ==========================================
     const submissions = (window.TKST_AUTH ? window.TKST_AUTH.getAllQuizSubmissions() : []) || [];
     let allProgress = {};
@@ -2286,14 +2303,11 @@ document.addEventListener('DOMContentLoaded', () => {
       allProgress = JSON.parse(localStorage.getItem('tkst_progress_v2')) || JSON.parse(localStorage.getItem('tkst_student_progress')) || {};
     } catch (e) { allProgress = {}; }
 
-    // Map de alunos elegíveis (exclui faixas pretas e admin master)
+    // Map de alunos elegíveis (exclui apenas conta de Sensei Master para ranking dos alunos)
     const studentMap = new Map();
     students.forEach(s => {
       if (!s) return;
-      const b = (s.currentBelt || '').toLowerCase();
-      if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan')) return;
-      if (s.currentKyu !== undefined && s.currentKyu <= 0) return;
-      if (s.username === 'irons365') return;
+      if (s.username === 'irons365' || s.role === 'admin' || (s.name && s.name.toLowerCase().includes('sensei diego'))) return;
       studentMap.set(s.id, {
         id: s.id,
         fullName: (s.name || 'Aluno').trim(),
@@ -2307,9 +2321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inclui também participantes encontrados nas submissões de simulados
     submissions.forEach(sub => {
       if (!sub) return;
-      const b = (sub.studentBelt || '').toLowerCase();
-      if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan')) return;
-      if (sub.studentUsername === 'irons365' || sub.studentUsername === 'admin') return;
+      if (sub.studentUsername === 'irons365' || sub.studentUsername === 'admin' || (sub.studentName && sub.studentName.toLowerCase().includes('sensei diego'))) return;
       const key = sub.studentId || sub.studentUsername || sub.studentName;
       if (key && !studentMap.has(key)) {
         studentMap.set(key, {

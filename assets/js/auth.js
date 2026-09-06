@@ -1122,6 +1122,7 @@
       window.dispatchEvent(new CustomEvent('tkst_user_changed'));
       window.dispatchEvent(new CustomEvent('tkst_videos_updated'));
       window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
+      window.dispatchEvent(new CustomEvent('tkst_submissions_updated'));
     }
   }
 
@@ -2423,6 +2424,7 @@
       submissions.unshift(submission);
       if (submissions.length > 500) submissions = submissions.slice(0, 500);
       localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
+      window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: submissions }));
 
       const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
       pushQuizSubmissionsToServer(submissions, deletedQuizSubIds);
@@ -2433,8 +2435,56 @@
     getAllQuizSubmissions: function() {
       try {
         const deletedSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
-        const subs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
-        return subs.filter(s => s && s.id && !deletedSubIds.includes(s.id));
+        const deletedSet = new Set(deletedSubIds);
+        let subs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+        
+        const subMap = new Map();
+        subs.forEach(s => {
+          if (s && s.id && !deletedSet.has(s.id)) subMap.set(s.id, s);
+        });
+
+        // Auto-recupera de allStudents.quizScores (garante que provas salvas nos perfis nunca fiquem invisíveis)
+        try {
+          const allStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+          allStudents.forEach(std => {
+            if (std && Array.isArray(std.quizScores)) {
+              std.quizScores.forEach((qs, qIdx) => {
+                const score = typeof qs.score === 'number' ? qs.score : 10;
+                const total = typeof qs.total === 'number' ? qs.total : 10;
+                const pct = typeof qs.percentage === 'number' ? qs.percentage : Math.round((score / total) * 100);
+                const date = qs.date || new Date().toISOString();
+                const subId = `quiz_std_${std.id}_${qIdx}_${new Date(date).getTime()}`;
+
+                const existsByTime = Array.from(subMap.values()).some(s => s.studentId === std.id && Math.abs(new Date(s.date || 0).getTime() - new Date(date).getTime()) < 3000);
+                if (!existsByTime && !subMap.has(subId) && !deletedSet.has(subId)) {
+                  subMap.set(subId, {
+                    id: subId,
+                    studentId: std.id,
+                    studentName: std.name,
+                    studentUsername: std.username,
+                    studentBelt: std.currentBelt || 'Faixa Branca',
+                    studentKyu: std.currentKyu !== undefined ? std.currentKyu : 7,
+                    beltLevel: qs.beltLevel || std.currentBelt || 'Geral',
+                    beltKyu: qs.beltKyu !== undefined ? qs.beltKyu : (std.currentKyu !== undefined ? std.currentKyu : 7),
+                    score: score,
+                    total: total,
+                    percentage: pct,
+                    passed: pct >= 70,
+                    perfect: score === total,
+                    date: date,
+                    details: []
+                  });
+                }
+              });
+            }
+          });
+        } catch(e) {}
+
+        const result = Array.from(subMap.values()).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+        if (result.length > subs.length) {
+          localStorage.setItem(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(result.slice(0, 500)));
+        }
+        return result;
       } catch(e) {
         return [];
       }
