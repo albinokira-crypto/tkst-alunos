@@ -19,6 +19,7 @@
   const STORAGE_KEY_DELETED_GLOSSARY = 'tkst_deleted_glossary_terms';
   const STORAGE_KEY_MEDIA = 'tkst_custom_media';
   const STORAGE_KEY_DELETED_MEDIA = 'tkst_deleted_media_ids';
+  const STORAGE_KEY_ALBUMS = 'tkst_custom_albums';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_TOPIC = 'tkst_karate_cloud_v2_sync';
@@ -2953,6 +2954,63 @@
       const all = this.getCustomMedia().filter(m => !ids.includes(m.id));
       this.saveCustomMedia(all);
       return true;
+    },
+
+    // ==========================================
+    // CUSTOM ALBUMS MANAGEMENT
+    // ==========================================
+    getCustomAlbums: function() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_ALBUMS)) || [];
+      } catch(e) {
+        return [];
+      }
+    },
+
+    saveCustomAlbums: function(albums) {
+      safeLocalStorageSet(STORAGE_KEY_ALBUMS, JSON.stringify(albums || []));
+      pushToCloud();
+      window.dispatchEvent(new CustomEvent('tkst_albums_updated', { detail: albums }));
+    },
+
+    addAlbum: function(albumData) {
+      const all = this.getCustomAlbums();
+      const slug = albumData.id || ('album_' + Date.now());
+      const newAlbum = {
+        id: slug,
+        title: albumData.title || 'Novo Álbum',
+        icon: albumData.icon || 'fas fa-folder',
+        badge: albumData.badge || albumData.title || 'Álbum',
+        description: albumData.description || '',
+        cover: albumData.cover || 'assets/images/logo-tkst-2.jpg',
+        hasSubAlbums: albumData.hasSubAlbums || false,
+        _custom: true,
+        createdAt: Date.now()
+      };
+      // Prevent duplicate id
+      const existingIndex = all.findIndex(a => a.id === slug);
+      if (existingIndex !== -1) {
+        all[existingIndex] = { ...all[existingIndex], ...newAlbum };
+      } else {
+        all.push(newAlbum);
+      }
+      this.saveCustomAlbums(all);
+      return newAlbum;
+    },
+
+    deleteAlbum: function(albumId) {
+      const all = this.getCustomAlbums().filter(a => a.id !== albumId);
+      this.saveCustomAlbums(all);
+      return true;
+    },
+
+    updateAlbum: function(albumId, updatedFields) {
+      const all = this.getCustomAlbums();
+      const index = all.findIndex(a => a.id === albumId);
+      if (index === -1) return null;
+      all[index] = { ...all[index], ...updatedFields, updatedAt: Date.now() };
+      this.saveCustomAlbums(all);
+      return all[index];
     },
 
     getFirebaseUrl: function() {
