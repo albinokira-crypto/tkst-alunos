@@ -1,6 +1,6 @@
 // api/glossary.js
 // Endpoint dedicado e persistente para o Dicionário Japonês de Karatê TKST.
-// Separado do api/sync.js para evitar que os termos sejam sobrescritos por outras sincronizações.
+// Armazena e sincroniza termos customizados via assets/data/glossary-custom.json
 
 const fs = require('fs');
 const path = require('path');
@@ -8,12 +8,31 @@ const https = require('https');
 
 const TMP_FILE = path.join('/tmp', 'tkst_glossary.json');
 const REPO = process.env.GITHUB_REPO || 'albinokira-crypto/tkst-alunos';
-const FILE_PATH = 'assets/js/data-glossary.js';
+const JSON_PATH = 'assets/data/glossary-custom.json';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
-const MARKER_START = '// ==TKST_CUSTOM_GLOSSARY_START==';
-const MARKER_END = '// ==TKST_CUSTOM_GLOSSARY_END==';
 
 let moduleCache = null;
+
+function getLocalFileFallback() {
+  try {
+    const localPath = path.resolve(process.cwd(), JSON_PATH);
+    if (fs.existsSync(localPath)) {
+      const raw = fs.readFileSync(localPath, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function saveLocalFile(data) {
+  try {
+    const localPath = path.resolve(process.cwd(), JSON_PATH);
+    const dir = path.dirname(localPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(localPath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {}
+}
 
 function readFromTmp() {
   try {
@@ -39,18 +58,24 @@ function readGlossary() {
     moduleCache = tmp;
     return moduleCache;
   }
+  const local = getLocalFileFallback();
+  if (local) {
+    moduleCache = local;
+    return moduleCache;
+  }
   return null;
 }
 
 function writeGlossary(data) {
   moduleCache = data;
   writeToTmp(data);
+  saveLocalFile(data);
 }
 
-// Busca termos customizados diretamente de data-glossary.js no GitHub
+// Busca termos customizados diretamente do GitHub
 function fetchCustomGlossaryFromGitHub(token) {
   return new Promise((resolve) => {
-    const apiPath = `/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`;
+    const apiPath = `/repos/${REPO}/contents/${JSON_PATH}?ref=${BRANCH}`;
     const headers = {
       'Accept': 'application/vnd.github.v3+json',
       'User-Agent': 'TKST-Alunos-Glossary/1.0'
@@ -70,21 +95,9 @@ function fetchCustomGlossaryFromGitHub(token) {
       res.on('end', () => {
         try {
           const data = JSON.parse(body);
-          if (res.statusCode !== 200 || !data.content) return resolve(null);
-
-          const fileContent = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
-          const startIdx = fileContent.indexOf(MARKER_START);
-          const endIdx = fileContent.indexOf(MARKER_END);
-
-          if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return resolve(null);
-
-          const block = fileContent.slice(startIdx + MARKER_START.length, endIdx).trim();
-          if (!block) return resolve(null);
-
-          // Procura por window.TKST_CUSTOM_GLOSSARY = { ... };
-          const jsonMatch = block.match(/window\.TKST_CUSTOM_GLOSSARY\s*=\s*(\{[\s\S]*?\});?/);
-          if (jsonMatch && jsonMatch[1]) {
-            const parsed = JSON.parse(jsonMatch[1]);
+          if (res.statusCode === 200 && data.content) {
+            const fileContent = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
+            const parsed = JSON.parse(fileContent);
             return resolve(parsed);
           }
           resolve(null);
@@ -114,26 +127,29 @@ module.exports = async (req, res) => {
     let saved = readGlossary();
 
     // Fallback: se cache/tmp vazio, busca no GitHub
-    if (!saved || !saved.glossary || Object.keys(saved.glossary).length === 0) {
+    if (!saved || (!saved.custom_glossary && !saved.glossary) || Object.keys(saved.custom_glossary || saved.glossary || {}).length === 0) {
       const token = process.env.GITHUB_TOKEN;
       const ghGlossary = await fetchCustomGlossaryFromGitHub(token);
       if (ghGlossary && typeof ghGlossary === 'object') {
-        saved = {
-          glossary: ghGlossary,
-          deletedGlossaryTerms: []
-        };
+        saved = ghGlossary;
         writeGlossary(saved);
       }
     }
 
-    if (!saved || !saved.glossary) {
-      return res.status(200).json({ success: true, data: {}, deletedGlossaryTerms: [], empty: true });
+    if (!saved) {
+      const local = getLocalFileFallback();
+      if (local) saved = local;
     }
+
+    const glossaryData = (saved && (saved.custom_glossary || saved.glossary)) || {};
+    const deletedTerms = (saved && saved.deletedGlossaryTerms) || [];
 
     return res.status(200).json({
       success: true,
-      data: saved.glossary,
-      deletedGlossaryTerms: saved.deletedGlossaryTerms || []
+      data: glossaryData,
+      custom_glossary: glossaryData,
+      deletedGlossaryTerms: deletedTerms,
+      updatedAt: (saved && saved.updatedAt) || Date.now()
     });
   }
 
@@ -143,11 +159,11 @@ module.exports = async (req, res) => {
       let body = req.body;
       if (typeof body === 'string') body = JSON.parse(body);
 
-      const incomingGlossary = body.glossary || body.customGlossary || body.data || {};
+      const incomingGlossary = body.custom_glossary || body.customGlossary || body.glossary || body.data || {};
       const incomingDeleted = Array.isArray(body.deletedGlossaryTerms) ? body.deletedGlossaryTerms : [];
 
-      const existingData = readGlossary() || { glossary: {}, deletedGlossaryTerms: [] };
-      const existingGlossary = existingData.glossary || {};
+      const existingData = readGlossary() || getLocalFileFallback() || { custom_glossary: {}, deletedGlossaryTerms: [] };
+      const existingGlossary = existingData.custom_glossary || existingData.glossary || {};
       const existingDeleted = existingData.deletedGlossaryTerms || [];
 
       // Unifica deleted terms
@@ -180,9 +196,9 @@ module.exports = async (req, res) => {
       });
 
       const stateToSave = {
-        glossary: mergedGlossary,
+        custom_glossary: mergedGlossary,
         deletedGlossaryTerms: finalDeleted,
-        savedAt: new Date().toISOString()
+        updatedAt: Date.now()
       };
 
       writeGlossary(stateToSave);
@@ -190,8 +206,9 @@ module.exports = async (req, res) => {
       return res.status(200).json({
         success: true,
         data: mergedGlossary,
+        custom_glossary: mergedGlossary,
         deletedGlossaryTerms: finalDeleted,
-        savedAt: stateToSave.savedAt
+        updatedAt: stateToSave.updatedAt
       });
     } catch (err) {
       return res.status(400).json({ success: false, error: err.message });

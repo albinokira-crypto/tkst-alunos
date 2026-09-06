@@ -17,26 +17,38 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <!-- Favicon & PWA -->
-  <link rel="icon" type="image/png" href="assets/images/icon-192.png?v=182">
-  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png?v=182">
-  <link rel="manifest" href="manifest.json?v=182">
+  <link rel="icon" type="image/png" href="assets/images/icon-192.png?v=183">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png?v=183">
+  <link rel="manifest" href="manifest.json?v=183">
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=182">
-  <link rel="stylesheet" href="assets/css/components.css?v=182">
+  <link rel="stylesheet" href="assets/css/main.css?v=183">
+  <link rel="stylesheet" href="assets/css/components.css?v=183">
 
-  <!-- Mobile-Only Guard: bloqueia acesso em desktop imediatamente -->
+  <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
     (function() {
       var MOBILE_MAX = 820; // px — qualquer tela maior que isso é considerada desktop
       function checkDevice() {
-        var isDesktop = window.innerWidth > MOBILE_MAX;
+        var bypass = sessionStorage.getItem('tkst_desktop_bypass') === 'true';
+        try {
+          var user = JSON.parse(localStorage.getItem('tkst_current_user'));
+          if (user && (user.role === 'admin' || user.username === 'irons365' || (user.name && user.name.toLowerCase().includes('diego')))) {
+            bypass = true;
+          }
+        } catch(e) {}
+
+        var isDesktop = window.innerWidth > MOBILE_MAX && !bypass;
         var overlay = document.getElementById('desktop-block-overlay');
         var app = document.getElementById('app-root');
         if (overlay) overlay.style.display = isDesktop ? 'flex' : 'none';
         if (app)     app.style.display     = isDesktop ? 'none' : '';
       }
+      window.bypassDesktopGuard = function() {
+        sessionStorage.setItem('tkst_desktop_bypass', 'true');
+        checkDevice();
+      };
       // Roda ao carregar e ao redimensionar a janela
       document.addEventListener('DOMContentLoaded', checkDevice);
       window.addEventListener('resize', checkDevice);
@@ -63,6 +75,11 @@
         <span>tkst-alunos.vercel.app</span>
       </div>
       <p class="dbo-hint">Escaneie o QR Code ou digite o endereço no navegador do seu celular.</p>
+      <div style="margin-top: 14px;">
+        <button type="button" onclick="window.bypassDesktopGuard()" style="font-size: 0.78rem; padding: 7px 16px; border-radius: 20px; background: rgba(255,255,255,0.06); color: #94A3B8; border: 1px solid rgba(255,255,255,0.18); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fas fa-laptop"></i> Acessar no Computador (Sensei / Admin)
+        </button>
+      </div>
     </div>
   </div>
 
@@ -304,14 +321,14 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/auth.js?v=181"></script>
-  <script src="assets/js/data-curriculum.js?v=181"></script>
-  <script src="assets/js/data-katas.js?v=181"></script>
-  <script src="assets/js/data-kumite.js?v=181"></script>
-  <script src="assets/js/data-glossary.js?v=181"></script>
-  <script src="assets/js/data-quiz.js?v=181"></script>
-  <script src="assets/js/data-exams.js?v=181"></script>
-  <script src="assets/js/app.js?v=181"></script>
+  <script src="assets/js/auth.js?v=183"></script>
+  <script src="assets/js/data-curriculum.js?v=183"></script>
+  <script src="assets/js/data-katas.js?v=183"></script>
+  <script src="assets/js/data-kumite.js?v=183"></script>
+  <script src="assets/js/data-glossary.js?v=183"></script>
+  <script src="assets/js/data-quiz.js?v=183"></script>
+  <script src="assets/js/data-exams.js?v=183"></script>
+  <script src="assets/js/app.js?v=183"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>

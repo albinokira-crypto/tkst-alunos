@@ -1617,11 +1617,15 @@ window.TKST_CUSTOM_GLOSSARY = {
         });
       }
 
-      // 3. Termos customizados locais (localStorage)
+      // 3. Termos customizados locais (localStorage com verificação de timestamp)
       if (localCustomGlossary && Array.isArray(localCustomGlossary[cat])) {
         localCustomGlossary[cat].forEach(t => {
           if (t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim())) {
-            termMap.set(t.japanese.toLowerCase().trim(), t);
+            const key = t.japanese.toLowerCase().trim();
+            const existing = termMap.get(key);
+            if (!existing || !existing.updatedAt || (t.updatedAt && t.updatedAt >= existing.updatedAt) || t._edited) {
+              termMap.set(key, t);
+            }
           }
         });
       }
@@ -1631,6 +1635,40 @@ window.TKST_CUSTOM_GLOSSARY = {
 
     localStorage.setItem('tkst_custom_glossary', JSON.stringify(baseGlossary));
     window.TKST_GLOSSARY = baseGlossary;
+
+    // 4. Carregamento dinâmico assíncrono de assets/data/glossary-custom.json
+    if (typeof fetch !== 'undefined') {
+      fetch('assets/data/glossary-custom.json?_=' + Date.now())
+        .then(r => r.ok ? r.json() : null)
+        .then(json => {
+          if (json && (json.custom_glossary || json.glossary)) {
+            const cloudGloss = json.custom_glossary || json.glossary;
+            let updated = false;
+            ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+              if (Array.isArray(cloudGloss[cat]) && window.TKST_GLOSSARY && window.TKST_GLOSSARY[cat]) {
+                const map = new Map();
+                window.TKST_GLOSSARY[cat].forEach(t => { if (t && t.japanese) map.set(t.japanese.toLowerCase().trim(), t); });
+                cloudGloss[cat].forEach(t => {
+                  if (t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim())) {
+                    const k = t.japanese.toLowerCase().trim();
+                    const ex = map.get(k);
+                    if (!ex || !ex.updatedAt || (t.updatedAt && t.updatedAt >= ex.updatedAt)) {
+                      map.set(k, t);
+                      updated = true;
+                    }
+                  }
+                });
+                window.TKST_GLOSSARY[cat] = Array.from(map.values()).filter(t => t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim()));
+              }
+            });
+            if (updated) {
+              localStorage.setItem('tkst_custom_glossary', JSON.stringify(window.TKST_GLOSSARY));
+              window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
+            }
+          }
+        })
+        .catch(() => {});
+    }
   } catch(e) {
     window.TKST_GLOSSARY = window.TKST_DEFAULT_GLOSSARY;
   }

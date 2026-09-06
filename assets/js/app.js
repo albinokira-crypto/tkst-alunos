@@ -8497,7 +8497,10 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       modalTitle.innerHTML = `<span><i class="fas ${focusMedia ? 'fa-photo-video' : 'fa-edit'}" style="color: var(--accent-gold);"></i> ${focusMedia ? 'Configurar Mídias' : 'Editar Termo'}: ${term.japanese} (Admin)</span>`;
 
       modalBody.innerHTML = `
-        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm('${actualCat}', '${term.japanese.replace(/'/g, "\\'")}');" style="display: flex; flex-direction: column; gap: 14px;">
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditGlossaryTerm();" style="display: flex; flex-direction: column; gap: 14px;">
+          <input type="hidden" id="editGlossaryOldCategory" value="${actualCat}">
+          <input type="hidden" id="editGlossaryOldJapanese" value="${term.japanese.replace(/"/g, '&quot;')}">
+
           <div class="form-group">
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
               <i class="fas fa-folder" style="color: var(--accent-gold); margin-right: 6px;"></i> Categoria:
@@ -8594,11 +8597,14 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
     },
 
-    submitEditGlossaryTerm: (oldCategory, oldJapaneseName) => {
+    submitEditGlossaryTerm: (oldCategoryArg, oldJapaneseNameArg) => {
       if (!window.TKST_AUTH.isAdmin()) {
         alert('Acesso restrito aos administradores.');
         return;
       }
+
+      const oldCategory = oldCategoryArg || (document.getElementById('editGlossaryOldCategory') && document.getElementById('editGlossaryOldCategory').value);
+      const oldJapaneseName = oldJapaneseNameArg || (document.getElementById('editGlossaryOldJapanese') && document.getElementById('editGlossaryOldJapanese').value);
 
       const newCategory = document.getElementById('editGlossaryCategory').value;
       const japanese = document.getElementById('editGlossaryJapanese').value.trim();

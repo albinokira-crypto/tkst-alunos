@@ -303,6 +303,8 @@
   // =========================================================================
   // GLOSSARY PERMANENT CLOUD SYNC & GITHUB STORAGE
   // =========================================================================
+  // GLOSSARY CLOUD SYNC & AUTO-PERSISTENCE
+  // =========================================================================
   async function pullGlossaryFromCloud() {
     try {
       const deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
@@ -320,32 +322,60 @@
         const res = await fetch('/api/glossary', { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && json.success && json.data && typeof json.data === 'object' && Object.keys(json.data).length > 0) {
-            cloudGlossary = json.data;
-            if (Array.isArray(json.deletedGlossaryTerms)) {
-              cloudDeleted = json.deletedGlossaryTerms;
+          if (json && json.success && (json.custom_glossary || json.data) && typeof (json.custom_glossary || json.data) === 'object') {
+            const dataObj = json.custom_glossary || json.data;
+            if (Object.keys(dataObj).length > 0) {
+              cloudGlossary = dataObj;
+              if (Array.isArray(json.deletedGlossaryTerms)) {
+                cloudDeleted = json.deletedGlossaryTerms;
+              }
             }
           }
         }
       } catch(e) {}
 
-      // 2. Mescla deleted terms
+      // 2. Fallback: assets/data/glossary-custom.json
+      if (!cloudGlossary || Object.keys(cloudGlossary).length === 0) {
+        try {
+          const staticRes = await fetch('assets/data/glossary-custom.json?_=' + Date.now());
+          if (staticRes.ok) {
+            const staticJson = await staticRes.json();
+            if (staticJson && (staticJson.custom_glossary || staticJson.glossary)) {
+              cloudGlossary = staticJson.custom_glossary || staticJson.glossary;
+              if (Array.isArray(staticJson.deletedGlossaryTerms)) {
+                cloudDeleted = staticJson.deletedGlossaryTerms;
+              }
+            }
+          }
+        } catch(e) {}
+      }
+
+      // 3. Mescla deleted terms
       const allDeleted = Array.from(new Set([...deletedTerms, ...cloudDeleted]));
       if (allDeleted.length !== deletedTerms.length) {
         localStorage.setItem(STORAGE_KEY_DELETED_GLOSSARY, JSON.stringify(allDeleted));
       }
 
-      // 3. Monta dicionário mesclado
+      const hasBase = cats.some(c => Array.isArray(baseGlossary[c]) && baseGlossary[c].length > 0);
+      const hasCloud = cloudGlossary && cats.some(c => Array.isArray(cloudGlossary[c]) && cloudGlossary[c].length > 0);
+      const hasLocal = localGlossary && cats.some(c => Array.isArray(localGlossary[c]) && localGlossary[c].length > 0);
+
+      // Se scripts do dicionário ainda não carregaram e local vazio, não sobrescreve com vazio
+      if (!hasBase && !hasCloud && !hasLocal) {
+        return;
+      }
+
+      // 4. Monta dicionário mesclado
       cats.forEach(cat => {
         if (!baseGlossary[cat]) baseGlossary[cat] = [];
         const termMap = new Map();
 
-        // 3.1 Termos base padrão
+        // 4.1 Termos base padrão
         baseGlossary[cat].forEach(t => {
           if (t && t.japanese) termMap.set(t.japanese.toLowerCase().trim(), { ...t });
         });
 
-        // 3.2 Termos do arquivo bundle (GitHub commits estáticos)
+        // 4.2 Termos do arquivo bundle (GitHub commits estáticos)
         if (fileCustom && Array.isArray(fileCustom[cat])) {
           fileCustom[cat].forEach(t => {
             if (t && t.japanese && !allDeleted.includes(t.japanese.toLowerCase().trim())) {
@@ -354,7 +384,7 @@
           });
         }
 
-        // 3.3 Termos da nuvem (/api/glossary)
+        // 4.3 Termos da nuvem (/api/glossary ou assets/data/glossary-custom.json)
         if (cloudGlossary && Array.isArray(cloudGlossary[cat])) {
           cloudGlossary[cat].forEach(t => {
             if (t && t.japanese && !allDeleted.includes(t.japanese.toLowerCase().trim())) {
@@ -366,7 +396,7 @@
           });
         }
 
-        // 3.4 Termos locais (preserva edições locais recentes)
+        // 4.4 Termos locais (preserva edições locais recentes do Sensei)
         if (localGlossary && Array.isArray(localGlossary[cat])) {
           localGlossary[cat].forEach(t => {
             if (t && t.japanese && !allDeleted.includes(t.japanese.toLowerCase().trim())) {
@@ -397,15 +427,19 @@
     if (!glossary || typeof glossary !== 'object') return;
     const deleted = Array.isArray(deletedTerms) ? deletedTerms : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || []);
 
+    const payload = {
+      custom_glossary: glossary,
+      customGlossary: glossary,
+      glossary: glossary,
+      deletedGlossaryTerms: deleted
+    };
+
     // 1. Post para endpoint dedicado /api/glossary
     try {
       fetch('/api/glossary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          glossary,
-          deletedGlossaryTerms: deleted
-        })
+        body: JSON.stringify(payload)
       }).catch(() => {});
     } catch(e) {}
 
@@ -414,10 +448,7 @@
       const res = await fetch('/api/glossary-commit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customGlossary: glossary,
-          deletedGlossaryTerms: deleted
-        })
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         const json = await res.json();
@@ -693,7 +724,15 @@
       const quiz_submissions = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => !deletedQuizSubIds.includes(s.id));
       const allSavedQuiz = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
       const custom_quiz_bank = allSavedQuiz.filter(q => !deletedQuizIds.includes(q.id) && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
-      const custom_glossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || {};
+      
+      const allGlossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || {};
+      const custom_glossary = {};
+      ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+        if (Array.isArray(allGlossary[cat])) {
+          const edited = allGlossary[cat].filter(t => t && (t._edited || t._custom));
+          if (edited.length > 0) custom_glossary[cat] = edited;
+        }
+      });
 
       const payload = {
         dojos,
@@ -1130,6 +1169,9 @@
       if (document.visibilityState === 'visible') pullFromCloud();
     });
     window.addEventListener('focus', () => pullFromCloud());
+    window.addEventListener('DOMContentLoaded', () => {
+      pullGlossaryFromCloud();
+    });
   }
 
   function initStorage() {

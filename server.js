@@ -110,32 +110,49 @@ const server = http.createServer(async (req, res) => {
             }
           }
 
-          // Special local persistence for glossary-commit
-          if (apiName === 'glossary-commit' && (req.method === 'POST' || req.method === 'PUT') && req.body) {
+          // Special local persistence for glossary-commit and glossary
+          if ((apiName === 'glossary-commit' || apiName === 'glossary') && (req.method === 'POST' || req.method === 'PUT') && req.body) {
             try {
-              const glossaryPath = path.join(PUBLIC_DIR, 'assets', 'js', 'data-glossary.js');
-              if (fs.existsSync(glossaryPath)) {
-                const currentContent = fs.readFileSync(glossaryPath, 'utf8');
-                const MARKER_START = '// ==TKST_CUSTOM_GLOSSARY_START==';
-                const MARKER_END = '// ==TKST_CUSTOM_GLOSSARY_END==';
-                const incomingGlossary = req.body.customGlossary || req.body.glossary || req.body.data || {};
-                const deletedTerms = Array.isArray(req.body.deletedGlossaryTerms) ? req.body.deletedGlossaryTerms : [];
-                const delSet = new Set(deletedTerms.map(t => (t || '').toLowerCase().trim()));
-                const cleanGlossary = {};
-                ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
-                  if (incomingGlossary && Array.isArray(incomingGlossary[cat])) {
-                    cleanGlossary[cat] = incomingGlossary[cat].filter(t => t && t.japanese && !delSet.has(t.japanese.toLowerCase().trim()));
+              const jsonPath = path.join(PUBLIC_DIR, 'assets', 'data', 'glossary-custom.json');
+              const incomingGlossary = req.body.custom_glossary || req.body.customGlossary || req.body.glossary || req.body.data || {};
+              const incomingDeleted = Array.isArray(req.body.deletedGlossaryTerms) ? req.body.deletedGlossaryTerms : [];
+              
+              let existing = { custom_glossary: {}, deletedGlossaryTerms: [] };
+              if (fs.existsSync(jsonPath)) {
+                try { existing = JSON.parse(fs.readFileSync(jsonPath, 'utf8')); } catch(e) {}
+              }
+              const existingGlossary = existing.custom_glossary || existing.glossary || {};
+              const delSet = new Set([...(existing.deletedGlossaryTerms || []), ...incomingDeleted]);
+              const cleanGlossary = {};
+              
+              ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'].forEach(cat => {
+                const termMap = new Map();
+                (existingGlossary[cat] || []).forEach(t => {
+                  if (t && t.japanese) termMap.set(t.japanese.toLowerCase().trim(), t);
+                });
+                (incomingGlossary[cat] || []).forEach(t => {
+                  if (t && t.japanese) {
+                    const key = t.japanese.toLowerCase().trim();
+                    const ex = termMap.get(key);
+                    if (!ex || !ex.updatedAt || (t.updatedAt && t.updatedAt >= ex.updatedAt) || t._edited) {
+                      termMap.set(key, t);
+                    }
                   }
                 });
-                const block = `${MARKER_START}\nwindow.TKST_CUSTOM_GLOSSARY = ${JSON.stringify(cleanGlossary, null, 2)};\n${MARKER_END}`;
-                if (currentContent.includes(MARKER_START) && currentContent.includes(MARKER_END)) {
-                  const sIdx = currentContent.indexOf(MARKER_START);
-                  const eIdx = currentContent.indexOf(MARKER_END) + MARKER_END.length;
-                  fs.writeFileSync(glossaryPath, currentContent.slice(0, sIdx) + block + currentContent.slice(eIdx), 'utf8');
-                }
-              }
+                cleanGlossary[cat] = Array.from(termMap.values()).filter(t => t && t.japanese && !delSet.has(t.japanese.toLowerCase().trim()));
+              });
+
+              const outData = {
+                custom_glossary: cleanGlossary,
+                deletedGlossaryTerms: Array.from(delSet),
+                updatedAt: Date.now()
+              };
+
+              const dataDir = path.dirname(jsonPath);
+              if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+              fs.writeFileSync(jsonPath, JSON.stringify(outData, null, 2), 'utf8');
             } catch(e) {
-              console.error('Local glossary-commit save error:', e);
+              console.error('Local glossary save error:', e);
             }
           }
 
