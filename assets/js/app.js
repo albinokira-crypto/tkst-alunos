@@ -2295,19 +2295,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==========================================
     // TOP 10 QUIZ RANKING CALCULATION
-    // Regra: Alunos que realizaram simulados (exclui apenas Sensei Master irons365 / admins), acerto = +1 pt, erro = -1 pt
+    // Regra Oficial: Apenas alunos de graduação Kyu (Faixa Branca 7º Kyu até Faixa Marrom 1º Kyu).
+    // Faixas Pretas (Dans) e Sensei Master não entram no ranking.
+    // Acerto = +1 pt, Erro = -1 pt.
     // ==========================================
+    const isKyuCandidate = (belt, kyu, role, username) => {
+      if (username === 'irons365' || role === 'admin') return false;
+      const b = (belt || '').toLowerCase();
+      if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan')) return false;
+      if (kyu !== undefined && kyu !== null && Number(kyu) <= 0) return false;
+      return true;
+    };
+
     const submissions = (window.TKST_AUTH ? window.TKST_AUTH.getAllQuizSubmissions() : []) || [];
     let allProgress = {};
     try {
       allProgress = JSON.parse(localStorage.getItem('tkst_progress_v2')) || JSON.parse(localStorage.getItem('tkst_student_progress')) || {};
     } catch (e) { allProgress = {}; }
 
-    // Map de alunos elegíveis (exclui apenas conta de Sensei Master para ranking dos alunos)
+    // Map de alunos elegíveis (somente graduações Kyu)
     const studentMap = new Map();
     students.forEach(s => {
-      if (!s) return;
-      if (s.username === 'irons365' || s.role === 'admin' || (s.name && s.name.toLowerCase().includes('sensei diego'))) return;
+      if (!s || !isKyuCandidate(s.currentBelt, s.currentKyu, s.role, s.username)) return;
       studentMap.set(s.id, {
         id: s.id,
         fullName: (s.name || 'Aluno').trim(),
@@ -2318,10 +2327,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Inclui também participantes encontrados nas submissões de simulados
+    // Inclui também participantes encontrados nas submissões de simulados (somente Kyus)
     submissions.forEach(sub => {
-      if (!sub) return;
-      if (sub.studentUsername === 'irons365' || sub.studentUsername === 'admin' || (sub.studentName && sub.studentName.toLowerCase().includes('sensei diego'))) return;
+      if (!sub || !isKyuCandidate(sub.studentBelt, sub.studentKyu, '', sub.studentUsername)) return;
       const key = sub.studentId || sub.studentUsername || sub.studentName;
       if (key && !studentMap.has(key)) {
         studentMap.set(key, {
@@ -2340,21 +2348,18 @@ document.addEventListener('DOMContentLoaded', () => {
       let totalWrong = 0;
       let testsTaken = 0;
 
-      const firstName = (student.fullName || 'Aluno').split(' ')[0] || 'Aluno';
       const normStdName = (student.fullName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       const normStdUser = (student.username || '').toLowerCase().trim();
-      const stdFirstName = firstName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
       const studentSubs = submissions.filter(sub => {
         if (!sub) return false;
-        const normSubName = (sub.studentName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-        const normSubUser = (sub.studentUsername || '').toLowerCase().trim();
         const subId = (sub.studentId || '').trim();
+        const normSubUser = (sub.studentUsername || '').toLowerCase().trim();
+        const normSubName = (sub.studentName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
         if (subId && (subId === student.id || subId === student.username)) return true;
         if (normSubUser && (normSubUser === normStdUser || normSubUser === student.id)) return true;
-        if (normSubName && normStdName && (normSubName === normStdName || normSubName.includes(normStdName) || normStdName.includes(normSubName))) return true;
-        if (normSubName && stdFirstName && normSubName.startsWith(stdFirstName)) return true;
+        if (normSubName && normStdName && normSubName === normStdName) return true;
 
         return false;
       });
@@ -2571,8 +2576,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fas fa-trophy"></i>
             </div>
             <div style="min-width: 0;">
-              <h3 class="ranking-title">Ranking Oficial do Simulado</h3>
-              <p class="ranking-subtitle">Top Classificação TKST • Acerto +1 pt | Erro -1 pt</p>
+              <h3 class="ranking-title">Ranking Oficial de Kyus</h3>
+              <p class="ranking-subtitle">Top Classificação TKST • Alunos Kyu (Acerto +1 pt | Erro -1 pt)</p>
             </div>
           </div>
           <div class="ranking-header-tag">
