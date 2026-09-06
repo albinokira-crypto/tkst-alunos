@@ -166,12 +166,6 @@
         "technicalTips": "",
         "_edited": true,
         "updatedAt": 1788721736482
-      },
-      {
-        "japanese": "Test Base Dachi",
-        "meaning": "Base de Teste",
-        "_custom": true,
-        "_edited": true
       }
     ],
     "defesas": [
@@ -765,7 +759,8 @@
     "mae geri keage / kekomi",
     "sagate (ushiro)",
     "teiji dachi",
-    "shizentai"
+    "shizentai",
+    "test base dachi"
   ],
-  "updatedAt": 1788721779386
+  "updatedAt": 1788721889891
 }
