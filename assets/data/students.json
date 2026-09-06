@@ -384,7 +384,17 @@
       "statusUpdatedAt": 1787239638208,
       "phone": "55 21 96761-8191",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1787276282573
+      "lastActive": 1787276282573,
+      "quizScores": [
+        {
+          "date": "2026-08-20T16:25:37.576Z",
+          "score": 29,
+          "total": 30,
+          "percentage": 97,
+          "beltLevel": "Simulado Geral",
+          "beltKyu": "all"
+        }
+      ]
     },
     {
       "id": "std_1787241713104_fnkjw",
