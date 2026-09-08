@@ -104,8 +104,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1788722987632,
-      "statusUpdatedAt": 1788722987632,
+      "updatedAt": 1788877384298,
+      "statusUpdatedAt": 1788877384298,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -229,7 +229,7 @@
       "status": "approved",
       "approvedAt": "2026-08-21T22:33:36.441Z",
       "createdAt": "2026-08-21T22:33:25.162Z",
-      "updatedAt": 1788394140946,
+      "updatedAt": 1787351616444,
       "statusUpdatedAt": 1788379203426,
       "phone": "21967604566",
       "notes": "Novo cadastro realizado pelo portal.",
@@ -372,11 +372,11 @@
       "status": "approved",
       "approvedAt": "2026-08-17T23:53:30.463Z",
       "createdAt": "2026-08-17T23:53:07.759Z",
-      "updatedAt": 1788388923977,
+      "updatedAt": 1788877561965,
       "statusUpdatedAt": 1788227679643,
       "phone": "021995419348",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1788388896591,
+      "lastActive": 1788877543348,
       "quizScores": [
         {
           "date": "2026-09-02T22:42:04.035Z",
@@ -455,6 +455,14 @@
           "score": 6,
           "total": 10,
           "percentage": 60,
+          "beltLevel": "Faixa Branca 7º Kyu",
+          "beltKyu": 7
+        },
+        {
+          "date": "2026-09-08T14:26:01.961Z",
+          "score": 8,
+          "total": 10,
+          "percentage": 80,
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
         }
@@ -680,9 +688,9 @@
     },
     {
       "id": "std_1787268943201_fpw5o",
-      "username": "nick",
+      "username": "nicollyferreiradesouza14@gmail.com",
       "email": "nicollyferreiradesouza14@gmail.com@tkst.local",
-      "password": "2014@",
+      "password": "2014",
       "name": "Nicolly ferreira de Souza",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -978,5 +986,5 @@
     "std_geovanna01",
     "std_1787274696200_z2fxf"
   ],
-  "updatedAt": 1788723048993
+  "updatedAt": 1788877574840
 }
