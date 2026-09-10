@@ -19,7 +19,7 @@
       "phone": "(21) 972114674",
       "notes": "Administrador Master responsável por todo o sistema, arquivos e aprovações.",
       "password": "Irons365.",
-      "lastActive": 1789072713080,
+      "lastActive": 1788722766468,
       "statusUpdatedAt": 1786925884100,
       "quizScores": [
         {
@@ -104,7 +104,7 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1789072700326,
+      "updatedAt": 1789072509954,
       "statusUpdatedAt": 1789072700326,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
@@ -115,7 +115,7 @@
       "email": "sensei gabriel@tkst.local",
       "password": "27112021",
       "name": "Gabriel Souza de Oliveira",
-      "role": "admin",
+      "role": "aluno",
       "currentBelt": "Faixa Preta (Sandan - 3º Dan)",
       "targetBelt": "Faixa Preta",
       "currentKyu": 0,
@@ -219,7 +219,7 @@
       "email": "almir@tkst.local",
       "password": "1SGmagrin",
       "name": "Almir Gustavo Silva Werly",
-      "role": "admin",
+      "role": "aluno",
       "currentBelt": "Faixa Preta (Nidan - 2º Dan)",
       "targetBelt": "Faixa Preta",
       "currentKyu": 0,
@@ -470,9 +470,9 @@
     },
     {
       "id": "std_1787063008306_96bzm",
-      "username": "pietro01",
-      "email": "pietro01@tkst.local",
-      "password": "a1234",
+      "username": "havi",
+      "email": "havi@tkst.local",
+      "password": "vitor23",
       "name": "Pietro",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha (5º Kyu)",
@@ -482,7 +482,7 @@
       "startDate": "2026-08-18",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "approvedAt": "2026-09-03T00:56:02.784Z",
+      "approvedAt": "2026-08-18T14:25:17.232Z",
       "createdAt": "2026-08-18T14:23:28.307Z",
       "updatedAt": 1788396962784,
       "statusUpdatedAt": 1788396962784,
@@ -767,11 +767,11 @@
       "status": "approved",
       "approvedAt": "2026-08-31T18:02:48.992Z",
       "createdAt": "2026-08-31T17:31:00.600Z",
-      "updatedAt": 1789072666306,
+      "updatedAt": 1789072756766,
       "statusUpdatedAt": 1788199368996,
       "phone": "21 988516728",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1789072644186,
+      "lastActive": 1789072740050,
       "quizScores": [
         {
           "date": "2026-09-05T14:27:07.408Z",
@@ -940,6 +940,14 @@
           "percentage": 90,
           "beltLevel": "Faixa Amarela 6º Kyu",
           "beltKyu": 6
+        },
+        {
+          "date": "2026-09-10T20:39:16.763Z",
+          "score": 8,
+          "total": 10,
+          "percentage": 80,
+          "beltLevel": "Faixa Vermelha 5º Kyu",
+          "beltKyu": 5
         }
       ]
     },
@@ -1003,5 +1011,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1789072742060
+  "updatedAt": 1789072759281
 }
