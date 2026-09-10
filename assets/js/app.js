@@ -7030,6 +7030,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // =========================================================================
+  // CLOUDINARY — Upload externo gratuito (sem gastar Vercel/GitHub)
+  // Arquivos ficam no servidor do Cloudinary, acessíveis de qualquer celular
+  // =========================================================================
+  async function uploadToCloudinary(file, onProgress) {
+    const CLOUD_NAME = 'pjviqlqu';
+    const UPLOAD_PRESET = 'tkst_alunos';
+    const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('folder', 'tkst-alunos');
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', endpoint);
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
+          const url = data.secure_url;
+          let thumbUrl = url;
+          if (resourceType === 'image') {
+            // Thumbnail via transformação do Cloudinary (sem custo extra)
+            thumbUrl = url.replace('/upload/', '/upload/w_320,h_220,c_fill,q_75/');
+          } else {
+            // Thumbnail do vídeo: captura o frame do segundo 1
+            thumbUrl = url
+              .replace('/upload/', '/upload/so_1,w_320,h_220,c_fill,q_75/')
+              .replace(/\.(mp4|mov|webm|avi)(\?.*)?$/i, '.jpg');
+          }
+          resolve({ url, thumbUrl, publicId: data.public_id });
+        } else {
+          reject(new Error(`Erro no upload (${xhr.status}). Verifique o Upload Preset no Cloudinary.`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Falha de rede ao enviar para o Cloudinary. Verifique sua conexão.'));
+      xhr.send(formData);
+    });
+  }
+
   async function handleMediaFileSelected(input) {
     const file = input.files && input.files[0];
     if (!file) return;
@@ -7047,7 +7097,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleInput = document.getElementById('adminMediaTitleInput');
     const typeSelect = document.getElementById('adminMediaTypeSelect');
 
-    const formattedSize = file.size > 1024 * 1024 
+    const formattedSize = file.size > 1024 * 1024
       ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
       : (file.size / 1024).toFixed(0) + ' KB';
 
@@ -7057,104 +7107,34 @@ document.addEventListener('DOMContentLoaded', () => {
       titleInput.value = nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
     }
 
+    // Usa Object URL para preview local (sem base64, sem gastar memória)
+    const objUrl = URL.createObjectURL(file);
+
     if (file.type.startsWith('image/')) {
       if (typeSelect) typeSelect.value = 'image';
       if (badge) badge.textContent = `📷 Foto Selecionada (${formattedSize})`;
       if (vidWrapper) vidWrapper.style.display = 'none';
       if (vidPreview) { vidPreview.pause(); vidPreview.src = ''; }
       if (imgWrapper) imgWrapper.style.display = 'block';
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const tempImg = new Image();
-        tempImg.onload = () => {
-          // Otimiza imagem com Canvas para resolução nítida e tamanho econômico
-          const maxDim = 1600;
-          let w = tempImg.width;
-          let h = tempImg.height;
-          if (w > h) {
-            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-          } else {
-            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(tempImg, 0, 0, w, h);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
-
-          // Mini thumbnail para os cartões
-          const thumbMax = 320;
-          let tw = w; let th = h;
-          if (tw > th) { if (tw > thumbMax) { th = Math.round((th * thumbMax) / tw); tw = thumbMax; } }
-          else { if (th > thumbMax) { tw = Math.round((tw * thumbMax) / th); th = thumbMax; } }
-          const thumbCanvas = document.createElement('canvas');
-          thumbCanvas.width = tw; thumbCanvas.height = th;
-          const tctx = thumbCanvas.getContext('2d');
-          tctx.drawImage(tempImg, 0, 0, tw, th);
-          activeMediaThumbnailBase64 = thumbCanvas.toDataURL('image/jpeg', 0.75);
-
-          if (imgPreview) imgPreview.src = compressedDataUrl;
-          const b64Input = document.getElementById('adminMediaFileBase64');
-          if (b64Input) b64Input.value = compressedDataUrl;
-          const thumbInput = document.getElementById('adminMediaFileThumb');
-          if (thumbInput) thumbInput.value = activeMediaThumbnailBase64;
-
-          if (infoText) {
-            infoText.innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${formattedSize}) • Foto pronta para salvar`;
-          }
-          if (previewContainer) previewContainer.style.display = 'block';
-        };
-        tempImg.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-
+      if (imgPreview) imgPreview.src = objUrl;
+      if (infoText) {
+        infoText.innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${formattedSize}) • Pronta para enviar ao Cloudinary`;
+      }
     } else if (file.type.startsWith('video/')) {
       if (typeSelect) typeSelect.value = 'video';
       if (badge) badge.textContent = `🎬 Vídeo Selecionado (${formattedSize})`;
       if (imgWrapper) imgWrapper.style.display = 'none';
       if (vidWrapper) vidWrapper.style.display = 'block';
-
-      const objUrl = URL.createObjectURL(file);
-      if (vidPreview) {
-        vidPreview.src = objUrl;
-        vidPreview.load();
-      }
-
-      // Captura automática de thumbnail do vídeo no frame inicial
-      const tempVideo = document.createElement('video');
-      tempVideo.preload = 'metadata';
-      tempVideo.muted = true;
-      tempVideo.playsInline = true;
-      tempVideo.src = objUrl;
-      tempVideo.onloadeddata = () => {
-        tempVideo.currentTime = Math.min(1.0, (tempVideo.duration || 2) / 2);
-      };
-      tempVideo.onseeked = () => {
-        try {
-          const vCanvas = document.createElement('canvas');
-          vCanvas.width = 360;
-          vCanvas.height = 200;
-          const vCtx = vCanvas.getContext('2d');
-          vCtx.drawImage(tempVideo, 0, 0, vCanvas.width, vCanvas.height);
-          activeMediaThumbnailBase64 = vCanvas.toDataURL('image/jpeg', 0.75);
-          const thumbInput = document.getElementById('adminMediaFileThumb');
-          if (thumbInput) thumbInput.value = activeMediaThumbnailBase64;
-        } catch (e) {
-          console.warn('Não foi possível gerar thumbnail automática do vídeo:', e);
-        }
-      };
-
-      const b64Input = document.getElementById('adminMediaFileBase64');
-      if (b64Input) b64Input.value = '';
+      if (vidPreview) { vidPreview.src = objUrl; vidPreview.load(); }
       if (infoText) {
-        infoText.innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${formattedSize}) • Vídeo carregado e pronto para o álbum`;
+        infoText.innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${formattedSize}) • Pronto para enviar ao Cloudinary`;
       }
-      if (previewContainer) previewContainer.style.display = 'block';
     } else {
       alert('Por favor, selecione um arquivo de imagem (PNG, JPG, WEBP) ou vídeo (MP4, MOV, WEBM).');
+      return;
     }
+
+    if (previewContainer) previewContainer.style.display = 'block';
   }
 
   function clearSelectedMediaFile() {
@@ -7246,7 +7226,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     handleMediaAlbumSelectChange(item.album || item.category || 'exames');
 
-    if (item.isLocalUpload || (item.url && (item.url.startsWith('idb:') || item.url.startsWith('data:')))) {
+    if (item.url && item.url.includes('cloudinary.com')) {
+      // Mídia hospedada no Cloudinary — mostra preview direto da URL pública
       setMediaSourceMode('file');
       const previewContainer = document.getElementById('mediaFilePreviewContainer');
       const badge = document.getElementById('mediaFileBadge');
@@ -7256,25 +7237,44 @@ document.addEventListener('DOMContentLoaded', () => {
       const vidPreview = document.getElementById('mediaVideoPreview');
       const infoText = document.getElementById('mediaFileInfoText');
 
-      if (badge) badge.textContent = item.type === 'video' ? '🎬 Vídeo Gravado' : '📷 Foto Salva';
+      if (badge) badge.textContent = item.type === 'video' ? '🎬 Vídeo no Cloudinary' : '📷 Foto no Cloudinary';
+      if (item.type === 'video') {
+        if (imgWrapper) imgWrapper.style.display = 'none';
+        if (vidWrapper) vidWrapper.style.display = 'block';
+        if (vidPreview) vidPreview.src = item.url;
+      } else {
+        if (vidWrapper) vidWrapper.style.display = 'none';
+        if (imgWrapper) imgWrapper.style.display = 'block';
+        if (imgPreview) imgPreview.src = item.thumbUrl || item.url;
+      }
+      if (infoText) infoText.textContent = 'Mídia hospedada no Cloudinary. Toque em Trocar Arquivo para substituir.';
+      if (previewContainer) previewContainer.style.display = 'block';
+    } else if (item.isLocalUpload || (item.url && (item.url.startsWith('idb:') || item.url.startsWith('data:')))) {
+      // Legado: mídia armazenada localmente (IndexedDB)
+      setMediaSourceMode('file');
+      const previewContainer = document.getElementById('mediaFilePreviewContainer');
+      const badge = document.getElementById('mediaFileBadge');
+      const imgWrapper = document.getElementById('mediaImagePreviewWrapper');
+      const imgPreview = document.getElementById('mediaImagePreview');
+      const vidWrapper = document.getElementById('mediaVideoPreviewWrapper');
+      const vidPreview = document.getElementById('mediaVideoPreview');
+      const infoText = document.getElementById('mediaFileInfoText');
+
+      if (badge) badge.textContent = item.type === 'video' ? '🎬 Vídeo Local' : '📷 Foto Local';
       if (item.type === 'video') {
         if (imgWrapper) imgWrapper.style.display = 'none';
         if (vidWrapper) vidWrapper.style.display = 'block';
         if (vidPreview) {
-          TKST_IDB_MEDIA.getMediaUrl(item).then(vUrl => {
-            if (vidPreview) vidPreview.src = vUrl;
-          });
+          TKST_IDB_MEDIA.getMediaUrl(item).then(vUrl => { if (vidPreview) vidPreview.src = vUrl; });
         }
       } else {
         if (vidWrapper) vidWrapper.style.display = 'none';
         if (imgWrapper) imgWrapper.style.display = 'block';
         if (imgPreview) {
-          TKST_IDB_MEDIA.getMediaUrl(item).then(iUrl => {
-            if (imgPreview) imgPreview.src = iUrl || item.thumbUrl || item.url;
-          });
+          TKST_IDB_MEDIA.getMediaUrl(item).then(iUrl => { if (imgPreview) imgPreview.src = iUrl || item.thumbUrl || item.url; });
         }
       }
-      if (infoText) infoText.textContent = `Mídia já gravada no álbum. Toque em Trocar Arquivo para substituir se desejar.`;
+      if (infoText) infoText.textContent = 'Mídia local. Toque em Trocar Arquivo para substituir e hospedar no Cloudinary.';
       if (previewContainer) previewContainer.style.display = 'block';
     } else {
       setMediaSourceMode('url');
@@ -7316,44 +7316,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
     if (saveBtn) {
       saveBtn.disabled = true;
-      saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Salvando no Álbum...`;
+      saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Enviando para Cloudinary...`;
     }
 
     try {
       let finalUrl = '';
       let thumbUrl = '';
       let isLocalUpload = false;
-      const targetId = id || `media_custom_${Date.now()}`;
 
       if (sourceMode === 'file') {
-        const fileBase64 = document.getElementById('adminMediaFileBase64').value;
-        const fileThumb = document.getElementById('adminMediaFileThumb').value;
-
         if (activeMediaSelectedFile) {
-          isLocalUpload = true;
-          thumbUrl = fileThumb || activeMediaThumbnailBase64 || fileBase64 || '';
+          // Upload direto para o Cloudinary (armazenamento externo, acessível de qualquer celular)
+          const progressWrap = document.getElementById('mediaUploadProgressWrap');
+          const progressBar = document.getElementById('mediaUploadProgressBar');
+          const progressText = document.getElementById('mediaUploadProgressText');
+          if (progressWrap) progressWrap.style.display = 'block';
+          if (progressBar) progressBar.style.width = '0%';
 
-          if (type === 'image' && fileBase64) {
-            await TKST_IDB_MEDIA.saveBlob(targetId, activeMediaSelectedFile, activeMediaSelectedFile.type, activeMediaSelectedFile.name);
-            // Se tamanho base64 for razoável (< 450KB), salva como data URL diretamente
-            if (fileBase64.length < 500000) {
-              finalUrl = fileBase64;
-            } else {
-              finalUrl = `idb:${targetId}`;
-            }
-            if (!thumbUrl) thumbUrl = fileBase64;
-          } else if (type === 'video') {
-            // Vídeo: armazena o Blob no IndexedDB para capacidade ilimitada
-            await TKST_IDB_MEDIA.saveBlob(targetId, activeMediaSelectedFile, activeMediaSelectedFile.type, activeMediaSelectedFile.name);
-            finalUrl = `idb:${targetId}`;
-            if (!thumbUrl) {
-              thumbUrl = 'assets/images/logo-tkst-2.jpg';
-            }
-          } else {
-            finalUrl = fileBase64 || `idb:${targetId}`;
-          }
+          const result = await uploadToCloudinary(activeMediaSelectedFile, (pct) => {
+            if (progressBar) progressBar.style.width = pct + '%';
+            if (progressText) progressText.textContent = `Enviando... ${pct}%`;
+          });
+
+          if (progressWrap) progressWrap.style.display = 'none';
+
+          finalUrl = result.url;
+          thumbUrl = result.thumbUrl;
+          isLocalUpload = false;
         } else if (id) {
-          // Edição de item existente sem trocar arquivo
+          // Edição sem trocar arquivo — mantém URL atual
           const existing = getNormalizedMediaList().find(m => m.id === id);
           if (existing) {
             finalUrl = existing.url;
@@ -7366,7 +7357,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
       } else {
-        // Modo Link URL
+        // Modo Link URL (YouTube, ImgBB, etc.)
         finalUrl = document.getElementById('adminMediaUrlInput').value.trim();
         if (!finalUrl) {
           alert('Por favor, preencha o link da imagem ou vídeo.');
@@ -7398,7 +7389,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (id) {
         window.TKST_AUTH.updateMediaItem(id, payload);
       } else {
-        payload.id = targetId;
+        payload.id = `media_custom_${Date.now()}`;
         window.TKST_AUTH.addMediaItem(payload);
       }
 
@@ -7414,9 +7405,11 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (currentTab === 'admin') {
         renderAdminMaster();
       }
-      alert(id ? '✅ Mídia atualizada com sucesso!' : '✅ Foto/vídeo adicionado ao álbum com sucesso!');
+      alert(id ? '✅ Mídia atualizada com sucesso!' : '✅ Foto/vídeo enviado ao Cloudinary e adicionado ao álbum!');
     } catch (err) {
       console.error('Erro ao salvar mídia:', err);
+      const progressWrap = document.getElementById('mediaUploadProgressWrap');
+      if (progressWrap) progressWrap.style.display = 'none';
       alert('Erro ao salvar mídia: ' + err.message);
     } finally {
       if (saveBtn) {

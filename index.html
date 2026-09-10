@@ -452,6 +452,14 @@
 
               <div id="mediaFileInfoText" style="font-size: 0.78rem; color: #CBD5E1; margin-top: 6px; text-align: center; word-break: break-all;"></div>
             </div>
+
+            <!-- Barra de progresso do upload para o Cloudinary -->
+            <div id="mediaUploadProgressWrap" style="display: none; margin-top: 10px; padding: 10px 12px; background: rgba(255,183,3,0.06); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm);">
+              <div id="mediaUploadProgressText" style="font-size: 0.78rem; color: var(--accent-gold); margin-bottom: 6px; font-weight: 600;">⬆️ Enviando para Cloudinary... 0%</div>
+              <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                <div id="mediaUploadProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-gold), #FF808A); transition: width 0.25s ease; border-radius: 3px;"></div>
+              </div>
+            </div>
           </div>
 
           <!-- Seção de Link da Web -->
