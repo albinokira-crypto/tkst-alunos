@@ -2611,26 +2611,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Banner Oficial de Acesso Direto aos Álbuns da Galeria TKST -->
-      <div onclick="window.TKST_APP.switchTab('media')" style="margin-bottom: 20px; padding: 14px 18px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(230, 57, 70, 0.16), rgba(255, 183, 3, 0.12)); border: 1px solid rgba(255, 183, 3, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);" title="Toque para ver os álbuns de fotos e vídeos oficiais">
-        <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
-          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(230, 57, 70, 0.25); border: 1px solid rgba(230, 57, 70, 0.5); display: flex; align-items: center; justify-content: center; color: #FF808A; font-size: 1.3rem; flex-shrink: 0;">
-            <i class="fas fa-photo-video"></i>
-          </div>
-          <div style="min-width: 0;">
-            <div style="font-weight: 800; color: #FFF; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              Álbuns Oficiais de Fotos & Vídeos <span class="badge badge-amarela" style="font-size: 0.65rem; padding: 1px 6px;">OFICIAL</span>
-            </div>
-            <div style="font-size: 0.78rem; color: #CBD5E1; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              Exame de Faixa (com subálbuns), Competições e Vídeos Didáticos. Veja e baixe direto no celular!
-            </div>
-          </div>
-        </div>
-        <div style="color: var(--accent-gold); font-size: 1rem; flex-shrink: 0;">
-          <i class="fas fa-chevron-right"></i>
-        </div>
-      </div>
-
       <!-- Filosofia & Princípios (Dojo Kun e Niju Kun lado a lado) -->
       <div class="dashboard-kun-grid">
         <!-- 1. Dojo Kun -->
@@ -5995,6 +5975,113 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // 6.7 SISTEMA DE ÁLBUNS TKST (FOTOS & VÍDEOS) & LIGHTBOX IN-APP
   // =========================================================================
+  // Motor IndexedDB para mídias pesadas (Vídeos MP4 e Fotos direto do celular)
+  const TKST_IDB_MEDIA = {
+    dbName: 'TKST_Media_Storage',
+    storeName: 'blobs',
+    dbPromise: null,
+    urlCache: new Map(),
+
+    getDB: function() {
+      if (this.dbPromise) return this.dbPromise;
+      this.dbPromise = new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+          console.warn('IndexedDB não suportado neste navegador.');
+          return resolve(null);
+        }
+        const req = indexedDB.open(this.dbName, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(this.storeName)) {
+            db.createObjectStore(this.storeName, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = (e) => {
+          console.warn('Erro ao abrir IndexedDB:', e.target.error);
+          resolve(null);
+        };
+      });
+      return this.dbPromise;
+    },
+
+    saveBlob: async function(id, blob, mimeType = '', filename = '') {
+      try {
+        const db = await this.getDB();
+        if (!db) return false;
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          const store = tx.objectStore(this.storeName);
+          const record = {
+            id,
+            blob,
+            mimeType: mimeType || (blob && blob.type) || 'application/octet-stream',
+            filename: filename || id,
+            updatedAt: Date.now()
+          };
+          const req = store.put(record);
+          req.onsuccess = () => resolve(true);
+          req.onerror = (e) => reject(e.target.error);
+        });
+      } catch (err) {
+        console.warn('TKST_IDB_MEDIA saveBlob error:', err);
+        return false;
+      }
+    },
+
+    getBlob: async function(id) {
+      try {
+        const db = await this.getDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readonly');
+          const store = tx.objectStore(this.storeName);
+          const req = store.get(id);
+          req.onsuccess = () => resolve(req.result ? req.result.blob : null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (err) {
+        return null;
+      }
+    },
+
+    deleteBlob: async function(id) {
+      try {
+        if (this.urlCache.has(id)) {
+          URL.revokeObjectURL(this.urlCache.get(id));
+          this.urlCache.delete(id);
+        }
+        const db = await this.getDB();
+        if (!db) return false;
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          const store = tx.objectStore(this.storeName);
+          const req = store.delete(id);
+          req.onsuccess = () => resolve(true);
+          req.onerror = () => resolve(false);
+        });
+      } catch (err) {
+        return false;
+      }
+    },
+
+    getMediaUrl: async function(item) {
+      if (!item) return '';
+      const url = item.url || '';
+      if (!url.startsWith('idb:')) return url;
+      const id = url.replace('idb:', '');
+      if (this.urlCache.has(id)) return this.urlCache.get(id);
+      const blob = await this.getBlob(id);
+      if (blob) {
+        const objUrl = URL.createObjectURL(blob);
+        this.urlCache.set(id, objUrl);
+        return objUrl;
+      }
+      return item.thumbUrl || '';
+    }
+  };
+  window.TKST_IDB_MEDIA = TKST_IDB_MEDIA;
+
   let currentAlbumId = null; // null = Visão Geral dos 3 Álbuns, 'exames', 'competicoes', 'didaticos'
   let currentSubAlbumName = null; // null = lista de subálbuns (quando em 'exames'), ou string com nome do exame
   let mediaSelectionMode = false;
@@ -6002,6 +6089,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentMediaSearch = '';
   let currentLightboxMediaId = null;
   let currentLightboxList = [];
+
+  let activeMediaSelectedFile = null;
+  let activeMediaThumbnailBase64 = null;
+  let activeMediaSourceMode = 'file'; // 'file' ou 'url'
 
   // Normalização de mídias para compatibilidade total
   function getNormalizedMediaList() {
@@ -6604,8 +6695,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function deleteSingleMedia(mediaId) {
+  async function deleteSingleMedia(mediaId) {
     if (confirm('⚠️ Tem certeza que deseja remover esta foto/vídeo da galeria?')) {
+      if (window.TKST_IDB_MEDIA) {
+        await window.TKST_IDB_MEDIA.deleteBlob(mediaId);
+      }
       window.TKST_AUTH.deleteMediaItem(mediaId);
       if (currentLightboxMediaId === mediaId) {
         closeMediaLightbox();
@@ -6614,11 +6708,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function deleteCurrentLightboxMedia() {
+  async function deleteCurrentLightboxMedia() {
     if (!currentLightboxMediaId) return;
     if (confirm('⚠️ Tem certeza que deseja excluir permanentemente esta foto/vídeo da galeria?')) {
       const idToDelete = currentLightboxMediaId;
       closeMediaLightbox();
+      if (window.TKST_IDB_MEDIA) {
+        await window.TKST_IDB_MEDIA.deleteBlob(idToDelete);
+      }
       window.TKST_AUTH.deleteMediaItem(idToDelete);
       renderMedia();
     }
@@ -6627,7 +6724,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // LIGHTBOX IN-APP VIEWER (NUNCA REDIRECIONA PARA FORA DO APP)
   // =========================================================================
-  function openMediaLightbox(mediaId) {
+  async function openMediaLightbox(mediaId) {
     const allMedia = getNormalizedMediaList();
     const item = allMedia.find(m => m.id === mediaId);
     if (!item) return;
@@ -6678,7 +6775,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Exibição interna direta (NUNCA redireciona para páginas fora do app)
     if (item.type === 'video') {
-      const embed = getEmbedUrl(item.url);
+      let videoSrc = item.url;
+      if (videoSrc && videoSrc.startsWith('idb:')) {
+        videoSrc = await TKST_IDB_MEDIA.getMediaUrl(item);
+      }
+      const embed = getEmbedUrl(videoSrc);
       if (embed.type === 'video') {
         bodyEl.innerHTML = `
           <div class="media-lightbox-video-wrap">
@@ -6701,10 +6802,13 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
     } else {
-      // Exibição direta da foto em tela cheia no app
+      let imgSrc = item.url;
+      if (imgSrc && imgSrc.startsWith('idb:')) {
+        imgSrc = await TKST_IDB_MEDIA.getMediaUrl(item);
+      }
       bodyEl.innerHTML = `
         <div style="position: relative; max-width: 100%; max-height: 100%; display: flex; align-items: center; justify-content: center;">
-          <img src="${item.url}" alt="${escapeHtml(item.title)}" class="media-lightbox-img" id="mediaLightboxCurrentImg" loading="eager" onerror="this.src='assets/images/logo-tkst-2.jpg'">
+          <img src="${imgSrc}" alt="${escapeHtml(item.title)}" class="media-lightbox-img" id="mediaLightboxCurrentImg" loading="eager" onerror="this.src='assets/images/logo-tkst-2.jpg'">
         </div>
       `;
     }
@@ -6717,7 +6821,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) {
       modal.classList.remove('active');
       const bodyEl = document.getElementById('mediaLightboxBody');
-      if (bodyEl) bodyEl.innerHTML = '';
+      if (bodyEl) {
+        // Pausa qualquer vídeo tocando
+        const vid = bodyEl.querySelector('video');
+        if (vid) vid.pause();
+        bodyEl.innerHTML = '';
+      }
     }
   }
 
@@ -6734,12 +6843,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function downloadCurrentLightboxMedia() {
+  async function downloadCurrentLightboxMedia() {
     if (!currentLightboxMediaId) return;
     const allMedia = getNormalizedMediaList();
     const item = allMedia.find(m => m.id === currentLightboxMediaId);
     if (item) {
-      downloadMediaFile(item.url, item.title, item.type);
+      let downloadUrl = item.url;
+      if (downloadUrl && downloadUrl.startsWith('idb:')) {
+        downloadUrl = await TKST_IDB_MEDIA.getMediaUrl(item);
+      }
+      downloadMediaFile(downloadUrl, item.title, item.type);
     }
   }
 
@@ -6763,6 +6876,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const dlBtn = document.getElementById('mediaLightboxDownloadBtn');
     const prevHtml = dlBtn ? dlBtn.innerHTML : '';
     if (dlBtn) dlBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Baixando...</span>`;
+
+    // Se for IndexedDB pointer direto
+    if (url.startsWith('idb:')) {
+      const id = url.replace('idb:', '');
+      const blob = await TKST_IDB_MEDIA.getBlob(id);
+      if (blob) {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 15000);
+        if (dlBtn) {
+          dlBtn.innerHTML = `<i class="fas fa-check"></i> <span>Salvo!</span>`;
+          setTimeout(() => {
+            if (dlBtn) dlBtn.innerHTML = prevHtml || `<i class="fas fa-download"></i> <span>Baixar</span>`;
+          }, 2000);
+        }
+        return;
+      }
+    }
+
+    // Se for Data URL ou Blob URL já pronto
+    if (url.startsWith('data:') || url.startsWith('blob:')) {
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+      }, 1000);
+      if (dlBtn) {
+        dlBtn.innerHTML = `<i class="fas fa-check"></i> <span>Salvo!</span>`;
+        setTimeout(() => {
+          if (dlBtn) dlBtn.innerHTML = prevHtml || `<i class="fas fa-download"></i> <span>Baixar</span>`;
+        }, 2000);
+      }
+      return;
+    }
 
     try {
       // 1. Tenta baixar via Fetch + Blob (salva direto no celular na pasta de downloads)
@@ -6821,9 +6980,201 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   function handleMediaAlbumSelectChange(albumVal) {
     const subGroup = document.getElementById('adminMediaSubAlbumGroup');
+    const albums = getAlbumsList();
+    const currentAlbumObj = albums.find(a => a.id === albumVal);
+    const allowsSub = (albumVal === 'exames') || (currentAlbumObj && currentAlbumObj.hasSubAlbums);
     if (subGroup) {
-      subGroup.style.display = (albumVal === 'exames') ? 'block' : 'none';
+      subGroup.style.display = allowsSub ? 'block' : 'none';
     }
+  }
+
+  function setMediaSourceMode(mode) {
+    activeMediaSourceMode = mode;
+    const tabFile = document.getElementById('mediaSourceTabFile');
+    const tabUrl = document.getElementById('mediaSourceTabUrl');
+    const groupFile = document.getElementById('mediaSourceFileGroup');
+    const groupUrl = document.getElementById('mediaSourceUrlGroup');
+    const urlInput = document.getElementById('adminMediaUrlInput');
+    const modeInput = document.getElementById('adminMediaSourceMode');
+
+    if (modeInput) modeInput.value = mode;
+
+    if (mode === 'file') {
+      if (tabFile) {
+        tabFile.style.background = 'rgba(255, 183, 3, 0.15)';
+        tabFile.style.borderColor = 'var(--accent-gold)';
+        tabFile.style.color = 'var(--accent-gold)';
+      }
+      if (tabUrl) {
+        tabUrl.style.background = 'rgba(255, 255, 255, 0.05)';
+        tabUrl.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        tabUrl.style.color = '#94A3B8';
+      }
+      if (groupFile) groupFile.style.display = 'block';
+      if (groupUrl) groupUrl.style.display = 'none';
+      if (urlInput) urlInput.removeAttribute('required');
+    } else {
+      if (tabFile) {
+        tabFile.style.background = 'rgba(255, 255, 255, 0.05)';
+        tabFile.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        tabFile.style.color = '#94A3B8';
+      }
+      if (tabUrl) {
+        tabUrl.style.background = 'rgba(255, 183, 3, 0.15)';
+        tabUrl.style.borderColor = 'var(--accent-gold)';
+        tabUrl.style.color = 'var(--accent-gold)';
+      }
+      if (groupFile) groupFile.style.display = 'none';
+      if (groupUrl) groupUrl.style.display = 'block';
+      if (urlInput) urlInput.setAttribute('required', 'required');
+    }
+  }
+
+  async function handleMediaFileSelected(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    activeMediaSelectedFile = file;
+    activeMediaThumbnailBase64 = null;
+
+    const previewContainer = document.getElementById('mediaFilePreviewContainer');
+    const badge = document.getElementById('mediaFileBadge');
+    const imgWrapper = document.getElementById('mediaImagePreviewWrapper');
+    const imgPreview = document.getElementById('mediaImagePreview');
+    const vidWrapper = document.getElementById('mediaVideoPreviewWrapper');
+    const vidPreview = document.getElementById('mediaVideoPreview');
+    const infoText = document.getElementById('mediaFileInfoText');
+    const titleInput = document.getElementById('adminMediaTitleInput');
+    const typeSelect = document.getElementById('adminMediaTypeSelect');
+
+    const formattedSize = file.size > 1024 * 1024 
+      ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+      : (file.size / 1024).toFixed(0) + ' KB';
+
+    // Preenche título automaticamente se estiver vazio
+    if (titleInput && (!titleInput.value || !titleInput.value.trim())) {
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ');
+      titleInput.value = nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
+    }
+
+    if (file.type.startsWith('image/')) {
+      if (typeSelect) typeSelect.value = 'image';
+      if (badge) badge.textContent = `📷 Foto Selecionada (${formattedSize})`;
+      if (vidWrapper) vidWrapper.style.display = 'none';
+      if (vidPreview) { vidPreview.pause(); vidPreview.src = ''; }
+      if (imgWrapper) imgWrapper.style.display = 'block';
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const tempImg = new Image();
+        tempImg.onload = () => {
+          // Otimiza imagem com Canvas para resolução nítida e tamanho econômico
+          const maxDim = 1600;
+          let w = tempImg.width;
+          let h = tempImg.height;
+          if (w > h) {
+            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          } else {
+            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(tempImg, 0, 0, w, h);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+          // Mini thumbnail para os cartões
+          const thumbMax = 320;
+          let tw = w; let th = h;
+          if (tw > th) { if (tw > thumbMax) { th = Math.round((th * thumbMax) / tw); tw = thumbMax; } }
+          else { if (th > thumbMax) { tw = Math.round((tw * thumbMax) / th); th = thumbMax; } }
+          const thumbCanvas = document.createElement('canvas');
+          thumbCanvas.width = tw; thumbCanvas.height = th;
+          const tctx = thumbCanvas.getContext('2d');
+          tctx.drawImage(tempImg, 0, 0, tw, th);
+          activeMediaThumbnailBase64 = thumbCanvas.toDataURL('image/jpeg', 0.75);
+
+          if (imgPreview) imgPreview.src = compressedDataUrl;
+          const b64Input = document.getElementById('adminMediaFileBase64');
+          if (b64Input) b64Input.value = compressedDataUrl;
+          const thumbInput = document.getElementById('adminMediaFileThumb');
+          if (thumbInput) thumbInput.value = activeMediaThumbnailBase64;
+
+          if (infoText) {
+            infoText.innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${formattedSize}) • Foto pronta para salvar`;
+          }
+          if (previewContainer) previewContainer.style.display = 'block';
+        };
+        tempImg.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+    } else if (file.type.startsWith('video/')) {
+      if (typeSelect) typeSelect.value = 'video';
+      if (badge) badge.textContent = `🎬 Vídeo Selecionado (${formattedSize})`;
+      if (imgWrapper) imgWrapper.style.display = 'none';
+      if (vidWrapper) vidWrapper.style.display = 'block';
+
+      const objUrl = URL.createObjectURL(file);
+      if (vidPreview) {
+        vidPreview.src = objUrl;
+        vidPreview.load();
+      }
+
+      // Captura automática de thumbnail do vídeo no frame inicial
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.muted = true;
+      tempVideo.playsInline = true;
+      tempVideo.src = objUrl;
+      tempVideo.onloadeddata = () => {
+        tempVideo.currentTime = Math.min(1.0, (tempVideo.duration || 2) / 2);
+      };
+      tempVideo.onseeked = () => {
+        try {
+          const vCanvas = document.createElement('canvas');
+          vCanvas.width = 360;
+          vCanvas.height = 200;
+          const vCtx = vCanvas.getContext('2d');
+          vCtx.drawImage(tempVideo, 0, 0, vCanvas.width, vCanvas.height);
+          activeMediaThumbnailBase64 = vCanvas.toDataURL('image/jpeg', 0.75);
+          const thumbInput = document.getElementById('adminMediaFileThumb');
+          if (thumbInput) thumbInput.value = activeMediaThumbnailBase64;
+        } catch (e) {
+          console.warn('Não foi possível gerar thumbnail automática do vídeo:', e);
+        }
+      };
+
+      const b64Input = document.getElementById('adminMediaFileBase64');
+      if (b64Input) b64Input.value = '';
+      if (infoText) {
+        infoText.innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${formattedSize}) • Vídeo carregado e pronto para o álbum`;
+      }
+      if (previewContainer) previewContainer.style.display = 'block';
+    } else {
+      alert('Por favor, selecione um arquivo de imagem (PNG, JPG, WEBP) ou vídeo (MP4, MOV, WEBM).');
+    }
+  }
+
+  function clearSelectedMediaFile() {
+    activeMediaSelectedFile = null;
+    activeMediaThumbnailBase64 = null;
+    const fileInput = document.getElementById('adminMediaFileInput');
+    if (fileInput) fileInput.value = '';
+    const b64Input = document.getElementById('adminMediaFileBase64');
+    if (b64Input) b64Input.value = '';
+    const thumbInput = document.getElementById('adminMediaFileThumb');
+    if (thumbInput) thumbInput.value = '';
+    const blobKeyInput = document.getElementById('adminMediaFileBlobKey');
+    if (blobKeyInput) blobKeyInput.value = '';
+
+    const previewContainer = document.getElementById('mediaFilePreviewContainer');
+    if (previewContainer) previewContainer.style.display = 'none';
+    const vidPreview = document.getElementById('mediaVideoPreview');
+    if (vidPreview) { vidPreview.pause(); vidPreview.src = ''; }
+    const imgPreview = document.getElementById('mediaImagePreview');
+    if (imgPreview) imgPreview.src = '';
   }
 
   function populateSubAlbumDatalist() {
@@ -6832,7 +7183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const allMedia = getNormalizedMediaList();
     const subs = Array.from(new Set(
       allMedia
-        .filter(m => m.album === 'exames' && m.subAlbum)
+        .filter(m => (m.album === 'exames' || m.subAlbum) && m.subAlbum)
         .map(m => m.subAlbum.trim())
     ));
     datalist.innerHTML = subs.map(s => `<option value="${escapeHtml(s)}">`).join('');
@@ -6845,6 +7196,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modal) return;
     if (form) form.reset();
 
+    clearSelectedMediaFile();
+    setMediaSourceMode('file');
     populateSubAlbumDatalist();
     updateMediaAlbumSelect();
 
@@ -6855,7 +7208,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const subInput = document.getElementById('adminMediaSubAlbumInput');
     if (subInput) {
-      subInput.value = defaultSubAlbum || currentSubAlbumName || 'Exame de Faixa 2026 - Dojô Central';
+      subInput.value = defaultSubAlbum || currentSubAlbumName || (targetAlbum === 'exames' ? 'Exame de Faixa 2026 - Dojô Central' : '');
     }
 
     handleMediaAlbumSelectChange(targetAlbum);
@@ -6873,7 +7226,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleEl = document.getElementById('adminMediaModalTitle');
     if (!modal) return;
 
+    clearSelectedMediaFile();
     populateSubAlbumDatalist();
+    updateMediaAlbumSelect();
 
     document.getElementById('adminMediaId').value = item.id;
     document.getElementById('adminMediaTitleInput').value = item.title || '';
@@ -6891,6 +7246,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     handleMediaAlbumSelectChange(item.album || item.category || 'exames');
 
+    if (item.isLocalUpload || (item.url && (item.url.startsWith('idb:') || item.url.startsWith('data:')))) {
+      setMediaSourceMode('file');
+      const previewContainer = document.getElementById('mediaFilePreviewContainer');
+      const badge = document.getElementById('mediaFileBadge');
+      const imgWrapper = document.getElementById('mediaImagePreviewWrapper');
+      const imgPreview = document.getElementById('mediaImagePreview');
+      const vidWrapper = document.getElementById('mediaVideoPreviewWrapper');
+      const vidPreview = document.getElementById('mediaVideoPreview');
+      const infoText = document.getElementById('mediaFileInfoText');
+
+      if (badge) badge.textContent = item.type === 'video' ? '🎬 Vídeo Gravado' : '📷 Foto Salva';
+      if (item.type === 'video') {
+        if (imgWrapper) imgWrapper.style.display = 'none';
+        if (vidWrapper) vidWrapper.style.display = 'block';
+        if (vidPreview) {
+          TKST_IDB_MEDIA.getMediaUrl(item).then(vUrl => {
+            if (vidPreview) vidPreview.src = vUrl;
+          });
+        }
+      } else {
+        if (vidWrapper) vidWrapper.style.display = 'none';
+        if (imgWrapper) imgWrapper.style.display = 'block';
+        if (imgPreview) {
+          TKST_IDB_MEDIA.getMediaUrl(item).then(iUrl => {
+            if (imgPreview) imgPreview.src = iUrl || item.thumbUrl || item.url;
+          });
+        }
+      }
+      if (infoText) infoText.textContent = `Mídia já gravada no álbum. Toque em Trocar Arquivo para substituir se desejar.`;
+      if (previewContainer) previewContainer.style.display = 'block';
+    } else {
+      setMediaSourceMode('url');
+    }
+
     if (titleEl) titleEl.innerHTML = `<i class="fas fa-edit" style="color: var(--accent-gold); margin-right: 8px;"></i> Editar Mídia`;
     modal.classList.add('active');
   }
@@ -6898,68 +7287,143 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeAdminMediaModal() {
     const modal = document.getElementById('adminMediaModal');
     if (modal) modal.classList.remove('active');
+    clearSelectedMediaFile();
   }
 
-  function handleSaveMediaSubmit(e) {
+  async function handleSaveMediaSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('adminMediaId').value;
     const title = document.getElementById('adminMediaTitleInput').value.trim();
     const type = document.getElementById('adminMediaTypeSelect').value;
     const album = document.getElementById('adminMediaCategorySelect').value;
-    const url = document.getElementById('adminMediaUrlInput').value.trim();
     const date = document.getElementById('adminMediaDateInput').value;
     const dojo = document.getElementById('adminMediaDojoInput').value.trim() || 'TKST Matriz';
     const description = document.getElementById('adminMediaDescInput').value.trim();
+    const sourceMode = document.getElementById('adminMediaSourceMode').value || 'file';
 
     const subInput = document.getElementById('adminMediaSubAlbumInput');
-    let subAlbum = (subInput && album === 'exames') ? subInput.value.trim() : '';
+    let subAlbum = (subInput && (album === 'exames' || subInput.value)) ? subInput.value.trim() : '';
     if (album === 'exames' && !subAlbum) {
       subAlbum = 'Exame de Faixa 2026 - Dojô Central';
     }
 
-    if (!title || !url) {
-      alert('Por favor, preencha o título e o link da imagem/vídeo.');
+    if (!title) {
+      alert('Por favor, preencha o título da foto ou vídeo.');
       return;
     }
 
-    let thumbUrl = url;
-    if (type === 'video') {
-      const ytId = extractYouTubeId(url);
-      if (ytId) thumbUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+    const saveBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Salvando no Álbum...`;
     }
 
-    const payload = {
-      title,
-      type,
-      album,
-      category: album,
-      subAlbum,
-      url,
-      thumbUrl,
-      date,
-      dojo,
-      description,
-      author: window.TKST_AUTH.getCurrentUser() ? window.TKST_AUTH.getCurrentUser().name : 'Sensei Diego'
-    };
+    try {
+      let finalUrl = '';
+      let thumbUrl = '';
+      let isLocalUpload = false;
+      const targetId = id || `media_custom_${Date.now()}`;
 
-    if (id) {
-      window.TKST_AUTH.updateMediaItem(id, payload);
-    } else {
-      window.TKST_AUTH.addMediaItem(payload);
-    }
+      if (sourceMode === 'file') {
+        const fileBase64 = document.getElementById('adminMediaFileBase64').value;
+        const fileThumb = document.getElementById('adminMediaFileThumb').value;
 
-    closeAdminMediaModal();
-    if (currentTab === 'media') {
-      // Se estava em um subálbum de exame, manter ou atualizar
-      if (album === 'exames' && subAlbum) {
-        currentAlbumId = 'exames';
-        currentSubAlbumName = subAlbum;
+        if (activeMediaSelectedFile) {
+          isLocalUpload = true;
+          thumbUrl = fileThumb || activeMediaThumbnailBase64 || fileBase64 || '';
+
+          if (type === 'image' && fileBase64) {
+            await TKST_IDB_MEDIA.saveBlob(targetId, activeMediaSelectedFile, activeMediaSelectedFile.type, activeMediaSelectedFile.name);
+            // Se tamanho base64 for razoável (< 450KB), salva como data URL diretamente
+            if (fileBase64.length < 500000) {
+              finalUrl = fileBase64;
+            } else {
+              finalUrl = `idb:${targetId}`;
+            }
+            if (!thumbUrl) thumbUrl = fileBase64;
+          } else if (type === 'video') {
+            // Vídeo: armazena o Blob no IndexedDB para capacidade ilimitada
+            await TKST_IDB_MEDIA.saveBlob(targetId, activeMediaSelectedFile, activeMediaSelectedFile.type, activeMediaSelectedFile.name);
+            finalUrl = `idb:${targetId}`;
+            if (!thumbUrl) {
+              thumbUrl = 'assets/images/logo-tkst-2.jpg';
+            }
+          } else {
+            finalUrl = fileBase64 || `idb:${targetId}`;
+          }
+        } else if (id) {
+          // Edição de item existente sem trocar arquivo
+          const existing = getNormalizedMediaList().find(m => m.id === id);
+          if (existing) {
+            finalUrl = existing.url;
+            thumbUrl = existing.thumbUrl || existing.url;
+            isLocalUpload = existing.isLocalUpload || false;
+          }
+        } else {
+          alert('Por favor, toque para escolher uma foto ou vídeo do seu celular ou mude para a aba "Link".');
+          if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = originalBtnHtml; }
+          return;
+        }
+      } else {
+        // Modo Link URL
+        finalUrl = document.getElementById('adminMediaUrlInput').value.trim();
+        if (!finalUrl) {
+          alert('Por favor, preencha o link da imagem ou vídeo.');
+          if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = originalBtnHtml; }
+          return;
+        }
+        thumbUrl = finalUrl;
+        if (type === 'video') {
+          const ytId = extractYouTubeId(finalUrl);
+          if (ytId) thumbUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+        }
       }
-      renderMedia();
-    } else if (currentTab === 'admin') {
-      renderAdminMaster();
+
+      const payload = {
+        title,
+        type,
+        album,
+        category: album,
+        subAlbum,
+        url: finalUrl,
+        thumbUrl: thumbUrl || finalUrl,
+        date,
+        dojo,
+        description,
+        isLocalUpload,
+        author: window.TKST_AUTH.getCurrentUser() ? window.TKST_AUTH.getCurrentUser().name : 'Sensei Diego'
+      };
+
+      if (id) {
+        window.TKST_AUTH.updateMediaItem(id, payload);
+      } else {
+        payload.id = targetId;
+        window.TKST_AUTH.addMediaItem(payload);
+      }
+
+      closeAdminMediaModal();
+      clearSelectedMediaFile();
+
+      if (currentTab === 'media') {
+        if (album === 'exames' && subAlbum) {
+          currentAlbumId = 'exames';
+          currentSubAlbumName = subAlbum;
+        }
+        renderMedia();
+      } else if (currentTab === 'admin') {
+        renderAdminMaster();
+      }
+      alert(id ? '✅ Mídia atualizada com sucesso!' : '✅ Foto/vídeo adicionado ao álbum com sucesso!');
+    } catch (err) {
+      console.error('Erro ao salvar mídia:', err);
+      alert('Erro ao salvar mídia: ' + err.message);
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalBtnHtml;
+      }
     }
-    alert(id ? '✅ Mídia atualizada com sucesso!' : '✅ Nova mídia cadastrada com sucesso!');
   }
 
   // =========================================================================
@@ -6996,6 +7460,10 @@ document.addEventListener('DOMContentLoaded', () => {
     openEditMediaModal,
     closeAdminMediaModal,
     handleSaveMediaSubmit,
+    setMediaSourceMode,
+    handleMediaFileSelected,
+    clearSelectedMediaFile,
+    TKST_IDB_MEDIA,
     deleteMediaItemConfirm: deleteSingleMedia,
     setAuthMode: (mode) => {
       authMode = mode;
