@@ -137,6 +137,48 @@ module.exports = async (req, res) => {
         };
       }
 
+      function deduplicateQuizSubmissions(list) {
+        if (!Array.isArray(list)) return [];
+        const sorted = [...list].filter(Boolean).sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
+        const kept = [];
+        for (const item of sorted) {
+          const itemTime = new Date(item.date || 0).getTime();
+          const itemStudentId = (item.studentId || '').toString().trim().toLowerCase();
+          const itemStudentUser = (item.studentUsername || '').toString().trim().toLowerCase();
+          const itemBelt = (item.beltLevel || item.beltKyu || '').toString().trim();
+          const itemScore = Number(item.score);
+          const itemTotal = Number(item.total);
+
+          let matchIdx = -1;
+          for (let i = 0; i < kept.length; i++) {
+            const k = kept[i];
+            const kTime = new Date(k.date || 0).getTime();
+            const kStudentId = (k.studentId || '').toString().trim().toLowerCase();
+            const kStudentUser = (k.studentUsername || '').toString().trim().toLowerCase();
+            const kBelt = (k.beltLevel || k.beltKyu || '').toString().trim();
+            const sameStd = (itemStudentId && (itemStudentId === kStudentId || itemStudentId === kStudentUser)) ||
+                            (itemStudentUser && (itemStudentUser === kStudentId || itemStudentUser === kStudentUser));
+            if (sameStd && kBelt === itemBelt && Number(k.score) === itemScore && Number(k.total) === itemTotal && Math.abs(itemTime - kTime) <= 60000) {
+              matchIdx = i;
+              break;
+            }
+          }
+          if (matchIdx === -1) {
+            kept.push(item);
+          } else {
+            const existing = kept[matchIdx];
+            const itemHasDetails = Array.isArray(item.details) && item.details.length > 0;
+            const existingHasDetails = Array.isArray(existing.details) && existing.details.length > 0;
+            const itemIsOrig = !item.id?.startsWith('quiz_rec_') && !item.id?.startsWith('quiz_std_');
+            const existingIsOrig = !existing.id?.startsWith('quiz_rec_') && !existing.id?.startsWith('quiz_std_');
+            if ((!existingHasDetails && itemHasDetails) || (!existingIsOrig && itemIsOrig)) {
+              kept[matchIdx] = item;
+            }
+          }
+        }
+        return kept.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      }
+
       if (!token) {
         try {
           const localPath = path.resolve(process.cwd(), FILE_PATH);
@@ -154,7 +196,7 @@ module.exports = async (req, res) => {
             const clean = sanitizeSubmission(s);
             if (clean && clean.id && !delSet.has(clean.id)) subMap.set(clean.id, { ...(subMap.get(clean.id) || {}), ...clean });
           });
-          const finalSubs = Array.from(subMap.values()).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 500);
+          const finalSubs = deduplicateQuizSubmissions(Array.from(subMap.values())).slice(0, 500);
           const newJson = { quiz_submissions: finalSubs, deletedQuizSubIds: Array.from(delSet), updatedAt: Date.now() };
           try { fs.writeFileSync(localPath, JSON.stringify(newJson, null, 2), 'utf8'); } catch(e) {}
           return res.status(200).json({ success: true, committed: finalSubs.length, data: newJson });
@@ -204,9 +246,7 @@ module.exports = async (req, res) => {
         }
       });
 
-      const finalSubs = Array.from(subMap.values())
-        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
-        .slice(0, 500);
+      const finalSubs = deduplicateQuizSubmissions(Array.from(subMap.values())).slice(0, 500);
 
       const newJson = {
         quiz_submissions: finalSubs,

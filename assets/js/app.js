@@ -711,8 +711,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Atualiza automaticamente as telas de admin e ranking quando simulados forem sincronizados ou saneados
+    window.addEventListener('tkst_submissions_updated', () => {
+      try {
+        if (currentTab === 'admin' && typeof renderAdminMaster === 'function') {
+          renderAdminMaster();
+        } else if (currentTab === 'ranking' && typeof renderLeaderboard === 'function') {
+          renderLeaderboard();
+        }
+      } catch(e) {}
+    });
+
     const user = window.TKST_AUTH.getCurrentUser();
     if (!user) {
+      if (!window.location.hash) {
+        history.replaceState({ tab: 'login' }, '', '#login');
+      }
       switchTab('login');
       // Auto open registration modal if accessed via invitation link (?cadastro=1, ?convite=1, ?registro=1, etc.)
       const urlParams = new URLSearchParams(window.location.search);
@@ -724,6 +738,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 350);
       }
     } else {
+      if (!window.location.hash) {
+        history.replaceState({ tab: 'dashboard' }, '', '#dashboard');
+      }
       switchTab('dashboard');
     }
 
@@ -819,7 +836,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderView(tabName);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Push state para o botão voltar do celular funcionar dentro do app
+    const state = { tab: tabName, albumId: currentAlbumId, subAlbum: currentSubAlbumName };
+    const hash = '#' + tabName;
+    if (window.location.hash !== hash) {
+      history.pushState(state, '', hash);
+    }
   }
+
+  // Listener do botão voltar do Android / iOS
+  window.addEventListener('popstate', (e) => {
+    // 1. Se lightbox de foto/vídeo estiver aberto, fecha o lightbox
+    const lightbox = document.getElementById('mediaLightboxModal');
+    if (lightbox && lightbox.classList.contains('active')) {
+      closeMediaLightbox(false);
+      return;
+    }
+
+    // 2. Se modal de criar/editar álbum estiver aberto, fecha o modal
+    const albumModal = document.getElementById('createAlbumModal');
+    if (albumModal && albumModal.classList.contains('active')) {
+      closeCreateAlbumModal(false);
+      return;
+    }
+
+    // 3. Se modal de mídia estiver aberto, fecha o modal
+    const mediaModal = document.getElementById('adminMediaModal');
+    if (mediaModal && mediaModal.classList.contains('active')) {
+      closeAdminMediaModal(false);
+      return;
+    }
+
+    // 4. Se menu lateral estiver aberto no mobile, fecha
+    const sidebarEl = document.getElementById('sidebar');
+    const backdropEl = document.getElementById('sidebarBackdrop');
+    if (sidebarEl && sidebarEl.classList.contains('open')) {
+      sidebarEl.classList.remove('open');
+      if (backdropEl) backdropEl.classList.remove('active');
+      return;
+    }
+
+    const state = e.state;
+    if (!state) {
+      // Estado vazio / inicial: se não estiver no dashboard/login, volta para o dashboard
+      if (currentTab !== 'dashboard' && currentTab !== 'login') {
+        switchTab(window.TKST_AUTH && window.TKST_AUTH.getCurrentUser() ? 'dashboard' : 'login');
+      }
+      return;
+    }
+
+    // Se estava em subálbum, volta para o álbum pai
+    if (currentSubAlbumName && currentAlbumId) {
+      currentSubAlbumName = null;
+      renderMedia();
+      return;
+    }
+
+    // Se estava dentro de um álbum específico na galeria, volta para lista de álbuns
+    if (currentAlbumId && currentTab === 'media') {
+      currentAlbumId = null;
+      currentSubAlbumName = null;
+      renderMedia();
+      return;
+    }
+
+    // Navega para a aba do estado salvo
+    const targetTab = state.tab || 'dashboard';
+    if (targetTab !== currentTab) {
+      currentTab = targetTab;
+      navLinks.forEach(l => {
+        l.classList.toggle('active', l.getAttribute('data-tab') === targetTab);
+      });
+      renderView(targetTab);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
 
   function openAdminPanel(subTab) {
     if (subTab) {
@@ -2453,15 +2545,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Array.isArray(directScores)) finalScoresList = directScores;
       }
 
-      // Deduplica submissões com mesmo score/total e intervalo inferior a 4 segundos (elimina duplicatas de sincronização)
+      // Deduplica submissões com mesmo score/total/faixa e intervalo inferior a 20 segundos (elimina duplicatas de sincronização)
       const uniqueScores = [];
       finalScoresList.forEach(item => {
         if (!item) return;
         const score = typeof item.score === 'number' ? item.score : 0;
         const total = typeof item.total === 'number' ? item.total : 10;
+        const belt = (item.beltLevel || item.beltKyu || '').toString().trim();
         const isDup = uniqueScores.some(u => {
           if (u.id && item.id && u.id === item.id) return true;
-          return u.score === score && u.total === total && Math.abs(new Date(u.date || 0).getTime() - new Date(item.date || 0).getTime()) < 4000;
+          const uBelt = (u.beltLevel || u.beltKyu || '').toString().trim();
+          return (belt ? uBelt === belt : true) && u.score === score && u.total === total && Math.abs(new Date(u.date || 0).getTime() - new Date(item.date || 0).getTime()) <= 60000;
         });
         if (!isDup) uniqueScores.push(item);
       });
@@ -5396,15 +5490,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      window.TKST_AUTH.saveQuizSubmission({
-        beltLevel: currentQuizBelt,
-        beltKyu: currentQuizKyu,
-        score: quizScore,
-        total: currentQuizQuestions.length,
-        details: quizSubmissionDetails
-      });
+      if (quizActive) {
+        quizActive = false;
+        window.TKST_AUTH.saveQuizSubmission({
+          beltLevel: currentQuizBelt,
+          beltKyu: currentQuizKyu,
+          score: quizScore,
+          total: currentQuizQuestions.length,
+          details: quizSubmissionDetails
+        });
+      }
 
-      quizActive = false;
       currentQuizIndex = currentQuizQuestions.length; // Redireciona direto para a tela de resultado
       renderQuiz();
       return;
@@ -5860,13 +5956,16 @@ document.addEventListener('DOMContentLoaded', () => {
     quizAnswered = false;
     currentQuizIndex++;
     if (currentQuizIndex >= currentQuizQuestions.length) {
-      window.TKST_AUTH.saveQuizSubmission({
-        beltLevel: currentQuizBelt,
-        beltKyu: currentQuizKyu,
-        score: quizScore,
-        total: currentQuizQuestions.length,
-        details: quizSubmissionDetails
-      });
+      if (quizActive) {
+        quizActive = false;
+        window.TKST_AUTH.saveQuizSubmission({
+          beltLevel: currentQuizBelt,
+          beltKyu: currentQuizKyu,
+          score: quizScore,
+          total: currentQuizQuestions.length,
+          details: quizSubmissionDetails
+        });
+      }
     }
     renderQuiz();
   }
@@ -6116,10 +6215,14 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'didaticos', title: 'Vídeos Didáticos', icon: 'fas fa-video', badge: 'Estudo Técnico', description: 'Vídeos didáticos de Katas, Kihon e aplicações práticas.', cover: 'https://img.youtube.com/vi/FqS_tPZ-3kM/hqdefault.jpg', hasSubAlbums: false, _default: true }
     ];
     const customAlbums = (window.TKST_AUTH && window.TKST_AUTH.getCustomAlbums) ? window.TKST_AUTH.getCustomAlbums() : [];
-    // Merge: default first, then custom ones not already in default
+    // Mescla eventuais customizações feitas pelo admin nos álbuns padrão
+    const mergedDefaults = defaultAlbums.map(def => {
+      const custom = customAlbums.find(c => c.id === def.id);
+      return custom ? { ...def, ...custom, _default: true } : def;
+    });
     const defaultIds = new Set(defaultAlbums.map(a => a.id));
     return [
-      ...defaultAlbums,
+      ...mergedDefaults,
       ...customAlbums.filter(a => !defaultIds.has(a.id))
     ];
   }
@@ -6186,10 +6289,17 @@ document.addEventListener('DOMContentLoaded', () => {
                   <span class="album-count-top">
                     ${subCountText}${count} ${count === 1 ? 'mídia' : 'mídias'}
                   </span>
-                  ${isAdmin && isCustom ? `
-                    <button type="button" class="album-delete-btn" onclick="event.stopPropagation(); window.TKST_APP.deleteCustomAlbum('${alb.id}', '${escapeHtml(alb.title)}')" title="Excluir álbum">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
+                  ${isAdmin ? `
+                    <div style="position: absolute; top: 8px; right: 8px; display: flex; gap: 6px;">
+                      <button type="button" class="album-edit-btn" onclick="event.stopPropagation(); window.TKST_APP.openEditAlbumModal('${alb.id}')" title="Editar álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(255,183,3,0.85); border: none; color: #000; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                        <i class="fas fa-pencil-alt"></i>
+                      </button>
+                      ${isCustom ? `
+                        <button type="button" class="album-delete-btn" onclick="event.stopPropagation(); window.TKST_APP.deleteCustomAlbum('${alb.id}', '${escapeHtml(alb.title)}')" title="Excluir álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(230,57,70,0.85); border: none; color: #fff; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      ` : ''}
+                    </div>
                   ` : ''}
                 </div>
                 <div class="album-card-body" onclick="window.TKST_APP.openAlbum('${alb.id}')">
@@ -6304,6 +6414,11 @@ document.addEventListener('DOMContentLoaded', () => {
                       <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(sub.dojo)}</span>
                     </div>
                   </div>
+                  ${isAdmin ? `
+                    <button type="button" onclick="event.stopPropagation(); window.TKST_APP.promptEditSubAlbum('${escapeHtml(sub.name)}')" title="Renomear este exame/subálbum" style="width: 30px; height: 30px; border-radius: 6px; background: rgba(255,183,3,0.85); border: none; color: #000; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-right: 6px; flex-shrink: 0;">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  ` : ''}
                   <div style="color: var(--accent-gold); font-size: 0.9rem; flex-shrink: 0; padding-left: 6px;">
                     <i class="fas fa-chevron-right"></i>
                   </div>
@@ -6394,9 +6509,16 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="media-gallery-hero" style="margin-bottom: 14px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
-            <h2 style="font-size: 1.25rem; color: #FFF; margin: 0; font-family: var(--font-heading);">
-              ${escapeHtml(currentTitle)}
-            </h2>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h2 style="font-size: 1.25rem; color: #FFF; margin: 0; font-family: var(--font-heading);">
+                ${escapeHtml(currentTitle)}
+              </h2>
+              ${isAdmin && currentSubAlbumName ? `
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.promptEditSubAlbum('${escapeHtml(currentSubAlbumName)}')" title="Renomear este exame" style="padding: 3px 8px; font-size: 0.72rem; border-color: rgba(255,183,3,0.5); color: var(--accent-gold);">
+                  <i class="fas fa-pencil-alt"></i> Renomear
+                </button>
+              ` : ''}
+            </div>
             <p style="font-size: 0.8rem; color: #CBD5E1; margin-top: 3px; margin-bottom: 0;">
               ${currentSubtitle} • <strong>${filteredMedia.length} ${filteredMedia.length === 1 ? 'mídia' : 'mídias'}</strong>
             </p>
@@ -6489,6 +6611,8 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedMediaIds.clear();
     currentMediaSearch = '';
     renderMedia();
+    // Push state para botão voltar funcionar
+    history.pushState({ tab: 'media', albumId, subAlbum: null }, '', '#media-album');
   }
 
   function openSubAlbum(subAlbumName) {
@@ -6497,6 +6621,8 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedMediaIds.clear();
     currentMediaSearch = '';
     renderMedia();
+    // Push state para botão voltar funcionar
+    history.pushState({ tab: 'media', albumId: currentAlbumId, subAlbum: subAlbumName }, '', '#media-subalbum');
   }
 
   function promptCreateSubAlbum() {
@@ -6548,6 +6674,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     modal.classList.add('active');
+    history.pushState({ modal: 'create-album', tab: currentTab, albumId: currentAlbumId, subAlbum: currentSubAlbumName }, '', '#modal-album');
 
     // Wire up radio switches
     radios.forEach(r => {
@@ -6555,26 +6682,123 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function closeCreateAlbumModal() {
+  function closeCreateAlbumModal(triggerBack = true) {
     const modal = document.getElementById('createAlbumModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+      modal.classList.remove('active');
+      delete modal.dataset.editAlbumId;
+      const typeSelectorWrap = document.getElementById('createAlbumTypeSelectorWrap');
+      if (typeSelectorWrap) typeSelectorWrap.style.display = '';
+      const modalTitle = modal.querySelector('.modal-header h3') || modal.querySelector('.modal-title');
+      if (modalTitle) modalTitle.innerHTML = `<i class="fas fa-folder-plus" style="color: var(--accent-gold); margin-right: 8px;"></i> Criar Álbum`;
+      const submitBtn = modal.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-plus-circle"></i> Criar Álbum`;
+      const form = document.getElementById('createAlbumForm');
+      if (form) form.reset();
+    }
+    if (triggerBack && window.location.hash === '#modal-album') {
+      history.back();
+    }
+  }
+
+  // =========================================================================
+  // EDITAR ÁLBUM (MODAL)
+  // =========================================================================
+  function openEditAlbumModal(albumId) {
+    const albums = getAlbumsList();
+    const alb = albums.find(a => a.id === albumId);
+    if (!alb) return;
+
+    // Reutiliza o modal de criação em modo edição
+    const modal = document.getElementById('createAlbumModal');
+    if (!modal) return;
+
+    const form = document.getElementById('createAlbumForm');
+    if (form) form.reset();
+
+    // Força modo principal e esconde seleção de tipo
+    const modeField = document.getElementById('createAlbumMode');
+    const mainGroup = document.getElementById('createAlbumMainGroup');
+    const subGroup = document.getElementById('createAlbumSubGroup');
+    const typeSelectorWrap = document.getElementById('createAlbumTypeSelectorWrap');
+
+    if (modeField) modeField.value = 'principal';
+    if (mainGroup) mainGroup.style.display = '';
+    if (subGroup) subGroup.style.display = 'none';
+    if (typeSelectorWrap) typeSelectorWrap.style.display = 'none';
+
+    // Preenche os campos com dados atuais
+    const titleInput = document.getElementById('createAlbumTitleInput');
+    const descInput = document.getElementById('createAlbumDescInput');
+    const iconSelect = document.getElementById('createAlbumIconSelect');
+    const hasSubCheck = document.getElementById('createAlbumHasSubAlbums');
+    const modalTitle = modal.querySelector('.modal-header h3') || modal.querySelector('.modal-title');
+    const submitBtn = modal.querySelector('button[type="submit"]');
+
+    if (titleInput) titleInput.value = alb.title || '';
+    if (descInput) descInput.value = alb.description || '';
+    if (iconSelect) iconSelect.value = alb.icon || 'fas fa-folder';
+    if (hasSubCheck) hasSubCheck.checked = alb.hasSubAlbums || false;
+    if (modalTitle) modalTitle.innerHTML = `<i class="fas fa-pencil-alt" style="color: var(--accent-gold); margin-right: 8px;"></i> Editar Álbum`;
+    if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-save"></i> Salvar Alterações`;
+
+    // Marca qual álbum está sendo editado
+    modal.dataset.editAlbumId = albumId;
+    history.pushState({ modal: 'edit-album', albumId, tab: currentTab }, '', '#modal-album');
+    modal.classList.add('active');
+  }
+
+  // =========================================================================
+  // RENOMEAR SUBÁLBUM / EXAME DE FAIXA
+  // =========================================================================
+  function promptEditSubAlbum(oldName) {
+    const newName = prompt(`✏️ Digite o novo nome para o exame/subálbum:\n\nAtual: "${oldName}"`, oldName);
+    if (!newName || !newName.trim() || newName.trim() === oldName) return;
+    const trimmed = newName.trim();
+    if (window.TKST_AUTH && window.TKST_AUTH.renameSubAlbum) {
+      window.TKST_AUTH.renameSubAlbum(currentAlbumId || 'exames', oldName, trimmed);
+    }
+    if (currentSubAlbumName === oldName) {
+      currentSubAlbumName = trimmed;
+    }
+    renderMedia();
+    alert(`✅ Exame renomeado com sucesso para "${trimmed}"!`);
   }
 
   function handleSaveAlbum(e) {
     e.preventDefault();
+    const modal = document.getElementById('createAlbumModal');
+    const editId = modal && modal.dataset.editAlbumId;
+
+    // Se veio do openEditAlbumModal, salva como edição
+    if (editId) {
+      const title = ((document.getElementById('createAlbumTitleInput') || {}).value || '').trim();
+      const description = ((document.getElementById('createAlbumDescInput') || {}).value || '').trim();
+      const iconValue = (document.getElementById('createAlbumIconSelect') || {}).value || 'fas fa-folder';
+      const hasSubAlbums = (document.getElementById('createAlbumHasSubAlbums') || {}).checked || false;
+
+      if (!title) { alert('Por favor, informe o nome do álbum.'); return; }
+
+      if (window.TKST_AUTH && window.TKST_AUTH.updateAlbum) {
+        window.TKST_AUTH.updateAlbum(editId, { title, description, icon: iconValue, badge: title, hasSubAlbums });
+      }
+
+      closeCreateAlbumModal();
+      updateMediaAlbumSelect();
+      renderMedia();
+      alert(`✅ Álbum "${title}" atualizado com sucesso!`);
+      return;
+    }
+
     const mode = (document.getElementById('createAlbumMode') || {}).value || 'principal';
 
     if (mode === 'sub-exame') {
-      // Criação de subálbum (novo nome de exame de faixa)
       const parentAlbumId = (document.getElementById('createAlbumSubParent') || {}).value || 'exames';
       const subName = ((document.getElementById('createAlbumSubNameInput') || {}).value || '').trim();
       if (!subName) { alert('Por favor, digite o nome do subálbum.'); return; }
-
       closeCreateAlbumModal();
-      // Vai direto para a tela de adicionar mídia neste subálbum
       currentAlbumId = parentAlbumId;
       currentSubAlbumName = null;
-      // Abre imediatamente o modal de adicionar mídia pré-preenchido
       openAddMediaModal(parentAlbumId, subName);
       renderMedia();
       return;
@@ -6588,22 +6812,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!title) { alert('Por favor, informe o nome do álbum.'); return; }
 
-    // Gera slug único a partir do título
     const slug = 'album_' + title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') + '_' + Date.now();
 
     if (window.TKST_AUTH && window.TKST_AUTH.addAlbum) {
-      window.TKST_AUTH.addAlbum({
-        id: slug,
-        title,
-        description,
-        icon: iconValue,
-        badge: title,
-        hasSubAlbums
-      });
+      window.TKST_AUTH.addAlbum({ id: slug, title, description, icon: iconValue, badge: title, hasSubAlbums });
     }
 
     closeCreateAlbumModal();
-    // Atualiza select de álbuns no modal de mídia
     updateMediaAlbumSelect();
     renderMedia();
     alert(`✅ Álbum "${title}" criado com sucesso!`);
@@ -6628,6 +6843,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `<option value="${a.id}">${icons[a.id] || '📁'} ${a.title}</option>`
     ).join('');
   }
+
 
   function handleMediaSearch(query) {
     currentMediaSearch = query;
@@ -6813,10 +7029,13 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
+    if (!modal.classList.contains('active')) {
+      history.pushState({ modal: 'lightbox', tab: currentTab, albumId: currentAlbumId, subAlbum: currentSubAlbumName }, '', '#lightbox');
+    }
     modal.classList.add('active');
   }
 
-  function closeMediaLightbox() {
+  function closeMediaLightbox(triggerBack = true) {
     const modal = document.getElementById('mediaLightboxModal');
     if (modal) {
       modal.classList.remove('active');
@@ -6827,6 +7046,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (vid) vid.pause();
         bodyEl.innerHTML = '';
       }
+    }
+    if (triggerBack && window.location.hash === '#lightbox') {
+      history.back();
     }
   }
 
@@ -7194,6 +7416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     handleMediaAlbumSelectChange(targetAlbum);
 
     if (titleEl) titleEl.innerHTML = `<i class="fas fa-photo-video" style="color: var(--accent-gold); margin-right: 8px;"></i> Cadastrar Nova Mídia`;
+    history.pushState({ modal: 'admin-media', tab: currentTab, albumId: currentAlbumId, subAlbum: currentSubAlbumName }, '', '#modal-media');
     modal.classList.add('active');
   }
 
@@ -7281,13 +7504,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (titleEl) titleEl.innerHTML = `<i class="fas fa-edit" style="color: var(--accent-gold); margin-right: 8px;"></i> Editar Mídia`;
+    history.pushState({ modal: 'admin-media', mediaId, tab: currentTab }, '', '#modal-media');
     modal.classList.add('active');
   }
 
-  function closeAdminMediaModal() {
+  function closeAdminMediaModal(triggerBack = true) {
     const modal = document.getElementById('adminMediaModal');
     if (modal) modal.classList.remove('active');
     clearSelectedMediaFile();
+    if (triggerBack && window.location.hash === '#modal-media') {
+      history.back();
+    }
   }
 
   async function handleSaveMediaSubmit(e) {
@@ -7433,6 +7660,8 @@ document.addEventListener('DOMContentLoaded', () => {
     promptCreateSubAlbum,
     openCreateAlbumModal,
     closeCreateAlbumModal,
+    openEditAlbumModal,
+    promptEditSubAlbum,
     handleSaveAlbum,
     deleteCustomAlbum,
     updateMediaAlbumSelect,

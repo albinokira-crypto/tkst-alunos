@@ -512,11 +512,95 @@
   }
 
   // =========================================================================
-  // QUIZ SUBMISSIONS PERMANENT CLOUD SYNC & GITHUB STORAGE
+  // QUIZ SUBMISSIONS DEDUPLICATION & PERMANENT CLOUD SYNC
   // =========================================================================
-  // =========================================================================
-  // QUIZ SUBMISSIONS PERMANENT CLOUD SYNC & GITHUB STORAGE
-  // =========================================================================
+  function normalizeBelt(belt, kyu) {
+    if (kyu !== undefined && kyu !== null && kyu !== '') {
+      const kStr = String(kyu).toLowerCase().trim();
+      if (kStr === 'all' || kStr === 'geral') return 'all';
+      const num = parseInt(kStr, 10);
+      if (!isNaN(num) && num >= 1 && num <= 7) return 'kyu_' + num;
+    }
+    const bStr = String(belt || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (bStr.includes('branca') || bStr.includes('7')) return 'kyu_7';
+    if (bStr.includes('amarela') || bStr.includes('6')) return 'kyu_6';
+    if (bStr.includes('vermelha') || bStr.includes('5')) return 'kyu_5';
+    if (bStr.includes('laranja') || bStr.includes('4')) return 'kyu_4';
+    if (bStr.includes('verde') || bStr.includes('3')) return 'kyu_3';
+    if (bStr.includes('roxa') || bStr.includes('2')) return 'kyu_2';
+    if (bStr.includes('marrom') || bStr.includes('1')) return 'kyu_1';
+    if (bStr.includes('geral') || bStr.includes('all')) return 'all';
+    return bStr || 'all';
+  }
+
+  function deduplicateQuizSubmissions(list) {
+    if (!Array.isArray(list)) return [];
+    const sorted = [...list].filter(Boolean).sort((a, b) => {
+      const timeA = new Date(a.date || 0).getTime();
+      const timeB = new Date(b.date || 0).getTime();
+      return timeA - timeB;
+    });
+
+    const kept = [];
+    for (const item of sorted) {
+      const itemTime = new Date(item.date || 0).getTime();
+      const itemStudentId = (item.studentId || '').toString().trim().toLowerCase();
+      const itemStudentUser = (item.studentUsername || '').toString().trim().toLowerCase();
+      const itemBeltNorm = normalizeBelt(item.beltLevel, item.beltKyu);
+      const itemScore = Number(item.score);
+      const itemTotal = Number(item.total);
+
+      let matchIdx = -1;
+      for (let i = 0; i < kept.length; i++) {
+        const k = kept[i];
+        const kTime = new Date(k.date || 0).getTime();
+        const kStudentId = (k.studentId || '').toString().trim().toLowerCase();
+        const kStudentUser = (k.studentUsername || '').toString().trim().toLowerCase();
+        const kBeltNorm = normalizeBelt(k.beltLevel, k.beltKyu);
+        const kScore = Number(k.score);
+        const kTotal = Number(k.total);
+
+        const sameStudent = (itemStudentId && (itemStudentId === kStudentId || itemStudentId === kStudentUser)) ||
+                            (itemStudentUser && (itemStudentUser === kStudentId || itemStudentUser === kStudentUser));
+
+        if (sameStudent &&
+            itemBeltNorm === kBeltNorm &&
+            kScore === itemScore &&
+            kTotal === itemTotal &&
+            Math.abs(itemTime - kTime) <= 60000) {
+          matchIdx = i;
+          break;
+        }
+      }
+
+      if (matchIdx === -1) {
+        kept.push(item);
+      } else {
+        const existing = kept[matchIdx];
+        const itemHasDetails = Array.isArray(item.details) && item.details.length > 0;
+        const existingHasDetails = Array.isArray(existing.details) && existing.details.length > 0;
+        const itemIsOrig = !item.id?.startsWith('quiz_rec_') && !item.id?.startsWith('quiz_std_');
+        const existingIsOrig = !existing.id?.startsWith('quiz_rec_') && !existing.id?.startsWith('quiz_std_');
+
+        if ((!existingHasDetails && itemHasDetails) || (!existingIsOrig && itemIsOrig)) {
+          kept[matchIdx] = item;
+        }
+      }
+    }
+    return kept.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  }
+
+  // Saneamento imediato no startup para eliminar duplicatas acumuladas em localStorage
+  try {
+    const rawLocal = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS));
+    if (Array.isArray(rawLocal) && rawLocal.length > 0) {
+      const sanitized = deduplicateQuizSubmissions(rawLocal);
+      if (sanitized.length !== rawLocal.length) {
+        safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(sanitized.slice(0, 500)));
+      }
+    }
+  } catch(e) {}
+
   async function pullQuizSubmissionsFromCloud() {
     try {
       const deletedSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
@@ -594,7 +678,24 @@
         });
       }
 
-      // 5. Auto-recupera simulados salvos em tkst_student_progress caso não estejam em submissions
+      // Helper para verificar se simulado equivalente já existe em subMap
+      const hasEquivalentSubmission = (sid, suser, belt, score, total, date) => {
+        const dt = new Date(date || 0).getTime();
+        const targetSid = (sid || '').toString().trim().toLowerCase();
+        const targetUser = (suser || '').toString().trim().toLowerCase();
+        const targetBelt = normalizeBelt(belt);
+        return Array.from(subMap.values()).some(s => {
+          if (!s) return false;
+          const sId = (s.studentId || '').toString().trim().toLowerCase();
+          const sUser = (s.studentUsername || '').toString().trim().toLowerCase();
+          const sameStd = (targetSid && (targetSid === sId || targetSid === sUser)) ||
+                          (targetUser && (targetUser === sId || targetUser === sUser));
+          const sBelt = normalizeBelt(s.beltLevel, s.beltKyu);
+          return sameStd && sBelt === targetBelt && Number(s.score) === Number(score) && Number(s.total) === Number(total) && Math.abs(new Date(s.date || 0).getTime() - dt) <= 60000;
+        });
+      };
+
+      // 5. Auto-recupera simulados salvos em tkst_student_progress caso não existam ainda em submissions
       try {
         const allProgress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
         const allStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
@@ -605,8 +706,13 @@
           if (prog && Array.isArray(prog.quizScores)) {
             const student = allStudents.find(s => s && (s.id === uid || s.username === uid)) || { id: uid, name: 'Aluno', username: uid, currentBelt: 'Faixa Branca', currentKyu: 7 };
             prog.quizScores.forEach((qs, qIdx) => {
-              const subId = `quiz_rec_${uid}_${qIdx}_${new Date(qs.date || 0).getTime()}`;
-              if (!subMap.has(subId) && !deletedSet.has(subId)) {
+              const score = typeof qs.score === 'number' ? qs.score : 10;
+              const total = typeof qs.total === 'number' ? qs.total : 10;
+              const belt = qs.beltLevel || student.currentBelt;
+              const date = qs.date || new Date().toISOString();
+              const subId = `quiz_rec_${uid}_${qIdx}_${new Date(date).getTime()}`;
+
+              if (!hasEquivalentSubmission(student.id, student.username, belt, score, total, date) && !subMap.has(subId) && !deletedSet.has(subId)) {
                 const recSub = {
                   id: subId,
                   studentId: student.id,
@@ -614,14 +720,14 @@
                   studentUsername: student.username,
                   studentBelt: student.currentBelt,
                   studentKyu: student.currentKyu !== undefined ? student.currentKyu : 7,
-                  beltLevel: qs.beltLevel || student.currentBelt,
+                  beltLevel: belt,
                   beltKyu: qs.beltKyu !== undefined ? qs.beltKyu : (student.currentKyu !== undefined ? student.currentKyu : 7),
-                  score: typeof qs.score === 'number' ? qs.score : 10,
-                  total: typeof qs.total === 'number' ? qs.total : 10,
+                  score: score,
+                  total: total,
                   percentage: typeof qs.percentage === 'number' ? qs.percentage : 100,
-                  passed: typeof qs.score === 'number' ? (qs.score / (qs.total || 10)) >= 0.7 : true,
-                  perfect: typeof qs.score === 'number' ? qs.score === (qs.total || 10) : true,
-                  date: qs.date || new Date().toISOString(),
+                  passed: typeof qs.score === 'number' ? (score / (total || 10)) >= 0.7 : true,
+                  perfect: typeof qs.score === 'number' ? score === (total || 10) : true,
+                  date: date,
                   details: []
                 };
                 subMap.set(subId, recSub);
@@ -635,8 +741,13 @@
         allStudents.forEach(std => {
           if (std && Array.isArray(std.quizScores)) {
             std.quizScores.forEach((qs, qIdx) => {
-              const subId = `quiz_std_${std.id}_${qIdx}_${new Date(qs.date || 0).getTime()}`;
-              if (!subMap.has(subId) && !deletedSet.has(subId)) {
+              const score = typeof qs.score === 'number' ? qs.score : 10;
+              const total = typeof qs.total === 'number' ? qs.total : 10;
+              const belt = qs.beltLevel || std.currentBelt;
+              const date = qs.date || new Date().toISOString();
+              const subId = `quiz_std_${std.id}_${qIdx}_${new Date(date).getTime()}`;
+
+              if (!hasEquivalentSubmission(std.id, std.username, belt, score, total, date) && !subMap.has(subId) && !deletedSet.has(subId)) {
                 const recSub = {
                   id: subId,
                   studentId: std.id,
@@ -644,14 +755,14 @@
                   studentUsername: std.username,
                   studentBelt: std.currentBelt,
                   studentKyu: std.currentKyu !== undefined ? std.currentKyu : 7,
-                  beltLevel: qs.beltLevel || std.currentBelt,
+                  beltLevel: belt,
                   beltKyu: qs.beltKyu !== undefined ? qs.beltKyu : (std.currentKyu !== undefined ? std.currentKyu : 7),
-                  score: typeof qs.score === 'number' ? qs.score : 10,
-                  total: typeof qs.total === 'number' ? qs.total : 10,
+                  score: score,
+                  total: total,
                   percentage: typeof qs.percentage === 'number' ? qs.percentage : 100,
-                  passed: typeof qs.score === 'number' ? (qs.score / (qs.total || 10)) >= 0.7 : true,
-                  perfect: typeof qs.score === 'number' ? qs.score === (qs.total || 10) : true,
-                  date: qs.date || new Date().toISOString(),
+                  passed: typeof qs.score === 'number' ? (score / (total || 10)) >= 0.7 : true,
+                  perfect: typeof qs.score === 'number' ? score === (total || 10) : true,
+                  date: date,
                   details: []
                 };
                 subMap.set(subId, recSub);
@@ -662,20 +773,20 @@
         });
 
         if (recoveredAny) {
-          const syncList = Array.from(subMap.values());
+          const syncList = deduplicateQuizSubmissions(Array.from(subMap.values()));
           pushQuizSubmissionsToServer(syncList, Array.from(deletedSet));
         }
       } catch(e) {}
 
-      const mergedSubs = Array.from(subMap.values())
+      const rawMerged = Array.from(subMap.values())
         .map(s => {
           if (!s) return null;
           const { details, ...lightweight } = s;
           return lightweight;
         })
-        .filter(Boolean)
-        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
-        .slice(0, 500);
+        .filter(Boolean);
+
+      const mergedSubs = deduplicateQuizSubmissions(rawMerged).slice(0, 500);
 
       safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(mergedSubs));
       window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: mergedSubs }));
@@ -2442,6 +2553,8 @@
       const user = this.getCurrentUser();
       if (!user) return null;
 
+      const nowIso = new Date().toISOString();
+
       // 1. Update user progress in local storage
       const allProgress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
       if (!allProgress[user.id]) {
@@ -2451,7 +2564,7 @@
         allProgress[user.id].quizScores = [];
       }
       const scoreItem = {
-        date: new Date().toISOString(),
+        date: nowIso,
         score: data.score,
         total: data.total,
         percentage: Math.round((data.score / data.total) * 100),
@@ -2497,11 +2610,12 @@
         percentage: Math.round((data.score / data.total) * 100),
         passed: Math.round((data.score / data.total) * 100) >= 70,
         perfect: data.score === data.total,
-        date: new Date().toISOString()
+        date: nowIso,
+        details: Array.isArray(data.details) ? data.details : []
       };
 
       submissions.unshift(submission);
-      if (submissions.length > 500) submissions = submissions.slice(0, 500);
+      submissions = deduplicateQuizSubmissions(submissions).slice(0, 500);
       safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
       window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: submissions }));
 
@@ -2532,10 +2646,24 @@
                 const total = typeof qs.total === 'number' ? qs.total : 10;
                 const pct = typeof qs.percentage === 'number' ? qs.percentage : Math.round((score / total) * 100);
                 const date = qs.date || new Date().toISOString();
-                const subId = `quiz_std_${std.id}_${qIdx}_${new Date(date).getTime()}`;
+                const dt = new Date(date).getTime();
+                const subId = `quiz_std_${std.id}_${qIdx}_${dt}`;
 
-                const existsByTime = Array.from(subMap.values()).some(s => s.studentId === std.id && Math.abs(new Date(s.date || 0).getTime() - new Date(date).getTime()) < 3000);
-                if (!existsByTime && !subMap.has(subId) && !deletedSet.has(subId)) {
+                // Verifica se já existe simulado equivalente no mapa
+                const existsEquiv = Array.from(subMap.values()).some(s => {
+                  if (!s) return false;
+                  const sId = (s.studentId || '').toString().trim().toLowerCase();
+                  const sUser = (s.studentUsername || '').toString().trim().toLowerCase();
+                  const stdId = (std.id || '').toString().trim().toLowerCase();
+                  const stdUser = (std.username || '').toString().trim().toLowerCase();
+                  const sameStd = (stdId && (stdId === sId || stdId === sUser)) ||
+                                  (stdUser && (stdUser === sId || stdUser === sUser));
+                  const sBelt = normalizeBelt(s.beltLevel, s.beltKyu);
+                  const qsBelt = normalizeBelt(qs.beltLevel || std.currentBelt, qs.beltKyu !== undefined ? qs.beltKyu : std.currentKyu);
+                  return sameStd && sBelt === qsBelt && Number(s.score) === Number(score) && Number(s.total) === Number(total) && Math.abs(new Date(s.date || 0).getTime() - dt) <= 60000;
+                });
+
+                if (!existsEquiv && !subMap.has(subId) && !deletedSet.has(subId)) {
                   subMap.set(subId, {
                     id: subId,
                     studentId: std.id,
@@ -2559,8 +2687,8 @@
           });
         } catch(e) {}
 
-        const result = Array.from(subMap.values()).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-        if (result.length > subs.length) {
+        const result = deduplicateQuizSubmissions(Array.from(subMap.values()));
+        if (result.length !== subs.length) {
           safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(result.slice(0, 500)));
         }
         return result;
@@ -3007,10 +3135,39 @@
     updateAlbum: function(albumId, updatedFields) {
       const all = this.getCustomAlbums();
       const index = all.findIndex(a => a.id === albumId);
-      if (index === -1) return null;
+      if (index === -1) {
+        const override = { id: albumId, ...updatedFields, updatedAt: Date.now() };
+        all.push(override);
+        this.saveCustomAlbums(all);
+        return override;
+      }
       all[index] = { ...all[index], ...updatedFields, updatedAt: Date.now() };
       this.saveCustomAlbums(all);
       return all[index];
+    },
+
+    renameSubAlbum: function(albumId, oldName, newName) {
+      if (!oldName || !newName || oldName === newName) return false;
+      const customMedia = this.getCustomMedia();
+      const allMedia = this.getMediaList();
+      let modified = false;
+
+      allMedia.forEach(m => {
+        if ((!albumId || m.album === albumId || m.category === albumId) && m.subAlbum === oldName) {
+          const cIndex = customMedia.findIndex(cm => cm.id === m.id);
+          if (cIndex !== -1) {
+            customMedia[cIndex] = { ...customMedia[cIndex], subAlbum: newName, updatedAt: Date.now() };
+          } else {
+            customMedia.push({ ...m, subAlbum: newName, updatedAt: Date.now(), _edited: true });
+          }
+          modified = true;
+        }
+      });
+
+      if (modified) {
+        this.saveCustomMedia(customMedia);
+      }
+      return modified;
     },
 
     getFirebaseUrl: function() {
@@ -3026,7 +3183,9 @@
       pushToCloud();
       pullFromCloud(true);
       return true;
-    }
+    },
+
+    deduplicateQuizSubmissions: deduplicateQuizSubmissions
   };
 
   // Background Heartbeat Engine (Keeps presence updated while using app)
