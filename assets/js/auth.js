@@ -1654,6 +1654,40 @@
         if (updated) {
           localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
         }
+
+        function getStudentRegTime(s) {
+          if (!s) return 0;
+          if (s.createdAt) {
+            const t = new Date(s.createdAt).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+          if (s.approvedAt) {
+            const t = new Date(s.approvedAt).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+          if (s.startDate) {
+            const t = new Date(s.startDate).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+          const match = (s.id || '').match(/\d{12,14}/);
+          if (match) {
+            const t = parseInt(match[0], 10);
+            if (!isNaN(t) && t > 0) return t;
+          }
+          if (s.updatedAt) {
+            const t = typeof s.updatedAt === 'number' ? s.updatedAt : new Date(s.updatedAt).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+          return 0;
+        }
+
+        // Ordena por data de cadastro (mais recentes primeiro, Sensei Master no topo)
+        students.sort((a, b) => {
+          if (a.username === 'irons365') return -1;
+          if (b.username === 'irons365') return 1;
+          return getStudentRegTime(b) - getStudentRegTime(a);
+        });
+
         return students;
       } catch (e) {
         return [];
@@ -2688,6 +2722,7 @@
         } catch(e) {}
 
         const result = deduplicateQuizSubmissions(Array.from(subMap.values()));
+        result.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
         if (result.length !== subs.length) {
           safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(result.slice(0, 500)));
         }

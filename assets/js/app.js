@@ -1281,7 +1281,39 @@ document.addEventListener('DOMContentLoaded', () => {
       adminSubTab = 'exam-generator';
     }
 
-    const students = window.TKST_AUTH.getAllStudents();
+    function getStudentRegTime(s) {
+      if (!s) return 0;
+      if (s.createdAt) {
+        const t = new Date(s.createdAt).getTime();
+        if (!isNaN(t) && t > 0) return t;
+      }
+      if (s.approvedAt) {
+        const t = new Date(s.approvedAt).getTime();
+        if (!isNaN(t) && t > 0) return t;
+      }
+      if (s.startDate) {
+        const t = new Date(s.startDate).getTime();
+        if (!isNaN(t) && t > 0) return t;
+      }
+      const match = (s.id || '').match(/\d{12,14}/);
+      if (match) {
+        const t = parseInt(match[0], 10);
+        if (!isNaN(t) && t > 0) return t;
+      }
+      if (s.updatedAt) {
+        const t = typeof s.updatedAt === 'number' ? s.updatedAt : new Date(s.updatedAt).getTime();
+        if (!isNaN(t) && t > 0) return t;
+      }
+      return 0;
+    }
+
+    const rawStudents = window.TKST_AUTH.getAllStudents();
+    const students = [...rawStudents].sort((a, b) => {
+      if (a.username === 'irons365') return -1;
+      if (b.username === 'irons365') return 1;
+      return getStudentRegTime(b) - getStudentRegTime(a);
+    });
+
     const todayStudents = typeof window.TKST_AUTH.getTodayRegisteredStudents === 'function' 
       ? window.TKST_AUTH.getTodayRegisteredStudents() 
       : students.filter(s => {
@@ -1294,7 +1326,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminUsers = students.filter(s => s.role === 'admin' || s.username === 'irons365');
     const customVideos = getCustomKataVideos();
     const dojos = window.TKST_AUTH.getDojos();
-    const quizSubmissions = window.TKST_AUTH.getAllQuizSubmissions();
+    const quizSubmissions = (window.TKST_AUTH ? window.TKST_AUTH.getAllQuizSubmissions() : [])
+      .slice()
+      .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     const quizBankList = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
     const quizBankCount = quizBankList.length;
     const allMediaList = window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : [];
@@ -1682,6 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <th>Status</th>
                   <th>Faixa</th>
                   <th>Dojo / Unidade</th>
+                  <th>Data de Cadastro</th>
                   <th style="text-align: right;">Ações</th>
                 </tr>
               </thead>
@@ -1746,6 +1781,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="badge ${getBeltBadgeClass(s.currentBelt)}">${s.currentBelt}</span>
                       </td>
                       <td>${s.dojo}</td>
+                      <td style="color: #94A3B8; font-size: 0.8rem; white-space: nowrap;">
+                        <i class="fas fa-calendar-alt" style="color: var(--accent-gold); margin-right: 4px;"></i>
+                        ${getStudentRegTime(s) ? new Date(getStudentRegTime(s)).toLocaleDateString('pt-BR') : (s.startDate || '-')}
+                      </td>
                       <td style="text-align: right;">
                         <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
                           ${isMaster ? '' : `
@@ -1825,6 +1864,10 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div style="font-size: 0.78rem; color: #CBD5E1; display: flex; align-items: center; gap: 4px; margin-left: auto;">
                         <i class="fas fa-torii-gate" style="color: var(--accent-gold);"></i> ${s.dojo}
                       </div>
+                    </div>
+
+                    <div style="font-size: 0.74rem; color: #94A3B8; margin: -2px 0 6px 4px; display: flex; align-items: center; gap: 4px;">
+                      <i class="fas fa-calendar-alt" style="color: var(--accent-gold);"></i> Cadastrado em: <strong>${getStudentRegTime(s) ? new Date(getStudentRegTime(s)).toLocaleDateString('pt-BR') : (s.startDate || '-')}</strong>
                     </div>
 
                     <div style="display: grid; grid-template-columns: ${isMaster ? '1fr' : '1fr 1fr 1fr'}; gap: 6px; margin-top: 6px;">
