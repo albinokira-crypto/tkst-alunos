@@ -2966,7 +2966,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isInitial || !container.querySelector('.home-slide-viewport')) {
       container.innerHTML = `
-        <div class="home-slide-viewport" onclick="window.TKST_APP.openHomeSlideLightbox()" title="Toque para ver a foto em tela cheia" onmouseenter="window.TKST_APP.setHomeSlidePause(true)" onmouseleave="window.TKST_APP.setHomeSlidePause(false)">
+        <div class="home-slide-viewport" onclick="window.TKST_APP.openHomeSlideLightbox()" title="Toque para ver a foto em tela cheia" onmouseenter="window.TKST_APP.setHomeSlidePause(true)" onmouseleave="window.TKST_APP.setHomeSlidePause(false)" ontouchstart="window.TKST_APP.setHomeSlidePause(true)" ontouchend="window.TKST_APP.setHomeSlidePause(false)">
+          <div class="home-slide-backdrop" id="homeSlideBackdrop" style="background-image: url('${photoSrc}');"></div>
           <img src="${photoSrc}" id="homeSlideImg" alt="Foto TKST" class="home-slide-img" onerror="this.src='assets/images/logo-tkst-2.jpg'">
 
           <button type="button" class="home-slide-nav-btn prev" onclick="event.stopPropagation(); window.TKST_APP.prevHomeSlide();" title="Foto Anterior" aria-label="Foto Anterior">
@@ -2983,6 +2984,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     } else {
       const imgEl = document.getElementById('homeSlideImg');
+      const backdropEl = document.getElementById('homeSlideBackdrop');
       const progressBar = document.getElementById('homeSlideProgressBar');
 
       if (imgEl) {
@@ -2990,7 +2992,15 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           imgEl.src = photoSrc;
           imgEl.style.opacity = '1';
-        }, 200);
+        }, 180);
+      }
+
+      if (backdropEl) {
+        backdropEl.style.opacity = '0.35';
+        setTimeout(() => {
+          backdropEl.style.backgroundImage = `url('${photoSrc}')`;
+          backdropEl.style.opacity = '0.75';
+        }, 150);
       }
 
       if (progressBar) {
