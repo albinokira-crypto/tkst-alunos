@@ -83,10 +83,16 @@ let inMemoryData = {
   quiz_submissions: [],
   custom_quiz_bank: [],
   custom_glossary: {},
+  custom_media: [],
+  custom_albums: [],
+  custom_subalbums: [],
   deletedStudentIds: [],
   deletedQuizIds: [],
   deletedQuizSubIds: [],
   deletedGlossaryTerms: [],
+  deletedMediaIds: [],
+  deletedAlbums: [],
+  deletedSubAlbums: [],
   deletedDojos: ['tkst matriz - central'],
   lastSync: new Date().toISOString()
 };
@@ -404,6 +410,84 @@ module.exports = async (req, res) => {
         });
       }
 
+      // 8. Merge deleted Media IDs & custom_media
+      let deletedMediaSet = new Set(inMemoryData.deletedMediaIds || []);
+      if (Array.isArray(incoming.deletedMediaIds)) {
+        incoming.deletedMediaIds.forEach(id => { if (id) deletedMediaSet.add(id); });
+      }
+      const allDeletedMedia = Array.from(deletedMediaSet);
+
+      const existingMedia = inMemoryData.custom_media || (readFullStateFromTmp()?.custom_media) || [];
+      const mediaMap = new Map();
+      existingMedia.forEach(m => {
+        if (m && m.id && !deletedMediaSet.has(m.id)) mediaMap.set(m.id, m);
+      });
+      if (Array.isArray(incoming.custom_media)) {
+        incoming.custom_media.forEach(m => {
+          if (m && m.id && !deletedMediaSet.has(m.id)) {
+            const localM = mediaMap.get(m.id);
+            if (!localM || !localM.updatedAt || (m.updatedAt && m.updatedAt >= localM.updatedAt)) {
+              mediaMap.set(m.id, m);
+            }
+          }
+        });
+      }
+      const customMediaList = Array.from(mediaMap.values());
+
+      // 9. Merge deleted Albums & custom_albums
+      let deletedAlbumSet = new Set(inMemoryData.deletedAlbums || []);
+      if (Array.isArray(incoming.deletedAlbums)) {
+        incoming.deletedAlbums.forEach(id => { if (id) deletedAlbumSet.add(id); });
+      }
+      const allDeletedAlbums = Array.from(deletedAlbumSet);
+
+      const existingAlbums = inMemoryData.custom_albums || (readFullStateFromTmp()?.custom_albums) || [];
+      const albumMap = new Map();
+      existingAlbums.forEach(a => {
+        if (a && a.id && !deletedAlbumSet.has(a.id)) albumMap.set(a.id, a);
+      });
+      if (Array.isArray(incoming.custom_albums)) {
+        incoming.custom_albums.forEach(a => {
+          if (a && a.id && !deletedAlbumSet.has(a.id)) {
+            const localA = albumMap.get(a.id);
+            if (!localA || !localA.updatedAt || (a.updatedAt && a.updatedAt >= localA.updatedAt)) {
+              albumMap.set(a.id, a);
+            }
+          }
+        });
+      }
+      const customAlbumsList = Array.from(albumMap.values());
+
+      // 10. Merge deleted SubAlbums & custom_subalbums
+      let deletedSubAlbumSet = new Set(inMemoryData.deletedSubAlbums || []);
+      if (Array.isArray(incoming.deletedSubAlbums)) {
+        incoming.deletedSubAlbums.forEach(k => { if (k) deletedSubAlbumSet.add(k.toLowerCase().trim()); });
+      }
+      const allDeletedSubAlbums = Array.from(deletedSubAlbumSet);
+
+      const existingSubAlbums = inMemoryData.custom_subalbums || (readFullStateFromTmp()?.custom_subalbums) || [];
+      const subAlbumMap = new Map();
+      existingSubAlbums.forEach(s => {
+        if (s && s.name) {
+          const key = (s.albumId || 'exames') + '::' + s.name.trim().toLowerCase();
+          if (!deletedSubAlbumSet.has(key)) subAlbumMap.set(key, s);
+        }
+      });
+      if (Array.isArray(incoming.custom_subalbums)) {
+        incoming.custom_subalbums.forEach(s => {
+          if (s && s.name) {
+            const key = (s.albumId || 'exames') + '::' + s.name.trim().toLowerCase();
+            if (!deletedSubAlbumSet.has(key)) {
+              const localS = subAlbumMap.get(key);
+              if (!localS || !localS.updatedAt || (s.updatedAt && s.updatedAt >= localS.updatedAt)) {
+                subAlbumMap.set(key, s);
+              }
+            }
+          }
+        });
+      }
+      const customSubAlbumsList = Array.from(subAlbumMap.values());
+
       inMemoryData = {
         dojos: dojosList,
         students: studentsList,
@@ -412,10 +496,16 @@ module.exports = async (req, res) => {
         quiz_submissions: quizSubmissionsList,
         custom_quiz_bank: customQuizBank,
         custom_glossary: mergedGlossary,
+        custom_media: customMediaList,
+        custom_albums: customAlbumsList,
+        custom_subalbums: customSubAlbumsList,
         deletedStudentIds: allDeleted,
         deletedQuizIds: allDeletedQuizzes,
         deletedQuizSubIds: allDeletedSubs,
         deletedGlossaryTerms: allDeletedGlossary,
+        deletedMediaIds: allDeletedMedia,
+        deletedAlbums: allDeletedAlbums,
+        deletedSubAlbums: allDeletedSubAlbums,
         deletedDojos: allDeletedDojos,
         lastSync: new Date().toISOString()
       };

@@ -20,6 +20,9 @@
   const STORAGE_KEY_MEDIA = 'tkst_custom_media';
   const STORAGE_KEY_DELETED_MEDIA = 'tkst_deleted_media_ids';
   const STORAGE_KEY_ALBUMS = 'tkst_custom_albums';
+  const STORAGE_KEY_DELETED_ALBUMS = 'tkst_deleted_album_ids';
+  const STORAGE_KEY_SUBALBUMS = 'tkst_custom_subalbums';
+  const STORAGE_KEY_DELETED_SUBALBUMS = 'tkst_deleted_subalbums';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_TOPIC = 'tkst_karate_cloud_v2_sync';
@@ -903,6 +906,18 @@
       const allMedia = JSON.parse(localStorage.getItem(STORAGE_KEY_MEDIA)) || [];
       const custom_media = allMedia.filter(m => !deletedMediaIds.includes(m.id));
 
+      const deletedAlbums = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_ALBUMS)) || [];
+      const allAlbums = JSON.parse(localStorage.getItem(STORAGE_KEY_ALBUMS)) || [];
+      const custom_albums = allAlbums.filter(a => a && a.id && !deletedAlbums.includes(a.id));
+
+      const deletedSubAlbums = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_SUBALBUMS)) || [];
+      const allSubAlbums = JSON.parse(localStorage.getItem(STORAGE_KEY_SUBALBUMS)) || [];
+      const custom_subalbums = allSubAlbums.filter(s => {
+        if (!s || !s.name) return false;
+        const key = (s.albumId || 'exames') + '::' + s.name.trim().toLowerCase();
+        return !deletedSubAlbums.includes(key);
+      });
+
       const payload = {
         dojos,
         students,
@@ -912,7 +927,11 @@
         custom_quiz_bank,
         custom_glossary,
         custom_media,
+        custom_albums,
+        custom_subalbums,
         deletedMediaIds,
+        deletedAlbums,
+        deletedSubAlbums,
         deletedStudentIds,
         deletedQuizIds,
         deletedQuizSubIds,
@@ -1291,6 +1310,82 @@
       }
     }
 
+    // 10. Sync Deleted Albums & Custom Albums
+    let localDeletedAlbums = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_ALBUMS)) || [];
+    if (Array.isArray(cloudData.deletedAlbums)) {
+      const mergedDelAlbums = Array.from(new Set([...localDeletedAlbums, ...cloudData.deletedAlbums]));
+      if (mergedDelAlbums.length !== localDeletedAlbums.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED_ALBUMS, JSON.stringify(mergedDelAlbums));
+        localDeletedAlbums = mergedDelAlbums;
+        changed = true;
+      }
+    }
+
+    if (Array.isArray(cloudData.custom_albums)) {
+      let localAlbums = JSON.parse(localStorage.getItem(STORAGE_KEY_ALBUMS)) || [];
+      const albumMap = new Map();
+      localAlbums.forEach(a => {
+        if (a && a.id && !localDeletedAlbums.includes(a.id)) albumMap.set(a.id, a);
+      });
+      cloudData.custom_albums.forEach(a => {
+        if (a && a.id && !localDeletedAlbums.includes(a.id)) {
+          const localA = albumMap.get(a.id);
+          if (!localA || !localA.updatedAt || (a.updatedAt && a.updatedAt >= localA.updatedAt)) {
+            albumMap.set(a.id, a);
+          }
+        }
+      });
+      const mergedAlbums = Array.from(albumMap.values());
+      const localAlbStr = localStorage.getItem(STORAGE_KEY_ALBUMS);
+      const newAlbStr = JSON.stringify(mergedAlbums);
+      if (localAlbStr !== newAlbStr) {
+        localStorage.setItem(STORAGE_KEY_ALBUMS, newAlbStr);
+        window.dispatchEvent(new CustomEvent('tkst_albums_updated', { detail: mergedAlbums }));
+        changed = true;
+      }
+    }
+
+    // 11. Sync Deleted SubAlbums & Custom SubAlbums
+    let localDeletedSubAlbums = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_SUBALBUMS)) || [];
+    if (Array.isArray(cloudData.deletedSubAlbums)) {
+      const mergedDelSubs = Array.from(new Set([...localDeletedSubAlbums, ...cloudData.deletedSubAlbums.map(k => (k || '').toLowerCase().trim())]));
+      if (mergedDelSubs.length !== localDeletedSubAlbums.length) {
+        localStorage.setItem(STORAGE_KEY_DELETED_SUBALBUMS, JSON.stringify(mergedDelSubs));
+        localDeletedSubAlbums = mergedDelSubs;
+        changed = true;
+      }
+    }
+
+    if (Array.isArray(cloudData.custom_subalbums)) {
+      let localSubAlbums = JSON.parse(localStorage.getItem(STORAGE_KEY_SUBALBUMS)) || [];
+      const subMap = new Map();
+      localSubAlbums.forEach(s => {
+        if (s && s.name) {
+          const key = (s.albumId || 'exames') + '::' + s.name.trim().toLowerCase();
+          if (!localDeletedSubAlbums.includes(key)) subMap.set(key, s);
+        }
+      });
+      cloudData.custom_subalbums.forEach(s => {
+        if (s && s.name) {
+          const key = (s.albumId || 'exames') + '::' + s.name.trim().toLowerCase();
+          if (!localDeletedSubAlbums.includes(key)) {
+            const localS = subMap.get(key);
+            if (!localS || !localS.updatedAt || (s.updatedAt && s.updatedAt >= localS.updatedAt)) {
+              subMap.set(key, s);
+            }
+          }
+        }
+      });
+      const mergedSubs = Array.from(subMap.values());
+      const localSubsStr = localStorage.getItem(STORAGE_KEY_SUBALBUMS);
+      const newSubsStr = JSON.stringify(mergedSubs);
+      if (localSubsStr !== newSubsStr) {
+        localStorage.setItem(STORAGE_KEY_SUBALBUMS, newSubsStr);
+        window.dispatchEvent(new CustomEvent('tkst_subalbums_updated', { detail: mergedSubs }));
+        changed = true;
+      }
+    }
+
     if (changed) {
       window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'pull', time: new Date() } }));
       window.dispatchEvent(new CustomEvent('tkst_user_changed'));
@@ -1298,6 +1393,8 @@
       window.dispatchEvent(new CustomEvent('tkst_glossary_updated'));
       window.dispatchEvent(new CustomEvent('tkst_submissions_updated'));
       window.dispatchEvent(new CustomEvent('tkst_media_updated'));
+      window.dispatchEvent(new CustomEvent('tkst_albums_updated'));
+      window.dispatchEvent(new CustomEvent('tkst_subalbums_updated'));
     }
   }
 
@@ -3162,6 +3259,12 @@
     },
 
     deleteAlbum: function(albumId) {
+      if (!albumId) return false;
+      let deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_ALBUMS)) || [];
+      if (!deleted.includes(albumId)) {
+        deleted.push(albumId);
+        safeLocalStorageSet(STORAGE_KEY_DELETED_ALBUMS, JSON.stringify(deleted));
+      }
       const all = this.getCustomAlbums().filter(a => a.id !== albumId);
       this.saveCustomAlbums(all);
       return true;
@@ -3181,8 +3284,131 @@
       return all[index];
     },
 
+    // ==========================================
+    // CUSTOM SUBALBUMS MANAGEMENT
+    // ==========================================
+    getCustomSubAlbums: function(albumId) {
+      try {
+        const deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_SUBALBUMS)) || [];
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SUBALBUMS)) || [];
+        const valid = all.filter(sub => {
+          if (!sub || !sub.name) return false;
+          const key = (sub.albumId || 'exames') + '::' + sub.name.trim().toLowerCase();
+          return !deleted.includes(key);
+        });
+        if (albumId) {
+          return valid.filter(sub => (sub.albumId || 'exames') === albumId);
+        }
+        return valid;
+      } catch(e) {
+        return [];
+      }
+    },
+
+    saveCustomSubAlbums: function(subalbums) {
+      safeLocalStorageSet(STORAGE_KEY_SUBALBUMS, JSON.stringify(subalbums || []));
+      pushToCloud();
+      window.dispatchEvent(new CustomEvent('tkst_subalbums_updated', { detail: subalbums }));
+    },
+
+    addSubAlbum: function(albumId, name, extra = {}) {
+      if (!name || typeof name !== 'string' || !name.trim()) return null;
+      const cleanName = name.trim();
+      const parentId = albumId || 'exames';
+      const key = parentId + '::' + cleanName.toLowerCase();
+
+      let deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_SUBALBUMS)) || [];
+      if (deleted.includes(key)) {
+        deleted = deleted.filter(k => k !== key);
+        safeLocalStorageSet(STORAGE_KEY_DELETED_SUBALBUMS, JSON.stringify(deleted));
+      }
+
+      const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SUBALBUMS)) || [];
+      const existingIdx = all.findIndex(s => (s.albumId || 'exames') === parentId && s.name.trim().toLowerCase() === cleanName.toLowerCase());
+
+      const slug = extra.id || ('sub_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5));
+      const subItem = {
+        id: slug,
+        albumId: parentId,
+        name: cleanName,
+        description: extra.description || '',
+        cover: extra.cover || '',
+        dojo: extra.dojo || 'TKST',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        ...extra
+      };
+
+      if (existingIdx !== -1) {
+        all[existingIdx] = { ...all[existingIdx], ...subItem, updatedAt: Date.now() };
+      } else {
+        all.push(subItem);
+      }
+
+      this.saveCustomSubAlbums(all);
+      return subItem;
+    },
+
+    deleteSubAlbum: function(albumId, name) {
+      if (!name) return false;
+      const cleanName = name.trim();
+      const parentId = albumId || 'exames';
+      const key = parentId + '::' + cleanName.toLowerCase();
+
+      let deleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_SUBALBUMS)) || [];
+      if (!deleted.includes(key)) {
+        deleted.push(key);
+        safeLocalStorageSet(STORAGE_KEY_DELETED_SUBALBUMS, JSON.stringify(deleted));
+      }
+
+      let all = JSON.parse(localStorage.getItem(STORAGE_KEY_SUBALBUMS)) || [];
+      all = all.filter(s => !((s.albumId || 'exames') === parentId && s.name.trim().toLowerCase() === cleanName.toLowerCase()));
+      this.saveCustomSubAlbums(all);
+
+      // Desassocia subálbum das mídias existentes
+      const customMedia = this.getCustomMedia();
+      let mediaChanged = false;
+      customMedia.forEach(m => {
+        if ((m.album === parentId || m.category === parentId) && m.subAlbum && m.subAlbum.trim().toLowerCase() === cleanName.toLowerCase()) {
+          m.subAlbum = '';
+          m.updatedAt = Date.now();
+          mediaChanged = true;
+        }
+      });
+      if (mediaChanged) {
+        this.saveCustomMedia(customMedia);
+      }
+
+      return true;
+    },
+
     renameSubAlbum: function(albumId, oldName, newName) {
       if (!oldName || !newName || oldName === newName) return false;
+      const cleanOld = oldName.trim();
+      const cleanNew = newName.trim();
+      const parentId = albumId || 'exames';
+
+      // 1. Atualiza nos subálbuns persistentes
+      let allSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_SUBALBUMS)) || [];
+      const subIdx = allSubs.findIndex(s => (s.albumId || 'exames') === parentId && s.name.trim().toLowerCase() === cleanOld.toLowerCase());
+      if (subIdx !== -1) {
+        allSubs[subIdx].name = cleanNew;
+        allSubs[subIdx].updatedAt = Date.now();
+      } else {
+        allSubs.push({
+          id: 'sub_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+          albumId: parentId,
+          name: cleanNew,
+          description: '',
+          cover: '',
+          dojo: 'TKST',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        });
+      }
+      this.saveCustomSubAlbums(allSubs);
+
+      // 2. Atualiza nas mídias
       const customMedia = this.getCustomMedia();
       const allMedia = this.getMediaList();
       let modified = false;
@@ -3191,9 +3417,9 @@
         if ((!albumId || m.album === albumId || m.category === albumId) && m.subAlbum === oldName) {
           const cIndex = customMedia.findIndex(cm => cm.id === m.id);
           if (cIndex !== -1) {
-            customMedia[cIndex] = { ...customMedia[cIndex], subAlbum: newName, updatedAt: Date.now() };
+            customMedia[cIndex] = { ...customMedia[cIndex], subAlbum: cleanNew, updatedAt: Date.now() };
           } else {
-            customMedia.push({ ...m, subAlbum: newName, updatedAt: Date.now(), _edited: true });
+            customMedia.push({ ...m, subAlbum: cleanNew, updatedAt: Date.now(), _edited: true });
           }
           modified = true;
         }
@@ -3202,7 +3428,7 @@
       if (modified) {
         this.saveCustomMedia(customMedia);
       }
-      return modified;
+      return true;
     },
 
     getFirebaseUrl: function() {

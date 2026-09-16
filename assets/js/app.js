@@ -1060,6 +1060,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+
+    window.addEventListener('tkst_media_updated', () => {
+      if (!shouldSkipRerender() && currentTab === 'media') {
+        renderMedia();
+      }
+    });
+
+    window.addEventListener('tkst_albums_updated', () => {
+      if (!shouldSkipRerender() && currentTab === 'media') {
+        renderMedia();
+      }
+    });
+
+    window.addEventListener('tkst_subalbums_updated', () => {
+      if (!shouldSkipRerender() && currentTab === 'media') {
+        renderMedia();
+      }
+    });
   }
 
   // Master View Switcher
@@ -6315,8 +6333,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const count = albMedia.length;
             let subCountText = '';
             if (alb.hasSubAlbums) {
-              const uniqueSubs = new Set(albMedia.map(m => m.subAlbum).filter(Boolean));
-              subCountText = `${uniqueSubs.size} ${uniqueSubs.size === 1 ? 'exame' : 'exames'} • `;
+              const savedSubsForAlb = (window.TKST_AUTH && window.TKST_AUTH.getCustomSubAlbums) ? window.TKST_AUTH.getCustomSubAlbums(alb.id) : [];
+              const uniqueSubs = new Set([
+                ...albMedia.map(m => m.subAlbum).filter(Boolean),
+                ...savedSubsForAlb.map(s => s.name).filter(Boolean)
+              ]);
+              const subWord = alb.id === 'exames' ? 'exame' : 'subálbum';
+              const subWordPlural = alb.id === 'exames' ? 'exames' : 'subálbuns';
+              subCountText = `${uniqueSubs.size} ${uniqueSubs.size === 1 ? subWord : subWordPlural} • `;
             }
             const coverImg = (albMedia.length > 0 && albMedia[0].thumbUrl) ? albMedia[0].thumbUrl : alb.cover;
             const isCustom = alb._custom;
@@ -6370,24 +6394,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentAlbum = albums.find(a => a.id === currentAlbumId) || albums[0];
     const albumMedia = allMedia.filter(m => m.album === currentAlbumId);
 
-    if (currentAlbumId === 'exames' && !currentSubAlbumName) {
-      // Agrupar mídias de exame por subálbum
+    const hasSubAlbums = (currentAlbumId === 'exames') || (currentAlbum && currentAlbum.hasSubAlbums);
+
+    if (hasSubAlbums && !currentSubAlbumName) {
+      // Agrupar subálbuns (subálbuns explicitamente salvos + subálbuns inferidos das mídias existentes)
       const subAlbumMap = new Map();
-      albumMedia.forEach(m => {
-        const subName = m.subAlbum || 'Exame de Faixa Geral';
-        if (!subAlbumMap.has(subName)) {
-          subAlbumMap.set(subName, []);
+
+      // 1. Carrega subálbuns salvos no banco local/nuvem
+      const savedSubs = (window.TKST_AUTH && window.TKST_AUTH.getCustomSubAlbums) ? window.TKST_AUTH.getCustomSubAlbums(currentAlbumId) : [];
+      savedSubs.forEach(sub => {
+        if (sub && sub.name && sub.name.trim()) {
+          const subKey = sub.name.trim();
+          subAlbumMap.set(subKey, {
+            name: subKey,
+            items: [],
+            dojo: sub.dojo || 'TKST',
+            cover: sub.cover || currentAlbum.cover || 'assets/images/exames/branca_img4.jpeg',
+            createdAt: sub.createdAt || 0,
+            isCustom: true
+          });
         }
-        subAlbumMap.get(subName).push(m);
       });
 
-      const subAlbumsList = Array.from(subAlbumMap.entries()).map(([name, items]) => {
-        const sortedItems = [...items].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      // 2. Mescla mídias existentes do álbum
+      albumMedia.forEach(m => {
+        const subName = (m.subAlbum && m.subAlbum.trim()) || (currentAlbumId === 'exames' ? 'Exame de Faixa Geral' : null);
+        if (!subName) return;
+        if (!subAlbumMap.has(subName)) {
+          subAlbumMap.set(subName, {
+            name: subName,
+            items: [],
+            dojo: m.dojo || 'TKST',
+            cover: m.thumbUrl || m.url || currentAlbum.cover || 'assets/images/exames/branca_img4.jpeg',
+            createdAt: 0,
+            isCustom: false
+          });
+        }
+        subAlbumMap.get(subName).items.push(m);
+      });
+
+      // 3. Monta a lista de subálbuns
+      const subAlbumsList = Array.from(subAlbumMap.values()).map(subData => {
+        const sortedItems = [...subData.items].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
         const latestDate = sortedItems[0]?.date || '';
-        const dojo = sortedItems[0]?.dojo || 'TKST';
-        const cover = sortedItems[0]?.thumbUrl || sortedItems[0]?.url || 'assets/images/exames/branca_img4.jpeg';
+        const dojo = sortedItems[0]?.dojo || subData.dojo || 'TKST';
+        const cover = sortedItems[0]?.thumbUrl || sortedItems[0]?.url || subData.cover || 'assets/images/exames/branca_img4.jpeg';
         return {
-          name,
+          name: subData.name,
           items: sortedItems,
           count: sortedItems.length,
           latestDate,
@@ -6396,17 +6449,25 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       });
 
+      const albumTitleLabel = currentAlbum.title || 'Exame de Faixa';
+      const albumIconClass = currentAlbum.icon || 'fas fa-graduation-cap';
+      const newSubLabel = currentAlbumId === 'exames' ? 'Novo Exame' : 'Novo Subálbum';
+      const subPluralLabel = currentAlbumId === 'exames' ? 'Exames de Faixa (Subálbuns)' : `${escapeHtml(albumTitleLabel)} (Subálbuns)`;
+      const subDescLabel = currentAlbumId === 'exames'
+        ? 'Selecione o exame de graduação desejado para ver as fotos e vídeos.'
+        : 'Selecione o subálbum desejado para ver as fotos e vídeos.';
+
       html = `
         <div class="media-nav-header">
           <button type="button" class="media-back-btn" onclick="window.TKST_APP.openAlbum(null)">
             <i class="fas fa-arrow-left"></i> Voltar aos Álbuns
           </button>
           <div style="font-weight: 800; color: #FFF; font-size: 0.9rem;">
-            🥋 Exame de Faixa
+            <i class="${albumIconClass}" style="color: var(--accent-gold); margin-right: 6px;"></i> ${escapeHtml(albumTitleLabel)}
           </div>
           ${isAdmin ? `
             <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openCreateAlbumModal('sub-exame')" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 0.78rem;">
-              <i class="fas fa-folder-plus"></i> Novo Exame
+              <i class="fas fa-folder-plus"></i> ${newSubLabel}
             </button>
           ` : '<span style="width: 20px;"></span>'}
         </div>
@@ -6415,14 +6476,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div>
               <h2 style="font-size: 1.25rem; color: #FFF; margin: 0; font-family: var(--font-heading);">
-                Exames de Faixa (Subálbuns)
+                ${subPluralLabel}
               </h2>
               <p style="font-size: 0.8rem; color: #CBD5E1; margin-top: 4px; margin-bottom: 0;">
-                Selecione o exame de graduação desejado para ver as fotos e vídeos.
+                ${subDescLabel}
               </p>
             </div>
             ${isAdmin ? `
-              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.openAddMediaModal('exames')" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 0.78rem;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.openAddMediaModal('${currentAlbumId}')" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 0.78rem;">
                 <i class="fas fa-plus-circle"></i> Adicionar Foto
               </button>
             ` : ''}
@@ -6431,12 +6492,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         ${subAlbumsList.length === 0 ? `
           <div style="text-align: center; padding: 40px 20px; background: rgba(18, 23, 34, 0.6); border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
-            <i class="fas fa-graduation-cap" style="font-size: 2.5rem; color: #64748B; margin-bottom: 12px; display: block;"></i>
-            <h4 style="color: #FFF; margin-bottom: 6px;">Nenhum exame de faixa cadastrado</h4>
-            <p style="color: #94A3B8; font-size: 0.82rem; margin: 0;">O Sensei pode cadastrar novos exames e adicionar fotos a qualquer momento.</p>
+            <i class="${albumIconClass}" style="font-size: 2.5rem; color: #64748B; margin-bottom: 12px; display: block;"></i>
+            <h4 style="color: #FFF; margin-bottom: 6px;">Nenhum subálbum cadastrado</h4>
+            <p style="color: #94A3B8; font-size: 0.82rem; margin: 0;">O Sensei pode cadastrar novos subálbuns e adicionar fotos a qualquer momento.</p>
             ${isAdmin ? `
-              <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.promptCreateSubAlbum()" style="margin-top: 14px; font-size: 0.8rem;">
-                <i class="fas fa-folder-plus"></i> Criar Primeiro Exame
+              <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openCreateAlbumModal('sub-exame')" style="margin-top: 14px; font-size: 0.8rem;">
+                <i class="fas fa-folder-plus"></i> ${currentAlbumId === 'exames' ? 'Criar Primeiro Exame' : 'Criar Primeiro Subálbum'}
               </button>
             ` : ''}
           </div>
@@ -6458,9 +6519,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                   </div>
                   ${isAdmin ? `
-                    <button type="button" onclick="event.stopPropagation(); window.TKST_APP.promptEditSubAlbum('${escapeHtml(sub.name)}')" title="Renomear este exame/subálbum" style="width: 30px; height: 30px; border-radius: 6px; background: rgba(255,183,3,0.85); border: none; color: #000; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-right: 6px; flex-shrink: 0;">
-                      <i class="fas fa-pencil-alt"></i>
-                    </button>
+                    <div style="display: flex; gap: 4px; align-items: center;" onclick="event.stopPropagation();">
+                      <button type="button" onclick="window.TKST_APP.promptEditSubAlbum('${escapeHtml(sub.name)}')" title="Renomear subálbum" style="width: 30px; height: 30px; border-radius: 6px; background: rgba(255,183,3,0.85); border: none; color: #000; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-pencil-alt"></i>
+                      </button>
+                      <button type="button" onclick="window.TKST_APP.promptDeleteSubAlbum('${escapeHtml(sub.name)}')" title="Excluir subálbum" style="width: 30px; height: 30px; border-radius: 6px; background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.5); color: #EF4444; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
                   ` : ''}
                   <div style="color: var(--accent-gold); font-size: 0.9rem; flex-shrink: 0; padding-left: 6px;">
                     <i class="fas fa-chevron-right"></i>
@@ -6484,12 +6550,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let backLabel = "Voltar aos Álbuns";
 
     let targetMedia = albumMedia;
-    if (currentAlbumId === 'exames' && currentSubAlbumName) {
-      targetMedia = albumMedia.filter(m => (m.subAlbum || 'Exame de Faixa Geral') === currentSubAlbumName);
+    if (hasSubAlbums && currentSubAlbumName) {
+      targetMedia = albumMedia.filter(m => (m.subAlbum || (currentAlbumId === 'exames' ? 'Exame de Faixa Geral' : '')) === currentSubAlbumName);
       currentTitle = currentSubAlbumName;
-      currentSubtitle = `Fotos e vídeos oficiais deste exame de faixa.`;
+      currentSubtitle = `Fotos e vídeos oficiais deste subálbum.`;
       backAction = "window.TKST_APP.openSubAlbum(null)";
-      backLabel = "Voltar aos Exames";
+      backLabel = `Voltar aos ${currentAlbum.title || 'Subálbuns'}`;
     }
 
     // Filtro por busca textual
@@ -6557,8 +6623,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${escapeHtml(currentTitle)}
               </h2>
               ${isAdmin && currentSubAlbumName ? `
-                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.promptEditSubAlbum('${escapeHtml(currentSubAlbumName)}')" title="Renomear este exame" style="padding: 3px 8px; font-size: 0.72rem; border-color: rgba(255,183,3,0.5); color: var(--accent-gold);">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.promptEditSubAlbum('${escapeHtml(currentSubAlbumName)}')" title="Renomear este subálbum" style="padding: 3px 8px; font-size: 0.72rem; border-color: rgba(255,183,3,0.5); color: var(--accent-gold);">
                   <i class="fas fa-pencil-alt"></i> Renomear
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.promptDeleteSubAlbum('${escapeHtml(currentSubAlbumName)}')" title="Excluir este subálbum" style="padding: 3px 8px; font-size: 0.72rem; border-color: rgba(239,68,68,0.5); color: #EF4444;">
+                  <i class="fas fa-trash-alt"></i> Excluir
                 </button>
               ` : ''}
             </div>
@@ -6688,12 +6757,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const radios = document.querySelectorAll('input[name="albumTypeRadio"]');
     if (form) form.reset();
 
+    const submitBtn = modal.querySelector('button[type="submit"]');
+
     function applyMode(m) {
       if (modeField) modeField.value = m;
       const isMain = m === 'principal';
       const isSub = m === 'sub-exame';
       if (mainGroup) mainGroup.style.display = isMain ? '' : 'none';
       if (subGroup) subGroup.style.display = isSub ? '' : 'none';
+      if (submitBtn) {
+        submitBtn.innerHTML = isSub ? `<i class="fas fa-folder-plus"></i> Salvar Subálbum` : `<i class="fas fa-plus-circle"></i> Criar Álbum`;
+      }
       radios.forEach(r => {
         r.closest && (r.closest('.album-type-option') || r.parentElement).classList.toggle('selected', r.value === m);
       });
@@ -6714,6 +6788,9 @@ document.addEventListener('DOMContentLoaded', () => {
       subParentSelect.innerHTML = albumsWithSubs.map(a =>
         `<option value="${a.id}">${a.title}</option>`
       ).join('');
+      if (currentAlbumId && albumsWithSubs.some(a => a.id === currentAlbumId)) {
+        subParentSelect.value = currentAlbumId;
+      }
     }
 
     modal.classList.add('active');
@@ -6804,8 +6881,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentSubAlbumName === oldName) {
       currentSubAlbumName = trimmed;
     }
+    populateSubAlbumDatalist();
     renderMedia();
-    alert(`✅ Exame renomeado com sucesso para "${trimmed}"!`);
+    alert(`✅ Subálbum renomeado com sucesso para "${trimmed}"!`);
+  }
+
+  // =========================================================================
+  // EXCLUIR SUBÁLBUM / EXAME DE FAIXA
+  // =========================================================================
+  function promptDeleteSubAlbum(subName) {
+    if (!subName) return;
+    const confirmMsg = `⚠️ Tem certeza que deseja excluir o subálbum "${subName}"?\n\nEle será removido permanentemente.`;
+    if (!confirm(confirmMsg)) return;
+    if (window.TKST_AUTH && window.TKST_AUTH.deleteSubAlbum) {
+      window.TKST_AUTH.deleteSubAlbum(currentAlbumId || 'exames', subName);
+    }
+    if (currentSubAlbumName === subName) {
+      currentSubAlbumName = null;
+    }
+    populateSubAlbumDatalist();
+    renderMedia();
+    alert(`✅ Subálbum "${subName}" excluído com sucesso!`);
   }
 
   function handleSaveAlbum(e) {
@@ -6839,11 +6935,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const parentAlbumId = (document.getElementById('createAlbumSubParent') || {}).value || 'exames';
       const subName = ((document.getElementById('createAlbumSubNameInput') || {}).value || '').trim();
       if (!subName) { alert('Por favor, digite o nome do subálbum.'); return; }
+      
+      // Salva o subálbum explicitamente na base permanente
+      if (window.TKST_AUTH && window.TKST_AUTH.addSubAlbum) {
+        window.TKST_AUTH.addSubAlbum(parentAlbumId, subName);
+      }
+
       closeCreateAlbumModal();
       currentAlbumId = parentAlbumId;
       currentSubAlbumName = null;
-      openAddMediaModal(parentAlbumId, subName);
+      populateSubAlbumDatalist();
       renderMedia();
+      alert(`✅ Subálbum "${subName}" criado e salvo com sucesso!`);
       return;
     }
 
@@ -7426,11 +7529,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const datalist = document.getElementById('adminMediaSubAlbumList');
     if (!datalist) return;
     const allMedia = getNormalizedMediaList();
-    const subs = Array.from(new Set(
-      allMedia
-        .filter(m => (m.album === 'exames' || m.subAlbum) && m.subAlbum)
-        .map(m => m.subAlbum.trim())
-    ));
+    const customSubs = (window.TKST_AUTH && window.TKST_AUTH.getCustomSubAlbums) ? window.TKST_AUTH.getCustomSubAlbums() : [];
+    const mediaSubs = allMedia
+      .filter(m => (m.album === 'exames' || m.subAlbum) && m.subAlbum)
+      .map(m => m.subAlbum.trim());
+    const customNames = customSubs.map(s => (s.name || '').trim()).filter(Boolean);
+    const subs = Array.from(new Set([...mediaSubs, ...customNames]));
     datalist.innerHTML = subs.map(s => `<option value="${escapeHtml(s)}">`).join('');
   }
 
@@ -7663,12 +7767,17 @@ document.addEventListener('DOMContentLoaded', () => {
         window.TKST_AUTH.addMediaItem(payload);
       }
 
+      if (subAlbum && window.TKST_AUTH && window.TKST_AUTH.addSubAlbum) {
+        window.TKST_AUTH.addSubAlbum(album, subAlbum, { dojo });
+      }
+
       closeAdminMediaModal();
       clearSelectedMediaFile();
+      populateSubAlbumDatalist();
 
       if (currentTab === 'media') {
-        if (album === 'exames' && subAlbum) {
-          currentAlbumId = 'exames';
+        if (subAlbum) {
+          currentAlbumId = album;
           currentSubAlbumName = subAlbum;
         }
         renderMedia();
@@ -7705,6 +7814,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeCreateAlbumModal,
     openEditAlbumModal,
     promptEditSubAlbum,
+    promptDeleteSubAlbum,
     handleSaveAlbum,
     deleteCustomAlbum,
     updateMediaAlbumSelect,
