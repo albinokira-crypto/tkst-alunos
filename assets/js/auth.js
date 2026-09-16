@@ -3173,6 +3173,23 @@
       return newItem;
     },
 
+    addMediaItems: function(mediaItemsList) {
+      if (!Array.isArray(mediaItemsList) || mediaItemsList.length === 0) return [];
+      const all = this.getCustomMedia();
+      const now = Date.now();
+      const today = new Date().toISOString().split('T')[0];
+      const newItems = mediaItemsList.map((item, idx) => ({
+        ...item,
+        id: item.id || `media_custom_${now}_${idx}_${Math.random().toString(36).substr(2, 5)}`,
+        date: item.date || today,
+        updatedAt: now,
+        _custom: true
+      }));
+      all.unshift(...newItems);
+      this.saveCustomMedia(all);
+      return newItems;
+    },
+
     updateMediaItem: function(id, updatedFields) {
       const all = this.getCustomMedia();
       const index = all.findIndex(m => m.id === id);

@@ -425,12 +425,12 @@
             <div class="file-upload-zone" id="adminMediaDropzone" onclick="document.getElementById('adminMediaFileInput').click()" style="padding: 24px 14px; border: 2px dashed rgba(255, 183, 3, 0.45); background: rgba(255, 183, 3, 0.04); border-radius: var(--radius-sm); text-align: center; cursor: pointer; transition: all 0.2s;">
               <i class="fas fa-cloud-upload-alt" style="font-size: 2.4rem; color: var(--accent-gold); margin-bottom: 8px; display: block;"></i>
               <div style="font-weight: 700; color: #FFF; font-size: 0.95rem;">
-                Escolher Foto ou Vídeo do Celular
+                Escolher Fotos ou Vídeos do Celular
               </div>
               <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 4px;">
-                Toque para abrir a galeria, fotos ou câmera • Suporta Fotos (JPG, PNG, WEBP) e Vídeos (MP4, MOV, WEBM)
+                Toque para abrir a galeria • Selecione <strong>uma ou várias fotos</strong> (ou vídeos) de uma vez
               </div>
-              <input type="file" id="adminMediaFileInput" style="display: none;" accept="image/*,video/*" onchange="window.TKST_APP.handleMediaFileSelected(this)">
+              <input type="file" id="adminMediaFileInput" style="display: none;" accept="image/*,video/*" multiple onchange="window.TKST_APP.handleMediaFileSelected(this)">
             </div>
 
             <!-- Preview do Arquivo Selecionado -->
@@ -440,6 +440,11 @@
                 <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.clearSelectedMediaFile()" style="font-size: 0.72rem; padding: 3px 8px; color: #FF808A; border-color: rgba(230,57,70,0.4); background: rgba(230,57,70,0.1);">
                   <i class="fas fa-times"></i> Trocar Arquivo
                 </button>
+              </div>
+
+              <!-- Miniaturas para múltiplas fotos selecionadas -->
+              <div id="mediaMultiPreviewWrapper" style="display: none; margin-bottom: 8px;">
+                <div id="mediaMultiThumbsGrid" style="display: flex; gap: 8px; overflow-x: auto; padding: 6px 2px; scrollbar-width: thin;"></div>
               </div>
               
               <div id="mediaImagePreviewWrapper" style="display: none; text-align: center;">
@@ -492,7 +497,7 @@
 
           <div style="display: flex; justify-content: flex-end; gap: 10px;">
             <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeAdminMediaModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" style="font-weight: 700;">
+            <button type="submit" id="adminMediaSubmitBtn" class="btn btn-primary" style="font-weight: 700;">
               <i class="fas fa-save"></i> Salvar Mídia
             </button>
           </div>
@@ -605,15 +610,15 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/auth.js?v=194"></script>
-  <script src="assets/js/data-curriculum.js?v=194"></script>
-  <script src="assets/js/data-katas.js?v=194"></script>
-  <script src="assets/js/data-kumite.js?v=194"></script>
-  <script src="assets/js/data-glossary.js?v=194"></script>
-  <script src="assets/js/data-quiz.js?v=194"></script>
-  <script src="assets/js/data-exams.js?v=194"></script>
-  <script src="assets/js/data-media.js?v=194"></script>
-  <script src="assets/js/app.js?v=194"></script>
+  <script src="assets/js/auth.js?v=195"></script>
+  <script src="assets/js/data-curriculum.js?v=195"></script>
+  <script src="assets/js/data-katas.js?v=195"></script>
+  <script src="assets/js/data-kumite.js?v=195"></script>
+  <script src="assets/js/data-glossary.js?v=195"></script>
+  <script src="assets/js/data-quiz.js?v=195"></script>
+  <script src="assets/js/data-exams.js?v=195"></script>
+  <script src="assets/js/data-media.js?v=195"></script>
+  <script src="assets/js/app.js?v=195"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
