@@ -434,11 +434,21 @@
       "status": "approved",
       "approvedAt": "2026-08-23T21:40:12.130Z",
       "createdAt": "2026-08-23T21:39:25.162Z",
-      "updatedAt": 1787521212135,
+      "updatedAt": 1789597863418,
       "statusUpdatedAt": 1787521212135,
       "phone": "21985684113",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1787784685564
+      "lastActive": 1789597847682,
+      "quizScores": [
+        {
+          "date": "2026-09-16T22:31:03.417Z",
+          "score": 0,
+          "total": 10,
+          "percentage": 0,
+          "beltLevel": "Faixa Vermelha 5º Kyu",
+          "beltKyu": 5
+        }
+      ]
     },
     {
       "id": "std_1787351605155_g3rqr",
@@ -486,9 +496,9 @@
     },
     {
       "id": "std_1787268943201_fpw5o",
-      "username": "nick",
+      "username": "nicollyferreiradesouza14@gmail.com",
       "email": "nicollyferreiradesouza14@gmail.com@tkst.local",
-      "password": "2014@",
+      "password": "2014",
       "name": "Nicolly ferreira de Souza",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -654,8 +664,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1789401546013,
-      "statusUpdatedAt": 1789401546013,
+      "updatedAt": 1789597683325,
+      "statusUpdatedAt": 1789597683325,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -1099,5 +1109,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1789401720584
+  "updatedAt": 1789597866080
 }
