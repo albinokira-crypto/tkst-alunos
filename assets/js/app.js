@@ -818,6 +818,10 @@ document.addEventListener('DOMContentLoaded', () => {
       TKST_AUDIO.stopInterstellarTrack();
     }
 
+    if (tabName !== 'dashboard') {
+      if (typeof clearHomeSlideInterval === 'function') clearHomeSlideInterval();
+    }
+
     const user = window.TKST_AUTH.getCurrentUser();
 
     // Guard: Require login for private tabs
@@ -2801,63 +2805,296 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Ranking do Simulado (Largura Total 100% sem estouro de informações) -->
-      <div class="stat-card ranking-card">
-        <div class="ranking-header">
-          <div class="ranking-header-title">
-            <div class="ranking-header-icon">
-              <i class="fas fa-trophy"></i>
+      <!-- 4ª Linha: Dividida em 2 partes (Esquerda: Slide de Fotos da Galeria | Direita: Ranking Oficial do Simulado) -->
+      <div class="dashboard-bottom-grid">
+        
+        <!-- Lado Esquerdo: Slide com todas as fotos da galeria em ordem aleatória -->
+        <div class="stat-card home-gallery-slide-card">
+          <div class="slide-card-header">
+            <div class="slide-header-left">
+              <div class="slide-header-icon">
+                <i class="fas fa-camera-retro"></i>
+              </div>
+              <div style="min-width: 0;">
+                <h3 class="slide-title">Galeria de Fotos</h3>
+                <p class="slide-subtitle">Momentos TKST • Treinos, Exames e Competições</p>
+              </div>
             </div>
-            <div style="min-width: 0;">
-              <h3 class="ranking-title">Ranking Oficial de Kyus</h3>
-              <p class="ranking-subtitle">Top Classificação TKST • Alunos Kyu (Acerto +1 pt | Erro -1 pt)</p>
-            </div>
+            <button type="button" class="slide-header-btn" onclick="window.TKST_APP.switchTab('media')" title="Ver todos os álbuns da galeria">
+              <span>Ver Álbuns</span> <i class="fas fa-arrow-right"></i>
+            </button>
           </div>
-          <div class="ranking-header-tag">
-            <i class="fas fa-award"></i> Oficial
+
+          <div class="home-slide-container" id="homeSlideContainer">
+            <!-- Populado e controlado dinamicamente via initHomePhotoSlide() -->
           </div>
         </div>
 
-        <div class="ranking-list">
-          ${top10Leaderboard.length === 0 ? `
-            <div style="padding: 16px 12px; text-align: center; color: #64748B; font-size: 0.78rem;">
-              <i class="fas fa-medal" style="font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 4px; display: block; opacity: 0.6;"></i>
-              Nenhum aluno classificado ainda.<br>Faça um simulado teórico para liderar o ranking!
-            </div>
-          ` : top10Leaderboard.map((item, idx) => `
-            <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
-              <!-- Linha 1: Lugar (com medalha um pouco maior nos 3 primeiros lugares), Nome completo, Graduação -->
-              <div class="ranking-row-line-1">
-                <div class="ranking-row-user-block">
-                  <span class="ranking-pos-medal ${idx < 3 ? 'is-podium' : ''}">
-                    ${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}
-                  </span>
-                  <span class="ranking-student-name" title="${item.fullName}">${item.fullName}</span>
-                </div>
-                <span class="ranking-belt-badge">${item.currentBelt}</span>
+        <!-- Lado Direito: Ranking Oficial de Kyus -->
+        <div class="stat-card ranking-card">
+          <div class="ranking-header">
+            <div class="ranking-header-title">
+              <div class="ranking-header-icon">
+                <i class="fas fa-trophy"></i>
               </div>
+              <div style="min-width: 0;">
+                <h3 class="ranking-title">Ranking Oficial de Kyus</h3>
+                <p class="ranking-subtitle">Top Classificação TKST • Alunos Kyu (Acerto +1 pt | Erro -1 pt)</p>
+              </div>
+            </div>
+            <div class="ranking-header-tag">
+              <i class="fas fa-award"></i> Oficial
+            </div>
+          </div>
 
-              <!-- Linha 2: Dojo, Quantidade de Acertos, Quantidade de Pontos -->
-              <div class="ranking-row-line-2">
-                <div class="ranking-student-dojo" title="${item.dojo}">
-                  <i class="fas fa-landmark"></i> <span>${item.dojo}</span>
+          <div class="ranking-list">
+            ${top10Leaderboard.length === 0 ? `
+              <div style="padding: 16px 12px; text-align: center; color: #64748B; font-size: 0.78rem;">
+                <i class="fas fa-medal" style="font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 4px; display: block; opacity: 0.6;"></i>
+                Nenhum aluno classificado ainda.<br>Faça um simulado teórico para liderar o ranking!
+              </div>
+            ` : top10Leaderboard.map((item, idx) => `
+              <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
+                <!-- Linha 1: Lugar, Nome completo, Graduação -->
+                <div class="ranking-row-line-1">
+                  <div class="ranking-row-user-block">
+                    <span class="ranking-pos-medal ${idx < 3 ? 'is-podium' : ''}">
+                      ${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}º`))}
+                    </span>
+                    <span class="ranking-student-name" title="${item.fullName}">${item.fullName}</span>
+                  </div>
+                  <span class="ranking-belt-badge">${item.currentBelt}</span>
                 </div>
-                <div class="ranking-row-metrics">
-                  <span class="ranking-stat-pill">
-                    <i class="fas fa-check-circle"></i> ${item.totalCorrect} ${item.totalCorrect === 1 ? 'acerto' : 'acertos'}
-                  </span>
-                  <span class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
-                    ${item.points > 0 ? '+' : ''}${item.points} pts
-                  </span>
+
+                <!-- Linha 2: Dojo, Quantidade de Acertos, Quantidade de Pontos -->
+                <div class="ranking-row-line-2">
+                  <div class="ranking-student-dojo" title="${item.dojo}">
+                    <i class="fas fa-landmark"></i> <span>${item.dojo}</span>
+                  </div>
+                  <div class="ranking-row-metrics">
+                    <span class="ranking-stat-pill">
+                      <i class="fas fa-check-circle"></i> ${item.totalCorrect} ${item.totalCorrect === 1 ? 'acerto' : 'acertos'}
+                    </span>
+                    <span class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
+                      ${item.points > 0 ? '+' : ''}${item.points} pts
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          `).join('')}
+            `).join('')}
+          </div>
         </div>
+
       </div>
     `;
 
     mainContent.innerHTML = html;
+
+    // Inicializa o slide de fotos aleatórias da galeria
+    initHomePhotoSlide();
+  }
+
+  // =========================================================================
+  // 3.1 CARROSSEL / SLIDE DE FOTOS ALEATÓRIAS DA HOME
+  // =========================================================================
+  let homeRandomPhotos = [];
+  let homeCurrentSlideIndex = 0;
+  let homeSlideInterval = null;
+  let homeSlideIsPaused = false;
+
+  function clearHomeSlideInterval() {
+    if (homeSlideInterval) {
+      clearInterval(homeSlideInterval);
+      homeSlideInterval = null;
+    }
+  }
+
+  function shuffleHomePhotos(arr) {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function getAlbumDisplayTitle(albumId) {
+    if (albumId === 'exames') return 'Exame de Faixa';
+    if (albumId === 'competicoes') return 'Competições';
+    if (albumId === 'didaticos') return 'Didáticos';
+    if (typeof getAlbumsList === 'function') {
+      const found = getAlbumsList().find(a => a.id === albumId);
+      if (found && found.title) return found.title;
+    }
+    return albumId ? (albumId.charAt(0).toUpperCase() + albumId.slice(1)) : 'Galeria';
+  }
+
+  function initHomePhotoSlide() {
+    clearHomeSlideInterval();
+
+    const container = document.getElementById('homeSlideContainer');
+    if (!container) return;
+
+    const allMedia = (typeof getNormalizedMediaList === 'function') ? getNormalizedMediaList() : [];
+    // Todas as fotos de qualquer álbum (exames, competições, treinos, eventos, etc.)
+    const photos = allMedia.filter(m => (m.type === 'image' || !m.type) && m.url);
+
+    if (photos.length === 0) {
+      container.innerHTML = `
+        <div class="home-slide-empty">
+          <i class="fas fa-images"></i>
+          <p>Nenhuma foto cadastrada na galeria ainda.</p>
+          <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.switchTab('media')">
+            <i class="fas fa-photo-video"></i> Acessar Galeria
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    // Embaralha todas as fotos da galeria em ordem aleatória
+    homeRandomPhotos = shuffleHomePhotos(photos);
+    homeCurrentSlideIndex = 0;
+    homeSlideIsPaused = false;
+
+    renderHomeSlideCurrentPhoto(true);
+    startHomeSlideTimer();
+  }
+
+  function startHomeSlideTimer() {
+    clearHomeSlideInterval();
+    if (homeRandomPhotos.length <= 1) return;
+
+    homeSlideInterval = setInterval(() => {
+      if (!homeSlideIsPaused) {
+        nextHomeSlide();
+      }
+    }, 4500);
+  }
+
+  function renderHomeSlideCurrentPhoto(isInitial = false) {
+    const container = document.getElementById('homeSlideContainer');
+    if (!container || homeRandomPhotos.length === 0) return;
+
+    const photo = homeRandomPhotos[homeCurrentSlideIndex];
+    if (!photo) return;
+
+    const albumName = photo.subAlbum || getAlbumDisplayTitle(photo.album);
+    const photoSrc = photo.url || photo.thumbUrl;
+
+    if (isInitial || !container.querySelector('.home-slide-viewport')) {
+      container.innerHTML = `
+        <div class="home-slide-viewport" onclick="window.TKST_APP.openHomeSlideLightbox()" title="Toque para ver a foto em tela cheia" onmouseenter="window.TKST_APP.setHomeSlidePause(true)" onmouseleave="window.TKST_APP.setHomeSlidePause(false)">
+          <div class="home-slide-backdrop" id="homeSlideBackdrop" style="background-image: url('${photoSrc}');"></div>
+          
+          <div class="home-slide-img-wrapper">
+            <img src="${photoSrc}" id="homeSlideImg" alt="${escapeHtml(photo.title || 'Foto TKST')}" class="home-slide-img" onerror="this.src='assets/images/logo-tkst-2.jpg'">
+          </div>
+
+          <div class="home-slide-top-bar">
+            <span class="home-slide-badge">
+              <i class="fas fa-folder-open"></i> <span id="homeSlideAlbumName">${escapeHtml(albumName)}</span>
+            </span>
+            <span class="home-slide-counter" id="homeSlideCounter">
+              ${homeCurrentSlideIndex + 1} / ${homeRandomPhotos.length}
+            </span>
+          </div>
+
+          <button type="button" class="home-slide-nav-btn prev" onclick="event.stopPropagation(); window.TKST_APP.prevHomeSlide();" title="Foto Anterior" aria-label="Foto Anterior">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button type="button" class="home-slide-nav-btn next" onclick="event.stopPropagation(); window.TKST_APP.nextHomeSlide();" title="Próxima Foto" aria-label="Próxima Foto">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+
+          <div class="home-slide-caption">
+            <div class="home-slide-title" id="homeSlideTitle">${escapeHtml(photo.title || 'Momento TKST')}</div>
+            <div class="home-slide-meta" id="homeSlideMeta">
+              ${photo.dojo ? `<span><i class="fas fa-landmark"></i> ${escapeHtml(photo.dojo)}</span>` : ''}
+              ${photo.date ? `<span><i class="fas fa-calendar-alt"></i> ${escapeHtml(photo.date)}</span>` : ''}
+            </div>
+          </div>
+
+          <div class="home-slide-progress-wrap">
+            <div class="home-slide-progress-bar" id="homeSlideProgressBar"></div>
+          </div>
+        </div>
+      `;
+    } else {
+      const imgEl = document.getElementById('homeSlideImg');
+      const backdropEl = document.getElementById('homeSlideBackdrop');
+      const badgeAlbumEl = document.getElementById('homeSlideAlbumName');
+      const counterEl = document.getElementById('homeSlideCounter');
+      const titleEl = document.getElementById('homeSlideTitle');
+      const metaEl = document.getElementById('homeSlideMeta');
+      const progressBar = document.getElementById('homeSlideProgressBar');
+
+      if (imgEl) {
+        imgEl.style.opacity = '0';
+        imgEl.style.transform = 'scale(0.97)';
+        setTimeout(() => {
+          imgEl.src = photoSrc;
+          imgEl.alt = escapeHtml(photo.title || 'Foto TKST');
+          imgEl.style.opacity = '1';
+          imgEl.style.transform = 'scale(1)';
+        }, 180);
+      }
+
+      if (backdropEl) {
+        backdropEl.style.backgroundImage = `url('${photoSrc}')`;
+      }
+      if (badgeAlbumEl) {
+        badgeAlbumEl.textContent = albumName;
+      }
+      if (counterEl) {
+        counterEl.textContent = `${homeCurrentSlideIndex + 1} / ${homeRandomPhotos.length}`;
+      }
+      if (titleEl) {
+        titleEl.textContent = photo.title || 'Momento TKST';
+      }
+      if (metaEl) {
+        let metaHtml = '';
+        if (photo.dojo) metaHtml += `<span><i class="fas fa-landmark"></i> ${escapeHtml(photo.dojo)}</span>`;
+        if (photo.date) metaHtml += `<span><i class="fas fa-calendar-alt"></i> ${escapeHtml(photo.date)}</span>`;
+        metaEl.innerHTML = metaHtml;
+      }
+
+      if (progressBar) {
+        progressBar.style.animation = 'none';
+        void progressBar.offsetWidth;
+        progressBar.style.animation = 'homeSlideProgress 4.5s linear infinite';
+      }
+    }
+  }
+
+  function nextHomeSlide() {
+    if (homeRandomPhotos.length <= 1) return;
+    homeCurrentSlideIndex = (homeCurrentSlideIndex + 1) % homeRandomPhotos.length;
+    renderHomeSlideCurrentPhoto(false);
+  }
+
+  function prevHomeSlide() {
+    if (homeRandomPhotos.length <= 1) return;
+    homeCurrentSlideIndex = (homeCurrentSlideIndex - 1 + homeRandomPhotos.length) % homeRandomPhotos.length;
+    renderHomeSlideCurrentPhoto(false);
+  }
+
+  function setHomeSlidePause(paused) {
+    homeSlideIsPaused = paused;
+    const bar = document.getElementById('homeSlideProgressBar');
+    if (bar) {
+      bar.style.animationPlayState = paused ? 'paused' : 'running';
+    }
+  }
+
+  function openHomeSlideLightbox() {
+    if (!homeRandomPhotos || homeRandomPhotos.length === 0) return;
+    const photo = homeRandomPhotos[homeCurrentSlideIndex];
+    if (!photo) return;
+    currentLightboxList = homeRandomPhotos;
+    if (typeof openMediaLightbox === 'function') {
+      openMediaLightbox(photo.id);
+    }
   }
 
   // =========================================================================
@@ -8032,6 +8269,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setMediaSourceMode,
     handleMediaFileSelected,
     clearSelectedMediaFile,
+    nextHomeSlide,
+    prevHomeSlide,
+    setHomeSlidePause,
+    openHomeSlideLightbox,
+    initHomePhotoSlide,
     TKST_IDB_MEDIA,
     deleteMediaItemConfirm: deleteSingleMedia,
     setAuthMode: (mode) => {
