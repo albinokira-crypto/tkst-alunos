@@ -2808,26 +2808,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- 4ª Linha: Dividida em 2 partes (Esquerda: Slide de Fotos da Galeria | Direita: Ranking Oficial do Simulado) -->
       <div class="dashboard-bottom-grid">
         
-        <!-- Lado Esquerdo: Slide com todas as fotos da galeria em ordem aleatória -->
-        <div class="stat-card home-gallery-slide-card">
-          <div class="slide-card-header">
-            <div class="slide-header-left">
-              <div class="slide-header-icon">
-                <i class="fas fa-camera-retro"></i>
-              </div>
-              <div style="min-width: 0;">
-                <h3 class="slide-title">Galeria de Fotos</h3>
-                <p class="slide-subtitle">Momentos TKST • Treinos, Exames e Competições</p>
-              </div>
-            </div>
-            <button type="button" class="slide-header-btn" onclick="window.TKST_APP.switchTab('media')" title="Ver todos os álbuns da galeria">
-              <span>Ver Álbuns</span> <i class="fas fa-arrow-right"></i>
-            </button>
-          </div>
-
-          <div class="home-slide-container" id="homeSlideContainer">
-            <!-- Populado e controlado dinamicamente via initHomePhotoSlide() -->
-          </div>
+        <!-- Lado Esquerdo: Slide com todas as fotos ocupando todo o card -->
+        <div class="stat-card home-gallery-slide-card" id="homeSlideContainer">
+          <!-- Ocupado 100% pelas fotos do slide -->
         </div>
 
         <!-- Lado Direito: Ranking Oficial de Kyus -->
@@ -2979,26 +2962,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const photo = homeRandomPhotos[homeCurrentSlideIndex];
     if (!photo) return;
 
-    const albumName = photo.subAlbum || getAlbumDisplayTitle(photo.album);
     const photoSrc = photo.url || photo.thumbUrl;
 
     if (isInitial || !container.querySelector('.home-slide-viewport')) {
       container.innerHTML = `
         <div class="home-slide-viewport" onclick="window.TKST_APP.openHomeSlideLightbox()" title="Toque para ver a foto em tela cheia" onmouseenter="window.TKST_APP.setHomeSlidePause(true)" onmouseleave="window.TKST_APP.setHomeSlidePause(false)">
-          <div class="home-slide-backdrop" id="homeSlideBackdrop" style="background-image: url('${photoSrc}');"></div>
-          
-          <div class="home-slide-img-wrapper">
-            <img src="${photoSrc}" id="homeSlideImg" alt="${escapeHtml(photo.title || 'Foto TKST')}" class="home-slide-img" onerror="this.src='assets/images/logo-tkst-2.jpg'">
-          </div>
-
-          <div class="home-slide-top-bar">
-            <span class="home-slide-badge">
-              <i class="fas fa-folder-open"></i> <span id="homeSlideAlbumName">${escapeHtml(albumName)}</span>
-            </span>
-            <span class="home-slide-counter" id="homeSlideCounter">
-              ${homeCurrentSlideIndex + 1} / ${homeRandomPhotos.length}
-            </span>
-          </div>
+          <img src="${photoSrc}" id="homeSlideImg" alt="Foto TKST" class="home-slide-img" onerror="this.src='assets/images/logo-tkst-2.jpg'">
 
           <button type="button" class="home-slide-nav-btn prev" onclick="event.stopPropagation(); window.TKST_APP.prevHomeSlide();" title="Foto Anterior" aria-label="Foto Anterior">
             <i class="fas fa-chevron-left"></i>
@@ -3007,14 +2976,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <i class="fas fa-chevron-right"></i>
           </button>
 
-          <div class="home-slide-caption">
-            <div class="home-slide-title" id="homeSlideTitle">${escapeHtml(photo.title || 'Momento TKST')}</div>
-            <div class="home-slide-meta" id="homeSlideMeta">
-              ${photo.dojo ? `<span><i class="fas fa-landmark"></i> ${escapeHtml(photo.dojo)}</span>` : ''}
-              ${photo.date ? `<span><i class="fas fa-calendar-alt"></i> ${escapeHtml(photo.date)}</span>` : ''}
-            </div>
-          </div>
-
           <div class="home-slide-progress-wrap">
             <div class="home-slide-progress-bar" id="homeSlideProgressBar"></div>
           </div>
@@ -3022,41 +2983,14 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     } else {
       const imgEl = document.getElementById('homeSlideImg');
-      const backdropEl = document.getElementById('homeSlideBackdrop');
-      const badgeAlbumEl = document.getElementById('homeSlideAlbumName');
-      const counterEl = document.getElementById('homeSlideCounter');
-      const titleEl = document.getElementById('homeSlideTitle');
-      const metaEl = document.getElementById('homeSlideMeta');
       const progressBar = document.getElementById('homeSlideProgressBar');
 
       if (imgEl) {
         imgEl.style.opacity = '0';
-        imgEl.style.transform = 'scale(0.97)';
         setTimeout(() => {
           imgEl.src = photoSrc;
-          imgEl.alt = escapeHtml(photo.title || 'Foto TKST');
           imgEl.style.opacity = '1';
-          imgEl.style.transform = 'scale(1)';
-        }, 180);
-      }
-
-      if (backdropEl) {
-        backdropEl.style.backgroundImage = `url('${photoSrc}')`;
-      }
-      if (badgeAlbumEl) {
-        badgeAlbumEl.textContent = albumName;
-      }
-      if (counterEl) {
-        counterEl.textContent = `${homeCurrentSlideIndex + 1} / ${homeRandomPhotos.length}`;
-      }
-      if (titleEl) {
-        titleEl.textContent = photo.title || 'Momento TKST';
-      }
-      if (metaEl) {
-        let metaHtml = '';
-        if (photo.dojo) metaHtml += `<span><i class="fas fa-landmark"></i> ${escapeHtml(photo.dojo)}</span>`;
-        if (photo.date) metaHtml += `<span><i class="fas fa-calendar-alt"></i> ${escapeHtml(photo.date)}</span>`;
-        metaEl.innerHTML = metaHtml;
+        }, 200);
       }
 
       if (progressBar) {
