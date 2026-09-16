@@ -688,8 +688,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1789601173681,
-      "statusUpdatedAt": 1789601173681,
+      "updatedAt": 1789601722933,
+      "statusUpdatedAt": 1789601722933,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -1033,9 +1033,9 @@
       "status": "approved",
       "phone": "21999714332",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1789601671523,
+      "lastActive": 1789601835518,
       "statusUpdatedAt": 1,
-      "updatedAt": 1789601672284,
+      "updatedAt": 1789601862254,
       "quizScores": [
         {
           "date": "2026-09-16T23:31:53.822Z",
@@ -1047,6 +1047,14 @@
         },
         {
           "date": "2026-09-16T23:34:32.282Z",
+          "score": 9,
+          "total": 10,
+          "percentage": 90,
+          "beltLevel": "Faixa Branca 7º Kyu",
+          "beltKyu": 7
+        },
+        {
+          "date": "2026-09-16T23:37:42.251Z",
           "score": 9,
           "total": 10,
           "percentage": 90,
@@ -1151,5 +1159,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1789601676713
+  "updatedAt": 1789601866670
 }
