@@ -1043,9 +1043,9 @@
       "status": "approved",
       "phone": "21999714332",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1790103873811,
+      "lastActive": 1790104371674,
       "statusUpdatedAt": 1,
-      "updatedAt": 1790103894608,
+      "updatedAt": 1790104372447,
       "quizScores": [
         {
           "date": "2026-09-16T23:31:53.822Z",
@@ -1121,6 +1121,14 @@
         },
         {
           "date": "2026-09-22T19:04:54.605Z",
+          "score": 3,
+          "total": 10,
+          "percentage": 30,
+          "beltLevel": "Faixa Vermelha 5º Kyu",
+          "beltKyu": 5
+        },
+        {
+          "date": "2026-09-22T19:12:52.446Z",
           "score": 3,
           "total": 10,
           "percentage": 30,
@@ -1225,5 +1233,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1790103897552
+  "updatedAt": 1790104375397
 }
