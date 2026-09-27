@@ -1,9 +1,9 @@
-const CACHE_NAME = 'tkst-alunos-v200';
+const CACHE_NAME = 'tkst-alunos-v201';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './assets/css/main.css?v=200',
-  './assets/css/components.css?v=200',
+  './assets/css/main.css?v=201',
+  './assets/css/components.css?v=201',
   './assets/js/auth.js?v=200',
   './assets/js/data-curriculum.js?v=200',
   './assets/js/data-katas.js?v=200',
