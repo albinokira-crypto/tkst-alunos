@@ -2884,11 +2884,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let homeCurrentSlideIndex = 0;
   let homeSlideInterval = null;
   let homeSlideIsPaused = false;
+  let homeSlideObserver = null;
+  let homeSlideIsSwiping = false;
 
   function clearHomeSlideInterval() {
     if (homeSlideInterval) {
       clearInterval(homeSlideInterval);
       homeSlideInterval = null;
+    }
+    if (homeSlideObserver) {
+      try {
+        homeSlideObserver.disconnect();
+      } catch(e) {}
+      homeSlideObserver = null;
     }
   }
 
@@ -2910,6 +2918,46 @@ document.addEventListener('DOMContentLoaded', () => {
       if (found && found.title) return found.title;
     }
     return albumId ? (albumId.charAt(0).toUpperCase() + albumId.slice(1)) : 'Galeria';
+  }
+
+  // Otimizador de URLs de imagens para celular e backdrops desfocados
+  function getOptimizedSlideUrl(url, isBackdrop = false) {
+    if (!url) return 'assets/images/logo-tkst-2.jpg';
+    if (typeof url !== 'string') return url;
+
+    // Se for Cloudinary, entrega formato WebP/AVIF comprimido e na dimensão exata
+    if (url.includes('res.cloudinary.com')) {
+      if (isBackdrop) {
+        // Backdrop precisa de resolução mínima (apenas tons e cores difusas)
+        return url.replace('/upload/', '/upload/f_auto,q_60,w_180,c_limit/');
+      }
+      return url.replace('/upload/', '/upload/f_auto,q_auto:good,w_750,c_limit/');
+    }
+
+    // Se for Unsplash
+    if (url.includes('images.unsplash.com')) {
+      if (isBackdrop) {
+        return url.replace(/w=\d+/, 'w=180').replace(/q=\d+/, 'q=50');
+      }
+      return url.replace(/w=\d+/, 'w=750').replace(/q=\d+/, 'q=75');
+    }
+
+    return url;
+  }
+
+  // Pré-carrega e pré-decodifica a próxima foto silenciosamente na GPU/RAM
+  function preloadNextHomeSlideImage() {
+    if (!homeRandomPhotos || homeRandomPhotos.length <= 1) return;
+    const nextIdx = (homeCurrentSlideIndex + 1) % homeRandomPhotos.length;
+    const nextPhoto = homeRandomPhotos[nextIdx];
+    if (nextPhoto) {
+      const nextSrc = getOptimizedSlideUrl(nextPhoto.url || nextPhoto.thumbUrl, false);
+      const preImg = new Image();
+      preImg.src = nextSrc;
+      if (preImg.decode) {
+        preImg.decode().catch(() => {});
+      }
+    }
   }
 
   function initHomePhotoSlide() {
@@ -2939,13 +2987,18 @@ document.addEventListener('DOMContentLoaded', () => {
     homeRandomPhotos = shuffleHomePhotos(photos);
     homeCurrentSlideIndex = 0;
     homeSlideIsPaused = false;
+    homeSlideIsSwiping = false;
 
     renderHomeSlideCurrentPhoto(true);
     startHomeSlideTimer();
+    setupHomeSlideVisibilityObserver();
   }
 
   function startHomeSlideTimer() {
-    clearHomeSlideInterval();
+    if (homeSlideInterval) {
+      clearInterval(homeSlideInterval);
+      homeSlideInterval = null;
+    }
     if (homeRandomPhotos.length <= 1) return;
 
     homeSlideInterval = setInterval(() => {
@@ -2955,6 +3008,89 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 4500);
   }
 
+  // Touch & Swipe nativo para celular com rolagem vertical livre (passive)
+  function setupHomeSlideTouchEvents() {
+    const vp = document.getElementById('homeSlideViewport');
+    if (!vp) return;
+
+    let startX = 0;
+    let startY = 0;
+    let moveDetected = false;
+
+    vp.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        moveDetected = false;
+        homeSlideIsSwiping = false;
+        setHomeSlidePause(true);
+      }
+    }, { passive: true });
+
+    vp.addEventListener('touchmove', (e) => {
+      if (!e.touches || !e.touches[0]) return;
+      const curX = e.touches[0].clientX;
+      const curY = e.touches[0].clientY;
+      const diffX = Math.abs(curX - startX);
+      const diffY = Math.abs(curY - startY);
+
+      if (diffX > 15 || diffY > 15) {
+        moveDetected = true;
+      }
+
+      // Se o movimento for horizontal com ângulo claro, ativa modo swipe
+      if (diffX > 25 && diffX > diffY * 1.25) {
+        homeSlideIsSwiping = true;
+      }
+    }, { passive: true });
+
+    vp.addEventListener('touchend', (e) => {
+      setHomeSlidePause(false);
+      if (homeSlideIsSwiping && e.changedTouches && e.changedTouches[0]) {
+        const finalX = e.changedTouches[0].clientX;
+        const deltaX = finalX - startX;
+        if (deltaX < -35) {
+          nextHomeSlide();
+        } else if (deltaX > 35) {
+          prevHomeSlide();
+        }
+        setTimeout(() => { homeSlideIsSwiping = false; }, 160);
+      } else {
+        homeSlideIsSwiping = false;
+      }
+    }, { passive: true });
+
+    vp.addEventListener('touchcancel', () => {
+      setHomeSlidePause(false);
+      homeSlideIsSwiping = false;
+    }, { passive: true });
+  }
+
+  // Pausa automática quando o card sai da tela do celular (economiza CPU, bateria e GPU)
+  function setupHomeSlideVisibilityObserver() {
+    if (homeSlideObserver) {
+      try { homeSlideObserver.disconnect(); } catch(e) {}
+      homeSlideObserver = null;
+    }
+
+    const container = document.getElementById('homeSlideContainer');
+    if (!container) return;
+
+    if ('IntersectionObserver' in window) {
+      homeSlideObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setHomeSlidePause(false);
+          } else {
+            setHomeSlidePause(true);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      homeSlideObserver.observe(container);
+    }
+  }
+
   function renderHomeSlideCurrentPhoto(isInitial = false) {
     const container = document.getElementById('homeSlideContainer');
     if (!container || homeRandomPhotos.length === 0) return;
@@ -2962,12 +3098,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const photo = homeRandomPhotos[homeCurrentSlideIndex];
     if (!photo) return;
 
-    const photoSrc = photo.url || photo.thumbUrl;
+    const rawSrc = photo.url || photo.thumbUrl;
+    const photoSrc = getOptimizedSlideUrl(rawSrc, false);
+    const backdropSrc = getOptimizedSlideUrl(photo.thumbUrl || rawSrc, true);
 
     if (isInitial || !container.querySelector('.home-slide-viewport')) {
       container.innerHTML = `
-        <div class="home-slide-viewport" onclick="window.TKST_APP.openHomeSlideLightbox()" title="Toque para ver a foto em tela cheia" onmouseenter="window.TKST_APP.setHomeSlidePause(true)" onmouseleave="window.TKST_APP.setHomeSlidePause(false)" ontouchstart="window.TKST_APP.setHomeSlidePause(true)" ontouchend="window.TKST_APP.setHomeSlidePause(false)">
-          <div class="home-slide-backdrop" id="homeSlideBackdrop" style="background-image: url('${photoSrc}');"></div>
+        <div class="home-slide-viewport" id="homeSlideViewport" onclick="window.TKST_APP.openHomeSlideLightbox()" title="Toque para ver a foto em tela cheia" onmouseenter="window.TKST_APP.setHomeSlidePause(true)" onmouseleave="window.TKST_APP.setHomeSlidePause(false)">
+          <div class="home-slide-backdrop" id="homeSlideBackdrop" style="background-image: url('${backdropSrc}');"></div>
           <img src="${photoSrc}" id="homeSlideImg" alt="Foto TKST" class="home-slide-img" onerror="this.src='assets/images/logo-tkst-2.jpg'">
 
           <button type="button" class="home-slide-nav-btn prev" onclick="event.stopPropagation(); window.TKST_APP.prevHomeSlide();" title="Foto Anterior" aria-label="Foto Anterior">
@@ -2978,35 +3116,54 @@ document.addEventListener('DOMContentLoaded', () => {
           </button>
 
           <div class="home-slide-progress-wrap">
-            <div class="home-slide-progress-bar" id="homeSlideProgressBar"></div>
+            <div class="home-slide-progress-bar is-animating" id="homeSlideProgressBar"></div>
           </div>
         </div>
       `;
+
+      setupHomeSlideTouchEvents();
+      preloadNextHomeSlideImage();
     } else {
       const imgEl = document.getElementById('homeSlideImg');
       const backdropEl = document.getElementById('homeSlideBackdrop');
       const progressBar = document.getElementById('homeSlideProgressBar');
 
-      if (imgEl) {
-        imgEl.style.opacity = '0';
-        setTimeout(() => {
+      // Transição suave com pré-decodificação sem travar a thread principal
+      const incomingImg = new Image();
+      incomingImg.src = photoSrc;
+
+      const swapPhotos = () => {
+        if (imgEl) {
           imgEl.src = photoSrc;
           imgEl.style.opacity = '1';
-        }, 180);
-      }
-
-      if (backdropEl) {
-        backdropEl.style.opacity = '0.35';
-        setTimeout(() => {
-          backdropEl.style.backgroundImage = `url('${photoSrc}')`;
+        }
+        if (backdropEl) {
+          backdropEl.style.backgroundImage = `url('${backdropSrc}')`;
           backdropEl.style.opacity = '0.75';
-        }, 150);
+        }
+        preloadNextHomeSlideImage();
+      };
+
+      if (imgEl) imgEl.style.opacity = '0.2';
+      if (backdropEl) backdropEl.style.opacity = '0.35';
+
+      if (incomingImg.decode) {
+        incomingImg.decode().then(swapPhotos).catch(swapPhotos);
+      } else {
+        incomingImg.onload = swapPhotos;
+        incomingImg.onerror = swapPhotos;
       }
 
+      // Reinicia animação da barra de progresso via GPU transform (zero layout reflow)
       if (progressBar) {
-        progressBar.style.animation = 'none';
-        void progressBar.offsetWidth;
-        progressBar.style.animation = 'homeSlideProgress 4.5s linear infinite';
+        progressBar.classList.remove('is-animating');
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (!homeSlideIsPaused) {
+              progressBar.classList.add('is-animating');
+            }
+          });
+        });
       }
     }
   }
@@ -3028,10 +3185,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const bar = document.getElementById('homeSlideProgressBar');
     if (bar) {
       bar.style.animationPlayState = paused ? 'paused' : 'running';
+      if (paused) {
+        bar.classList.remove('is-animating');
+      } else {
+        bar.classList.add('is-animating');
+      }
     }
   }
 
   function openHomeSlideLightbox() {
+    if (homeSlideIsSwiping) return; // Não abre lightbox se o usuário estava arrastando a foto no celular
     if (!homeRandomPhotos || homeRandomPhotos.length === 0) return;
     const photo = homeRandomPhotos[homeCurrentSlideIndex];
     if (!photo) return;
@@ -11393,6 +11556,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
   window.addEventListener('tkst_cloud_synced', () => {
     if (currentTab === 'admin') {
       renderAdminMaster();
+    }
+  });
+
+  // Pausa o slide e economiza bateria/CPU ao minimizar o navegador ou bloquear a tela do celular
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (typeof setHomeSlidePause === 'function') setHomeSlidePause(true);
+    } else if (currentTab === 'dashboard') {
+      if (typeof setHomeSlidePause === 'function') setHomeSlidePause(false);
     }
   });
 
