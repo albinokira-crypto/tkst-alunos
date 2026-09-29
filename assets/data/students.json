@@ -821,11 +821,11 @@
       "status": "approved",
       "approvedAt": "2026-08-17T23:53:30.463Z",
       "createdAt": "2026-08-17T23:53:07.759Z",
-      "updatedAt": 1790646504151,
+      "updatedAt": 1790646761070,
       "statusUpdatedAt": 1788227679643,
       "phone": "021995419348",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1790646496224,
+      "lastActive": 1790646734400,
       "quizScores": [
         {
           "date": "2026-09-02T22:42:04.035Z",
@@ -946,6 +946,14 @@
           "percentage": 90,
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
+        },
+        {
+          "date": "2026-09-29T01:52:41.067Z",
+          "score": 23,
+          "total": 30,
+          "percentage": 77,
+          "beltLevel": "Simulado Geral",
+          "beltKyu": "all"
         }
       ]
     },
@@ -1385,5 +1393,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1790646504470
+  "updatedAt": 1790646761339
 }
