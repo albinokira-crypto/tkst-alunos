@@ -604,25 +604,17 @@
       "status": "approved",
       "approvedAt": "2026-08-20T16:12:50.800Z",
       "createdAt": "2026-08-20T16:11:05.762Z",
-      "updatedAt": 1788386967359,
+      "updatedAt": 1790787679161,
       "statusUpdatedAt": 1787242370800,
       "phone": "",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1788386966329,
+      "lastActive": 1790787677061,
       "quizScores": [
         {
-          "date": "2026-09-02T22:09:27.357Z",
-          "score": 5,
+          "date": "2026-09-02T22:06:42.362Z",
+          "score": 0,
           "total": 10,
-          "percentage": 50,
-          "beltLevel": "Faixa Verde 3º Kyu",
-          "beltKyu": 3
-        },
-        {
-          "date": "2026-09-02T22:09:04.721Z",
-          "score": 5,
-          "total": 10,
-          "percentage": 50,
+          "percentage": 0,
           "beltLevel": "Faixa Verde 3º Kyu",
           "beltKyu": 3
         },
@@ -635,10 +627,26 @@
           "beltKyu": 3
         },
         {
-          "date": "2026-09-02T22:06:42.362Z",
-          "score": 0,
+          "date": "2026-09-02T22:09:04.721Z",
+          "score": 5,
           "total": 10,
-          "percentage": 0,
+          "percentage": 50,
+          "beltLevel": "Faixa Verde 3º Kyu",
+          "beltKyu": 3
+        },
+        {
+          "date": "2026-09-02T22:09:27.357Z",
+          "score": 5,
+          "total": 10,
+          "percentage": 50,
+          "beltLevel": "Faixa Verde 3º Kyu",
+          "beltKyu": 3
+        },
+        {
+          "date": "2026-09-30T17:01:19.158Z",
+          "score": 7,
+          "total": 10,
+          "percentage": 70,
           "beltLevel": "Faixa Verde 3º Kyu",
           "beltKyu": 3
         }
@@ -714,8 +722,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1790646424393,
-      "statusUpdatedAt": 1790646424393,
+      "updatedAt": 1790787471993,
+      "statusUpdatedAt": 1790787471993,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -1314,7 +1322,7 @@
       "phone": "21979822652",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1787242368920
+      "updatedAt": 1787241753822
     },
     {
       "id": "std_1786821348098",
@@ -1393,5 +1401,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1790646761339
+  "updatedAt": 1790787671852
 }
