@@ -19,7 +19,7 @@
       "phone": "(21) 972114674",
       "notes": "Administrador Master responsável por todo o sistema, arquivos e aprovações.",
       "password": "Irons365.",
-      "lastActive": 1791415304051,
+      "lastActive": 1791416944054,
       "statusUpdatedAt": 1786925884100,
       "quizScores": [
         {
@@ -746,8 +746,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1791415124577,
-      "statusUpdatedAt": 1791415124577,
+      "updatedAt": 1791416958477,
+      "statusUpdatedAt": 1791416958477,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -774,9 +774,9 @@
     },
     {
       "id": "std_1787185578421_3i178",
-      "username": "alicevarb2@gmail.com",
-      "email": "alicevarb2@gmail.com@tkst.local",
-      "password": "i4z4HPhCt46",
+      "username": "inosukefelix1@gmail.com",
+      "email": "inosukefelix1@gmail.com@tkst.local",
+      "password": "alicebarbos",
       "name": "Alice Barbosa de Souza Pereira",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -786,12 +786,12 @@
       "startDate": "2026-08-20",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "approvedAt": "2026-08-20T00:29:11.723Z",
+      "approvedAt": "2026-10-07T23:50:51.931Z",
       "createdAt": "2026-08-20T00:26:18.431Z",
-      "updatedAt": 1787185751723,
-      "statusUpdatedAt": 1787185751723,
-      "phone": "+55 21 9732-3744",
-      "notes": "Novo cadastro realizado pelo portal."
+      "updatedAt": 1791417051936,
+      "statusUpdatedAt": 1791417051936,
+      "phone": "alicevarb2@gmail.com",
+      "notes": "Novo aluno cadastrado pelo portal."
     },
     {
       "id": "std_1787167014810_him5t",
@@ -1475,7 +1475,7 @@
       "statusUpdatedAt": 1791415207378,
       "phone": "21971768688",
       "notes": "Novo aluno cadastrado pelo portal.",
-      "lastActive": 1791415476787,
+      "lastActive": 1791415796382,
       "quizScores": [
         {
           "date": "2026-10-07T23:24:22.267Z",
@@ -1513,5 +1513,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1791415505619
+  "updatedAt": 1791417054080
 }
