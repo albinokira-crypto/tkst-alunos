@@ -23,6 +23,7 @@
   const STORAGE_KEY_DELETED_ALBUMS = 'tkst_deleted_album_ids';
   const STORAGE_KEY_SUBALBUMS = 'tkst_custom_subalbums';
   const STORAGE_KEY_DELETED_SUBALBUMS = 'tkst_deleted_subalbums';
+  const STORAGE_KEY_CURRICULUM = 'tkst_custom_curriculum';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
   const SYNC_TOPIC = 'tkst_karate_cloud_v2_sync';
@@ -929,6 +930,7 @@
         custom_media,
         custom_albums,
         custom_subalbums,
+        custom_curriculum: JSON.parse(localStorage.getItem(STORAGE_KEY_CURRICULUM)) || {},
         deletedMediaIds,
         deletedAlbums,
         deletedSubAlbums,
@@ -1386,6 +1388,19 @@
       }
     }
 
+    // 12. Sync Custom Curriculum (Plano de Estudos)
+    if (cloudData.custom_curriculum && typeof cloudData.custom_curriculum === 'object') {
+      let localCurr = {};
+      try { localCurr = JSON.parse(localStorage.getItem(STORAGE_KEY_CURRICULUM)) || {}; } catch(e) {}
+      const mergedCurr = { ...localCurr, ...cloudData.custom_curriculum };
+      const currStr = JSON.stringify(mergedCurr);
+      if (localStorage.getItem(STORAGE_KEY_CURRICULUM) !== currStr) {
+        safeLocalStorageSet(STORAGE_KEY_CURRICULUM, currStr);
+        window.dispatchEvent(new CustomEvent('tkst_curriculum_updated'));
+        changed = true;
+      }
+    }
+
     if (changed) {
       window.dispatchEvent(new CustomEvent('tkst_cloud_synced', { detail: { type: 'pull', time: new Date() } }));
       window.dispatchEvent(new CustomEvent('tkst_user_changed'));
@@ -1395,6 +1410,7 @@
       window.dispatchEvent(new CustomEvent('tkst_media_updated'));
       window.dispatchEvent(new CustomEvent('tkst_albums_updated'));
       window.dispatchEvent(new CustomEvent('tkst_subalbums_updated'));
+      window.dispatchEvent(new CustomEvent('tkst_curriculum_updated'));
     }
   }
 
@@ -3461,6 +3477,207 @@
       pushToCloud();
       pullFromCloud(true);
       return true;
+    },
+
+    // ==========================================
+    // STUDY PLAN (CURRICULUM) MANAGEMENT
+    // Autonomia total de edição de técnicas para o Administrador (Sensei Diego)
+    // ==========================================
+    getCustomCurriculum: function() {
+      const defaults = window.TKST_DEFAULT_CURRICULUM || window.TKST_CURRICULUM || [];
+      let customMap = {};
+      try {
+        customMap = JSON.parse(localStorage.getItem(STORAGE_KEY_CURRICULUM)) || {};
+      } catch(e) {}
+
+      return defaults.map(defBelt => {
+        const customBelt = customMap[defBelt.kyuNumber];
+        if (customBelt && typeof customBelt === 'object') {
+          return {
+            ...defBelt,
+            ...customBelt,
+            kihon: Array.isArray(customBelt.kihon) ? customBelt.kihon : defBelt.kihon,
+            geri: Array.isArray(customBelt.geri) ? customBelt.geri : defBelt.geri,
+            ukemi: Array.isArray(customBelt.ukemi) ? customBelt.ukemi : defBelt.ukemi,
+            dachiWaza: Array.isArray(customBelt.dachiWaza) ? customBelt.dachiWaza : defBelt.dachiWaza,
+            shodanProgram: customBelt.shodanProgram ? customBelt.shodanProgram : defBelt.shodanProgram,
+            _customized: true
+          };
+        }
+        return JSON.parse(JSON.stringify(defBelt));
+      });
+    },
+
+    getBeltCurriculum: function(kyuNumber) {
+      const curr = this.getCustomCurriculum();
+      const num = Number(kyuNumber);
+      return curr.find(c => c.kyuNumber === num) || null;
+    },
+
+    saveBeltCurriculum: function(kyuNumber, beltData) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas administradores podem alterar o plano de estudos.' };
+      let customMap = {};
+      try {
+        customMap = JSON.parse(localStorage.getItem(STORAGE_KEY_CURRICULUM)) || {};
+      } catch(e) {}
+
+      const num = Number(kyuNumber);
+      customMap[num] = {
+        ...beltData,
+        updatedAt: Date.now(),
+        _customized: true
+      };
+      safeLocalStorageSet(STORAGE_KEY_CURRICULUM, JSON.stringify(customMap));
+      pushToCloud();
+      window.dispatchEvent(new CustomEvent('tkst_curriculum_updated', { detail: { kyuNumber: num } }));
+      return { success: true };
+    },
+
+    updateCurriculumTechnique: function(kyuNumber, sectionKey, indexOrId, updatedData) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas administradores podem alterar o plano de estudos.' };
+      const belt = this.getBeltCurriculum(kyuNumber);
+      if (!belt) return { success: false, error: 'Exame de graduação não encontrado.' };
+
+      if (sectionKey === 'kihon') {
+        if (!Array.isArray(belt.kihon)) belt.kihon = [];
+        const idx = typeof indexOrId === 'number' ? indexOrId : belt.kihon.findIndex(k => k.id === indexOrId);
+        if (idx < 0 || idx >= belt.kihon.length) return { success: false, error: 'Técnica de Kihon não encontrada.' };
+        belt.kihon[idx] = {
+          ...belt.kihon[idx],
+          ...updatedData,
+          updatedAt: Date.now()
+        };
+      } else if (sectionKey === 'geri') {
+        if (!Array.isArray(belt.geri)) belt.geri = [];
+        const idx = typeof indexOrId === 'number' ? indexOrId : belt.geri.findIndex(g => g.id === indexOrId);
+        if (idx < 0 || idx >= belt.geri.length) return { success: false, error: 'Técnica de Geri não encontrada.' };
+        belt.geri[idx] = {
+          ...belt.geri[idx],
+          ...updatedData,
+          updatedAt: Date.now()
+        };
+      } else if (sectionKey === 'ukemi') {
+        if (!Array.isArray(belt.ukemi)) belt.ukemi = [];
+        const idx = Number(indexOrId);
+        if (idx < 0 || idx >= belt.ukemi.length) return { success: false, error: 'Técnica de Ukemi não encontrada.' };
+        belt.ukemi[idx] = {
+          ...belt.ukemi[idx],
+          ...updatedData,
+          updatedAt: Date.now()
+        };
+      } else if (sectionKey === 'dachiWaza') {
+        if (!Array.isArray(belt.dachiWaza)) belt.dachiWaza = [];
+        const idx = Number(indexOrId);
+        if (idx >= 0 && idx < belt.dachiWaza.length) {
+          belt.dachiWaza[idx] = typeof updatedData === 'string' ? updatedData : (updatedData.name || updatedData.technique || '');
+        }
+      } else if (sectionKey && belt.shodanProgram && belt.shodanProgram[sectionKey]) {
+        const list = belt.shodanProgram[sectionKey];
+        const idx = Number(indexOrId);
+        if (idx >= 0 && idx < list.length) {
+          list[idx] = {
+            ...list[idx],
+            ...updatedData,
+            updatedAt: Date.now()
+          };
+        }
+      }
+
+      return this.saveBeltCurriculum(kyuNumber, belt);
+    },
+
+    addCurriculumTechnique: function(kyuNumber, sectionKey, newTechData) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas administradores podem alterar o plano de estudos.' };
+      const belt = this.getBeltCurriculum(kyuNumber);
+      if (!belt) return { success: false, error: 'Exame de graduação não encontrado.' };
+
+      if (sectionKey === 'kihon') {
+        if (!Array.isArray(belt.kihon)) belt.kihon = [];
+        const newId = `k${kyuNumber}-${Date.now().toString().slice(-4)}`;
+        belt.kihon.push({
+          id: newId,
+          technique: newTechData.technique || '',
+          stance: newTechData.stance || 'Zenkutsu Dachi',
+          direction: newTechData.direction || 'Mae (Avanço)',
+          count: newTechData.count || '5 vezes (Go Kai)',
+          focus: newTechData.focus || '',
+          videoUrl: newTechData.videoUrl || '',
+          _custom: true,
+          updatedAt: Date.now()
+        });
+      } else if (sectionKey === 'geri') {
+        if (!Array.isArray(belt.geri)) belt.geri = [];
+        belt.geri.push({
+          name: newTechData.name || '',
+          detail: newTechData.detail || '',
+          _custom: true,
+          updatedAt: Date.now()
+        });
+      } else if (sectionKey === 'ukemi') {
+        if (!Array.isArray(belt.ukemi)) belt.ukemi = [];
+        belt.ukemi.push({
+          name: newTechData.name || '',
+          detail: newTechData.detail || '',
+          _custom: true,
+          updatedAt: Date.now()
+        });
+      } else if (sectionKey === 'dachiWaza') {
+        if (!Array.isArray(belt.dachiWaza)) belt.dachiWaza = [];
+        const dName = typeof newTechData === 'string' ? newTechData : (newTechData.name || newTechData.technique || '');
+        if (dName) belt.dachiWaza.push(dName);
+      } else if (sectionKey && belt.shodanProgram && belt.shodanProgram[sectionKey]) {
+        belt.shodanProgram[sectionKey].push({
+          name: newTechData.name || '',
+          direction: newTechData.direction || 'Mae',
+          arrow: newTechData.arrow || (newTechData.direction === 'Sagate' ? '⬅' : (newTechData.direction === 'Mae / Mawate' ? '🔄' : '➡')),
+          _custom: true,
+          updatedAt: Date.now()
+        });
+      }
+
+      return this.saveBeltCurriculum(kyuNumber, belt);
+    },
+
+    deleteCurriculumTechnique: function(kyuNumber, sectionKey, indexOrId) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas administradores podem alterar o plano de estudos.' };
+      const belt = this.getBeltCurriculum(kyuNumber);
+      if (!belt) return { success: false, error: 'Exame de graduação não encontrado.' };
+
+      if (sectionKey === 'kihon' && Array.isArray(belt.kihon)) {
+        const idx = typeof indexOrId === 'number' ? indexOrId : belt.kihon.findIndex(k => k.id === indexOrId);
+        if (idx >= 0 && idx < belt.kihon.length) belt.kihon.splice(idx, 1);
+      } else if (sectionKey === 'geri' && Array.isArray(belt.geri)) {
+        const idx = typeof indexOrId === 'number' ? indexOrId : belt.geri.findIndex(g => g.id === indexOrId);
+        if (idx >= 0 && idx < belt.geri.length) belt.geri.splice(idx, 1);
+      } else if (sectionKey === 'ukemi' && Array.isArray(belt.ukemi)) {
+        const idx = Number(indexOrId);
+        if (idx >= 0 && idx < belt.ukemi.length) belt.ukemi.splice(idx, 1);
+      } else if (sectionKey === 'dachiWaza' && Array.isArray(belt.dachiWaza)) {
+        const idx = Number(indexOrId);
+        if (idx >= 0 && idx < belt.dachiWaza.length) belt.dachiWaza.splice(idx, 1);
+      } else if (sectionKey && belt.shodanProgram && belt.shodanProgram[sectionKey]) {
+        const idx = Number(indexOrId);
+        if (idx >= 0 && idx < belt.shodanProgram[sectionKey].length) {
+          belt.shodanProgram[sectionKey].splice(idx, 1);
+        }
+      }
+
+      return this.saveBeltCurriculum(kyuNumber, belt);
+    },
+
+    resetCurriculumBelt: function(kyuNumber) {
+      if (!this.isAdmin()) return { success: false, error: 'Apenas administradores podem alterar o plano de estudos.' };
+      let customMap = {};
+      try {
+        customMap = JSON.parse(localStorage.getItem(STORAGE_KEY_CURRICULUM)) || {};
+      } catch(e) {}
+
+      const num = Number(kyuNumber);
+      delete customMap[num];
+      safeLocalStorageSet(STORAGE_KEY_CURRICULUM, JSON.stringify(customMap));
+      pushToCloud();
+      window.dispatchEvent(new CustomEvent('tkst_curriculum_updated', { detail: { kyuNumber: num } }));
+      return { success: true };
     },
 
     deduplicateQuizSubmissions: deduplicateQuizSubmissions

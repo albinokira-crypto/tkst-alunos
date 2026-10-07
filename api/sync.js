@@ -86,6 +86,7 @@ let inMemoryData = {
   custom_media: [],
   custom_albums: [],
   custom_subalbums: [],
+  custom_curriculum: {},
   deletedStudentIds: [],
   deletedQuizIds: [],
   deletedQuizSubIds: [],
@@ -488,6 +489,11 @@ module.exports = async (req, res) => {
       }
       const customSubAlbumsList = Array.from(subAlbumMap.values());
 
+      let mergedCurriculum = inMemoryData.custom_curriculum || {};
+      if (incoming.custom_curriculum && typeof incoming.custom_curriculum === 'object') {
+        mergedCurriculum = { ...mergedCurriculum, ...incoming.custom_curriculum };
+      }
+
       inMemoryData = {
         dojos: dojosList,
         students: studentsList,
@@ -499,6 +505,7 @@ module.exports = async (req, res) => {
         custom_media: customMediaList,
         custom_albums: customAlbumsList,
         custom_subalbums: customSubAlbumsList,
+        custom_curriculum: mergedCurriculum,
         deletedStudentIds: allDeleted,
         deletedQuizIds: allDeletedQuizzes,
         deletedQuizSubIds: allDeletedSubs,

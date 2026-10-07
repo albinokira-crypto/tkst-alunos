@@ -1390,3 +1390,7 @@ window.TKST_CURRICULUM = [
     ]
   }
 ];
+
+if (typeof window !== 'undefined') {
+  window.TKST_DEFAULT_CURRICULUM = JSON.parse(JSON.stringify(window.TKST_CURRICULUM));
+}

@@ -1055,6 +1055,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    window.addEventListener('tkst_curriculum_updated', () => {
+      if (!shouldSkipRerender()) {
+        if (currentTab === 'my-exam') {
+          renderMyExam();
+        } else if (currentTab === 'dashboard') {
+          renderDashboard();
+        }
+      }
+    });
+
     window.addEventListener('tkst_submissions_updated', () => {
       if (!shouldSkipRerender()) {
         if (currentTab === 'dashboard') {
@@ -2505,7 +2515,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user.currentBelt && (user.currentBelt.toLowerCase().includes('preta') || user.currentBelt.toLowerCase().includes('dan') || user.currentBelt.toLowerCase().includes('sensei'))) {
       currentKyu = 0;
     }
-    const curriculum = window.TKST_CURRICULUM.find(c => c.kyuNumber === currentKyu) || window.TKST_CURRICULUM[0];
+    const allCurriculums = window.TKST_AUTH ? window.TKST_AUTH.getCustomCurriculum() : (window.TKST_CURRICULUM || []);
+    const curriculum = allCurriculums.find(c => c.kyuNumber === currentKyu) || allCurriculums[0];
     const progress = window.TKST_AUTH.getProgress();
 
     const totalKihon = curriculum.kihon ? curriculum.kihon.length : 1;
@@ -4203,8 +4214,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderMyExam() {
     const user = window.TKST_AUTH.getCurrentUser();
-    const curr = window.TKST_CURRICULUM.find(c => c.kyuNumber === selectedBeltKyu) || window.TKST_CURRICULUM[0];
+    const allCurriculums = window.TKST_AUTH ? window.TKST_AUTH.getCustomCurriculum() : (window.TKST_CURRICULUM || []);
+    const curr = allCurriculums.find(c => c.kyuNumber === selectedBeltKyu) || allCurriculums[0];
     const progress = window.TKST_AUTH.getProgress();
+    const isAdmin = window.TKST_AUTH && typeof window.TKST_AUTH.isAdmin === 'function' ? window.TKST_AUTH.isAdmin() : false;
 
     const transMap = {
       6: { label: "Branca para Amarela", fullLabel: "Faixa Branca ➔ Faixa Amarela", kyuLabel: "6º Kyu", fromColor: "#FFFFFF", toColor: "#F5BE00", textColor: "#000000", isDark: true },
@@ -4237,7 +4250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- Desktop Belt Chips -->
         <div class="belt-transition-chips desktop-only-belt-chips">
-          ${window.TKST_CURRICULUM.map(c => {
+          ${allCurriculums.map(c => {
             const trans = transMap[c.kyuNumber] || { label: c.beltName, fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
             const isActive = c.kyuNumber === selectedBeltKyu;
             return `
@@ -4284,7 +4297,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
 
               <div class="belt-mobile-options-list">
-                ${window.TKST_CURRICULUM.map(c => {
+                ${allCurriculums.map(c => {
                   const trans = transMap[c.kyuNumber] || { label: c.beltName, fullLabel: c.beltName, kyuLabel: c.kyuNumber === 0 ? 'Shodan' : (c.kyuNumber === -1 ? 'Nidan' : (c.kyuNumber === -2 ? 'Sandan' : c.kyuNumber + 'º Kyu')), fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
                   const isActive = c.kyuNumber === selectedBeltKyu;
                   return `
@@ -4312,7 +4325,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- Belt Banner -->
-      <div class="dashboard-hero" style="position: relative; overflow: hidden; padding: 24px; margin-bottom: 24px; border-left: 6px solid ${curr.beltColor};">
+      <div class="dashboard-hero" style="position: relative; overflow: hidden; padding: 24px; margin-bottom: 20px; border-left: 6px solid ${curr.beltColor};">
         <!-- Subtle Transparent TKST Emblem Watermark -->
         <img src="assets/images/logo-tkst-emblem-transp.png" alt="TKST Emblem" style="position: absolute; right: -15px; bottom: -12px; height: 120%; opacity: 0.10; pointer-events: none; object-fit: contain;">
 
@@ -4329,6 +4342,26 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
       </div>
+
+      ${isAdmin ? `
+        <!-- Admin Autonomous Study Plan Toolbar -->
+        <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="badge badge-gold" style="font-weight: 800; font-size: 0.74rem; letter-spacing: 0.05em;"><i class="fas fa-user-shield"></i> PAINEL ADMIN</span>
+            <span style="font-size: 0.85rem; color: #F1F5F9; font-weight: 600;">
+              Edição autônoma ativa para <strong>${curr.beltName}</strong> (${beltTitleText}). Você pode corrigir qualquer texto ou técnica.
+            </span>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'kihon')" style="font-size: 0.78rem; padding: 6px 14px; color: var(--accent-gold); border-color: rgba(255, 183, 3, 0.45); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <i class="fas fa-plus-circle"></i> + Nova Técnica
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.resetCurriculumBelt(${curr.kyuNumber})" style="font-size: 0.78rem; padding: 6px 12px; color: #94A3B8; border-color: rgba(255, 255, 255, 0.2); display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Restaura esta faixa exatamente como na apostila oficial TKST 2026">
+              <i class="fas fa-undo"></i> Restaurar Padrão Oficial
+            </button>
+          </div>
+        </div>
+      ` : ''}
 
       <!-- Curriculum Sections as Accordion Buttons -->
       <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 16px;">
@@ -4376,7 +4409,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <i class="fas fa-hand-paper" style="color: #3B82F6; font-size: 1.15rem;"></i>
                       <div>
                         <span>Te Waza (Técnicas de Mãos)</span>
-                        <div class="shodan-col-subtitle">28 Técnicas • Toque para ver técnicas</div>
+                        <div class="shodan-col-subtitle">${curr.shodanProgram.teWaza.length} Técnicas • Toque para ver técnicas</div>
                       </div>
                     </div>
                     <div class="shodan-col-actions">
@@ -4386,11 +4419,26 @@ document.addEventListener('DOMContentLoaded', () => {
                   </button>
                   <div class="shodan-item-list" id="shodanBody_teWaza">
                     ${curr.shodanProgram.teWaza.map((t, idx) => `
-                      <div class="shodan-tech-item">
+                      <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                          <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : (t.direction === 'Sagate' ? 'sagate' : 'mawate')}">${t.arrow}</span>
+                          ${isAdmin ? `
+                            <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'teWaza', ${idx})" title="Editar técnica" style="font-size: 0.68rem; padding: 3px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'teWaza', ${idx})" title="Excluir técnica" style="font-size: 0.68rem; padding: 3px 6px; cursor: pointer; border-radius: 4px;">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          ` : ''}
+                        </div>
                       </div>
                     `).join('')}
+                    ${isAdmin ? `
+                      <div style="padding: 8px; text-align: center;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'teWaza')" style="font-size: 0.74rem; padding: 4px 10px; color: #3B82F6; border-color: rgba(59,130,246,0.4);"><i class="fas fa-plus"></i> Adicionar Técnica Te Waza</button>
+                      </div>
+                    ` : ''}
                   </div>
                 </div>
 
@@ -4401,7 +4449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <i class="fas fa-shield-alt" style="color: #10B981; font-size: 1.15rem;"></i>
                       <div>
                         <span>Uke Waza (Defesas)</span>
-                        <div class="shodan-col-subtitle">25 Técnicas • Toque para ver técnicas</div>
+                        <div class="shodan-col-subtitle">${curr.shodanProgram.ukeWaza.length} Técnicas • Toque para ver técnicas</div>
                       </div>
                     </div>
                     <div class="shodan-col-actions">
@@ -4411,11 +4459,26 @@ document.addEventListener('DOMContentLoaded', () => {
                   </button>
                   <div class="shodan-item-list" id="shodanBody_ukeWaza">
                     ${curr.shodanProgram.ukeWaza.map((t, idx) => `
-                      <div class="shodan-tech-item">
+                      <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                          <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : (t.direction === 'Sagate' ? 'sagate' : 'mawate')}">${t.arrow}</span>
+                          ${isAdmin ? `
+                            <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukeWaza', ${idx})" title="Editar técnica" style="font-size: 0.68rem; padding: 3px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukeWaza', ${idx})" title="Excluir técnica" style="font-size: 0.68rem; padding: 3px 6px; cursor: pointer; border-radius: 4px;">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          ` : ''}
+                        </div>
                       </div>
                     `).join('')}
+                    ${isAdmin ? `
+                      <div style="padding: 8px; text-align: center;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'ukeWaza')" style="font-size: 0.74rem; padding: 4px 10px; color: #10B981; border-color: rgba(16,185,129,0.4);"><i class="fas fa-plus"></i> Adicionar Técnica Uke Waza</button>
+                      </div>
+                    ` : ''}
                   </div>
                 </div>
 
@@ -4426,7 +4489,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <i class="fas fa-shoe-prints" style="color: #F5BE00; font-size: 1.15rem;"></i>
                       <div>
                         <span>Ashi Waza (Chutes)</span>
-                        <div class="shodan-col-subtitle">15 Técnicas • Toque para ver técnicas</div>
+                        <div class="shodan-col-subtitle">${curr.shodanProgram.ashiWaza.length} Técnicas • Toque para ver técnicas</div>
                       </div>
                     </div>
                     <div class="shodan-col-actions">
@@ -4436,11 +4499,26 @@ document.addEventListener('DOMContentLoaded', () => {
                   </button>
                   <div class="shodan-item-list" id="shodanBody_ashiWaza">
                     ${curr.shodanProgram.ashiWaza.map((t, idx) => `
-                      <div class="shodan-tech-item">
+                      <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <span class="shodan-arrow-badge mawate">${t.arrow}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                          <span class="shodan-arrow-badge mawate">${t.arrow}</span>
+                          ${isAdmin ? `
+                            <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ashiWaza', ${idx})" title="Editar técnica" style="font-size: 0.68rem; padding: 3px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ashiWaza', ${idx})" title="Excluir técnica" style="font-size: 0.68rem; padding: 3px 6px; cursor: pointer; border-radius: 4px;">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          ` : ''}
+                        </div>
                       </div>
                     `).join('')}
+                    ${isAdmin ? `
+                      <div style="padding: 8px; text-align: center;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'ashiWaza')" style="font-size: 0.74rem; padding: 4px 10px; color: #F5BE00; border-color: rgba(245,190,0,0.4);"><i class="fas fa-plus"></i> Adicionar Técnica Ashi Waza</button>
+                      </div>
+                    ` : ''}
                   </div>
                 </div>
 
@@ -4451,7 +4529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <i class="fas fa-layer-group" style="color: #8B5CF6; font-size: 1.15rem;"></i>
                       <div>
                         <span>Dachi Waza (Bases & Movimentação)</span>
-                        <div class="shodan-col-subtitle">18 Técnicas • Toque para ver técnicas</div>
+                        <div class="shodan-col-subtitle">${curr.shodanProgram.dachiWaza.length} Técnicas • Toque para ver técnicas</div>
                       </div>
                     </div>
                     <div class="shodan-col-actions">
@@ -4461,27 +4539,60 @@ document.addEventListener('DOMContentLoaded', () => {
                   </button>
                   <div class="shodan-item-list" id="shodanBody_dachiWaza">
                     ${curr.shodanProgram.dachiWaza.map((t, idx) => `
-                      <div class="shodan-tech-item">
+                      <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                          <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
+                          ${isAdmin ? `
+                            <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Editar técnica" style="font-size: 0.68rem; padding: 3px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Excluir técnica" style="font-size: 0.68rem; padding: 3px 6px; cursor: pointer; border-radius: 4px;">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          ` : ''}
+                        </div>
                       </div>
                     `).join('')}
+                    ${isAdmin ? `
+                      <div style="padding: 8px; text-align: center;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza')" style="font-size: 0.74rem; padding: 4px 10px; color: #8B5CF6; border-color: rgba(139,92,246,0.4);"><i class="fas fa-plus"></i> Adicionar Base Dachi Waza</button>
+                      </div>
+                    ` : ''}
                   </div>
                 </div>
               </div>
             ` : `
               <div class="technique-list">
-                ${curr.kihon.map(k => `
-                  <div class="technique-item">
-                    <div class="technique-main" style="align-items: center;">
+                ${isAdmin ? `
+                  <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'kihon')" style="font-size: 0.76rem; padding: 6px 14px; border-color: rgba(255, 183, 3, 0.4); color: var(--accent-gold); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                      <i class="fas fa-plus"></i> + Adicionar Técnica no Kihon
+                    </button>
+                  </div>
+                ` : ''}
+                ${curr.kihon.map((k, idx) => `
+                  <div class="technique-item" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                    <div class="technique-main" style="align-items: center; flex: 1;">
                       <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-crimson); margin-right: 10px; flex-shrink: 0;"></div>
                       <div>
                         <div class="technique-name">${k.technique}</div>
                         <div class="technique-meta">
                           <span class="stance">${k.stance}</span> • <span>${k.direction}</span> • <span style="color: #64748B;">${k.count}</span>
+                          ${k.focus ? ` • <span style="color: var(--accent-gold); font-size: 0.76rem;">${k.focus}</span>` : ''}
                         </div>
                       </div>
                     </div>
+                    ${isAdmin ? `
+                      <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
+                        <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'kihon', ${idx})" title="Editar técnica" style="font-size: 0.72rem; padding: 4px 8px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'kihon', ${idx})" title="Excluir técnica" style="font-size: 0.72rem; padding: 4px 8px; cursor: pointer; border-radius: 4px;">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    ` : ''}
                   </div>
                 `).join('')}
               </div>
@@ -4504,10 +4615,17 @@ document.addEventListener('DOMContentLoaded', () => {
             </button>
 
             <div class="study-accordion-body ${isGeriOpen ? 'active' : ''}" id="studyBody_geri">
+              ${isAdmin ? `
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'geri')" style="font-size: 0.76rem; padding: 6px 14px; border-color: rgba(255, 183, 3, 0.4); color: var(--accent-gold); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <i class="fas fa-plus"></i> + Adicionar Chute em Geri Waza
+                  </button>
+                </div>
+              ` : ''}
               <div class="technique-list">
-                ${curr.geri.map(g => `
-                  <div class="technique-item" style="border-left: 3px solid #F5BE00;">
-                    <div class="technique-main" style="align-items: flex-start;">
+                ${curr.geri.map((g, idx) => `
+                  <div class="technique-item" style="border-left: 3px solid #F5BE00; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                    <div class="technique-main" style="align-items: flex-start; flex: 1;">
                       <div style="width: 8px; height: 8px; border-radius: 50%; background: #F5BE00; margin-top: 6px; margin-right: 10px; flex-shrink: 0;"></div>
                       <div>
                         <div class="technique-name" style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${g.name}</div>
@@ -4516,6 +4634,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                       </div>
                     </div>
+                    ${isAdmin ? `
+                      <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
+                        <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'geri', ${idx})" title="Editar chute" style="font-size: 0.72rem; padding: 4px 8px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'geri', ${idx})" title="Excluir chute" style="font-size: 0.72rem; padding: 4px 8px; cursor: pointer; border-radius: 4px;">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    ` : ''}
                   </div>
                 `).join('')}
               </div>
@@ -4538,10 +4666,29 @@ document.addEventListener('DOMContentLoaded', () => {
             </button>
 
             <div class="study-accordion-body ${isUkemiOpen ? 'active' : ''}" id="studyBody_ukemi">
+              ${isAdmin ? `
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'ukemi')" style="font-size: 0.76rem; padding: 6px 14px; border-color: rgba(255, 183, 3, 0.4); color: var(--accent-gold); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <i class="fas fa-plus"></i> + Adicionar Queda em Ukemi
+                  </button>
+                </div>
+              ` : ''}
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
-                ${curr.ukemi.map(u => `
+                ${curr.ukemi.map((u, idx) => `
                   <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-left: 3px solid #10B981; border-radius: var(--radius-sm); padding: 12px 14px;">
-                    <div style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 4px;">🥋 ${u.name}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                      <div style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 4px;">🥋 ${u.name}</div>
+                      ${isAdmin ? `
+                        <div style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
+                          <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukemi', ${idx})" title="Editar" style="font-size: 0.68rem; padding: 2px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukemi', ${idx})" title="Excluir" style="font-size: 0.68rem; padding: 2px 6px; cursor: pointer; border-radius: 4px;">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      ` : ''}
+                    </div>
                     <div style="font-size: 0.8rem; color: #94A3B8;">${u.detail}</div>
                   </div>
                 `).join('')}
@@ -4646,12 +4793,21 @@ document.addEventListener('DOMContentLoaded', () => {
             <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_dachi" style="transform: ${isDachiOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
           </button>
           <div class="study-accordion-body ${isDachiOpen ? 'active' : ''}" id="studyBody_dachi">
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              ${curr.dachiWaza.map(d => `
-                <span class="badge" style="background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.4); color: #C4B5FD; font-size: 0.85rem; padding: 6px 12px;">
-                  🥋 <strong>${d}</strong>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              ${curr.dachiWaza.map((d, idx) => `
+                <span class="badge" style="background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.4); color: #C4B5FD; font-size: 0.85rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                  🥋 <strong>${typeof d === 'string' ? d : d.name}</strong>
+                  ${isAdmin ? `
+                    <button type="button" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 0 2px; font-size: 0.72rem;" title="Editar base"><i class="fas fa-edit"></i></button>
+                    <button type="button" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 0 2px; font-size: 0.72rem;" title="Excluir base"><i class="fas fa-times"></i></button>
+                  ` : ''}
                 </span>
               `).join('')}
+              ${isAdmin ? `
+                <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza')" style="font-size: 0.76rem; padding: 5px 12px; color: #A78BFA; border-color: rgba(167,139,250,0.4); display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                  <i class="fas fa-plus"></i> + Adicionar Base
+                </button>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -11477,6 +11633,623 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         modal.removeAttribute('data-prevent-outside-close');
         modal.classList.remove('active');
         stopModalMedia(modal);
+      }
+    },
+
+    // =========================================================================
+    // STUDY PLAN (CURRICULUM) AUTONOMOUS MANAGEMENT (Admin Only)
+    // =========================================================================
+    openEditCurriculumTechniqueModal: (kyuNumber, sectionKey, index) => {
+      if (!window.TKST_AUTH || !window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao administrador (Sensei Diego).');
+        return;
+      }
+      const belt = window.TKST_AUTH.getBeltCurriculum(kyuNumber);
+      if (!belt) {
+        alert('Graduação não encontrada.');
+        return;
+      }
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      const modal = document.getElementById('detailModal');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modal.setAttribute('data-prevent-outside-close', 'true');
+
+      let titleHtml = '';
+      let formBodyHtml = '';
+
+      const isShodan = belt.shodanProgram && ['teWaza', 'ukeWaza', 'ashiWaza', 'dachiWaza'].includes(sectionKey);
+
+      if (isShodan) {
+        const sectionNames = {
+          teWaza: 'Te Waza (Técnicas de Mãos)',
+          ukeWaza: 'Uke Waza (Defesas)',
+          ashiWaza: 'Ashi Waza / Geri (Pernas e Chutes)',
+          dachiWaza: 'Dachi Waza (Bases e Movimentação)'
+        };
+        const list = belt.shodanProgram[sectionKey] || [];
+        const item = list[index];
+        if (!item) {
+          alert('Técnica não encontrada.');
+          return;
+        }
+
+        titleHtml = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Técnica: ${belt.beltName}</span>`;
+
+        formBodyHtml = `
+          <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditCurriculumTechnique(${kyuNumber}, '${sectionKey}', ${index});" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.25); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.82rem; color: #E2E8F0;">
+              <i class="fas fa-layer-group" style="color: var(--accent-gold); margin-right: 6px;"></i>
+              <strong>Coluna Shodan:</strong> ${sectionNames[sectionKey] || sectionKey} • Posição: #${index + 1}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome da Técnica / Base: *
+              </label>
+              <input type="text" id="editTechName" class="form-input" required value="${(item.name || '').replace(/"/g, '&quot;')}" placeholder="Ex: Oi Tsuki / Mae Geri" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Direção / Movimentação:
+                </label>
+                <select id="editTechDirection" class="form-input" onchange="const a = document.getElementById('editTechArrow'); if (a) { a.value = (this.value === 'Sagate' ? '⬅' : (this.value === 'Mae / Mawate' ? '🔄' : '➡')); }" style="font-size: 0.88rem;">
+                  <option value="Mae" ${item.direction === 'Mae' ? 'selected' : ''}>➡ Mae (Avanço)</option>
+                  <option value="Sagate" ${item.direction === 'Sagate' ? 'selected' : ''}>⬅ Sagate (Recuo)</option>
+                  <option value="Mae / Mawate" ${(item.direction === 'Mae / Mawate' || item.direction === 'Mawate') ? 'selected' : ''}>🔄 Mae / Mawate (Avanço e Giro)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Seta / Símbolo:
+                </label>
+                <select id="editTechArrow" class="form-input" style="font-size: 0.88rem;">
+                  <option value="➡" ${item.arrow === '➡' ? 'selected' : ''}>➡ (Avanço)</option>
+                  <option value="⬅" ${item.arrow === '⬅' ? 'selected' : ''}>⬅ (Recuo)</option>
+                  <option value="🔄" ${item.arrow === '🔄' ? 'selected' : ''}>🔄 (Giro)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="flex: 1; padding: 11px;">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" style="flex: 2; padding: 11px; font-weight: 700;">
+                <i class="fas fa-save"></i> Salvar Alteração
+              </button>
+            </div>
+          </form>
+        `;
+      } else if (sectionKey === 'kihon') {
+        const list = belt.kihon || [];
+        const item = list[index];
+        if (!item) {
+          alert('Técnica de Kihon não encontrada.');
+          return;
+        }
+
+        titleHtml = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Kihon: ${belt.beltName}</span>`;
+
+        formBodyHtml = `
+          <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditCurriculumTechnique(${kyuNumber}, 'kihon', ${index});" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.25); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.82rem; color: #E2E8F0;">
+              <i class="fas fa-fist-raised" style="color: var(--accent-crimson); margin-right: 6px;"></i>
+              <strong>Kihon Oficial TKST:</strong> Técnica #${index + 1} para exame de ${belt.beltName}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome da Técnica / Sequência: *
+              </label>
+              <input type="text" id="editTechName" class="form-input" required value="${(item.technique || '').replace(/"/g, '&quot;')}" placeholder="Ex: Chudan Oi Tsuki / Mae Geri" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Base / Postura:
+                </label>
+                <input type="text" id="editTechStance" class="form-input" value="${(item.stance || '').replace(/"/g, '&quot;')}" placeholder="Ex: Zenkutsu Dachi, Kokutsu Dachi" style="font-size: 0.88rem;">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Direção / Deslocamento:
+                </label>
+                <input type="text" id="editTechDirection" class="form-input" value="${(item.direction || '').replace(/"/g, '&quot;')}" placeholder="Ex: Mae (Avanço), Sagate (Recuo)" style="font-size: 0.88rem;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Repetições / Contagem:
+                </label>
+                <input type="text" id="editTechCount" class="form-input" value="${(item.count || '').replace(/"/g, '&quot;')}" placeholder="Ex: 5 vezes (Go Kai), 3x" style="font-size: 0.88rem;">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Foco Técnico / Detalhe (Opcional):
+                </label>
+                <input type="text" id="editTechFocus" class="form-input" value="${(item.focus || '').replace(/"/g, '&quot;')}" placeholder="Ex: Quadril em Shomen, Kime" style="font-size: 0.88rem;">
+              </div>
+            </div>
+
+            <div style="display: gap: 10px; margin-top: 8px; display: flex;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="flex: 1; padding: 11px;">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" style="flex: 2; padding: 11px; font-weight: 700;">
+                <i class="fas fa-save"></i> Salvar Técnica
+              </button>
+            </div>
+          </form>
+        `;
+      } else if (sectionKey === 'geri') {
+        const list = belt.geri || [];
+        const item = list[index];
+        if (!item) {
+          alert('Técnica de chute não encontrada.');
+          return;
+        }
+
+        titleHtml = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Geri Waza: ${belt.beltName}</span>`;
+
+        formBodyHtml = `
+          <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditCurriculumTechnique(${kyuNumber}, 'geri', ${index});" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.25); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.82rem; color: #E2E8F0;">
+              <i class="fas fa-shoe-prints" style="color: #F5BE00; margin-right: 6px;"></i>
+              <strong>Geri Waza:</strong> Sequência de chute #${index + 1}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome do Chute / Sequência: *
+              </label>
+              <input type="text" id="editTechName" class="form-input" required value="${(item.name || '').replace(/"/g, '&quot;')}" placeholder="Ex: Mae Geri Keage" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Detalhe da Execução / Observações:
+              </label>
+              <textarea id="editTechDetail" class="form-input" rows="3" placeholder="Ex: Chudan ou Jodan, perna de trás com retorno à base..." style="resize: vertical; font-size: 0.88rem;">${(item.detail || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="flex: 1; padding: 11px;">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" style="flex: 2; padding: 11px; font-weight: 700;">
+                <i class="fas fa-save"></i> Salvar Chute
+              </button>
+            </div>
+          </form>
+        `;
+      } else if (sectionKey === 'ukemi') {
+        const list = belt.ukemi || [];
+        const item = list[index];
+        if (!item) {
+          alert('Técnica de Ukemi não encontrada.');
+          return;
+        }
+
+        titleHtml = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Ukemi: ${belt.beltName}</span>`;
+
+        formBodyHtml = `
+          <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditCurriculumTechnique(${kyuNumber}, 'ukemi', ${index});" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.25); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.82rem; color: #E2E8F0;">
+              <i class="fas fa-user-ninja" style="color: #10B981; margin-right: 6px;"></i>
+              <strong>Ukemi Waza:</strong> Queda ou rolamento #${index + 1}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome do Ukemi / Rolamento: *
+              </label>
+              <input type="text" id="editTechName" class="form-input" required value="${(item.name || '').replace(/"/g, '&quot;')}" placeholder="Ex: Ushiro Ukemi" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Detalhe da Execução / Amortecimento:
+              </label>
+              <textarea id="editTechDetail" class="form-input" rows="3" placeholder="Ex: Queda amortecida para trás com queixo no peito e batida de braços 45°..." style="resize: vertical; font-size: 0.88rem;">${(item.detail || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="flex: 1; padding: 11px;">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" style="flex: 2; padding: 11px; font-weight: 700;">
+                <i class="fas fa-save"></i> Salvar Queda
+              </button>
+            </div>
+          </form>
+        `;
+      } else if (sectionKey === 'dachiWaza') {
+        const list = belt.dachiWaza || [];
+        const item = list[index];
+        const nameVal = typeof item === 'string' ? item : (item?.name || '');
+
+        titleHtml = `<span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Base Dachi Waza: ${belt.beltName}</span>`;
+
+        formBodyHtml = `
+          <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditCurriculumTechnique(${kyuNumber}, 'dachiWaza', ${index});" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.25); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.82rem; color: #E2E8F0;">
+              <i class="fas fa-layer-group" style="color: #8B5CF6; margin-right: 6px;"></i>
+              <strong>Dachi Waza:</strong> Base avaliada #${index + 1}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome da Base (Dachi): *
+              </label>
+              <input type="text" id="editTechName" class="form-input" required value="${nameVal.replace(/"/g, '&quot;')}" placeholder="Ex: Zenkutsu Dachi" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="flex: 1; padding: 11px;">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" style="flex: 2; padding: 11px; font-weight: 700;">
+                <i class="fas fa-save"></i> Salvar Base
+              </button>
+            </div>
+          </form>
+        `;
+      }
+
+      modalTitle.innerHTML = titleHtml;
+      modalBody.innerHTML = formBodyHtml;
+      modal.classList.add('active');
+    },
+
+    submitEditCurriculumTechnique: (kyuNumber, sectionKey, index) => {
+      if (!window.TKST_AUTH || !window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao administrador.');
+        return;
+      }
+
+      const nameEl = document.getElementById('editTechName');
+      if (!nameEl || !nameEl.value.trim()) {
+        alert('Por favor, informe o nome da técnica.');
+        return;
+      }
+
+      const name = nameEl.value.trim();
+      let updatedData = {};
+
+      const belt = window.TKST_AUTH.getBeltCurriculum(kyuNumber);
+      const isShodan = belt && belt.shodanProgram && ['teWaza', 'ukeWaza', 'ashiWaza', 'dachiWaza'].includes(sectionKey);
+
+      if (isShodan) {
+        const direction = document.getElementById('editTechDirection')?.value || 'Mae';
+        const arrow = document.getElementById('editTechArrow')?.value || (direction === 'Sagate' ? '⬅' : (direction === 'Mae / Mawate' ? '🔄' : '➡'));
+        updatedData = { name, direction, arrow };
+      } else if (sectionKey === 'kihon') {
+        const stance = document.getElementById('editTechStance')?.value.trim() || '';
+        const direction = document.getElementById('editTechDirection')?.value.trim() || '';
+        const count = document.getElementById('editTechCount')?.value.trim() || '';
+        const focus = document.getElementById('editTechFocus')?.value.trim() || '';
+        updatedData = { technique: name, stance, direction, count, focus };
+      } else if (sectionKey === 'geri' || sectionKey === 'ukemi') {
+        const detail = document.getElementById('editTechDetail')?.value.trim() || '';
+        updatedData = { name, detail };
+      } else if (sectionKey === 'dachiWaza') {
+        updatedData = name;
+      }
+
+      const res = window.TKST_AUTH.updateCurriculumTechnique(kyuNumber, sectionKey, index, updatedData);
+      if (res && res.success) {
+        window.TKST_APP.closeDetailModal();
+        if (typeof showToast === 'function') {
+          showToast('✅ Técnica atualizada e sincronizada com sucesso!', 'success');
+        } else {
+          alert('Técnica atualizada com sucesso!');
+        }
+        renderMyExam();
+      } else {
+        alert((res && res.error) || 'Erro ao salvar alteração da técnica.');
+      }
+    },
+
+    openAddCurriculumTechniqueModal: (kyuNumber, defaultSectionKey) => {
+      if (!window.TKST_AUTH || !window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao administrador (Sensei Diego).');
+        return;
+      }
+      const belt = window.TKST_AUTH.getBeltCurriculum(kyuNumber);
+      if (!belt) {
+        alert('Graduação não encontrada.');
+        return;
+      }
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      const modal = document.getElementById('detailModal');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modal.setAttribute('data-prevent-outside-close', 'true');
+
+      modalTitle.innerHTML = `<span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Adicionar Técnica: ${belt.beltName}</span>`;
+
+      let sectionOptions = [];
+      if (belt.shodanProgram) {
+        sectionOptions = [
+          { key: 'teWaza', label: 'Te Waza (Técnicas de Mãos)' },
+          { key: 'ukeWaza', label: 'Uke Waza (Defesas)' },
+          { key: 'ashiWaza', label: 'Ashi Waza / Geri (Pernas e Chutes)' },
+          { key: 'dachiWaza', label: 'Dachi Waza (Bases e Movimentação)' }
+        ];
+      } else {
+        sectionOptions.push({ key: 'kihon', label: 'Kihon (Técnicas Fundamentais)' });
+        if (belt.geri || defaultSectionKey === 'geri') {
+          sectionOptions.push({ key: 'geri', label: 'Geri Waza (Técnicas de Chutes)' });
+        }
+        if (belt.ukemi || defaultSectionKey === 'ukemi') {
+          sectionOptions.push({ key: 'ukemi', label: 'Ukemi (Quedas & Rolamentos)' });
+        }
+        if (belt.dachiWaza || defaultSectionKey === 'dachiWaza') {
+          sectionOptions.push({ key: 'dachiWaza', label: 'Dachi Waza (Bases Exigidas)' });
+        }
+      }
+
+      const selectedKey = (defaultSectionKey && sectionOptions.some(o => o.key === defaultSectionKey)) ? defaultSectionKey : sectionOptions[0].key;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddCurriculumTechnique(${kyuNumber});" style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+              <i class="fas fa-folder" style="color: var(--accent-gold); margin-right: 6px;"></i> Seção do Plano de Estudos:
+            </label>
+            <select id="addTechSection" class="form-input" onchange="window.TKST_APP.updateAddCurriculumFields(this.value, ${kyuNumber})" style="font-size: 0.88rem; font-weight: 600;">
+              ${sectionOptions.map(opt => `
+                <option value="${opt.key}" ${opt.key === selectedKey ? 'selected' : ''}>${opt.label}</option>
+              `).join('')}
+            </select>
+          </div>
+
+          <div id="addTechFieldsContainer">
+            <!-- Dynamic fields -->
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="flex: 1; padding: 11px;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 11px; font-weight: 700;">
+              <i class="fas fa-plus"></i> Inserir Técnica
+            </button>
+          </div>
+        </form>
+      `;
+
+      window.TKST_APP.updateAddCurriculumFields(selectedKey, kyuNumber);
+      modal.classList.add('active');
+    },
+
+    updateAddCurriculumFields: (sectionKey, kyuNumber) => {
+      const container = document.getElementById('addTechFieldsContainer');
+      if (!container) return;
+
+      const belt = window.TKST_AUTH.getBeltCurriculum(kyuNumber);
+      const isShodan = belt && belt.shodanProgram && ['teWaza', 'ukeWaza', 'ashiWaza', 'dachiWaza'].includes(sectionKey);
+
+      if (isShodan) {
+        container.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome da Técnica / Base: *
+              </label>
+              <input type="text" id="addTechName" class="form-input" required placeholder="Ex: Oi Tsuki / Uraken Uchi" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Direção / Movimentação:
+                </label>
+                <select id="addTechDirection" class="form-input" onchange="const a = document.getElementById('addTechArrow'); if (a) { a.value = (this.value === 'Sagate' ? '⬅' : (this.value === 'Mae / Mawate' ? '🔄' : '➡')); }" style="font-size: 0.88rem;">
+                  <option value="Mae">➡ Mae (Avanço)</option>
+                  <option value="Sagate">⬅ Sagate (Recuo)</option>
+                  <option value="Mae / Mawate">🔄 Mae / Mawate (Avanço e Giro)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Seta / Símbolo:
+                </label>
+                <select id="addTechArrow" class="form-input" style="font-size: 0.88rem;">
+                  <option value="➡">➡ (Avanço)</option>
+                  <option value="⬅">⬅ (Recuo)</option>
+                  <option value="🔄">🔄 (Giro)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (sectionKey === 'kihon') {
+        container.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome da Técnica / Sequência: *
+              </label>
+              <input type="text" id="addTechName" class="form-input" required placeholder="Ex: Chudan Gyaku Tsuki" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Base / Postura:
+                </label>
+                <input type="text" id="addTechStance" class="form-input" placeholder="Ex: Zenkutsu Dachi" style="font-size: 0.88rem;" value="Zenkutsu Dachi">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Direção / Deslocamento:
+                </label>
+                <input type="text" id="addTechDirection" class="form-input" placeholder="Ex: Mae (Avanço) ou Sagate (Recuo)" style="font-size: 0.88rem;" value="Mae (Avanço)">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Repetições / Contagem:
+                </label>
+                <input type="text" id="addTechCount" class="form-input" placeholder="Ex: 5 vezes (Go Kai) ou 3x" style="font-size: 0.88rem;" value="5 vezes (Go Kai)">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                  Foco Técnico / Observação:
+                </label>
+                <input type="text" id="addTechFocus" class="form-input" placeholder="Ex: Quadril em Shomen no Kime" style="font-size: 0.88rem;">
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (sectionKey === 'geri' || sectionKey === 'ukemi') {
+        container.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome da Técnica / ${sectionKey === 'geri' ? 'Chute' : 'Queda'}: *
+              </label>
+              <input type="text" id="addTechName" class="form-input" required placeholder="Ex: ${sectionKey === 'geri' ? 'Mae Geri Keage' : 'Mae Ukemi'}" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Detalhe da Execução / Observações:
+              </label>
+              <textarea id="addTechDetail" class="form-input" rows="3" placeholder="Ex: Explicação detalhada da técnica, postura e execução..." style="resize: vertical; font-size: 0.88rem;"></textarea>
+            </div>
+          </div>
+        `;
+      } else if (sectionKey === 'dachiWaza') {
+        container.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #FFF; font-weight: 700;">
+                Nome da Base (Dachi): *
+              </label>
+              <input type="text" id="addTechName" class="form-input" required placeholder="Ex: Kiba Dachi" style="font-size: 0.92rem; font-weight: 600;">
+            </div>
+          </div>
+        `;
+      }
+    },
+
+    submitAddCurriculumTechnique: (kyuNumber) => {
+      if (!window.TKST_AUTH || !window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao administrador.');
+        return;
+      }
+
+      const sectionEl = document.getElementById('addTechSection');
+      const nameEl = document.getElementById('addTechName');
+      if (!sectionEl || !nameEl || !nameEl.value.trim()) {
+        alert('Por favor, informe a seção e o nome da técnica.');
+        return;
+      }
+
+      const sectionKey = sectionEl.value;
+      const name = nameEl.value.trim();
+      let newTechData = {};
+
+      const belt = window.TKST_AUTH.getBeltCurriculum(kyuNumber);
+      const isShodan = belt && belt.shodanProgram && ['teWaza', 'ukeWaza', 'ashiWaza', 'dachiWaza'].includes(sectionKey);
+
+      if (isShodan) {
+        const direction = document.getElementById('addTechDirection')?.value || 'Mae';
+        const arrow = document.getElementById('addTechArrow')?.value || (direction === 'Sagate' ? '⬅' : (direction === 'Mae / Mawate' ? '🔄' : '➡'));
+        newTechData = { name, direction, arrow };
+      } else if (sectionKey === 'kihon') {
+        const stance = document.getElementById('addTechStance')?.value.trim() || 'Zenkutsu Dachi';
+        const direction = document.getElementById('addTechDirection')?.value.trim() || 'Mae (Avanço)';
+        const count = document.getElementById('addTechCount')?.value.trim() || '5 vezes (Go Kai)';
+        const focus = document.getElementById('addTechFocus')?.value.trim() || '';
+        newTechData = { technique: name, stance, direction, count, focus };
+      } else if (sectionKey === 'geri' || sectionKey === 'ukemi') {
+        const detail = document.getElementById('addTechDetail')?.value.trim() || '';
+        newTechData = { name, detail };
+      } else if (sectionKey === 'dachiWaza') {
+        newTechData = name;
+      }
+
+      const res = window.TKST_AUTH.addCurriculumTechnique(kyuNumber, sectionKey, newTechData);
+      if (res && res.success) {
+        window.TKST_APP.closeDetailModal();
+        if (typeof showToast === 'function') {
+          showToast('✅ Nova técnica cadastrada com sucesso!', 'success');
+        } else {
+          alert('Nova técnica cadastrada com sucesso!');
+        }
+        renderMyExam();
+      } else {
+        alert((res && res.error) || 'Erro ao adicionar técnica.');
+      }
+    },
+
+    deleteCurriculumTechnique: (kyuNumber, sectionKey, index) => {
+      if (!window.TKST_AUTH || !window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao administrador (Sensei Diego).');
+        return;
+      }
+
+      if (!confirm('Deseja realmente excluir esta técnica do plano de estudos?\nEsta alteração entrará em vigor imediatamente e será sincronizada com todos os dispositivos.')) {
+        return;
+      }
+
+      const res = window.TKST_AUTH.deleteCurriculumTechnique(kyuNumber, sectionKey, index);
+      if (res && res.success) {
+        if (typeof showToast === 'function') {
+          showToast('🗑️ Técnica removida com sucesso!', 'success');
+        } else {
+          alert('Técnica removida com sucesso!');
+        }
+        renderMyExam();
+      } else {
+        alert((res && res.error) || 'Erro ao excluir técnica.');
+      }
+    },
+
+    resetCurriculumBelt: (kyuNumber) => {
+      if (!window.TKST_AUTH || !window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao administrador (Sensei Diego).');
+        return;
+      }
+
+      const belt = window.TKST_AUTH.getBeltCurriculum(kyuNumber);
+      const beltName = belt ? belt.beltName : `Faixa #${kyuNumber}`;
+
+      if (!confirm(`Deseja restaurar o plano de estudos de "${beltName}" para o padrão oficial da apostila TKST 2026?\nTodas as alterações ou correções manuais desta faixa serão revertidas para o padrão oficial.`)) {
+        return;
+      }
+
+      const res = window.TKST_AUTH.resetCurriculumBelt(kyuNumber);
+      if (res && res.success) {
+        if (typeof showToast === 'function') {
+          showToast('🔄 Conteúdo oficial da faixa restaurado com sucesso!', 'success');
+        } else {
+          alert('Conteúdo oficial da faixa restaurado com sucesso!');
+        }
+        renderMyExam();
+      } else {
+        alert((res && res.error) || 'Erro ao restaurar faixa.');
       }
     }
   };
