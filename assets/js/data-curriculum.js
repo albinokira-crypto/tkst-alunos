@@ -6,97 +6,90 @@ window.TKST_CURRICULUM = [
     "beltColor": "#F5BE00",
     "previousBelt": "Faixa Branca",
     "targetBelt": "Faixa Amarela (6º Kyu)",
-    "description": "Foco na assimilação das bases fundamentais (Zenkutsu Dachi e Kiba Dachi), defesas básicas e socos em avanço e recuo.",
+    "description": "Exame oficial de graduação de Faixa Branca para Faixa Amarela (6º Kyu): domínio de Kihon (Go Kai e San Kai), Kata Heian Shodan, Gohon Kumite, Shiai Kumite e Dachi Waza.",
     "kihon": [
       {
         "id": "k6-1",
-        "direction": "Mae (Avançando)",
-        "technique": "Oi Tsuki Chudan",
+        "direction": "Mae / Mawate",
+        "technique": "Jodan Age Uke",
         "stance": "Zenkutsu Dachi",
         "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-2",
-        "direction": "Sagate (Recuando)",
-        "technique": "Age Uke Jodan",
+        "direction": "Mae / Mawate",
+        "technique": "Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-3",
-        "direction": "Mae (Avançando)",
-        "technique": "Soto Uke Chudan",
+        "direction": "Mae / Mawate",
+        "technique": "Chudan Soto Uke",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-4",
-        "direction": "Sagate (Recuando)",
-        "technique": "Uchi Uke Chudan",
+        "direction": "Mae / Mawate",
+        "technique": "Gedan Barai",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-5",
-        "direction": "Mae (Avançando)",
-        "technique": "Gedan Barai",
-        "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "direction": "Mae / Mawate",
+        "technique": "Chudan Shuto Uke (Kokutsu Dachi)",
+        "stance": "Kokutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-6",
         "direction": "Mae / Mawate",
-        "technique": "Shuto Uke Chudan",
-        "stance": "Kokutsu Dachi",
-        "count": "5 vezes"
+        "technique": "Oi Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-7",
-        "direction": "Mae (Avançando)",
-        "technique": "Gyaku Tsuki Chudan",
+        "direction": "Mae / Mawate",
+        "technique": "Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-8",
-        "direction": "Sagate (Recuando)",
-        "technique": "Nihon Tsuki (Dois socos)",
+        "direction": "Mae / Mawate",
+        "technique": "Nihon Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-9",
-        "direction": "Mae (Avançando)",
-        "technique": "Sanbon Tsuki (Três socos)",
+        "direction": "Mae / Mawate",
+        "technique": "Sanbon Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k6-10",
         "direction": "Mae / Mawate",
-        "technique": "Mae Geri Kekomi (Chute frontal penetrante)",
+        "technique": "Mae Geri",
         "stance": "Jiyu no Kamae",
         "count": "3 vezes (San Kai)"
       },
       {
         "id": "k6-11",
         "direction": "Mae / Mawate",
-        "technique": "Mawashi Geri Chudan / Jodan",
+        "technique": "Mawashi Geri",
         "stance": "Jiyu no Kamae",
         "count": "3 vezes (San Kai)"
       },
       {
         "id": "k6-12",
         "direction": "Mae / Mawate",
-        "technique": "Yoko Geri Keage (Lateral percussão)",
-        "stance": "Kiba Dachi",
-        "count": "3 vezes (San Kai)"
-      },
-      {
-        "id": "k6-13",
-        "direction": "Mae / Mawate",
-        "technique": "Yoko Geri Kekomi (Lateral penetrante)",
-        "stance": "Kiba Dachi",
+        "technique": "Yoko Geri",
+        "stance": "Jiyu no Kamae",
         "count": "3 vezes (San Kai)"
       }
     ],
@@ -107,9 +100,19 @@ window.TKST_CURRICULUM = [
       "description": "Execução completa do Heian Shodan com postura firme, ritmo correto, olhar e Kiai no 9º e 17º movimentos."
     },
     "kumite": {
-      "type": "Gohon Kumite / Shiai Kumite Básico",
-      "description": "Gohon Kumite (5 passos) com ataques de Oi Tsuki Jodan, Oi Tsuki Chudan e Mae Geri Chudan. Defesas com Age Uke Jodan, Soto Uke Chudan e Gedan Barai com contra-ataque de Gyaku Tsuki Chudan."
+      "type": "Gohon Kumite & Shiai Kumite",
+      "description": "Gohon Kumite (5 passos) e Shiai Kumite com postura de combate."
     },
+    "dachiWaza": [
+      "Heisoku Dachi",
+      "Musubi Dachi",
+      "Heiko Dachi",
+      "Hachiji Dachi",
+      "Seiza",
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Kokutsu Dachi"
+    ],
     "requirements": [
       "Mínimo de 3 meses de treino",
       "Frequência mínima de 75%",
@@ -123,91 +126,119 @@ window.TKST_CURRICULUM = [
     "beltColor": "#E63946",
     "previousBelt": "Faixa Amarela",
     "targetBelt": "Faixa Vermelha (5º Kyu)",
-    "description": "Transição de base, combinações de defesa com contra-ataque e introdução de chutes circulares e reversos.",
+    "description": "Exame oficial de graduação de Faixa Amarela para Faixa Vermelha (5º Kyu): domínio de Kihon com defesas e Gyaku Tsuki, socos simples e múltiplos, chutes circulares, Katas até Heian Nidan, Sanbon Kumite (1ª e 2ª Forma), Shiai Kumite e Dachi Waza.",
     "kihon": [
       {
         "id": "k5-1",
-        "direction": "Mae (Avançando)",
-        "technique": "Age Uke Jodan / Gyaku Tsuki Chudan",
+        "direction": "Mae",
+        "technique": "Jodan Age Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-2",
-        "direction": "Sagate (Recuando)",
-        "technique": "Soto Uke Chudan / Gyaku Tsuki Chudan",
+        "direction": "Sagate",
+        "technique": "Chudan Soto Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-3",
-        "direction": "Mae (Avançando)",
-        "technique": "Uchi Uke Chudan / Gyaku Tsuki Chudan",
+        "direction": "Mae",
+        "technique": "Chudan Uchi Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-4",
-        "direction": "Sagate (Recuando)",
-        "technique": "Shuto Uke Chudan (Kokutsu) / Gyaku Shihon Nukite (Zenkutsu)",
+        "direction": "Sagate",
+        "technique": "Chudan Shuto Uke (Kokutsu) / Gyaku Shihon Nukite (Zenkutsu)",
         "stance": "Kokutsu -> Zenkutsu",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-5",
-        "direction": "Mae (Avançando)",
-        "technique": "Gedan Barai / Gyaku Tsuki Chudan",
+        "direction": "Mae",
+        "technique": "Gedan Barai / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-6",
-        "direction": "Sagate (Recuando)",
-        "technique": "Gyaku Tsuki / Oi Tsuki / Nihon Tsuki",
+        "direction": "Sagate",
+        "technique": "Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-7",
-        "direction": "Mae (Avançando)",
-        "technique": "Sanbon Tsuki / Gyaku Sanbon Tsuki",
+        "direction": "Mae",
+        "technique": "Oi Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-8",
-        "direction": "Mae / Mawate",
-        "technique": "Mae Geri Kekomi",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Sagate",
+        "technique": "Nihon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-9",
-        "direction": "Mae / Mawate",
-        "technique": "Mawashi Geri Chudan (Koshi)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Mae",
+        "technique": "Sanbon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-10",
-        "direction": "Mae / Mawate",
-        "technique": "Mika Tsuki Geri (Chute crescente em meia-lua)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Sagate",
+        "technique": "Gyaku Sanbon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k5-11",
-        "direction": "Mae / Mawate",
-        "technique": "Gyaku Mawashi Geri",
+        "direction": "Mawate / Mae",
+        "technique": "Mae Geri Kekomi",
         "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "count": "3 vezes (San Kai)"
       },
       {
         "id": "k5-12",
+        "direction": "Mawate / Mae",
+        "technique": "Mawashi Geri Chudan (Koshi)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k5-13",
+        "direction": "Mawate / Mae",
+        "technique": "Mika Tsuki Geri",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k5-14",
+        "direction": "Mawate / Mae",
+        "technique": "Gyaku Mawashi Geri",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k5-15",
         "direction": "Mae / Mawate / Mae",
-        "technique": "Yoko Geri Keage & Yoko Geri Kekomi",
+        "technique": "Yoko Geri Keage",
         "stance": "Kiba Dachi",
-        "count": "3 vezes"
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k5-16",
+        "direction": "Mae / Mawate / Mae",
+        "technique": "Yoko Geri Kekomi",
+        "stance": "Kiba Dachi",
+        "count": "3 vezes (San Kai)"
       }
     ],
     "kata": {
@@ -217,12 +248,24 @@ window.TKST_CURRICULUM = [
       "optionalOrPrevious": [
         "Heian Shodan"
       ],
-      "description": "Execução do Heian Nidan com transição entre Kokutsu Dachi e Kiba Dachi, além de revisão de Heian Shodan."
+      "description": "Execução do Heian Nidan com transição entre Kokutsu Dachi e Kiba Dachi, além de domínio dos Katas anteriores (Até Heian Nidan)."
     },
     "kumite": {
       "type": "Sanbon Kumite (1ª e 2ª Forma) & Shiai Kumite",
-      "description": "Sanbon Kumite (1ª e 2ª forma) com ataques coordenados e defesas com esquiva e contra-ataque preciso."
+      "description": "Sanbon Kumite (1ª e 2ª forma) com ataques coordenados e defesas com esquiva e contra-ataque preciso, além de Shiai Kumite."
     },
+    "dachiWaza": [
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Kokutsu Dachi",
+      "Shiko Dachi",
+      "Heisoku Dachi",
+      "Musubi Dachi",
+      "Heiko Dachi",
+      "Seiza",
+      "Moto Dachi",
+      "Renoji Dachi"
+    ],
     "requirements": [
       "Mínimo de 3 meses na faixa amarela",
       "Aprovação prévia do Sensei"
@@ -235,77 +278,140 @@ window.TKST_CURRICULUM = [
     "beltColor": "#FB8500",
     "previousBelt": "Faixa Vermelha",
     "targetBelt": "Faixa Laranja (4º Kyu)",
-    "description": "Aprofundamento no trabalho de quadril, combinações duplas de chutes e transições rápidas de base.",
+    "description": "Exame oficial de graduação de Faixa Vermelha para Faixa Laranja (4º Kyu): domínio de sequências triplas de Kihon, defesas combinadas, socos simples e múltiplos (Morote, Gyaku, Oi, Nihon, Sanbon, Gyaku Sanbon e Age Tsuki), chutes duplos, Kata Heian Sandan, Sanbon Kumite (3ª, 4ª e 5ª Forma), Shiai Kumite e Dachi Waza.",
     "kihon": [
       {
         "id": "k4-1",
         "direction": "Mae",
-        "technique": "Soto Uke Chudan / Kizame Uraken Jodan / Gyaku Tate Tsuki Chudan",
+        "technique": "Jodan Age Uke / Gedan Barai / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-2",
         "direction": "Sagate",
-        "technique": "Uchi Uke Chudan / Kizame Tsuki Jodan / Gyaku Tsuki Chudan",
+        "technique": "Chudan Soto Uke / Kizame Uraken / Gyaku Tate Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-3",
         "direction": "Mae",
-        "technique": "Shuto Uke Chudan (Kokutsu) / Kizame Geri / Gyaku Shihon Nukite (Zenkutsu)",
-        "stance": "Kokutsu -> Zenkutsu",
-        "count": "5 vezes"
+        "technique": "Chudan Uchi Uke / Kizame Tsuki Jodan / Gyaku Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-4",
         "direction": "Sagate",
-        "technique": "Gedan Barai / Uchi Uke Chudan / Gyaku Tsuki Chudan",
-        "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "technique": "Chudan Shuto Uke (Kokutsu Dachi) / Kizame Geri / Gyaku Shihon Nukite",
+        "stance": "Kokutsu -> Zenkutsu",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-5",
         "direction": "Mae",
-        "technique": "Morote Tsuki / Gyaku Tsuki / Oi Tsuki",
+        "technique": "Gedan Barai / Chudan Uchi Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-6",
         "direction": "Sagate",
-        "technique": "Sanbon Tsuki / Gyaku Sanbon Tsuki / Age Tsuki Jodan",
+        "technique": "Morote Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-7",
-        "direction": "Mae / Mawate",
-        "technique": "Mae Geri Kekomi / Mawashi Geri Jodan",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Mae",
+        "technique": "Gyaku Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-8",
-        "direction": "Mae / Mawate",
-        "technique": "Mae Geri / Mawashi Geri (Pernas diferentes)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Sagate",
+        "technique": "Oi Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-9",
-        "direction": "Mae / Mawate",
-        "technique": "Mae Geri / Gyaku Mawashi Geri (Pernas diferentes)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Mae",
+        "technique": "Nihon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k4-10",
+        "direction": "Sagate",
+        "technique": "Sanbon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
+      },
+      {
+        "id": "k4-11",
+        "direction": "Mae",
+        "technique": "Gyaku Sanbon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
+      },
+      {
+        "id": "k4-12",
+        "direction": "Sagate",
+        "technique": "Age Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
+      },
+      {
+        "id": "k4-13",
         "direction": "Mae / Mawate",
-        "technique": "Ren Geri Yoko Geri Keage / Kekomi (Pernas diferentes)",
+        "technique": "Mae Geri Kekomi",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k4-14",
+        "direction": "Mae / Mawate",
+        "technique": "Mawashi Geri Jodan",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k4-15",
+        "direction": "Mae / Mawate",
+        "technique": "Mawashi Geri Chudan (Koshi)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k4-16",
+        "direction": "Mae / Mawate",
+        "technique": "Gyaku Mawashi Geri",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k4-17",
+        "direction": "Mae / Mawate",
+        "technique": "Mae Geri / Mawashi Geri (Pernas Diferentes)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k4-18",
+        "direction": "Mae / Mawate",
+        "technique": "Mae Geri / Gyaku Mawashi Geri (Pernas Diferentes)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k4-19",
+        "direction": "Mae / Mawate / Mae",
+        "technique": "Yoko Geri (Ren Geri) Keage / Kekomi (Pernas Diferentes)",
         "stance": "Kiba Dachi",
-        "count": "3 vezes"
+        "count": "3 vezes (San Kai)"
       }
     ],
     "kata": {
@@ -316,12 +422,26 @@ window.TKST_CURRICULUM = [
         "Heian Shodan",
         "Heian Nidan"
       ],
-      "description": "Execução de Heian Sandan com aplicação de Kiba Dachi, Uraken Uchi e rotações de 180°."
+      "description": "Execução de Heian Sandan com aplicação de Kiba Dachi, Uraken Uchi e rotações de 180°, além de domínio dos Katas anteriores (Até Heian Sandan)."
     },
     "kumite": {
       "type": "Sanbon Kumite (3ª, 4ª e 5ª Forma) & Shiai Kumite",
-      "description": "Sanbon Kumite avançado com defesas em ângulos de 45° e 90° e contra-ataques simultâneos."
+      "description": "Sanbon Kumite avançado (3ª, 4ª e 5ª forma) com defesas em ângulos de 45° e 90° e contra-ataques simultâneos, além de Shiai Kumite."
     },
+    "dachiWaza": [
+      "Heisoku Dachi",
+      "Musubi Dachi",
+      "Heiko Dachi",
+      "Moto Dachi",
+      "Renoji Dachi",
+      "Seiza",
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Kokutsu Dachi",
+      "Shiko Dachi",
+      "Nekoashi Dachi",
+      "Katahiza Dachi"
+    ],
     "requirements": [
       "Mínimo de 4 meses na faixa vermelha",
       "Dojo Kun na ponta da língua"
@@ -334,119 +454,175 @@ window.TKST_CURRICULUM = [
     "beltColor": "#2A9D8F",
     "previousBelt": "Faixa Laranja",
     "targetBelt": "Faixa Verde (3º Kyu)",
-    "description": "Entrada no grupo intermediário/avançado com introdução de chutes duplos na mesma perna sem tocar o chão e combinações complexas.",
+    "description": "Exame oficial de graduação de Faixa Laranja para Faixa Verde (3º Kyu): domínio de combinações avançadas de 4 movimentos em Kihon, socos e golpes de mão aberta (Awase Tsuki, Teisho Uchi, Tate Tsuki), chutes duplos sem tocar o chão, Tobi Geri, Ushiro Geri, Kata Heian Yondan, Kihon Ippon Kumite (1ª e 2ª Forma), Jiyu Kumite e Dachi Waza.",
     "kihon": [
       {
         "id": "k3-1",
         "direction": "Mae",
-        "technique": "Oi Tsuki Jodan / Gedan Barai / Gyaku Tsuki Chudan",
+        "technique": "Oi Tsuki Jodan / Gedan Barai / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-2",
         "direction": "Sagate",
-        "technique": "Age Uke Jodan / Mae Geri Chudan / Gyaku Soto Uke Chudan",
+        "technique": "Jodan Age Uke / Mae Geri / Gyaku Chudan Soto Uke",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-3",
         "direction": "Mae",
-        "technique": "Oi Tsuki Chudan / Tsuri Ashi Seiryuto Uke / Gedan Barai / Gyaku Uchi Uke Chudan",
+        "technique": "Oi Tsuki Chudan / Tsuri Ashi Seiryuto Uke / Gedan Barai / Gyaku Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-4",
         "direction": "Sagate",
-        "technique": "Uchi Uke Chudan / Kizame Tsuki Jodan / Mae Geri Chudan / Gyaku Tsuki Chudan",
+        "technique": "Chudan Uchi Uke / Kizame Tsuki Jodan / Mae Geri / Gyaku Tsuki Chudan",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-5",
         "direction": "Mae",
-        "technique": "Oi Tsuki Chudan / Haiwan Uke Gedan / Haiwan Uke Jodan / Gyaku Tsuki Chudan",
+        "technique": "Oi Tsuki Chudan / Gedan Haiwan Uke / Jodan Haiwan Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-6",
         "direction": "Sagate",
-        "technique": "Shuto Uke Chudan / Kizame Geri / Ushiro Uraken Uchi Jodan / Shuto Uke Chudan",
+        "technique": "Chudan Shuto Uke / Kizame Geri / Ushiro Uraken Uchi / Chudan Shuto Uke",
         "stance": "Kokutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-7",
         "direction": "Mae",
-        "technique": "Mae Geri Chudan / Jun Tsuki Chudan / Gyaku Soto Uke Chudan / Gedan Barai",
+        "technique": "Mae Geri / Jun Tsuki / Gyaku Chudan Soto Uke / Gedan Uke",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-8",
         "direction": "Sagate",
-        "technique": "Gedan Barai / Suri Ashi Age Uke Jodan / Gyaku Tsuki Chudan / Age Tsuki Jodan",
+        "technique": "Gedan Barai / Suri Ashi Jodan Age Uke / Gyaku Tsuki / Age Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-9",
-        "direction": "Mae / Sagate",
-        "technique": "Teisho Uchi Jodan / Teisho Uchi Chudan / Tate Tsuki",
+        "direction": "Mae",
+        "technique": "Awase Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-10",
-        "direction": "Mae (Chutes)",
-        "technique": "Mae Geri / Mawashi Geri (Mesma perna, caindo à frente)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Sagate",
+        "technique": "Gyaku Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-11",
-        "direction": "Mawate / Mae",
-        "technique": "Mae Geri / Yoko Geri Kekomi (Mesma perna, caindo à frente)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Mae",
+        "technique": "Oi Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-12",
-        "direction": "Mae (Chutes)",
-        "technique": "Mawashi Geri / Ura Mawashi Geri (Mesma perna, caindo à frente)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Sagate",
+        "technique": "Nihon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-13",
-        "direction": "Mawate / Mae",
-        "technique": "Mae Tobi Geri (Chute frontal saltando)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Mae",
+        "technique": "Sanbon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-14",
-        "direction": "Mae (Chutes)",
-        "technique": "Ushiro Geri (Chute para trás)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Sagate",
+        "technique": "Teisho Uchi Jodan",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-15",
-        "direction": "Mawate / Mae",
-        "technique": "Mae Geri / Yoko Geri / Mawashi Geri (Sequência tripla)",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Mae",
+        "technique": "Gyaku Sanbon Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k3-16",
-        "direction": "Kiba Dachi",
-        "technique": "Yoko Geri Keage / Kekomi (Mesma perna, caindo à frente)",
-        "stance": "Kiba Dachi Kamae",
-        "count": "3 vezes"
+        "direction": "Sagate",
+        "technique": "Tate Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
+      },
+      {
+        "id": "k3-17",
+        "direction": "Mae",
+        "technique": "Teisho Uchi Chudan",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
+      },
+      {
+        "id": "k3-18",
+        "direction": "Sagate",
+        "technique": "Age Tsuki",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
+      },
+      {
+        "id": "k3-19",
+        "direction": "Mae",
+        "technique": "Mae Geri / Mawashi Geri (Mesma perna, caindo à frente)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k3-20",
+        "direction": "Mawate / Mae",
+        "technique": "Mae Geri / Yoko Geri Kekomi (Mesma perna, caindo à frente)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k3-21",
+        "direction": "Mae",
+        "technique": "Mawashi Geri / Ura Mawashi Geri (Mesma perna, caindo à frente)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k3-22",
+        "direction": "Mawate / Mae",
+        "technique": "Mae Tobi Geri",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k3-23",
+        "direction": "Mae",
+        "technique": "Ushiro Geri",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k3-24",
+        "direction": "Mawate / Mae",
+        "technique": "Mae Geri / Yoko Geri / Mawashi Geri",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
       }
     ],
     "kata": {
@@ -458,12 +634,28 @@ window.TKST_CURRICULUM = [
         "Heian Nidan",
         "Heian Sandan"
       ],
-      "description": "Execução do Heian Yondan com técnicas de Kosa Uke, Morote Uke, Kakewake Uke e chutes combinados."
+      "description": "Execução do Heian Yondan com técnicas de Kosa Uke, Morote Uke, Kakewake Uke e chutes combinados, além de domínio dos Katas anteriores (Até Heian Yondan)."
     },
     "kumite": {
       "type": "Kihon Ippon Kumite (1ª e 2ª Forma) & Jiyu Kumite",
-      "description": "Kihon Ippon Kumite (ataques pré-determinados com aplicação rápida de contra-ataque imediato) e luta livre (Jiyu Kumite)."
+      "description": "Kihon Ippon Kumite (1ª e 2ª Forma) com defesas decisivas e contra-ataques imediatos, além de luta livre (Jiyu Kumite)."
     },
+    "dachiWaza": [
+      "Heisoku Dachi",
+      "Musubi Dachi",
+      "Heiko Dachi",
+      "Seiza",
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Kokutsu Dachi",
+      "Shiko Dachi",
+      "Nekoashi Dachi",
+      "Katahiza Dachi",
+      "Moto Dachi",
+      "Renoji Dachi",
+      "Tsuru Dachi",
+      "Ashi Dachi"
+    ],
     "requirements": [
       "Mínimo de 5 meses na faixa laranja",
       "Demonstração de domínio de bases"
@@ -476,112 +668,147 @@ window.TKST_CURRICULUM = [
     "beltColor": "#7209B7",
     "previousBelt": "Faixa Verde",
     "targetBelt": "Faixa Roxa (2º Kyu)",
-    "description": "Fase de maturidade técnica. Elaboração própria de Kihon pelo aluno e início do estudo dos Katas Superiores (Sentei Katas).",
+    "description": "Exame oficial de graduação de Faixa Verde para Faixa Roxa (2º Kyu): domínio de Kihon Go Kai e San Kai, elaboração própria de Kihon de 3 passos para um graduado, Katas (2 Heians da banca, Tekki Shodan e Superiores), Jiyu Ippon Kumite, Jiyu Kumite contra 1 e 2, Defesa Pessoal (com queda e imobilização) e Dachi Waza.",
     "kihon": [
       {
         "id": "k2-1",
         "direction": "Mae / Mawate",
-        "technique": "Suri Ashi Uchi Uke Chudan / Kizame Tsuki Jodan / Gyaku Tsuki Chudan / Mawashi Geri Jodan",
+        "technique": "Tsuri Ashi Chudan Uchi Uke / Kizame Tsuki / Gyaku Tsuki / Mawashi Geri Jodan",
         "stance": "Jiyu no Kamae / Zenkutsu",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k2-2",
         "direction": "Mae / Mawate",
-        "technique": "Oi Tsuki Chudan / Suri Ashi Seiryuto Uke / Gyaku Uchi Uke Chudan / Heiko Shuto",
+        "technique": "Oi Tsuki Chudan / Suri Ashi Seiryuto Uke / Gyaku Uchi Uke / Heiko Shuto",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k2-3",
         "direction": "Mae / Mawate",
-        "technique": "Oi Tsuki Chudan / Haiwan Uke Gedan / Haiwan Uke Jodan / Gyaku Tsuki Chudan",
+        "technique": "Oi Tsuki Chudan / Gedan Haiwan Uke / Jodan Haiwan Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k2-4",
         "direction": "Mae / Mawate",
-        "technique": "Shuto Uke Chudan / Kizame Geri / Ushiro Uraken Uchi Jodan / Shuto Uke Chudan",
+        "technique": "Chudan Shuto Uke / Kizame Geri / Ushiro Uraken Uchi / Chudan Shuto Uke",
         "stance": "Kokutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k2-5",
         "direction": "Mae / Mawate",
-        "technique": "Sankiai Sanbon Kumite (Ataque e Defesa)",
+        "technique": "Sankiai Sanbon Kumite (Ataque)",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k2-6",
         "direction": "Mae / Mawate",
-        "technique": "Shitakarae Sankiai Sanbon Kumite (Ataque e Defesa)",
+        "technique": "Sankiai Sanbon Kumite (Defesa)",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k2-7",
-        "direction": "Livre",
-        "technique": "Elaboração de Kihon: O candidato deve elaborar 2 Kihon de 3 passos (Sanbon) contendo bases diferentes",
-        "stance": "Bases Variadas",
-        "count": "Demonstração"
+        "direction": "Mae / Mawate",
+        "technique": "Shitakarae Sankiai Sanbon Kumite (Ataque)",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k2-8",
-        "direction": "Mae / Mawate / Mae",
-        "technique": "Soto Uke Chudan / Gyaku Uchi Uke Chudan / Mae Geri Chudan / Sanbon Tsuki",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Mae / Mawate",
+        "technique": "Shitakarae Sankiai Sanbon Kumite (Defesa)",
+        "stance": "Zenkutsu Dachi",
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k2-9",
-        "direction": "Mae / Mawate / Mae",
-        "technique": "Mae Geri / Yoko Geri Kekomi / Gyaku Sanbon Tsuki / Kamae",
-        "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "direction": "Avaliação Didática",
+        "technique": "Elaboração de Kihon: O candidato deve elaborar 2 Kihon de 3 passos (Sanbon) contendo bases diferentes. Esse Kihon deve ser passado na hora do exame a um graduado.",
+        "stance": "Bases Diferentes",
+        "count": "2 Sequências"
       },
       {
         "id": "k2-10",
-        "direction": "Hidari / Migi",
-        "technique": "Mae Geri / Mawashi Geri (Mesma perna, voltando à posição inicial)",
+        "direction": "Mae / Mawate / Mae",
+        "technique": "Chudan Soto Uke / Gyaku Uchi Uke / Mae Geri / Sanbon Tsuki",
         "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "count": "3 vezes (San Kai)"
       },
       {
         "id": "k2-11",
-        "direction": "Hidari / Migi",
-        "technique": "Mae Geri / Yoko Geri Keage (Lateral) / Mawashi Geri (Mesma perna)",
+        "direction": "Mae / Mawate / Mae",
+        "technique": "Mae Geri / Yoko Geri Kekomi / Gyaku Sanbon Tsuki / Kamae",
         "stance": "Jiyu no Kamae",
-        "count": "3 vezes"
+        "count": "3 vezes (San Kai)"
       },
       {
         "id": "k2-12",
-        "direction": "Kiba Dachi",
+        "direction": "Hidari / Migi",
+        "technique": "Mae Geri / Mawashi Geri (Mesma perna, voltando à posição)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k2-13",
+        "direction": "Hidari / Migi",
+        "technique": "Mae Geri / Yoko Geri Keage (Lateral) / Mawashi Geri (Mesma Perna)",
+        "stance": "Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
+      },
+      {
+        "id": "k2-14",
+        "direction": "Mae / Mawate / Mae (ou Hidari / Migi)",
         "technique": "Ren Geri Yoko Geri Keage / Yoko Geri Kekomi / Ushiro Yoko Geri",
-        "stance": "Kiba Dachi Kamae",
-        "count": "3 vezes"
+        "stance": "Kiba Dachi / Jiyu no Kamae",
+        "count": "3 vezes (San Kai)"
       }
     ],
     "kata": {
       "required": [
-        "Heian Godan",
-        "Tekki Shodan",
+        "2 Heian Katas (Escolha da banca)",
+        "Tekki Shodan"
+      ],
+      "optionalOrPrevious": [
         "Bassai Dai",
         "Kanku Dai",
         "Jion",
         "Jitte",
         "Empi"
       ],
-      "description": "Execução obrigatória de Heian Godan e Tekki Shodan, além do estudo dos Katas Superiores: Bassai Dai, Kanku Dai, Jion, Jitte e Empi."
+      "description": "2 Heian Katas (escolha da banca), Tekki Shodan e Katas Superiores: Bassai Dai, Kanku Dai, Jion, Jitte ou Empi."
     },
     "kumite": {
-      "type": "Jiyu Ippon Kumite (1ª e 2ª Forma Oficial - 8 Ataques) & Jiyu Kumite (Contra 1 e 2 oponentes)",
-      "description": "Jiyu Ippon Kumite sem contato mas com controle milimétrico e velocidade real de combate."
+      "type": "Jiyu Ippon Kumite (1ª e 2ª Forma) & Jiyu Kumite (Contra 1 e 2)",
+      "description": "Jiyu Ippon Kumite (1ª e 2ª forma) com velocidade e precisão, e combate livre (Jiyu Kumite) contra 1 e 2 oponentes."
     },
+    "selfDefense": "Defesa Pessoal com queda e imobilização.",
+    "dachiWaza": [
+      "Heisoku Dachi",
+      "Musubi Dachi",
+      "Heiko Dachi",
+      "Seiza",
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Kokutsu Dachi",
+      "Shiko Dachi",
+      "Nekoashi Dachi",
+      "Katahiza Dachi",
+      "Moto Dachi",
+      "Renoji Dachi",
+      "Tsuru Dachi",
+      "Ashi Dachi",
+      "Fudo Dachi",
+      "Hangetsu Dachi"
+    ],
     "requirements": [
       "Mínimo de 6 meses na faixa verde",
-      "Apresentar plano de aula simulado"
+      "Defesa Pessoal com queda e com imobilização"
     ]
   },
   {
@@ -591,117 +818,112 @@ window.TKST_CURRICULUM = [
     "beltColor": "#6F4E37",
     "previousBelt": "Faixa Roxa",
     "targetBelt": "Faixa Marrom (1º Kyu)",
-    "description": "Exame Oficial de Roxa para Marrom (1º Kyu) da TKST: domínio de Kihon Go Kai (Execução e Aplicação), Sequência de Chutes, Dachi Waza, Katas Superiores com Bunkai e Jiyu Kumite.",
+    "description": "Exame oficial de graduação de Faixa Roxa para Faixa Marrom (1º Kyu) da TKST: domínio de Kihon Go Kai (5 técnicas em Execução e 5 em Aplicação), combinações duplas de chutes (Execução e Aplicação), Kata Tekki Shodan com Bunkai dos Heian Katas e Katas Superiores, Jiyu Ippon Kumite (1ª à 4ª Forma), Jiyu Kumite contra 1, 2 e 4 oponentes, Defesa Pessoal e Dachi Waza completo.",
     "kihon": [
       {
         "id": "k1-exec-1",
         "direction": "Mae / Sagate (Execução)",
         "technique": "Jodan Age Uke / Gyaku Jodan Age Uke",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-exec-2",
         "direction": "Mae / Sagate (Execução)",
         "technique": "Chudan Soto Uke / Gyaku Chudan Soto Uke",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-exec-3",
         "direction": "Mae / Sagate (Execução)",
         "technique": "Chudan Uchi Uke / Gyaku Chudan Uchi Uke",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-exec-4",
         "direction": "Mae / Sagate (Execução)",
-        "technique": "Chudan Shuto Uke / Gyaku Chudan Tate Shuto",
+        "technique": "Chudan Shuto Uke / Gyaku Chudan Tate Shuto (Kokutsu Dachi)",
         "stance": "Kokutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-exec-5",
         "direction": "Mae / Sagate (Execução)",
         "technique": "Gedan Barai / Gyaku Gedan Barai",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-app-1",
         "direction": "Mae / Sagate (Aplicação)",
         "technique": "Jodan Age Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-app-2",
         "direction": "Mae / Sagate (Aplicação)",
         "technique": "Chudan Soto Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-app-3",
         "direction": "Mae / Sagate (Aplicação)",
         "technique": "Chudan Uchi Uke / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-app-4",
         "direction": "Mae / Sagate (Aplicação)",
-        "technique": "Chudan Shuto Uke / Gyaku Chudan Tate Shuto",
+        "technique": "Chudan Shuto Uke / Gyaku Chudan Tate Shuto (Kokutsu / Zenkutsu)",
         "stance": "Kokutsu Dachi / Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-app-5",
         "direction": "Mae / Sagate (Aplicação)",
         "technique": "Gedan Barai / Gyaku Tsuki",
         "stance": "Zenkutsu Dachi",
-        "count": "5 vezes"
+        "count": "5 vezes (Go Kai)"
       },
       {
         "id": "k1-geri-1",
-        "direction": "Mae - Mawate (Jyu no Kamae)",
-        "technique": "Mae Geri - Ushiro Geri - Gyaku Tsuki (Execução e Aplicação)",
+        "direction": "Mae / Mawate (Jyu no Kamae)",
+        "technique": "Mae Geri - Ushiro Geri Gyaku Tsuki (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
-        "count": "Execução e Aplicação"
+        "count": "Execução e Aplicação (3x)"
       },
       {
         "id": "k1-geri-2",
-        "direction": "Mae - Mawate (Jyu no Kamae)",
+        "direction": "Mae / Mawate (Jyu no Kamae)",
         "technique": "Mawashi Geri - Ura Mawashi Geri (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
-        "count": "Execução e Aplicação"
+        "count": "Execução e Aplicação (3x)"
       },
       {
         "id": "k1-geri-3",
-        "direction": "Mae - Mawate (Jyu no Kamae)",
+        "direction": "Mae / Mawate (Jyu no Kamae)",
         "technique": "Mae Tobi Geri - Ushiro Geri (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
-        "count": "Execução e Aplicação"
+        "count": "Execução e Aplicação (3x)"
       },
       {
         "id": "k1-geri-4",
-        "direction": "Mae - Mawate (Jyu no Kamae)",
+        "direction": "Mae / Mawate (Jyu no Kamae)",
         "technique": "Gyaku Mawashi Geri - Mawashi Geri (Execução e Aplicação)",
         "stance": "Jiyu no Kamae",
-        "count": "Execução e Aplicação"
-      },
-      {
-        "id": "k1-dachi",
-        "direction": "Dachi Waza (Bases Exigidas)",
-        "technique": "Heisoku Dachi, Musubi Dachi, Heiko Dachi, Seiza, Zenkutsu Dachi, Kiba Dachi, Kokutsu Dachi, Shiko Dachi, Nekoashi Dachi, Katahiza Dachi, Moto Dachi, Renoji Dachi, Tsuru Dachi, Ashi Dachi, Fudo Dachi, Hangetsu Dachi, Sanchin Dachi, Kosa Dachi - Katahiza Dachi",
-        "stance": "18 Bases Oficiais",
-        "count": "Demonstração"
+        "count": "Execução e Aplicação (3x)"
       }
     ],
     "kata": {
       "required": [
-        "Tekki Shodan",
+        "Tekki Shodan"
+      ],
+      "optionalOrPrevious": [
         "Bassai Dai",
         "Kanku Dai",
         "Jion",
@@ -709,14 +931,36 @@ window.TKST_CURRICULUM = [
         "Empi"
       ],
       "bunkai": "Aplicação de um movimento de cada Heian Kata sem repetições.",
-      "description": "Execução obrigatória de Tekki Shodan e domínio dos Katas Superiores: Bassai Dai, Kanku Dai, Jion, Jitte e Empi, além da aplicação de Bunkai dos Katas Heian."
+      "description": "Tekki Shodan (obrigatório), aplicação de um movimento de cada Heian Kata sem repetições (Bunkai) e escolha de 1 Kata Superior: Bassai Dai, Kanku Dai, Jion, Jitte ou Empi."
     },
     "kumite": {
-      "type": "Jiyu Ippon Kumite (1ª, 2ª, 3ª e 4ª Forma) & Jiyu Kumite (Contra 1, 2 e 4 oponentes)",
-      "description": "Jiyu Ippon Kumite (1ª, 2ª, 3ª e 4ª forma) e Jiyu Kumite contra 1, 2 e 4 oponentes demonstrando Zanshin, De-ai e condicionamento cardiovascular."
+      "type": "Jiyu Ippon Kumite (1ª, 2ª, 3ª e 4ª Forma) & Jiyu Kumite (Contra 1, 2 e 4)",
+      "description": "Jiyu Ippon Kumite da 1ª à 4ª forma oficial e combate livre (Jiyu Kumite) contra 1, 2 e 4 oponentes demonstrando Zanshin e controle total."
     },
+    "selfDefense": "Defesa Pessoal técnica completa.",
+    "dachiWaza": [
+      "Heisoku Dachi",
+      "Musubi Dachi",
+      "Heiko Dachi",
+      "Seiza",
+      "Zenkutsu Dachi",
+      "Kiba Dachi",
+      "Kokutsu Dachi",
+      "Shiko Dachi",
+      "Nekoashi Dachi",
+      "Katahiza Dachi",
+      "Moto Dachi",
+      "Renoji Dachi",
+      "Tsuru Dachi",
+      "Ashi Dachi",
+      "Fudo Dachi",
+      "Hangetsu Dachi",
+      "Sanchin Dachi",
+      "Kosa Dachi"
+    ],
     "requirements": [
       "Mínimo de 8 meses na faixa roxa",
+      "Defesa Pessoal",
       "Participação ativa em cursos e arbitragem"
     ]
   },

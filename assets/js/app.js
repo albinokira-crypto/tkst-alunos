@@ -4226,6 +4226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isUkemiOpen = openStudySections.has('ukemi');
     const isKataOpen = openStudySections.has('kata');
     const isKumiteOpen = openStudySections.has('kumite');
+    const isDachiOpen = openStudySections.has('dachi');
 
     let html = `
       <div class="section-header">
@@ -4630,6 +4631,31 @@ document.addEventListener('DOMContentLoaded', () => {
             ${renderBeltKumiteInfographic(curr)}
           </div>
         </div>
+
+        ${curr.dachiWaza && !curr.shodanProgram ? `
+        <!-- DACHI WAZA (Bases Exigidas) -->
+        <div class="study-accordion-card" id="studyCard_dachi">
+          <button type="button" class="study-accordion-header ${isDachiOpen ? 'active' : ''}" id="studyHeader_dachi" onclick="window.TKST_APP.toggleStudyAccordion('dachi')">
+            <div class="study-accordion-title">
+              <i class="fas fa-layer-group" style="color: #8B5CF6; font-size: 1.25rem;"></i>
+              <div>
+                <h3>${(curr.geri && curr.ukemi) ? '6' : ((curr.geri || curr.ukemi) ? '5' : '4')}. Dachi Waza (Bases Exigidas)</h3>
+                <div style="font-size: 0.78rem; color: #94A3B8;">${curr.dachiWaza.length} bases avaliadas • Toque para ver</div>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_dachi" style="transform: ${isDachiOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
+          </button>
+          <div class="study-accordion-body ${isDachiOpen ? 'active' : ''}" id="studyBody_dachi">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              ${curr.dachiWaza.map(d => `
+                <span class="badge" style="background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.4); color: #C4B5FD; font-size: 0.85rem; padding: 6px 12px;">
+                  🥋 <strong>${d}</strong>
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ` : ''}
 
       </div>
     `;
