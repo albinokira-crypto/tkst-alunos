@@ -4828,24 +4828,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="dachi-grid-quadrados">
               ${curr.dachiWaza.map((d, idx) => {
                 const baseName = typeof d === 'string' ? d : (d.name || '');
-                const gTerm = findGlossaryBase(baseName);
-                const hasImg = !!(gTerm && gTerm.image);
                 return `
-                <div class="dachi-quadrado-card" onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" title="${baseName}">
+                <div class="dachi-quadrado-card" onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" title="Toque para ver a foto da base ${baseName}">
                   ${isAdmin ? `
                     <div class="dachi-quadrado-admin" onclick="event.stopPropagation();">
                       <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="color: #FFB703;" title="Editar base"><i class="fas fa-edit"></i></button>
                       <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="color: #F87171;" title="Excluir base"><i class="fas fa-trash"></i></button>
                     </div>
                   ` : ''}
-                  <div class="dachi-quadrado-media">
-                    ${hasImg ? `
-                      <img src="${gTerm.image}" alt="${baseName}" class="dachi-quadrado-thumb" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                      <span class="dachi-quadrado-icon" style="display: none;">🥋</span>
-                    ` : `
-                      <span class="dachi-quadrado-icon">🥋</span>
-                    `}
-                  </div>
                   <span class="dachi-quadrado-name">${baseName}</span>
                 </div>
               `;}).join('')}
