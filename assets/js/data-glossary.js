@@ -112,6 +112,12 @@ window.TKST_GLOSSARY = {
       "japanese": "Ippon Ashi Dachi",
       "kanji": "一本足立ち",
       "meaning": "Postura de equilíbrio sustentada em uma única perna"
+    },
+    {
+      "japanese": "Seiza",
+      "kanji": "正座",
+      "meaning": "Postura formal ajoelhada tradicional de respeito, meditação e abertura/fechamento do treino",
+      "technicalTips": "Pés dobrados sob os glúteos, dedão do pé direito sobre o esquerdo, postura da coluna ereta, mãos espalmadas sobre as coxas."
     }
   ],
   "defesas": [

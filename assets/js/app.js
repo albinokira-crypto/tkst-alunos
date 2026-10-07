@@ -4212,6 +4212,45 @@ document.addEventListener('DOMContentLoaded', () => {
     return '';
   }
 
+  // Helper para buscar qualquer base no Dicionário Japonês (com imagem, pronúncia e biomecânica)
+  function findGlossaryBase(baseName) {
+    const glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : window.TKST_GLOSSARY;
+    if (!glossary) return null;
+    const raw = String(baseName || '').trim();
+    if (!raw) return null;
+
+    const clean = raw.toLowerCase()
+      .replace(/^\d+[\.\-\)]\s*/, '')
+      .replace(/\(.*?\)/g, '')
+      .trim();
+
+    const bases = glossary.bases || [];
+
+    // 1. Busca exata em bases
+    let found = bases.find(b => b.japanese.toLowerCase().trim() === clean || b.japanese.toLowerCase().trim() === raw.toLowerCase());
+    if (found) return found;
+
+    // 2. Busca aproximada em bases
+    found = bases.find(b => {
+      const bClean = b.japanese.toLowerCase().replace(/\(.*?\)/g, '').trim();
+      return bClean === clean || bClean.includes(clean) || clean.includes(bClean);
+    });
+    if (found) return found;
+
+    // 3. Fallback em outras categorias do dicionário (ex: Seiza em comandos)
+    const otherCats = ['bases', 'comandosEContagem', 'defesas', 'socosGolpes', 'chutes'];
+    for (const cat of otherCats) {
+      const list = glossary[cat] || [];
+      found = list.find(item => {
+        const iClean = item.japanese.toLowerCase().replace(/\(.*?\)/g, '').trim();
+        return iClean === clean || iClean.includes(clean) || clean.includes(iClean);
+      });
+      if (found) return found;
+    }
+
+    return null;
+  }
+
   function renderMyExam() {
     const user = window.TKST_AUTH.getCurrentUser();
     const allCurriculums = window.TKST_AUTH ? window.TKST_AUTH.getCustomCurriculum() : (window.TKST_CURRICULUM || []);
@@ -4538,9 +4577,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                   </button>
                   <div class="shodan-item-list" id="shodanBody_dachiWaza">
-                    ${curr.shodanProgram.dachiWaza.map((t, idx) => `
+                    ${curr.shodanProgram.dachiWaza.map((t, idx) => {
+                      const baseName = t.name;
+                      const gTerm = findGlossaryBase(baseName);
+                      const hasImg = !!(gTerm && gTerm.image);
+                      return `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                        <span><strong>${idx + 1}.</strong> ${t.name}</span>
+                        <button 
+                          type="button" 
+                          onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" 
+                          style="background: none; border: none; color: #FFF; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-align: left; padding: 0; flex: 1; font-family: inherit;"
+                          title="${hasImg ? 'Toque para ver a ilustração e detalhes desta base no dicionário' : 'Toque para ver detalhes desta base no dicionário'}"
+                        >
+                          <span><strong>${idx + 1}.</strong> ${baseName}</span>
+                          ${hasImg ? `
+                            <span class="dachi-photo-badge" style="font-size: 0.65rem; padding: 1px 5px;">
+                              <i class="fas fa-image"></i> Ver Foto
+                            </span>
+                          ` : `
+                            <span class="dachi-info-badge" style="font-size: 0.65rem; padding: 1px 4px;">
+                              <i class="fas fa-info-circle"></i> Info
+                            </span>
+                          `}
+                        </button>
                         <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
                           <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
                           ${isAdmin ? `
@@ -4553,7 +4612,7 @@ document.addEventListener('DOMContentLoaded', () => {
                           ` : ''}
                         </div>
                       </div>
-                    `).join('')}
+                    `;}).join('')}
                     ${isAdmin ? `
                       <div style="padding: 8px; text-align: center;">
                         <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza')" style="font-size: 0.74rem; padding: 4px 10px; color: #8B5CF6; border-color: rgba(139,92,246,0.4);"><i class="fas fa-plus"></i> Adicionar Base Dachi Waza</button>
@@ -4793,18 +4852,41 @@ document.addEventListener('DOMContentLoaded', () => {
             <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_dachi" style="transform: ${isDachiOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
           </button>
           <div class="study-accordion-body ${isDachiOpen ? 'active' : ''}" id="studyBody_dachi">
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-              ${curr.dachiWaza.map((d, idx) => `
-                <span class="badge" style="background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.4); color: #C4B5FD; font-size: 0.85rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
-                  🥋 <strong>${typeof d === 'string' ? d : d.name}</strong>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+              ${curr.dachiWaza.map((d, idx) => {
+                const baseName = typeof d === 'string' ? d : (d.name || '');
+                const gTerm = findGlossaryBase(baseName);
+                const hasImg = !!(gTerm && gTerm.image);
+                return `
+                <div class="dachi-curriculum-card">
+                  <button 
+                    type="button" 
+                    class="dachi-curriculum-btn" 
+                    onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" 
+                    title="${hasImg ? 'Toque para ver a ilustração e detalhes desta base no dicionário' : 'Toque para ver detalhes desta base no dicionário'}"
+                  >
+                    <span style="font-size: 1rem;">🥋</span>
+                    <strong style="color: #FFF; font-weight: 700;">${baseName}</strong>
+                    ${hasImg ? `
+                      <span class="dachi-photo-badge">
+                        <i class="fas fa-image"></i> Ver Foto
+                      </span>
+                    ` : `
+                      <span class="dachi-info-badge">
+                        <i class="fas fa-book-open"></i> Ver Base
+                      </span>
+                    `}
+                  </button>
                   ${isAdmin ? `
-                    <button type="button" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 0 2px; font-size: 0.72rem;" title="Editar base"><i class="fas fa-edit"></i></button>
-                    <button type="button" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 0 2px; font-size: 0.72rem;" title="Excluir base"><i class="fas fa-times"></i></button>
+                    <div style="display: inline-flex; align-items: center; gap: 2px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,0.15);">
+                      <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 3px 5px; font-size: 0.74rem;" title="Editar base"><i class="fas fa-edit"></i></button>
+                      <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 3px 5px; font-size: 0.74rem;" title="Excluir base"><i class="fas fa-trash"></i></button>
+                    </div>
                   ` : ''}
-                </span>
-              `).join('')}
+                </div>
+              `;}).join('')}
               ${isAdmin ? `
-                <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza')" style="font-size: 0.76rem; padding: 5px 12px; color: #A78BFA; border-color: rgba(167,139,250,0.4); display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza')" style="font-size: 0.76rem; padding: 7px 14px; color: #A78BFA; border-color: rgba(167,139,250,0.4); display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border-radius: var(--radius-sm);">
                   <i class="fas fa-plus"></i> + Adicionar Base
                 </button>
               ` : ''}
@@ -12250,6 +12332,26 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         renderMyExam();
       } else {
         alert((res && res.error) || 'Erro ao restaurar faixa.');
+      }
+    },
+
+    openDachiDetailFromCurriculum: (baseName) => {
+      const gTerm = findGlossaryBase(baseName);
+      if (gTerm) {
+        window.TKST_APP.openGlossaryDetailModal('bases', gTerm.japanese);
+      } else {
+        const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
+        if (isAdmin) {
+          if (confirm(`A base "${baseName}" ainda não possui cadastro no Dicionário Japonês.\n\nDeseja cadastrá-la agora com imagem, kanji e dicas técnicas?`)) {
+            window.TKST_APP.openAddGlossaryTermModal('bases');
+            setTimeout(() => {
+              const jpInput = document.getElementById('newGlossaryJapanese');
+              if (jpInput) jpInput.value = baseName;
+            }, 100);
+          }
+        } else {
+          alert(`A base "${baseName}" ainda não possui ficha ilustrada no Dicionário Japonês.`);
+        }
       }
     }
   };
