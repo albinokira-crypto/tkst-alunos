@@ -1471,17 +1471,25 @@
       "status": "approved",
       "approvedAt": "2026-10-07T23:20:07.378Z",
       "createdAt": "2026-10-07T23:20:07.378Z",
-      "updatedAt": 1791415462268,
+      "updatedAt": 1791415505145,
       "statusUpdatedAt": 1791415207378,
       "phone": "21971768688",
       "notes": "Novo aluno cadastrado pelo portal.",
-      "lastActive": 1791415444582,
+      "lastActive": 1791415476787,
       "quizScores": [
         {
           "date": "2026-10-07T23:24:22.267Z",
           "score": 4,
           "total": 10,
           "percentage": 40,
+          "beltLevel": "Faixa Branca 7º Kyu",
+          "beltKyu": 7
+        },
+        {
+          "date": "2026-10-07T23:25:05.144Z",
+          "score": 0,
+          "total": 10,
+          "percentage": 0,
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
         }
@@ -1505,5 +1513,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1791415462781
+  "updatedAt": 1791415505619
 }
