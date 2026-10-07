@@ -4460,13 +4460,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${curr.shodanProgram.teWaza.map((t, idx) => `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                           ${isAdmin ? `
                             <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
                               <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'teWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
                               <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'teWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
                             </span>
                           ` : ''}
+                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                         </div>
                         <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : (t.direction === 'Sagate' ? 'sagate' : 'mawate')}">${t.arrow}</span>
                       </div>
@@ -4498,13 +4498,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${curr.shodanProgram.ukeWaza.map((t, idx) => `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                           ${isAdmin ? `
                             <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
                               <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukeWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
                               <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukeWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
                             </span>
                           ` : ''}
+                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                         </div>
                         <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : (t.direction === 'Sagate' ? 'sagate' : 'mawate')}">${t.arrow}</span>
                       </div>
@@ -4536,13 +4536,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${curr.shodanProgram.ashiWaza.map((t, idx) => `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                           ${isAdmin ? `
                             <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
                               <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ashiWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
                               <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ashiWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
                             </span>
                           ` : ''}
+                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                         </div>
                         <span class="shodan-arrow-badge mawate">${t.arrow}</span>
                       </div>
@@ -4576,6 +4576,12 @@ document.addEventListener('DOMContentLoaded', () => {
                       return `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                          ${isAdmin ? `
+                            <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
+                            </span>
+                          ` : ''}
                           <button 
                             type="button" 
                             onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" 
@@ -4584,12 +4590,6 @@ document.addEventListener('DOMContentLoaded', () => {
                           >
                             <span><strong>${idx + 1}.</strong> ${baseName}</span>
                           </button>
-                          ${isAdmin ? `
-                            <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
-                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
-                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
-                            </span>
-                          ` : ''}
                         </div>
                         <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
                       </div>
@@ -4615,14 +4615,14 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="technique-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px;">
                     <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-crimson); flex-shrink: 0;"></div>
                     <div style="flex: 1; min-width: 0;">
-                      <div class="technique-name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                        <span style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${k.technique}</span>
+                      <div class="technique-name" style="display: flex; align-items: center; gap: 6px;">
                         ${isAdmin ? `
-                          <span style="display: inline-flex; align-items: center; gap: 2px;">
-                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'kihon', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.76rem;"><i class="fas fa-edit"></i></button>
-                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'kihon', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.76rem;"><i class="fas fa-trash"></i></button>
+                          <span style="display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0;">
+                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'kihon', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.78rem;"><i class="fas fa-edit"></i></button>
+                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'kihon', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.78rem;"><i class="fas fa-trash"></i></button>
                           </span>
                         ` : ''}
+                        <span style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${k.technique}</span>
                       </div>
                       <div class="technique-meta" style="white-space: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; display: flex; align-items: center; gap: 6px; font-size: 0.78rem; margin-top: 3px; color: #94A3B8;">
                         <span class="stance" style="color: var(--accent-gold); font-weight: 600; white-space: nowrap;">${k.stance}</span>
@@ -4667,14 +4667,14 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="technique-item" style="border-left: 3px solid #F5BE00; display: flex; align-items: center; gap: 10px; padding: 10px 12px;">
                     <div style="width: 8px; height: 8px; border-radius: 50%; background: #F5BE00; flex-shrink: 0;"></div>
                     <div style="flex: 1; min-width: 0;">
-                      <div class="technique-name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                        <span style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${g.name}</span>
+                      <div class="technique-name" style="display: flex; align-items: center; gap: 6px;">
                         ${isAdmin ? `
-                          <span style="display: inline-flex; align-items: center; gap: 2px;">
-                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'geri', ${idx})" title="Editar chute" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.76rem;"><i class="fas fa-edit"></i></button>
-                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'geri', ${idx})" title="Excluir chute" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.76rem;"><i class="fas fa-trash"></i></button>
+                          <span style="display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0;">
+                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'geri', ${idx})" title="Editar chute" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.78rem;"><i class="fas fa-edit"></i></button>
+                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'geri', ${idx})" title="Excluir chute" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.78rem;"><i class="fas fa-trash"></i></button>
                           </span>
                         ` : ''}
+                        <span style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${g.name}</span>
                       </div>
                       <div class="technique-meta" style="margin-top: 3px; color: #94A3B8; white-space: nowrap; overflow-x: auto; scrollbar-width: none; font-size: 0.78rem;">
                         <i class="fas fa-info-circle" style="color: var(--accent-gold); font-size: 0.75rem;"></i> ${g.detail}
@@ -4712,14 +4712,14 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
                 ${curr.ukemi.map((u, idx) => `
                   <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-left: 3px solid #10B981; border-radius: var(--radius-sm); padding: 10px 12px;">
-                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px; flex-wrap: wrap;">
-                      <span style="font-weight: 700; color: #FFF; font-size: 0.92rem;">🥋 ${u.name}</span>
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
                       ${isAdmin ? `
-                        <span style="display: inline-flex; align-items: center; gap: 2px;">
-                          <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukemi', ${idx})" title="Editar" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
-                          <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukemi', ${idx})" title="Excluir" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
+                        <span style="display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0;">
+                          <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukemi', ${idx})" title="Editar" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.75rem;"><i class="fas fa-edit"></i></button>
+                          <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukemi', ${idx})" title="Excluir" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.75rem;"><i class="fas fa-trash"></i></button>
                         </span>
                       ` : ''}
+                      <span style="font-weight: 700; color: #FFF; font-size: 0.92rem;">🥋 ${u.name}</span>
                     </div>
                     <div style="font-size: 0.8rem; color: #94A3B8; white-space: nowrap; overflow-x: auto; scrollbar-width: none;">${u.detail}</div>
                   </div>
