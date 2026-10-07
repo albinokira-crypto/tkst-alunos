@@ -4459,18 +4459,16 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="shodan-item-list" id="shodanBody_teWaza">
                     ${curr.shodanProgram.teWaza.map((t, idx) => `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                        <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                          <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : (t.direction === 'Sagate' ? 'sagate' : 'mawate')}">${t.arrow}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                           ${isAdmin ? `
-                            <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'teWaza', ${idx})" title="Editar técnica" style="font-size: 0.68rem; padding: 3px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'teWaza', ${idx})" title="Excluir técnica" style="font-size: 0.68rem; padding: 3px 6px; cursor: pointer; border-radius: 4px;">
-                              <i class="fas fa-trash"></i>
-                            </button>
+                            <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'teWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'teWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
+                            </span>
                           ` : ''}
                         </div>
+                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : (t.direction === 'Sagate' ? 'sagate' : 'mawate')}">${t.arrow}</span>
                       </div>
                     `).join('')}
                     ${isAdmin ? `
@@ -4499,18 +4497,16 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="shodan-item-list" id="shodanBody_ukeWaza">
                     ${curr.shodanProgram.ukeWaza.map((t, idx) => `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                        <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                          <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : (t.direction === 'Sagate' ? 'sagate' : 'mawate')}">${t.arrow}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                           ${isAdmin ? `
-                            <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukeWaza', ${idx})" title="Editar técnica" style="font-size: 0.68rem; padding: 3px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukeWaza', ${idx})" title="Excluir técnica" style="font-size: 0.68rem; padding: 3px 6px; cursor: pointer; border-radius: 4px;">
-                              <i class="fas fa-trash"></i>
-                            </button>
+                            <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukeWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukeWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
+                            </span>
                           ` : ''}
                         </div>
+                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : (t.direction === 'Sagate' ? 'sagate' : 'mawate')}">${t.arrow}</span>
                       </div>
                     `).join('')}
                     ${isAdmin ? `
@@ -4539,18 +4535,16 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="shodan-item-list" id="shodanBody_ashiWaza">
                     ${curr.shodanProgram.ashiWaza.map((t, idx) => `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                        <span><strong>${idx + 1}.</strong> ${t.name}</span>
-                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                          <span class="shodan-arrow-badge mawate">${t.arrow}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${idx + 1}.</strong> ${t.name}</span>
                           ${isAdmin ? `
-                            <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ashiWaza', ${idx})" title="Editar técnica" style="font-size: 0.68rem; padding: 3px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ashiWaza', ${idx})" title="Excluir técnica" style="font-size: 0.68rem; padding: 3px 6px; cursor: pointer; border-radius: 4px;">
-                              <i class="fas fa-trash"></i>
-                            </button>
+                            <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ashiWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ashiWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
+                            </span>
                           ` : ''}
                         </div>
+                        <span class="shodan-arrow-badge mawate">${t.arrow}</span>
                       </div>
                     `).join('')}
                     ${isAdmin ? `
@@ -4579,38 +4573,25 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="shodan-item-list" id="shodanBody_dachiWaza">
                     ${curr.shodanProgram.dachiWaza.map((t, idx) => {
                       const baseName = t.name;
-                      const gTerm = findGlossaryBase(baseName);
-                      const hasImg = !!(gTerm && gTerm.image);
                       return `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                        <button 
-                          type="button" 
-                          onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" 
-                          style="background: none; border: none; color: #FFF; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-align: left; padding: 0; flex: 1; font-family: inherit;"
-                          title="${hasImg ? 'Toque para ver a ilustração e detalhes desta base no dicionário' : 'Toque para ver detalhes desta base no dicionário'}"
-                        >
-                          <span><strong>${idx + 1}.</strong> ${baseName}</span>
-                          ${hasImg ? `
-                            <span class="dachi-photo-badge" style="font-size: 0.65rem; padding: 1px 5px;">
-                              <i class="fas fa-image"></i> Ver Foto
-                            </span>
-                          ` : `
-                            <span class="dachi-info-badge" style="font-size: 0.65rem; padding: 1px 4px;">
-                              <i class="fas fa-info-circle"></i> Info
-                            </span>
-                          `}
-                        </button>
-                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                          <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                          <button 
+                            type="button" 
+                            onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" 
+                            style="background: none; border: none; color: #FFF; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; text-align: left; padding: 0; font-family: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                            title="Toque para ver a base no dicionário"
+                          >
+                            <span><strong>${idx + 1}.</strong> ${baseName}</span>
+                          </button>
                           ${isAdmin ? `
-                            <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Editar técnica" style="font-size: 0.68rem; padding: 3px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Excluir técnica" style="font-size: 0.68rem; padding: 3px 6px; cursor: pointer; border-radius: 4px;">
-                              <i class="fas fa-trash"></i>
-                            </button>
+                            <span style="display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;">
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
+                              <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 3px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
+                            </span>
                           ` : ''}
                         </div>
+                        <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
                       </div>
                     `;}).join('')}
                     ${isAdmin ? `
@@ -4631,27 +4612,27 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                 ` : ''}
                 ${curr.kihon.map((k, idx) => `
-                  <div class="technique-item" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
-                    <div class="technique-main" style="align-items: center; flex: 1;">
-                      <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-crimson); margin-right: 10px; flex-shrink: 0;"></div>
-                      <div>
-                        <div class="technique-name">${k.technique}</div>
-                        <div class="technique-meta">
-                          <span class="stance">${k.stance}</span> • <span>${k.direction}</span> • <span style="color: #64748B;">${k.count}</span>
-                          ${k.focus ? ` • <span style="color: var(--accent-gold); font-size: 0.76rem;">${k.focus}</span>` : ''}
-                        </div>
+                  <div class="technique-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-crimson); flex-shrink: 0;"></div>
+                    <div style="flex: 1; min-width: 0;">
+                      <div class="technique-name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <span style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${k.technique}</span>
+                        ${isAdmin ? `
+                          <span style="display: inline-flex; align-items: center; gap: 2px;">
+                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'kihon', ${idx})" title="Editar técnica" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.76rem;"><i class="fas fa-edit"></i></button>
+                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'kihon', ${idx})" title="Excluir técnica" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.76rem;"><i class="fas fa-trash"></i></button>
+                          </span>
+                        ` : ''}
+                      </div>
+                      <div class="technique-meta" style="white-space: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; display: flex; align-items: center; gap: 6px; font-size: 0.78rem; margin-top: 3px; color: #94A3B8;">
+                        <span class="stance" style="color: var(--accent-gold); font-weight: 600; white-space: nowrap;">${k.stance}</span>
+                        <span style="color: #475569;">•</span>
+                        <span style="white-space: nowrap;">${k.direction}</span>
+                        <span style="color: #475569;">•</span>
+                        <span style="color: #94A3B8; white-space: nowrap;">${k.count}</span>
+                        ${k.focus ? `<span style="color: #475569;">•</span><span style="color: var(--accent-gold); font-size: 0.76rem; white-space: nowrap;">${k.focus}</span>` : ''}
                       </div>
                     </div>
-                    ${isAdmin ? `
-                      <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
-                        <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'kihon', ${idx})" title="Editar técnica" style="font-size: 0.72rem; padding: 4px 8px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
-                          <i class="fas fa-edit"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'kihon', ${idx})" title="Excluir técnica" style="font-size: 0.72rem; padding: 4px 8px; cursor: pointer; border-radius: 4px;">
-                          <i class="fas fa-trash"></i>
-                        </button>
-                      </div>
-                    ` : ''}
                   </div>
                 `).join('')}
               </div>
@@ -4683,26 +4664,22 @@ document.addEventListener('DOMContentLoaded', () => {
               ` : ''}
               <div class="technique-list">
                 ${curr.geri.map((g, idx) => `
-                  <div class="technique-item" style="border-left: 3px solid #F5BE00; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
-                    <div class="technique-main" style="align-items: flex-start; flex: 1;">
-                      <div style="width: 8px; height: 8px; border-radius: 50%; background: #F5BE00; margin-top: 6px; margin-right: 10px; flex-shrink: 0;"></div>
-                      <div>
-                        <div class="technique-name" style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${g.name}</div>
-                        <div class="technique-meta" style="margin-top: 4px; color: #94A3B8;">
-                          <i class="fas fa-info-circle" style="color: var(--accent-gold); font-size: 0.75rem;"></i> ${g.detail}
-                        </div>
+                  <div class="technique-item" style="border-left: 3px solid #F5BE00; display: flex; align-items: center; gap: 10px; padding: 10px 12px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #F5BE00; flex-shrink: 0;"></div>
+                    <div style="flex: 1; min-width: 0;">
+                      <div class="technique-name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <span style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${g.name}</span>
+                        ${isAdmin ? `
+                          <span style="display: inline-flex; align-items: center; gap: 2px;">
+                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'geri', ${idx})" title="Editar chute" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.76rem;"><i class="fas fa-edit"></i></button>
+                            <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'geri', ${idx})" title="Excluir chute" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.76rem;"><i class="fas fa-trash"></i></button>
+                          </span>
+                        ` : ''}
+                      </div>
+                      <div class="technique-meta" style="margin-top: 3px; color: #94A3B8; white-space: nowrap; overflow-x: auto; scrollbar-width: none; font-size: 0.78rem;">
+                        <i class="fas fa-info-circle" style="color: var(--accent-gold); font-size: 0.75rem;"></i> ${g.detail}
                       </div>
                     </div>
-                    ${isAdmin ? `
-                      <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
-                        <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'geri', ${idx})" title="Editar chute" style="font-size: 0.72rem; padding: 4px 8px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
-                          <i class="fas fa-edit"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'geri', ${idx})" title="Excluir chute" style="font-size: 0.72rem; padding: 4px 8px; cursor: pointer; border-radius: 4px;">
-                          <i class="fas fa-trash"></i>
-                        </button>
-                      </div>
-                    ` : ''}
                   </div>
                 `).join('')}
               </div>
@@ -4734,21 +4711,17 @@ document.addEventListener('DOMContentLoaded', () => {
               ` : ''}
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
                 ${curr.ukemi.map((u, idx) => `
-                  <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-left: 3px solid #10B981; border-radius: var(--radius-sm); padding: 12px 14px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                      <div style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 4px;">🥋 ${u.name}</div>
+                  <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-left: 3px solid #10B981; border-radius: var(--radius-sm); padding: 10px 12px;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px; flex-wrap: wrap;">
+                      <span style="font-weight: 700; color: #FFF; font-size: 0.92rem;">🥋 ${u.name}</span>
                       ${isAdmin ? `
-                        <div style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
-                          <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukemi', ${idx})" title="Editar" style="font-size: 0.68rem; padding: 2px 6px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; cursor: pointer; border-radius: 4px;">
-                            <i class="fas fa-edit"></i>
-                          </button>
-                          <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukemi', ${idx})" title="Excluir" style="font-size: 0.68rem; padding: 2px 6px; cursor: pointer; border-radius: 4px;">
-                            <i class="fas fa-trash"></i>
-                          </button>
-                        </div>
+                        <span style="display: inline-flex; align-items: center; gap: 2px;">
+                          <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'ukemi', ${idx})" title="Editar" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 2px 4px; font-size: 0.72rem;"><i class="fas fa-edit"></i></button>
+                          <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'ukemi', ${idx})" title="Excluir" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 2px 4px; font-size: 0.72rem;"><i class="fas fa-trash"></i></button>
+                        </span>
                       ` : ''}
                     </div>
-                    <div style="font-size: 0.8rem; color: #94A3B8;">${u.detail}</div>
+                    <div style="font-size: 0.8rem; color: #94A3B8; white-space: nowrap; overflow-x: auto; scrollbar-width: none;">${u.detail}</div>
                   </div>
                 `).join('')}
               </div>
@@ -4852,45 +4825,38 @@ document.addEventListener('DOMContentLoaded', () => {
             <i class="fas fa-chevron-down study-accordion-icon" id="studyIcon_dachi" style="transform: ${isDachiOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
           </button>
           <div class="study-accordion-body ${isDachiOpen ? 'active' : ''}" id="studyBody_dachi">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <div class="dachi-grid-quadrados">
               ${curr.dachiWaza.map((d, idx) => {
                 const baseName = typeof d === 'string' ? d : (d.name || '');
                 const gTerm = findGlossaryBase(baseName);
                 const hasImg = !!(gTerm && gTerm.image);
                 return `
-                <div class="dachi-curriculum-card">
-                  <button 
-                    type="button" 
-                    class="dachi-curriculum-btn" 
-                    onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" 
-                    title="${hasImg ? 'Toque para ver a ilustração e detalhes desta base no dicionário' : 'Toque para ver detalhes desta base no dicionário'}"
-                  >
-                    <span style="font-size: 1rem;">🥋</span>
-                    <strong style="color: #FFF; font-weight: 700;">${baseName}</strong>
-                    ${hasImg ? `
-                      <span class="dachi-photo-badge">
-                        <i class="fas fa-image"></i> Ver Foto
-                      </span>
-                    ` : `
-                      <span class="dachi-info-badge">
-                        <i class="fas fa-book-open"></i> Ver Base
-                      </span>
-                    `}
-                  </button>
+                <div class="dachi-quadrado-card" onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" title="${baseName}">
                   ${isAdmin ? `
-                    <div style="display: inline-flex; align-items: center; gap: 2px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,0.15);">
-                      <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="background: none; border: none; color: #FFB703; cursor: pointer; padding: 3px 5px; font-size: 0.74rem;" title="Editar base"><i class="fas fa-edit"></i></button>
-                      <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="background: none; border: none; color: #F87171; cursor: pointer; padding: 3px 5px; font-size: 0.74rem;" title="Excluir base"><i class="fas fa-trash"></i></button>
+                    <div class="dachi-quadrado-admin" onclick="event.stopPropagation();">
+                      <button type="button" onclick="event.stopPropagation(); window.TKST_APP.openEditCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="color: #FFB703;" title="Editar base"><i class="fas fa-edit"></i></button>
+                      <button type="button" onclick="event.stopPropagation(); window.TKST_APP.deleteCurriculumTechnique(${curr.kyuNumber}, 'dachiWaza', ${idx})" style="color: #F87171;" title="Excluir base"><i class="fas fa-trash"></i></button>
                     </div>
                   ` : ''}
+                  <div class="dachi-quadrado-media">
+                    ${hasImg ? `
+                      <img src="${gTerm.image}" alt="${baseName}" class="dachi-quadrado-thumb" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                      <span class="dachi-quadrado-icon" style="display: none;">🥋</span>
+                    ` : `
+                      <span class="dachi-quadrado-icon">🥋</span>
+                    `}
+                  </div>
+                  <span class="dachi-quadrado-name">${baseName}</span>
                 </div>
               `;}).join('')}
-              ${isAdmin ? `
+            </div>
+            ${isAdmin ? `
+              <div style="margin-top: 12px; text-align: center;">
                 <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza')" style="font-size: 0.76rem; padding: 7px 14px; color: #A78BFA; border-color: rgba(167,139,250,0.4); display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border-radius: var(--radius-sm);">
                   <i class="fas fa-plus"></i> + Adicionar Base
                 </button>
-              ` : ''}
-            </div>
+              </div>
+            ` : ''}
           </div>
         </div>
         ` : ''}
@@ -10924,10 +10890,9 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 ${term.image ? `
                   <img src="${term.image}" alt="${term.japanese}" style="max-height: 180px; width: 100%; object-fit: contain; padding: 4px;" onerror="this.onerror=null; this.src='assets/images/logo-tkst.png';">
                 ` : `
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94A3B8; padding: 16px; text-align: center;">
-                    <i class="fas fa-running" style="font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 8px; opacity: 0.85;"></i>
-                    <div style="font-weight: 700; color: #FFF; font-size: 0.88rem; margin-bottom: 2px;">${term.japanese}</div>
-                    <div style="font-size: 0.72rem; color: #64748B;">Demonstração Técnica Tradicional</div>
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; color: #94A3B8; padding: 20px; text-align: center; gap: 8px;">
+                    <i class="fas fa-image" style="font-size: 2.2rem; color: #64748B; opacity: 0.5;"></i>
+                    <span style="font-size: 0.88rem; color: #94A3B8; font-weight: 600;">Ainda sem imagem correspondente</span>
                   </div>
                 `}
               </div>
@@ -12340,18 +12305,53 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       if (gTerm) {
         window.TKST_APP.openGlossaryDetailModal('bases', gTerm.japanese);
       } else {
+        const modalTitle = document.getElementById('detailModalTitle');
+        const modalBody = document.getElementById('detailModalBody');
         const isAdmin = window.TKST_AUTH ? window.TKST_AUTH.isAdmin() : false;
-        if (isAdmin) {
-          if (confirm(`A base "${baseName}" ainda não possui cadastro no Dicionário Japonês.\n\nDeseja cadastrá-la agora com imagem, kanji e dicas técnicas?`)) {
-            window.TKST_APP.openAddGlossaryTermModal('bases');
-            setTimeout(() => {
-              const jpInput = document.getElementById('newGlossaryJapanese');
-              if (jpInput) jpInput.value = baseName;
-            }, 100);
-          }
-        } else {
-          alert(`A base "${baseName}" ainda não possui ficha ilustrada no Dicionário Japonês.`);
-        }
+
+        modalTitle.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span class="badge badge-amarela" style="font-size: 0.72rem;">Base (Dachi)</span>
+            <span style="color: #FFF; font-weight: 700;">${baseName}</span>
+          </div>
+        `;
+
+        modalBody.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px;">
+              <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: #FFF; margin: 0 0 4px 0;">
+                ${baseName}
+              </h2>
+              <div style="font-size: 0.84rem; color: #E2E8F0;">
+                <strong>Significado:</strong> Postura tradicional de Karatê Shotokan (${baseName}).
+              </div>
+              <div style="margin-top: 10px; display: flex; gap: 8px;">
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.speakJapanese('${baseName.replace(/'/g, "\\'")}')" style="background: rgba(255, 183, 3, 0.15); border: 1px solid var(--accent-gold); color: #FFB703; font-size: 0.76rem; padding: 6px 10px; border-radius: var(--radius-sm);">
+                  <i class="fas fa-volume-up"></i> Ouvir Pronúncia
+                </button>
+                ${isAdmin ? `
+                  <button type="button" class="btn btn-sm btn-primary" onclick="window.TKST_APP.openAddGlossaryTermModal('bases'); setTimeout(() => { const jp = document.getElementById('newGlossaryJapanese'); if(jp) jp.value = '${baseName.replace(/'/g, "\\'")}'; }, 100);" style="font-size: 0.76rem; padding: 6px 10px;">
+                    <i class="fas fa-camera"></i> Cadastrar Foto da Base
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="technique-media-card" style="padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+              <div class="technique-image-container" style="background: #080c14; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; padding: 20px; text-align: center; gap: 8px;">
+                <i class="fas fa-image" style="font-size: 2.2rem; color: #64748B; opacity: 0.5;"></i>
+                <span style="font-size: 0.88rem; color: #94A3B8; font-weight: 600;">Ainda sem imagem correspondente</span>
+              </div>
+            </div>
+
+            <div style="width: 100%;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="width: 100%; padding: 10px; font-weight: 600; font-size: 0.84rem;">
+                Fechar
+              </button>
+            </div>
+          </div>
+        `;
+        document.getElementById('detailModal').classList.add('active');
       }
     }
   };

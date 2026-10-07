@@ -1402,15 +1402,24 @@ body.login-view-active .content-body {
 .technique-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   margin-top: 3px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #94A3B8;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.technique-meta::-webkit-scrollbar {
+  display: none;
 }
 
 .technique-meta .stance {
   color: var(--accent-gold);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* ==========================================================================
@@ -5692,71 +5701,111 @@ body.login-view-active .content-body {
 }
 
 /* =========================================================
-   DACHI WAZA INTERACTIVE BUTTONS (Plano de Estudos)
+   DACHI WAZA EM QUADRADOS (Até 4 por linha no celular)
    ========================================================= */
-.dachi-curriculum-card {
-  display: inline-flex;
+.dachi-grid-quadrados {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .dachi-grid-quadrados {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+}
+
+.dachi-quadrado-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.08) 100%);
-  border: 1.5px solid rgba(139, 92, 246, 0.35);
-  border-radius: var(--radius-sm);
-  padding: 3px 8px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  min-height: 74px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-sm, 8px);
+  padding: 6px 3px;
+  cursor: pointer;
+  text-align: center;
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
-.dachi-curriculum-card:hover {
-  border-color: rgba(167, 139, 250, 0.85);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.24) 0%, rgba(99, 102, 241, 0.18) 100%);
+.dachi-quadrado-card:hover, .dachi-quadrado-card:active {
+  border-color: var(--accent-gold, #FFB703);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.22) 0%, rgba(99, 102, 241, 0.18) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
 }
 
-.dachi-curriculum-btn {
+.dachi-quadrado-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.dachi-quadrado-thumb {
+  max-height: 36px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.dachi-quadrado-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.dachi-quadrado-name {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  line-height: 1.15;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  padding: 0 2px;
+}
+
+@media (max-width: 360px) {
+  .dachi-quadrado-name {
+    font-size: 0.62rem;
+  }
+}
+
+.dachi-quadrado-admin {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  gap: 2px;
+  background: rgba(11, 14, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 1px 2px;
+  z-index: 2;
+}
+
+.dachi-quadrado-admin button {
   background: none;
   border: none;
-  color: #F8FAFC;
-  font-size: 0.88rem;
-  padding: 5px 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   cursor: pointer;
-  text-align: left;
-  user-select: none;
-  font-family: inherit;
-}
-
-.dachi-curriculum-btn:focus-visible {
-  outline: 2px solid var(--accent-gold);
-  border-radius: 4px;
-}
-
-.dachi-photo-badge {
-  background: rgba(16, 185, 129, 0.22);
-  border: 1px solid #10B981;
-  color: #6EE7B7;
-  font-size: 0.68rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.dachi-info-badge {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #94A3B8;
-  font-size: 0.68rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-weight: 600;
+  padding: 2px 3px;
+  font-size: 0.65rem;
+  line-height: 1;
 }
 
 
