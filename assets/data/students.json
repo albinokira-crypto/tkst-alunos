@@ -530,7 +530,7 @@
       "status": "approved",
       "approvedAt": "2026-08-21T22:33:36.441Z",
       "createdAt": "2026-08-21T22:33:25.162Z",
-      "updatedAt": 1787351616444,
+      "updatedAt": 1788394140946,
       "statusUpdatedAt": 1788379203426,
       "phone": "21967604566",
       "notes": "Novo cadastro realizado pelo portal.",
@@ -560,9 +560,9 @@
     },
     {
       "id": "std_1787268943201_fpw5o",
-      "username": "nicollyferreiradesouza14@gmail.com",
+      "username": "nick",
       "email": "nicollyferreiradesouza14@gmail.com@tkst.local",
-      "password": "2014",
+      "password": "2014@",
       "name": "Nicolly ferreira de Souza",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -746,8 +746,8 @@
       "status": "approved",
       "approvedAt": "2026-08-20T15:30:00.000Z",
       "createdAt": "2026-08-20T15:08:00.000Z",
-      "updatedAt": 1791416958477,
-      "statusUpdatedAt": 1791416958477,
+      "updatedAt": 1791498609682,
+      "statusUpdatedAt": 1791498609682,
       "phone": "21985215905",
       "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
     },
@@ -774,9 +774,9 @@
     },
     {
       "id": "std_1787185578421_3i178",
-      "username": "inosukefelix1@gmail.com",
-      "email": "inosukefelix1@gmail.com@tkst.local",
-      "password": "alicebarbos",
+      "username": "alicevarb2@gmail.com",
+      "email": "alicevarb2@gmail.com@tkst.local",
+      "password": "i4z4HPhCt46",
       "name": "Alice Barbosa de Souza Pereira",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -786,7 +786,7 @@
       "startDate": "2026-08-20",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "approvedAt": "2026-10-07T23:50:51.931Z",
+      "approvedAt": "2026-08-20T00:29:11.723Z",
       "createdAt": "2026-08-20T00:26:18.431Z",
       "updatedAt": 1791417051936,
       "statusUpdatedAt": 1791417051936,
@@ -1155,9 +1155,9 @@
       "status": "approved",
       "phone": "21999714332",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1791403158871,
+      "lastActive": 1791498676263,
       "statusUpdatedAt": 1,
-      "updatedAt": 1791241433754,
+      "updatedAt": 1791498683003,
       "quizScores": [
         {
           "date": "2026-09-16T23:31:53.822Z",
@@ -1374,6 +1374,14 @@
           "percentage": 50,
           "beltLevel": "Faixa Amarela 6º Kyu",
           "beltKyu": 6
+        },
+        {
+          "date": "2026-10-08T22:31:23.001Z",
+          "score": 10,
+          "total": 10,
+          "percentage": 100,
+          "beltLevel": "Faixa Branca 7º Kyu",
+          "beltKyu": 7
         }
       ]
     },
@@ -1513,5 +1521,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1791417054080
+  "updatedAt": 1791498686343
 }
