@@ -1,10 +1,10 @@
-const CACHE_NAME = 'tkst-alunos-v218';
+const CACHE_NAME = 'tkst-alunos-v219';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './assets/css/main.css?v=201',
   './assets/css/components.css?v=218',
-  './assets/js/jsqr.min.js?v=217',
+  './assets/js/jsqr.min.js?v=219',
   './assets/js/auth.js?v=208',
   './assets/js/data-curriculum.js?v=208',
   './assets/js/data-katas.js?v=200',
@@ -14,7 +14,7 @@ const ASSETS_TO_CACHE = [
   './assets/js/qr-generator.js?v=218',
   './assets/js/data-exams.js?v=218',
   './assets/js/data-media.js?v=200',
-  './assets/js/app.js?v=218',
+  './assets/js/app.js?v=219',
   './assets/audio/interstellar-ticktock-15s.mp3',
   './assets/images/logo-tkst.png',
   './assets/images/logo-header-tkst.png',

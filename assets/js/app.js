@@ -12415,20 +12415,31 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     toggleExamScannerTorch: async function() {
       if (!examScannerStream) return;
       const track = examScannerStream.getVideoTracks()[0];
-      if (track && track.applyConstraints) {
-        try {
-          examScannerTorchActive = !examScannerTorchActive;
-          await track.applyConstraints({
-            advanced: [{ torch: examScannerTorchActive }]
-          });
-          const btn = document.getElementById('examTorchToggleBtn');
-          if (btn) {
-            btn.innerHTML = `<i class="fas fa-bolt"></i> ${examScannerTorchActive ? 'Flash Ligado' : 'Flash / Lanterna'}`;
-            btn.style.background = examScannerTorchActive ? '#F5BE00' : 'rgba(255,255,255,0.08)';
-            btn.style.color = examScannerTorchActive ? '#000' : '#E2E8F0';
-          }
-        } catch(err) {
-          console.warn('Erro ao alternar lanterna:', err);
+      if (!track || !track.applyConstraints) {
+        alert('Seu navegador não oferece suporte para controle da lanterna.');
+        return;
+      }
+
+      const nextTorch = !examScannerTorchActive;
+      try {
+        await track.applyConstraints({
+          advanced: [{ torch: nextTorch }]
+        });
+        examScannerTorchActive = nextTorch;
+
+        const btn = document.getElementById('examTorchToggleBtn');
+        if (btn) {
+          btn.innerHTML = `<i class="fas fa-bolt"></i> ${examScannerTorchActive ? 'Flash Ligado' : 'Flash / Lanterna'}`;
+          btn.style.background = examScannerTorchActive ? '#F5BE00' : 'rgba(255,255,255,0.08)';
+          btn.style.color = examScannerTorchActive ? '#000' : '#E2E8F0';
+        }
+      } catch(err) {
+        console.warn('Erro ao alternar lanterna:', err);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (isIOS) {
+          alert('Aviso: No iPhone (iOS), a Apple não libera o controle da lanterna para navegadores (Safari/Chrome no iOS) por restrição de segurança. Use um ambiente bem iluminado ou importe a foto pela galeria.');
+        } else {
+          alert('Não foi possível ativar a lanterna neste dispositivo. Verifique se a câmera traseira possui flash ou se o sistema está com nível de bateria suficiente.');
         }
       }
     },
@@ -12439,10 +12450,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       if (track && track.applyConstraints) {
         try {
           examScannerZoomActive = !examScannerZoomActive;
-          const targetZoom = examScannerZoomActive ? 1.8 : 1.0;
-          await track.applyConstraints({
-            advanced: [{ zoom: targetZoom }]
-          });
+          const caps = track.getCapabilities ? track.getCapabilities() : {};
+          if (caps.zoom && caps.zoom.max > 1) {
+            const minZ = caps.zoom.min || 1;
+            const maxZ = caps.zoom.max || 5;
+            const targetZoom = examScannerZoomActive ? Math.min(2.5, maxZ) : minZ;
+            await track.applyConstraints({
+              advanced: [{ zoom: targetZoom }]
+            });
+          }
           const btn = document.getElementById('examZoomToggleBtn');
           if (btn) {
             btn.innerHTML = `<i class="fas fa-search-plus"></i> ${examScannerZoomActive ? 'Zoom 2x (Macro)' : 'Zoom 1x'}`;
@@ -12461,39 +12477,54 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       if (track && track.applyConstraints) {
         try {
           const caps = track.getCapabilities ? track.getCapabilities() : {};
-          const adv = {};
-          if (caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
-            adv.focusMode = 'continuous';
-          }
-          if (Object.keys(adv).length > 0) {
-            await track.applyConstraints({ advanced: [adv] });
+          // Força o motor da lente a re-focar
+          if (caps.focusMode && Array.isArray(caps.focusMode)) {
+            if (caps.focusMode.includes('single-shot')) {
+              await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+              setTimeout(async () => {
+                try {
+                  if (caps.focusMode.includes('continuous')) {
+                    await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                  }
+                } catch(e) {}
+              }, 350);
+            } else if (caps.focusMode.includes('continuous')) {
+              await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+            }
           }
         } catch(e) {}
       }
 
-      // Feedback visual do anel de foco no local do toque
+      // Feedback visual do anel de foco no local do toque ou no centro
       const container = document.getElementById('examScannerViewportWrap');
-      if (container && event) {
-        const rect = container.getBoundingClientRect();
-        const clientX = (event.touches && event.touches[0]) ? event.touches[0].clientX : event.clientX;
-        const clientY = (event.touches && event.touches[0]) ? event.touches[0].clientY : event.clientY;
-        if (clientX && clientY) {
-          const x = clientX - rect.left;
-          const y = clientY - rect.top;
-          const ring = document.createElement('div');
-          ring.style.position = 'absolute';
-          ring.style.left = (x - 22) + 'px';
-          ring.style.top = (y - 22) + 'px';
-          ring.style.width = '44px';
-          ring.style.height = '44px';
-          ring.style.borderRadius = '50%';
-          ring.style.border = '2px solid #10B981';
-          ring.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.8)';
-          ring.style.pointerEvents = 'none';
-          ring.style.zIndex = '30';
-          container.appendChild(ring);
-          setTimeout(() => { try { container.removeChild(ring); } catch(e) {} }, 700);
+      if (container) {
+        let x = container.clientWidth / 2;
+        let y = container.clientHeight / 2;
+        if (event && (event.clientX || (event.touches && event.touches[0]))) {
+          const rect = container.getBoundingClientRect();
+          const clientX = (event.touches && event.touches[0]) ? event.touches[0].clientX : event.clientX;
+          const clientY = (event.touches && event.touches[0]) ? event.touches[0].clientY : event.clientY;
+          if (clientX && clientY) {
+            x = clientX - rect.left;
+            y = clientY - rect.top;
+          }
         }
+        const ring = document.createElement('div');
+        ring.style.position = 'absolute';
+        ring.style.left = (x - 25) + 'px';
+        ring.style.top = (y - 25) + 'px';
+        ring.style.width = '50px';
+        ring.style.height = '50px';
+        ring.style.borderRadius = '50%';
+        ring.style.border = '2.5px solid #F5BE00';
+        ring.style.boxShadow = '0 0 16px rgba(245, 190, 0, 0.9)';
+        ring.style.pointerEvents = 'none';
+        ring.style.zIndex = '35';
+        ring.style.transition = 'transform 0.25s ease-out';
+        ring.style.transform = 'scale(1.2)';
+        container.appendChild(ring);
+        setTimeout(() => { ring.style.transform = 'scale(0.9)'; }, 80);
+        setTimeout(() => { try { container.removeChild(ring); } catch(e) {} }, 750);
       }
     },
 
@@ -12542,9 +12573,9 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="fas fa-qrcode" style="color: var(--accent-gold); font-size: 1.1rem;"></i>
                 <div>
-                  <strong>Etapa 1 de 2:</strong> Aponte para o <strong>QR Code na Questão 10</strong>.
+                  <strong>Etapa 1 de 2:</strong> Aponte para o <strong>QR Code (canto inferior direito da folha)</strong>.
                   <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 2px;">
-                    Mantenha a 15-20cm de distância para foco perfeito. Toque no visor para focar.
+                    💡 <strong>Mantenha o celular a cerca de 20 a 25 cm da folha</strong> (não aproxime demais para a lente não desfocar). Toque na tela ou no botão <strong>Focar</strong>.
                   </div>
                 </div>
               </div>
@@ -12586,7 +12617,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 <div style="position: absolute; left: 6px; right: 6px; height: 3px; background: linear-gradient(90deg, transparent, #F5BE00, #FFF, #F5BE00, transparent); box-shadow: 0 0 8px #F5BE00; animation: examLaserScan 2s infinite ease-in-out;"></div>
 
                 <div id="examScannerGuidanceText" style="text-align: center; color: #FFF; font-size: 0.76rem; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.9); background: rgba(0,0,0,0.65); padding: 4px 10px; border-radius: 4px; align-self: center;">
-                  Centralize o QR Code aqui
+                  Centralize o QR Code aqui (a ~20-25cm)
                 </div>
 
                 <div style="display: flex; justify-content: space-between; padding: 3px;">
@@ -12639,11 +12670,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               </div>
             ` : ''}
 
-            <!-- Ferramentas da Câmera: Flash, Zoom Macro, Alternar Câmera e Galeria -->
+            <!-- Ferramentas da Câmera: Flash, Foco, Zoom Macro, Alternar Câmera e Galeria -->
             <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-top: 2px;">
               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                 <button type="button" id="examTorchToggleBtn" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.toggleExamScannerTorch()" style="font-size: 0.78rem; padding: 7px 11px;">
                   <i class="fas fa-bolt"></i> Flash / Lanterna
+                </button>
+
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.triggerTapToFocus()" style="font-size: 0.78rem; padding: 7px 11px;" title="Forçar foco da câmera">
+                  <i class="fas fa-crosshairs"></i> Focar
                 </button>
 
                 <button type="button" id="examZoomToggleBtn" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.toggleExamScannerZoom()" style="font-size: 0.78rem; padding: 7px 11px;">
@@ -12678,11 +12713,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         const constraints = {
           video: {
             facingMode: { ideal: examScannerCurrentCamera },
-            width: { min: 1280, ideal: 1920, max: 2560 },
-            height: { min: 720, ideal: 1080, max: 1440 },
-            advanced: [
-              { focusMode: 'continuous' }
-            ]
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
           },
           audio: false
         };
@@ -12691,16 +12723,19 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         videoEl.srcObject = examScannerStream;
         await videoEl.play();
 
-        // Aplica autofoco contínuo e macro nas capacidades do hardware
+        // Aplica autofoco contínuo e zoom inicial adequado para macro
         const track = examScannerStream.getVideoTracks()[0];
-        if (track) {
+        if (track && track.applyConstraints) {
           try {
             const caps = track.getCapabilities ? track.getCapabilities() : {};
             const adv = {};
             if (caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
               adv.focusMode = 'continuous';
             }
-            if (Object.keys(adv).length > 0 && track.applyConstraints) {
+            if (caps.zoom && caps.zoom.max > 1.2) {
+              adv.zoom = Math.min(1.4, caps.zoom.max);
+            }
+            if (Object.keys(adv).length > 0) {
               await track.applyConstraints({ advanced: [adv] });
             }
           } catch(e) {
@@ -12726,47 +12761,83 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const canvasEl = document.getElementById('examScannerCanvasEl');
       if (!videoEl || !canvasEl || !examScannerStream) return;
 
+      let frameCount = 0;
+
       const scanFrame = async () => {
         if (!examScannerStream || examScannerStep !== 1 || examScannerDetectedData) return;
 
         if (videoEl.readyState >= videoEl.HAVE_CURRENT_DATA) {
-          // 1. Tenta API Nativa BarcodeDetector se disponível no navegador
-          if ('BarcodeDetector' in window) {
-            try {
-              const barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
-              const barcodes = await barcodeDetector.detect(videoEl);
-              if (barcodes && barcodes.length > 0) {
-                const rawValue = barcodes[0].rawValue;
-                if (rawValue && rawValue.includes('TKST:')) {
-                  window.TKST_APP.handleQrDetected(rawValue);
+          frameCount++;
+          const vw = videoEl.videoWidth;
+          const vh = videoEl.videoHeight;
+
+          if (vw > 0 && vh > 0) {
+            const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
+
+            // =========================================================
+            // ESTRATÉGIA 1 (PADRÃO): CROP CENTRAL EM ALTA DEFINIÇÃO (MACRO CROP)
+            // Extrai a região central de 55% da imagem com resolução nativa do sensor
+            // Não reduz o QR Code, permitindo leitura nítida a 20-30cm da folha!
+            // =========================================================
+            const cropFraction = 0.55;
+            const cropW = Math.round(vw * cropFraction);
+            const cropH = Math.round(vh * cropFraction);
+            const cropX = Math.round((vw - cropW) / 2);
+            const cropY = Math.round((vh - cropH) / 2);
+
+            canvasEl.width = 520;
+            canvasEl.height = Math.round(520 * (cropH / cropW));
+
+            if (ctx) {
+              ctx.drawImage(videoEl, cropX, cropY, cropW, cropH, 0, 0, canvasEl.width, canvasEl.height);
+              const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+
+              if (typeof jsQR !== 'undefined') {
+                const code = jsQR(imgData.data, imgData.width, imgData.height, {
+                  inversionAttempts: 'attemptBoth'
+                });
+                if (code && code.data && code.data.includes('TKST:')) {
+                  window.TKST_APP.handleQrDetected(code.data);
                   return;
                 }
               }
-            } catch(e) {}
-          }
+            }
 
-          // 2. Fallback de alta precisão com a biblioteca jsQR pura
-          if (typeof jsQR !== 'undefined') {
-            try {
-              const vw = videoEl.videoWidth || 640;
-              const vh = videoEl.videoHeight || 480;
-              if (vw > 0 && vh > 0) {
-                canvasEl.width = Math.min(640, vw);
-                canvasEl.height = Math.round((canvasEl.width / vw) * vh);
-                const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
-                if (ctx) {
-                  ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-                  const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
-                  const code = jsQR(imgData.data, imgData.width, imgData.height, {
-                    inversionAttempts: 'dontInvert'
-                  });
-                  if (code && code.data && code.data.includes('TKST:')) {
-                    window.TKST_APP.handleQrDetected(code.data);
+            // =========================================================
+            // ESTRATÉGIA 2: BarcodeDetector NATIVO DO ANDROID / CHROME
+            // =========================================================
+            if ('BarcodeDetector' in window && (frameCount % 2 === 0)) {
+              try {
+                const barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+                const barcodes = await barcodeDetector.detect(videoEl);
+                if (barcodes && barcodes.length > 0) {
+                  const rawValue = barcodes[0].rawValue;
+                  if (rawValue && rawValue.includes('TKST:')) {
+                    window.TKST_APP.handleQrDetected(rawValue);
                     return;
                   }
                 }
+              } catch(e) {}
+            }
+
+            // =========================================================
+            // ESTRATÉGIA 3: SCAN DO FRAME COMPLETO A 800px (Caso não esteja centralizado)
+            // =========================================================
+            if (frameCount % 3 === 0 && typeof jsQR !== 'undefined' && ctx) {
+              const fullW = Math.min(800, vw);
+              const fullH = Math.round((fullW / vw) * vh);
+              canvasEl.width = fullW;
+              canvasEl.height = fullH;
+              ctx.drawImage(videoEl, 0, 0, fullW, fullH);
+              const fullImgData = ctx.getImageData(0, 0, fullW, fullH);
+              const codeFull = jsQR(fullImgData.data, fullImgData.width, fullImgData.height, {
+                inversionAttempts: 'attemptBoth'
+              });
+              if (codeFull && codeFull.data && codeFull.data.includes('TKST:')) {
+                window.TKST_APP.handleQrDetected(codeFull.data);
+                return;
               }
-            } catch(e) {}
+            }
           }
         }
 
