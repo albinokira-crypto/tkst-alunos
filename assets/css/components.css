@@ -4645,28 +4645,25 @@ body.login-view-active .content-body {
   padding-bottom: 0 !important;
 }
 
-/* QUESTÃO 10: QR CODE EMBUTIDO AO LADO DAS OPÇÕES (SEM SOBREPOSIÇÃO) */
-.exam-q10-side-row {
+/* QUESTÃO 10: RESERVA DE ESPAÇO NO CANTO PARA O QR CODE */
+.exam-q10-card {
+  padding-right: 32mm !important;
+  position: relative !important;
+}
+
+/* QR CODE OFICIAL NO CANTO INFERIOR DIREITO */
+.exam-corner-qr-wrap {
+  position: absolute !important;
+  right: 10px !important;
+  bottom: 8px !important;
+  z-index: 10 !important;
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  width: 100% !important;
-  margin-top: 1px !important;
+  justify-content: center !important;
 }
 
-.exam-q10-options-col {
-  flex: 1 1 auto !important;
-  max-width: 68% !important;
-}
-
-.exam-q10-qr-wrap {
-  flex: 0 0 auto !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-}
-
-.exam-q10-qr-box {
+.exam-corner-qr-box {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -4674,36 +4671,32 @@ body.login-view-active .content-body {
   background: #FFF !important;
   border: 1.5px solid #0F172A !important;
   border-radius: 4px !important;
-  padding: 2px !important;
-  box-shadow: 1.5px 1.5px 0px #0F172A !important;
+  padding: 3px !important;
+  box-shadow: 2px 2px 0px #0F172A !important;
 }
 
-.exam-q10-qr-svg {
-  width: 22mm !important;
-  height: 22mm !important;
+.exam-corner-qr-svg {
+  width: 95px !important;
+  height: 95px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
-.exam-q10-qr-svg svg {
+.exam-corner-qr-svg svg {
   width: 100% !important;
   height: 100% !important;
   display: block !important;
 }
 
-.exam-q10-qr-label {
-  font-size: 6.2pt !important;
+.exam-corner-qr-label {
+  font-size: 7pt !important;
   font-weight: 900 !important;
   color: #0F172A !important;
-  letter-spacing: 0.4px !important;
+  letter-spacing: 0.3px !important;
   line-height: 1 !important;
-  margin-top: 1px !important;
+  margin-top: 2px !important;
   white-space: nowrap !important;
-}
-
-.exam-corner-qr-wrap {
-  display: none !important;
 }
 
 /* MARCA D'ÁGUA CENTRAL DA FOLHA (DE UM LADO A OUTRO DA FOLHA) */

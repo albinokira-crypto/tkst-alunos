@@ -893,9 +893,14 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }
 
-      // Questão sem imagem (100% da largura da coluna, sem espremer opções)
+      // Questão sem imagem (100% da largura da coluna, com reserva de canto na Questão 10 para o QR Code)
+      const isQ10 = (qNum === 10);
+      const cardClass = isQ10
+        ? "exam-vertical-q-item exam-landscape-q-card exam-q10-card"
+        : "exam-vertical-q-item exam-landscape-q-card";
+
       return `
-        <div class="exam-vertical-q-item exam-landscape-q-card">
+        <div class="${cardClass}">
           <div class="exam-q-title-row">
             <span class="exam-q-number">${qNum}.</span> ${q.question}
           </div>
@@ -914,7 +919,7 @@ window.TKST_EXAM_GENERATOR = {
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO + QR CODE) -->
+        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO) -->
         <div class="exam-landscape-top-bar">
           <!-- LOGO SEM CNPJ AMPLIADA + GRADUAÇÃO REFERENTE À PROVA -->
           <div class="exam-landscape-header-col">
@@ -934,19 +939,13 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
 
-          <!-- CITAÇÃO FUNAKOSHI + AVISO AO ALUNO -->
+          <!-- CITAÇÃO FUNAKOSHI + AVISO AO ALUNO (PINTE O QUADRADINHO) -->
           <div class="exam-header-quote-card exam-landscape-quote-box">
             <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
             <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
             <div style="font-size: 7.2pt; color: #1E293B; margin-top: 2px; font-weight: 700; background: #FEF3C7; border: 1px dashed #D97706; padding: 1px 4px; border-radius: 3px; display: inline-block;">
-              ✏️ <strong>Atenção:</strong> Marque com <strong>X bem escuro</strong> no quadradinho.
+              ✏️ <strong>Atenção:</strong> <strong>Pinte totalmente</strong> o quadradinho da resposta correta a lápis ou caneta.
             </div>
-          </div>
-
-          <!-- QR CODE OFICIAL DE CORREÇÃO INSTANTÂNEA -->
-          <div class="exam-header-qr-card">
-            <div class="exam-header-qr-svg">${qrSvg}</div>
-            <div class="exam-header-qr-label">CORREÇÃO #${examId}</div>
           </div>
         </div>
 
@@ -957,6 +956,16 @@ window.TKST_EXAM_GENERATOR = {
           </div>
           <div class="exam-landscape-col">
             ${col2Questions}
+          </div>
+        </div>
+
+        <!-- QR CODE OFICIAL DE CORREÇÃO (CANTO INFERIOR DIREITO, FLUTUANTE FORA DO FLUXO DO TEXTO) -->
+        <div class="exam-corner-qr-wrap">
+          <div class="exam-corner-qr-box">
+            <div class="exam-corner-qr-svg">
+              ${qrSvg}
+            </div>
+            <span class="exam-corner-qr-label">CORREÇÃO #${examId}</span>
           </div>
         </div>
       </div>
@@ -1447,44 +1456,7 @@ window.TKST_EXAM_GENERATOR = {
         margin-top: 1px;
       }
 
-      /* QR CODE OFICIAL NO CABEÇALHO (MODO PAISAGEM) */
-      .exam-header-qr-card {
-        border: 1.5px solid #0F172A !important;
-        border-radius: 4px !important;
-        background: #FFF !important;
-        box-shadow: 1.5px 1.5px 0px #0F172A !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 2px !important;
-        flex: 0 0 24mm !important;
-        width: 24mm !important;
-        box-sizing: border-box !important;
-        margin-top: 0.5mm !important;
-      }
-      .exam-header-qr-svg {
-        width: 19.5mm !important;
-        height: 19.5mm !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-      }
-      .exam-header-qr-svg svg {
-        width: 100% !important;
-        height: 100% !important;
-        display: block !important;
-      }
-      .exam-header-qr-label {
-        font-size: 5.6pt !important;
-        font-weight: 900 !important;
-        color: #0F172A !important;
-        letter-spacing: 0.3px !important;
-        line-height: 1 !important;
-        margin-top: 1.5px !important;
-        white-space: nowrap !important;
-        text-align: center !important;
-      }
+
 
       /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM (PREENCHENDO A FOLHA TOTALMENTE) */
       .exam-landscape-grid-2col {
@@ -1637,8 +1609,24 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         align-items: center !important;
         justify-content: flex-end !important;
+      /* QUESTÃO 10: RESERVA DE ESPAÇO NO CANTO PARA O QR CODE (SEM SOBREPOSIÇÃO) */
+      .exam-q10-card {
+        padding-right: 32mm !important;
+        position: relative !important;
       }
-      .exam-q10-qr-box {
+
+      /* QR CODE OFICIAL NO CANTO INFERIOR DIREITO DA FOLHA (FORA DO FLUXO DO TEXTO) */
+      .exam-corner-qr-wrap {
+        position: absolute !important;
+        right: 3mm !important;
+        bottom: 2.5mm !important;
+        z-index: 10 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      .exam-corner-qr-box {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -1646,34 +1634,29 @@ window.TKST_EXAM_GENERATOR = {
         background: #FFF !important;
         border: 1.5px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 2px !important;
-        box-shadow: 1.5px 1.5px 0px #0F172A !important;
+        padding: 2.5px !important;
+        box-shadow: 2px 2px 0px #0F172A !important;
       }
-      .exam-q10-qr-svg {
-        width: 22mm !important;
-        height: 22mm !important;
+      .exam-corner-qr-svg {
+        width: 25mm !important;
+        height: 25mm !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
       }
-      .exam-q10-qr-svg svg {
+      .exam-corner-qr-svg svg {
         width: 100% !important;
         height: 100% !important;
         display: block !important;
       }
-      .exam-q10-qr-label {
-        font-size: 6.2pt !important;
+      .exam-corner-qr-label {
+        font-size: 5.6pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
-        letter-spacing: 0.4px !important;
+        letter-spacing: 0.3px !important;
         line-height: 1 !important;
-        margin-top: 1px !important;
+        margin-top: 1.5px !important;
         white-space: nowrap !important;
-      }
-
-      /* QR CODE DE CANTO (FALLBACK) */
-      .exam-corner-qr-wrap {
-        display: none !important;
       }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */

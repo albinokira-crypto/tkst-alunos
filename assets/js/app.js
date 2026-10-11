@@ -12380,12 +12380,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         answers = ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
       }
 
-      examScannerStep = 2; // Modo Direto Paisagem
-      examScannerDetectedData = {
-        kyu: activeKyu,
-        examId: 'SENSEI',
-        answers: answers
-      };
+      examScannerStep = 1; // Inicia na Etapa 1: Escanear QR Code
+      examScannerDetectedData = null;
       examScannerCapturedImage = null;
       examGradingPendingResult = null;
       examScannerTorchActive = false;
@@ -12398,6 +12394,13 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       modal.setAttribute('data-prevent-outside-close', 'true');
       window.TKST_APP.renderExamCameraModalUI();
       modal.classList.add('active');
+      window.TKST_APP.startScannerCameraStream();
+    },
+
+    returnToStep1Qr: function() {
+      examScannerStep = 1;
+      examScannerDetectedData = null;
+      window.TKST_APP.renderExamCameraModalUI();
       window.TKST_APP.startScannerCameraStream();
     },
 
@@ -12492,7 +12495,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         examScannerScreenTorchActive = false;
         if (viewport) {
           viewport.style.boxShadow = 'none';
-          viewport.style.border = '2px solid #10B981';
+          viewport.style.border = (examScannerStep === 1) ? '2px solid var(--accent-gold)' : '2px solid #10B981';
         }
         if (btn) {
           btn.innerHTML = `<i class="fas fa-bolt"></i> ${examScannerTorchActive ? 'Flash LED Ligado' : 'Flash / Lanterna'}`;
@@ -12503,7 +12506,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           showToast('⚡ Flash LED do celular aceso!', 'success');
         }
       } else {
-        // Fallback inteligente: Lanterna de Tela (Halo Illuminator de alta potência)
+        // Fallback inteligente: Lanterna de Tela (Halo Illuminator de alta potência para iluminar papel)
         examScannerScreenTorchActive = nextTorch;
         if (viewport) {
           if (examScannerScreenTorchActive) {
@@ -12511,7 +12514,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             viewport.style.border = '5px solid #FFFFFF';
           } else {
             viewport.style.boxShadow = 'none';
-            viewport.style.border = '2px solid #10B981';
+            viewport.style.border = (examScannerStep === 1) ? '2px solid var(--accent-gold)' : '2px solid #10B981';
           }
         }
         if (btn) {
@@ -12520,7 +12523,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           btn.style.color = examScannerTorchActive ? '#000' : '#E2E8F0';
         }
         if (typeof showToast === 'function' && examScannerTorchActive) {
-          showToast('💡 Iluminação de tela ativada! Para o Flash LED traseiro físico, use o botão verde "Câmera do Celular".', 'info');
+          showToast('💡 Iluminação de tela ativada! Para o Flash LED físico, use o botão "Câmera do Celular".', 'info');
         }
       }
     },
@@ -12535,7 +12538,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           if (caps.zoom && caps.zoom.max > 1) {
             const minZ = caps.zoom.min || 1;
             const maxZ = caps.zoom.max || 5;
-            const targetZoom = examScannerZoomActive ? Math.min(2.5, maxZ) : minZ;
+            const targetZoom = examScannerZoomActive ? Math.min(2.2, maxZ) : minZ;
             await track.applyConstraints({
               advanced: [{ zoom: targetZoom }]
             });
@@ -12567,7 +12570,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                     await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
                   }
                 } catch(e) {}
-              }, 350);
+              }, 300);
             } else if (caps.focusMode.includes('continuous')) {
               await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
             }
@@ -12575,7 +12578,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         } catch(e) {}
       }
 
-      // Feedback visual do anel de foco no local do toque ou no centro
+      // Feedback visual da mira de foco no ponto do toque ou centro
       const container = document.getElementById('examScannerViewportWrap');
       if (container) {
         let x = container.clientWidth / 2;
@@ -12589,22 +12592,55 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             y = clientY - rect.top;
           }
         }
+        const oldRing = document.getElementById('examFocusRingAnim');
+        if (oldRing) {
+          try { container.removeChild(oldRing); } catch(e) {}
+        }
         const ring = document.createElement('div');
+        ring.id = 'examFocusRingAnim';
         ring.style.position = 'absolute';
-        ring.style.left = (x - 25) + 'px';
-        ring.style.top = (y - 25) + 'px';
-        ring.style.width = '50px';
-        ring.style.height = '50px';
+        ring.style.left = (x - 28) + 'px';
+        ring.style.top = (y - 28) + 'px';
+        ring.style.width = '56px';
+        ring.style.height = '56px';
         ring.style.borderRadius = '50%';
         ring.style.border = '2.5px solid #F5BE00';
-        ring.style.boxShadow = '0 0 16px rgba(245, 190, 0, 0.9)';
+        ring.style.boxShadow = '0 0 16px rgba(245, 190, 0, 0.95)';
         ring.style.pointerEvents = 'none';
         ring.style.zIndex = '35';
         ring.style.transition = 'transform 0.25s ease-out';
-        ring.style.transform = 'scale(1.2)';
+        ring.style.transform = 'scale(1.25)';
         container.appendChild(ring);
-        setTimeout(() => { ring.style.transform = 'scale(0.9)'; }, 80);
-        setTimeout(() => { try { container.removeChild(ring); } catch(e) {} }, 750);
+        setTimeout(() => { ring.style.transform = 'scale(0.85)'; }, 60);
+        setTimeout(() => { try { container.removeChild(ring); } catch(e) {} }, 800);
+      }
+    },
+
+    handleQrDetected: function(rawData) {
+      if (!rawData || !window.TKST_QR) return;
+      const decoded = window.TKST_QR.decodeExamPayload(rawData);
+      if (!decoded || !decoded.examId || !Array.isArray(decoded.answers) || decoded.answers.length < 10) return;
+
+      examScannerDetectedData = decoded;
+      window.TKST_APP.playChime();
+      if (navigator.vibrate) {
+        try { navigator.vibrate([40, 60, 100]); } catch(e) {}
+      }
+
+      const beltName = getBeltNameFromKyu(decoded.kyu);
+      if (typeof showToast === 'function') {
+        showToast(`🎯 QR Code Lido: Prova #${decoded.examId} (${beltName})`, 'success');
+      }
+
+      // Transiciona imediatamente para a Etapa 2 (Fotografar a Folha Inteira)
+      examScannerStep = 2;
+      window.TKST_APP.renderExamCameraModalUI();
+
+      // Reconecta o stream no elemento de vídeo da Etapa 2
+      const videoEl = document.getElementById('examScannerVideoEl');
+      if (videoEl && examScannerStream) {
+        videoEl.srcObject = examScannerStream;
+        videoEl.play().catch(() => {});
       }
     },
 
@@ -12612,8 +12648,10 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const body = document.getElementById('examCameraModalBody');
       if (!body) return;
 
-      const detected = examScannerDetectedData || { kyu: 6, examId: 'SENSEI' };
+      const isStep1 = (examScannerStep === 1);
+      const detected = examScannerDetectedData || { kyu: (examGeneratorSelectedKyu !== undefined ? examGeneratorSelectedKyu : 6), examId: 'SENSEI' };
       const currentKyu = (detected.kyu !== undefined) ? detected.kyu : 6;
+      const beltName = getBeltNameFromKyu(currentKyu);
 
       const kyuList = [
         { kyu: 6, label: "Branca para Amarela (6º Kyu - Heian Shodan)" },
@@ -12634,108 +12672,153 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             50%, 70% { transform: rotate(-90deg); }
             100% { transform: rotate(0deg); }
           }
-          @keyframes laserScanPulse {
-            0% { top: 6%; opacity: 0.9; }
-            50% { top: 92%; opacity: 0.6; }
-            100% { top: 6%; opacity: 0.9; }
+          @keyframes examLaserScan {
+            0% { top: 8%; opacity: 0.95; }
+            50% { top: 88%; opacity: 0.6; }
+            100% { top: 8%; opacity: 0.95; }
           }
         </style>
 
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          <!-- Barra Superior: Seletor de Faixa / Gabarito Oficial Ativo -->
-          <div style="background: rgba(255, 183, 3, 0.08); border: 1.5px solid var(--accent-gold); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <!-- Barra de Progresso / Etapas da Correção -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 14px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 1.3rem;">🥋</span>
-              <div>
-                <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Gabarito da Prova:</div>
-                <div id="examCurrentBeltBadge" style="font-size: 0.96rem; font-weight: 900; color: #FFF;">
-                  ${getBeltNameFromKyu(currentKyu)}
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: 0.75rem; font-weight: 900; background: ${isStep1 ? 'var(--accent-gold)' : '#10B981'}; color: #000;">
+                ${isStep1 ? '1' : '✓'}
+              </span>
+              <span style="font-size: 0.82rem; font-weight: 800; color: ${isStep1 ? '#FFF' : '#6EE7B7'};">
+                ${isStep1 ? 'Etapa 1: Escanear QR Code' : 'QR Code Identificado'}
+              </span>
+            </div>
+            <i class="fas fa-chevron-right" style="color: #475569; font-size: 0.75rem;"></i>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: 0.75rem; font-weight: 900; background: ${!isStep1 ? '#10B981' : '#334155'}; color: ${!isStep1 ? '#000' : '#94A3B8'};">
+                2
+              </span>
+              <span style="font-size: 0.82rem; font-weight: 800; color: ${!isStep1 ? '#FFF' : '#64748B'};">
+                Etapa 2: Foto da Prova
+              </span>
+            </div>
+          </div>
+
+          <!-- Banner Informativo por Etapa -->
+          ${isStep1 ? `
+            <div style="background: rgba(245, 190, 0, 0.1); border: 1.5px solid var(--accent-gold); border-radius: var(--radius-sm); padding: 9px 13px; font-size: 0.82rem; color: #FFF; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-qrcode" style="color: var(--accent-gold); font-size: 1.3rem;"></i>
+                <div>
+                  <strong>Aproxime a câmera do QR Code da Prova</strong>
+                  <div style="font-size: 0.75rem; color: #E2E8F0; margin-top: 2px;">
+                    O QR Code está no canto inferior direito da folha. Centralize na mira abaixo a cerca de 15-25cm.
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <label for="examCorrectionKyuSelect" style="font-size: 0.78rem; color: #E2E8F0; font-weight: 700;">Trocar Faixa:</label>
-              <select id="examCorrectionKyuSelect" onchange="window.TKST_APP.changeCorrectionKyu(this.value)" style="padding: 6px 10px; border-radius: 6px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.82rem; font-weight: 800; cursor: pointer;">
-                ${kyuList.map(item => `
-                  <option value="${item.kyu}" ${item.kyu === currentKyu ? 'selected' : ''}>${item.label}</option>
-                `).join('')}
-              </select>
-            </div>
-          </div>
-
-          <!-- Banner Dinâmico de Reconhecimento do QR Code -->
-          <div id="examScannerQrBanner" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1.5px solid #10B981; border-radius: var(--radius-sm); padding: 8px 12px; align-items: center; gap: 10px;">
-          </div>
-
-          <!-- Card de Instrução Simples e Claro -->
-          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 9px 13px; font-size: 0.82rem; color: #E2E8F0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <i class="fas fa-qrcode" style="color: #6EE7B7; font-size: 1.2rem;"></i>
-              <div>
-                <strong>Aponte para a Prova (Gire na Horizontal)</strong>
-                <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 2px;">
-                  O QR Code no topo carrega o gabarito oficial e a câmera lê as 10 questões marcadas a lápis.
-                </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="examCorrectionKyuSelect" style="font-size: 0.74rem; color: #94A3B8;">Ou selecione:</label>
+                <select id="examCorrectionKyuSelect" onchange="window.TKST_APP.changeCorrectionKyu(this.value)" style="padding: 4px 8px; border-radius: 4px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.76rem; font-weight: 700;">
+                  ${kyuList.map(item => `
+                    <option value="${item.kyu}" ${item.kyu === currentKyu ? 'selected' : ''}>${item.label}</option>
+                  `).join('')}
+                </select>
               </div>
             </div>
-            <div class="badge badge-verde" style="font-size: 0.72rem; font-weight: 800;">
-              <i class="fas fa-check-circle"></i> Correção Inteligente
+          ` : `
+            <div style="background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10B981; border-radius: var(--radius-sm); padding: 9px 13px; font-size: 0.82rem; color: #FFF; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-mobile-alt" style="color: #6EE7B7; font-size: 1.25rem; animation: examPhoneRotate 2.5s infinite ease-in-out;"></i>
+                <div>
+                  <strong style="color: #34D399;">Gire o celular na HORIZONTAL (modo paisagem)</strong>
+                  <div style="font-size: 0.75rem; color: #E2E8F0; margin-top: 2px;">
+                    ✅ Prova: <strong>${beltName} (#${detected.examId})</strong> identificada. Enquadre a folha inteira.
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.returnToStep1Qr()" style="font-size: 0.75rem; padding: 5px 10px;">
+                <i class="fas fa-redo"></i> Trocar Prova
+              </button>
             </div>
-          </div>
+          `}
 
-          <!-- Viewfinder da Câmera em Modo Paisagem com HUD -->
-          <div id="examScannerViewportWrap" onclick="window.TKST_APP.triggerTapToFocus(event)" style="position: relative; width: 100%; height: 410px; max-height: 50vh; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #10B981; display: flex; align-items: center; justify-content: center; cursor: crosshair; transition: box-shadow 0.3s ease;">
+          <!-- Viewfinder da Câmera Adaptativo -->
+          <div id="examScannerViewportWrap" onclick="window.TKST_APP.triggerTapToFocus(event)" style="position: relative; width: 100%; height: ${isStep1 ? '380px' : '410px'}; max-height: 52vh; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid ${isStep1 ? 'var(--accent-gold)' : '#10B981'}; display: flex; align-items: center; justify-content: center; cursor: crosshair; transition: box-shadow 0.3s ease;">
             <video id="examScannerVideoEl" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
 
-            <!-- Linha Laser de Leitura de QR Code e Folha -->
-            <div style="position: absolute; left: 16px; right: 16px; height: 2px; background: linear-gradient(90deg, transparent, #10B981, #34D399, transparent); box-shadow: 0 0 10px #10B981; animation: laserScanPulse 2.8s infinite ease-in-out; pointer-events: none; z-index: 10;"></div>
-
-            <!-- Moldura Horizontal HUD para Enquadramento da Folha A4 -->
-            <div style="position: absolute; inset: 14px; border: 2px dashed rgba(16, 185, 129, 0.85); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);">
-              <div style="display: flex; justify-content: space-between; padding: 4px;">
-                <span style="width: 28px; height: 28px; border-top: 4px solid #10B981; border-left: 4px solid #10B981;"></span>
-                <div style="background: rgba(0,0,0,0.75); color: #FFF; font-size: 0.76rem; font-weight: 800; padding: 3px 12px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.5); display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-arrows-alt-h" style="color: var(--accent-gold);"></i> MODO PAISAGEM (FOLHA A4 HORIZONTAL)
+            ${isStep1 ? `
+              <!-- HUD ETAPA 1: Mira Quadrada Focada Central (Macro Viewfinder) -->
+              <div style="position: absolute; width: 220px; height: 220px; border: 2px dashed rgba(245, 190, 0, 0.8); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.45);">
+                <!-- Cantoneiras Douradas -->
+                <div style="display: flex; justify-content: space-between; padding: 3px;">
+                  <span style="width: 24px; height: 24px; border-top: 4px solid var(--accent-gold); border-left: 4px solid var(--accent-gold);"></span>
+                  <span style="width: 24px; height: 24px; border-top: 4px solid var(--accent-gold); border-right: 4px solid var(--accent-gold);"></span>
                 </div>
-                <span style="width: 28px; height: 28px; border-top: 4px solid #10B981; border-right: 4px solid #10B981;"></span>
-              </div>
 
-              <div style="align-self: center; text-align: center; background: rgba(0,0,0,0.75); padding: 7px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);">
-                <div style="color: #6EE7B7; font-weight: 800; font-size: 0.84rem;">
-                  Enquadre as 10 Questões da Prova
-                </div>
-                <div style="color: #94A3B8; font-size: 0.73rem;">
-                  Coluna 1 (Questões 1 a 5) • Coluna 2 (Questões 6 a 10)
-                </div>
-              </div>
+                <!-- Laser de Varredura Dourado -->
+                <div style="position: absolute; left: 8px; right: 8px; height: 3px; background: linear-gradient(90deg, transparent, #F5BE00, #FFF, #F5BE00, transparent); box-shadow: 0 0 10px #F5BE00; animation: examLaserScan 2s infinite ease-in-out;"></div>
 
-              <div style="display: flex; justify-content: space-between; padding: 4px;">
-                <span style="width: 28px; height: 28px; border-bottom: 4px solid #10B981; border-left: 4px solid #10B981;"></span>
-                <span style="width: 28px; height: 28px; border-bottom: 4px solid #10B981; border-right: 4px solid #10B981;"></span>
+                <div style="text-align: center; color: #FFF; font-size: 0.76rem; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 4px; align-self: center;">
+                  Centralize o QR Code aqui
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding: 3px;">
+                  <span style="width: 24px; height: 24px; border-bottom: 4px solid var(--accent-gold); border-left: 4px solid var(--accent-gold);"></span>
+                  <span style="width: 24px; height: 24px; border-bottom: 4px solid var(--accent-gold); border-right: 4px solid var(--accent-gold);"></span>
+                </div>
               </div>
-            </div>
+            ` : `
+              <!-- HUD ETAPA 2: Moldura Horizontal em Modo Paisagem para Folha A4 Inteira -->
+              <div style="position: absolute; inset: 14px; border: 2px dashed rgba(16, 185, 129, 0.85); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);">
+                <div style="display: flex; justify-content: space-between; padding: 4px;">
+                  <span style="width: 28px; height: 28px; border-top: 4px solid #10B981; border-left: 4px solid #10B981;"></span>
+                  <div style="background: rgba(0,0,0,0.75); color: #FFF; font-size: 0.76rem; font-weight: 800; padding: 3px 12px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.5); display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-arrows-alt-h" style="color: var(--accent-gold);"></i> MODO PAISAGEM (FOLHA A4 HORIZONTAL)
+                  </div>
+                  <span style="width: 28px; height: 28px; border-top: 4px solid #10B981; border-right: 4px solid #10B981;"></span>
+                </div>
+
+                <div style="align-self: center; text-align: center; background: rgba(0,0,0,0.75); padding: 7px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);">
+                  <div style="color: #6EE7B7; font-weight: 800; font-size: 0.84rem;">
+                    Enquadre as 10 Questões da Prova
+                  </div>
+                  <div style="color: #94A3B8; font-size: 0.73rem;">
+                    Coluna 1 (Questões 1 a 5) • Coluna 2 (Questões 6 a 10)
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding: 4px;">
+                  <span style="width: 28px; height: 28px; border-bottom: 4px solid #10B981; border-left: 4px solid #10B981;"></span>
+                  <span style="width: 28px; height: 28px; border-bottom: 4px solid #10B981; border-right: 4px solid #10B981;"></span>
+                </div>
+              </div>
+            `}
 
             <!-- Canvas invisível para captura e processamento -->
             <canvas id="examScannerCanvasEl" style="display: none;"></canvas>
           </div>
 
-          <!-- Ações Principais: Disparo Direto + Câmera Nativa com Flash Físico -->
+          <!-- Ações Principais -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-              <!-- Botão 1: Câmera Nativa do Celular (com Hardware Flash e Foco Laser Garantidos) -->
-              <label class="btn btn-primary" style="flex: 1.2; min-width: 190px; font-size: 0.88rem; font-weight: 800; padding: 12px 16px; cursor: pointer; background: linear-gradient(135deg, #10B981, #059669); border: none; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45); display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #FFF;">
-                <i class="fas fa-camera"></i> Câmera do Celular (Flash & Foco Nativo)
-                <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
-              </label>
+            ${!isStep1 ? `
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                <!-- Botão 1: Câmera Nativa do Celular (com Hardware Flash e Foco Laser Garantidos) -->
+                <label class="btn btn-primary" style="flex: 1.2; min-width: 190px; font-size: 0.88rem; font-weight: 800; padding: 12px 16px; cursor: pointer; background: linear-gradient(135deg, #10B981, #059669); border: none; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45); display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #FFF;">
+                  <i class="fas fa-camera"></i> Câmera do Celular (Flash & Foco Nativo)
+                  <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
+                </label>
 
-              <!-- Botão 2: Tirar Foto Direta pelo Navegador -->
-              <button type="button" class="btn" onclick="window.TKST_APP.captureLandscapeExamPhoto()" style="flex: 1; min-width: 150px; font-size: 0.88rem; font-weight: 800; padding: 12px 16px; background: linear-gradient(135deg, #F5BE00, #D97706); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fas fa-bullseye"></i> Fotografar Prova na Tela
-              </button>
-            </div>
+                <!-- Botão 2: Tirar Foto Direta pelo Navegador -->
+                <button type="button" class="btn" onclick="window.TKST_APP.captureLandscapeExamPhoto()" style="flex: 1; min-width: 150px; font-size: 0.88rem; font-weight: 800; padding: 12px 16px; background: linear-gradient(135deg, #F5BE00, #D97706); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                  <i class="fas fa-bullseye"></i> Fotografar Prova na Tela
+                </button>
+              </div>
+            ` : `
+              <div style="display: flex; gap: 8px; justify-content: center;">
+                <div style="font-size: 0.80rem; color: #94A3B8; text-align: center;">
+                  💡 <em>Aponte para o QR Code no canto da prova. Ele será lido automaticamente em alta definição!</em>
+                </div>
+              </div>
+            `}
 
-            <!-- Ferramentas Secundárias: Flash / Lanterna, Focar, Zoom Macro, Alternar Câmera e Galeria -->
+            <!-- Ferramentas da Câmera: Flash / Lanterna, Focar, Zoom Macro, Alternar Câmera e Galeria -->
             <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-top: 2px;">
               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                 <button type="button" id="examTorchToggleBtn" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.toggleExamScannerTorch()" style="font-size: 0.78rem; padding: 7px 11px;">
@@ -12755,7 +12838,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 </button>
 
                 <label class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 7px 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-image"></i> Galeria
+                  <i class="fas fa-image"></i> ${isStep1 ? 'Foto do QR' : 'Foto da Prova'}
                   <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
                 </label>
               </div>
@@ -12820,7 +12903,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               adv.focusMode = 'continuous';
             }
             if (caps.zoom && caps.zoom.max > 1.2) {
-              adv.zoom = Math.min(1.2, caps.zoom.max);
+              adv.zoom = Math.min(1.3, caps.zoom.max);
             }
             if (Object.keys(adv).length > 0) {
               await track.applyConstraints({ advanced: [adv] });
@@ -12842,57 +12925,68 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const canvasEl = document.getElementById('examScannerCanvasEl');
       if (!videoEl || !canvasEl) return;
 
-      const scanFrame = () => {
-        if (!examScannerStream) return;
-        if (videoEl.readyState >= videoEl.HAVE_CURRENT_DATA && videoEl.videoWidth > 0) {
-          try {
-            const scanW = 640;
-            const scanH = Math.round((videoEl.videoHeight / videoEl.videoWidth) * scanW) || 360;
-            canvasEl.width = scanW;
-            canvasEl.height = scanH;
-            const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
-            ctx.drawImage(videoEl, 0, 0, scanW, scanH);
+      let frameCounter = 0;
 
-            let decoded = null;
+      const scanFrame = async () => {
+        if (!examScannerStream) return;
+
+        // Só roda detecção ativa de QR Code se estiver na Etapa 1
+        if (examScannerStep === 1 && !examScannerDetectedData && videoEl.readyState >= videoEl.HAVE_CURRENT_DATA && videoEl.videoWidth > 0) {
+          frameCounter++;
+          const vw = videoEl.videoWidth;
+          const vh = videoEl.videoHeight;
+
+          try {
+            const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
+
+            // ESTRATÉGIA 1: MACRO CROP CENTRAL EM ALTA DEFINIÇÃO (55% do sensor)
+            const cropW = Math.round(vw * 0.55);
+            const cropH = Math.round(vh * 0.55);
+            const cropX = Math.round((vw - cropW) / 2);
+            const cropY = Math.round((vh - cropH) / 2);
+
+            canvasEl.width = 520;
+            canvasEl.height = Math.round(520 * (cropH / cropW));
+
+            ctx.drawImage(videoEl, cropX, cropY, cropW, cropH, 0, 0, canvasEl.width, canvasEl.height);
+
+            let rawFound = null;
+
             if (window.jsQR) {
-              const imgData = ctx.getImageData(0, 0, scanW, scanH);
-              const code = window.jsQR(imgData.data, scanW, scanH, { inversionAttempts: 'dontInvert' });
-              if (code && code.data && window.TKST_QR) {
-                decoded = window.TKST_QR.decodeExamPayload(code.data);
+              const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+              const code = window.jsQR(imgData.data, canvasEl.width, canvasEl.height, { inversionAttempts: 'attemptBoth' });
+              if (code && code.data && code.data.includes('TKST:')) {
+                rawFound = code.data;
               }
             }
 
-            if (decoded && decoded.examId && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
-              examScannerDetectedData = decoded;
-              window.TKST_APP.playChime();
+            // ESTRATÉGIA 2: BarcodeDetector nativo (se suportado pelo navegador)
+            if (!rawFound && 'BarcodeDetector' in window && (frameCounter % 2 === 0)) {
+              try {
+                const detector = new BarcodeDetector({ formats: ['qr_code'] });
+                const barcodes = await detector.detect(videoEl);
+                if (barcodes && barcodes.length > 0 && barcodes[0].rawValue && barcodes[0].rawValue.includes('TKST:')) {
+                  rawFound = barcodes[0].rawValue;
+                }
+              } catch(e) {}
+            }
 
-              const badge = document.getElementById('examCurrentBeltBadge');
-              const beltName = getBeltNameFromKyu(decoded.kyu);
-              if (badge) {
-                badge.innerHTML = `<span style="color: #10B981;">✅ ${beltName} (Prova #${decoded.examId})</span>`;
+            // ESTRATÉGIA 3: SCAN DO FRAME COMPLETO A 800px (a cada 3 frames)
+            if (!rawFound && (frameCounter % 3 === 0) && window.jsQR) {
+              const fullW = Math.min(800, vw);
+              const fullH = Math.round((fullW / vw) * vh);
+              canvasEl.width = fullW;
+              canvasEl.height = fullH;
+              ctx.drawImage(videoEl, 0, 0, fullW, fullH);
+              const fullImgData = ctx.getImageData(0, 0, fullW, fullH);
+              const codeFull = window.jsQR(fullImgData.data, fullW, fullH, { inversionAttempts: 'attemptBoth' });
+              if (codeFull && codeFull.data && codeFull.data.includes('TKST:')) {
+                rawFound = codeFull.data;
               }
-              const select = document.getElementById('examCorrectionKyuSelect');
-              if (select) {
-                select.value = decoded.kyu;
-              }
+            }
 
-              const qrAlert = document.getElementById('examScannerQrBanner');
-              if (qrAlert) {
-                qrAlert.style.display = 'flex';
-                qrAlert.innerHTML = `
-                  <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.25rem;"></i>
-                  <div>
-                    <strong style="color: #34D399;">QR Code Identificado com Sucesso!</strong>
-                    <div style="font-size: 0.75rem; color: #E2E8F0;">Gabarito da Prova #${decoded.examId} (${beltName}) carregado. Agora enquadre a folha e tire a foto!</div>
-                  </div>
-                `;
-              }
-
-              if (typeof showToast === 'function') {
-                showToast(`🎯 QR Code Lido: Prova #${decoded.examId} (${beltName})`, 'success');
-              }
-
-              // Não precisa reescanear repetidamente o mesmo frame
+            if (rawFound) {
+              window.TKST_APP.handleQrDetected(rawFound);
               return;
             }
           } catch(e) {}
@@ -12948,6 +13042,28 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         reader.onload = async (e) => {
           const dataUrl = e.target.result;
           examScannerCapturedImage = dataUrl;
+
+          // Se estiver na Etapa 1, tenta extrair o QR Code da imagem enviada
+          if (examScannerStep === 1 && !examScannerDetectedData && window.jsQR) {
+            try {
+              const testImg = new Image();
+              testImg.src = dataUrl;
+              await new Promise(r => { testImg.onload = r; testImg.onerror = r; });
+              const testCanvas = document.createElement('canvas');
+              testCanvas.width = testImg.naturalWidth || testImg.width || 800;
+              testCanvas.height = testImg.naturalHeight || testImg.height || 600;
+              const testCtx = testCanvas.getContext('2d');
+              testCtx.drawImage(testImg, 0, 0);
+              const testData = testCtx.getImageData(0, 0, testCanvas.width, testCanvas.height);
+              const testCode = window.jsQR(testData.data, testCanvas.width, testCanvas.height, { inversionAttempts: 'attemptBoth' });
+              if (testCode && testCode.data && testCode.data.includes('TKST:')) {
+                window.TKST_APP.handleQrDetected(testCode.data);
+                return;
+              }
+            } catch(err) {}
+          }
+
+          // Na Etapa 2 (ou fallback direto), processa a correção da prova
           window.TKST_APP.stopScannerCameraStream();
           window.TKST_APP.executeGradingPipeline(dataUrl);
         };
@@ -12957,7 +13073,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
     // =========================================================================
     // CLIENT-SIDE CANVAS OMR (OPTICAL MARK RECOGNITION)
-    // Lê os quadradinhos marcados com grafite/lápis X nas 10 questões da prova
+    // Lê os quadradinhos TOTALMENTE PINTADOS a lápis ou caneta nas 10 questões
     // =========================================================================
     analyzeExamMarksOMR: function(canvas, officialKey) {
       const cw = canvas.width;
@@ -12970,28 +13086,31 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       // Prova em Modo Paisagem A4:
       // Cabeçalho: topo 0% a 19%
       // Questões: 19% a 95% da altura total
-      // Coluna 1 (Q1-Q5): X de 3% a 48%
-      // Coluna 2 (Q6-Q10): X de 52% a 97%
+      // Coluna 1 (Q1-Q5): X de 3.5% a 48%
+      // Coluna 2 (Q6-Q10): X de 52% a 96.5%
       const qTopPct = 0.19;
       const qBottomPct = 0.95;
       const totalQHeight = (qBottomPct - qTopPct) * ch;
       const rowHeight = totalQHeight / 5;
 
       const cols = [
-        { startX: 0.04 * cw, width: 0.44 * cw }, // Q1 - Q5
-        { startX: 0.52 * cw, width: 0.44 * cw }  // Q6 - Q10
+        { startX: 0.038 * cw, width: 0.442 * cw }, // Q1 - Q5
+        { startX: 0.520 * cw, width: 0.442 * cw }  // Q6 - Q10
       ];
 
-      // Amostra luminosidade do papel em região sem impressão
+      // Amostra luminosidade média do papel branco em região sem impressão
       let paperBgLuma = 220;
       try {
-        const bgSample = ctx.getImageData(Math.round(cw * 0.49), Math.round(ch * 0.5), 10, 10).data;
+        const bgSample = ctx.getImageData(Math.round(cw * 0.495), Math.round(ch * 0.5), 12, 12).data;
         let sum = 0;
         for (let i = 0; i < bgSample.length; i += 4) {
           sum += (bgSample[i] * 0.299 + bgSample[i+1] * 0.587 + bgSample[i+2] * 0.114);
         }
-        paperBgLuma = Math.max(150, sum / (bgSample.length / 4));
+        paperBgLuma = Math.max(160, sum / (bgSample.length / 4));
       } catch(e) {}
+
+      // Limiar para considerar grafite ou tinta escura
+      const darkThreshold = paperBgLuma * 0.72;
 
       for (let qIdx = 0; qIdx < 10; qIdx++) {
         const colIdx = qIdx < 5 ? 0 : 1;
@@ -13001,64 +13120,92 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         const qY = (qTopPct * ch) + (rowIdx * rowHeight);
         const qH = rowHeight;
 
-        // Na questão, título ocupa primeiros 26%, as 4 opções ocupam os 74% restantes
-        const optAreaY = qY + (qH * 0.26);
-        const optAreaH = qH * 0.74;
+        // Na questão, o título ocupa os primeiros 25%, as 4 alternativas ocupam os 75% restantes
+        const optAreaY = qY + (qH * 0.25);
+        const optAreaH = qH * 0.75;
         const singleOptH = optAreaH / 4;
 
-        // O quadradinho de marcação fica no lado esquerdo da linha da alternativa
-        const boxX = colDef.startX + (colDef.width * 0.015);
-        const boxW = colDef.width * 0.20;
+        // O quadradinho de marcação fica no lado esquerdo da alternativa
+        const boxBaseX = colDef.startX + (colDef.width * 0.008);
+        const boxBaseW = colDef.width * 0.14; // janela do quadradinho
 
         const optionScores = [];
 
         for (let optIdx = 0; optIdx < 4; optIdx++) {
-          const boxY = optAreaY + (optIdx * singleOptH) + (singleOptH * 0.05);
-          const boxH = Math.max(8, singleOptH * 0.85);
+          const optY = optAreaY + (optIdx * singleOptH);
+          const optH = singleOptH;
 
-          const bX = Math.max(0, Math.round(boxX));
-          const bY = Math.max(0, Math.round(boxY));
-          const bW = Math.min(cw - bX, Math.round(boxW));
-          const bH = Math.min(ch - bY, Math.round(boxH));
+          // Busca a região de maior concentração de preenchimento na janela do quadradinho
+          let bestFillRatio = 0;
+          let bestIntegratedDarkness = 0;
+          let bestMeanLuma = 255;
 
-          let darkPixels = 0;
-          let totalDarkWeight = 0;
+          // Janela amostrada do quadradinho (com busca em pequenos deslocamentos para tolerar inclinação)
+          const offsets = [0, -2, 2];
+          for (const dy of offsets) {
+            const bX = Math.max(0, Math.round(boxBaseX));
+            const bY = Math.max(0, Math.round(optY + (optH * 0.10) + dy));
+            const bW = Math.min(cw - bX, Math.round(boxBaseW));
+            const bH = Math.min(ch - bY, Math.round(optH * 0.78));
 
-          if (bW > 0 && bH > 0) {
-            try {
-              const imgData = ctx.getImageData(bX, bY, bW, bH).data;
-              const threshold = paperBgLuma * 0.68; // Grafite ou caneta escura
-              for (let p = 0; p < imgData.length; p += 4) {
-                const r = imgData[p];
-                const g = imgData[p+1];
-                const b = imgData[p+2];
-                const luma = r * 0.299 + g * 0.587 + b * 0.114;
-                if (luma < threshold) {
-                  darkPixels++;
-                  totalDarkWeight += (threshold - luma);
+            if (bW > 4 && bH > 4) {
+              try {
+                const imgData = ctx.getImageData(bX, bY, bW, bH).data;
+                const totalPixels = imgData.length / 4;
+                let darkCount = 0;
+                let darkSum = 0;
+                let lumaSum = 0;
+
+                for (let p = 0; p < imgData.length; p += 4) {
+                  const luma = imgData[p] * 0.299 + imgData[p+1] * 0.587 + imgData[p+2] * 0.114;
+                  lumaSum += luma;
+                  if (luma < darkThreshold) {
+                    darkCount++;
+                    darkSum += (darkThreshold - luma);
+                  }
                 }
-              }
-            } catch(e) {}
+
+                const fillRatio = darkCount / totalPixels;
+                const meanLuma = lumaSum / totalPixels;
+
+                if (fillRatio > bestFillRatio) {
+                  bestFillRatio = fillRatio;
+                  bestIntegratedDarkness = darkSum;
+                  bestMeanLuma = meanLuma;
+                }
+              } catch(e) {}
+            }
           }
+
+          // Pontuação de preenchimento (solid fill score para quadrado pintado a lápis/caneta)
+          const fillScore = (bestFillRatio * 1000) + Math.max(0, (paperBgLuma - bestMeanLuma) * 3);
 
           optionScores.push({
             letter: String.fromCharCode(65 + optIdx),
-            darkPixels: darkPixels,
-            weight: totalDarkWeight
+            fillRatio: bestFillRatio,
+            darkWeight: bestIntegratedDarkness,
+            meanLuma: bestMeanLuma,
+            score: fillScore
           });
         }
 
-        const sorted = optionScores.slice().sort((a, b) => b.weight - a.weight);
+        // Ordena opções da maior para menor escuridão/preenchimento
+        const sorted = optionScores.slice().sort((a, b) => b.score - a.score);
         const best = sorted[0];
         const second = sorted[1];
 
         let chosen = null;
-        if (best.weight > 300 && (best.weight > second.weight * 1.25 || (best.weight - second.weight) > 250)) {
+
+        // Critério de preenchimento de quadrado pintado:
+        // 1. A melhor opção deve ter preenchimento significativo de grafite/tinta (fillRatio > 0.12 ou score > 130)
+        // 2. Deve haver contraste nítido em relação à segunda opção (quadrado em branco)
+        if (best.score > 130 && (best.score > second.score * 1.30 || (best.score - second.score) > 90)) {
           chosen = best.letter;
-        } else if (best.weight > 400 && second.weight > 350 && (best.weight - second.weight) < 200) {
+        } else if (best.score > 180 && second.score > 160 && (best.score - second.score) < 80) {
+          // Dupla marcação / ambiguidade
           chosen = best.letter;
           ambiguousQuestions.push(qIdx + 1);
-        } else if (best.darkPixels > 35 && (best.darkPixels > second.darkPixels * 1.30)) {
+        } else if (best.fillRatio > 0.18 && (best.fillRatio > second.fillRatio * 1.35)) {
           chosen = best.letter;
         }
 
@@ -13082,7 +13229,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           </div>
           <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Analisando Foto da Prova...</h3>
           <p style="font-size: 0.84rem; color: #94A3B8; max-width: 440px; margin: 0 auto 16px auto;">
-            Detectando marcações a lápis nos quadradinhos das 10 questões e confrontando com o gabarito oficial.
+            Detectando quadradinhos pintados a lápis/caneta nas 10 questões e confrontando com o gabarito oficial.
           </p>
           <div class="progress-bar-container" style="max-width: 320px; margin: 0 auto; height: 8px;">
             <div class="progress-bar-fill" style="width: 70%; animation: pulse 1.5s infinite;"></div>
