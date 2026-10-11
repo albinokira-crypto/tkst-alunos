@@ -136,39 +136,41 @@ Retorne estritamente um JSON no seguinte formato:
 `.trim();
     } else if (Number(step) === 2) {
       promptText = `
-Você é um desenvolvedor sênior especialista em visão computacional e correção de gabaritos escolares e de artes marciais.
-Esta imagem mostra o CARTÃO DE RESPOSTAS ou as 10 questões da prova de karatê.
-
-O Cartão de Respostas oficial possui 10 questões organizadas em duas colunas:
-- Coluna 1 (Questões 01 a 05): Linhas 01, 02, 03, 04, 05, cada uma com opções [A] [B] [C] [D]
-- Coluna 2 (Questões 06 a 10): Linhas 06, 07, 08, 09, 10, cada uma com opções [A] [B] [C] [D]
+Você é um desenvolvedor sênior especialista em visão computacional e correção de gabaritos escolares e de artes marciais (OMR).
+Esta imagem mostra o cabeçalho e o CARTÃO DE RESPOSTAS oficial da avaliação de karatê.
 
 ATENÇÃO CRÍTICA À ORIENTAÇÃO E ROTAÇÃO DA FOTO:
-- A foto tirada pela câmera do celular pode estar em qualquer orientação (deitada em 90°, 270°, invertida ou na horizontal).
-- Localize o título "CARTÃO DE RESPOSTAS" e as colunas numeradas "01 a 05" e "06 a 10".
-- Oriente a sua leitura pela numeração das questões de 1 a 10 e pelas 4 letras [A] [B] [C] [D] de cada alternativa.
+- A foto tirada pelo celular pode estar em qualquer orientação (ex: deitada em 90°, 180°, 270°, na vertical ou horizontal).
+- Gire mentalmente a imagem para ler o cabeçalho "CARTÃO DE RESPOSTAS Pinte [ ■ ]" e "NOTA: ___ / 10,0" na orientação correta de leitura humana.
 
-DIRETRIZES CRÍTICAS PARA RECONHECIMENTO DE LÁPIS (GRAFITE):
-1. PREENCHIMENTO A LÁPIS: Os alunos respondem utilizando LÁPIS grafite escolar comum. O grafite a lápis varia de cinza claro a escuro, podendo ser pintado por completo, preenchido com rabisco denso, xis ou traço cobrindo a letra.
-2. COMPARAÇÃO ENTRE AS 4 ALTERNATIVAS: Para cada questão (1 a 10), compare os 4 quadradinhos [A], [B], [C] e [D]:
-   - O quadradinho que apresenta grafite, sombra cinza ou marca a lápis/caneta em seu interior É A RESPOSTA ESCOLHIDA pelo aluno. Retorne a letra correspondente ("A", "B", "C" ou "D").
-   - Os quadradinhos não preenchidos estarão brancos/limpos no fundo.
-3. QUESTÃO EM BRANCO: Retorne "EM_BRANCO" APENAS se os 4 quadradinhos da questão estiverem totalmente brancos e vazios, sem nenhum traço de lápis ou caneta.
-4. RASURA OU DUPLA MARCAÇÃO: Se o aluno tiver marcado dois quadradinhos na mesma questão com grafite evidente, retorne "ANULADA" e aponte no array "questoes_duvidosas_rasura".
+ESTRUTURA DO CARTÃO DE RESPOSTAS:
+O Cartão de Respostas possui 10 questões numeradas de 01 a 10 organizadas em duas colunas:
+- Coluna 1 (esquerda): Questões 01, 02, 03, 04, 05
+- Coluna 2 (direita): Questões 06, 07, 08, 09, 10
+
+Em cada linha de questão há 4 opções em sequência: [A] [B] [C] [D].
+
+INSTRUÇÃO DE LEITURA DAS RESPOSTAS MARCADAS:
+Para cada uma das 10 questões (01 a 10), examine qual das 4 alternativas [A], [B], [C] ou [D] foi pintada/preenchida pelo aluno com caneta ou lápis escuro (grafite).
+Compare os 4 quadradinhos de cada questão:
+- O quadradinho preenchido de preto/escuro ou com rabisco denso cobrindo a letra é a resposta marcada pelo aluno.
+- Os quadradinhos brancos/limpos não foram marcados.
+- Se a questão estiver sem nenhuma marcação, retorne "EM_BRANCO".
+- Se houver dupla marcação ou rasura confusa, retorne "ANULADA" e aponte em questoes_duvidosas_rasura.
 
 Retorne estritamente um JSON no seguinte formato:
 {
   "respostas_aluno": {
-    "1": "A",
-    "2": "B",
-    "3": "C",
-    "4": "D",
+    "1": "B",
+    "2": "A",
+    "3": "B",
+    "4": "B",
     "5": "A",
-    "6": "B",
-    "7": "C",
-    "8": "D",
-    "9": "A",
-    "10": "B"
+    "6": "A",
+    "7": "D",
+    "8": "C",
+    "9": "B",
+    "10": "D"
   },
   "questoes_duvidosas_rasura": []
 }
@@ -228,8 +230,8 @@ Retorne estritamente um JSON:
       }
     });
 
-    // Chamada à API Gemini Multimodal com modelos ativos da chave
-    const candidateModels = ['gemini-3.5-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
+    // Chamada à API Gemini Multimodal priorizando modelos de altíssima disponibilidade sem 503
+    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.7-flash', 'gemini-3.5-flash'];
     let geminiResult = null;
 
     for (const modelName of candidateModels) {
@@ -269,8 +271,8 @@ Retorne estritamente um JSON:
         if (result && result.statusCode === 200) {
           geminiResult = result;
           break;
-        } else if (result && result.statusCode !== 404) {
-          geminiResult = result;
+        } else {
+          console.warn(`Modelo ${modelName} retornou status ${result ? result.statusCode : 'erro'}, tentando próximo...`);
         }
       } catch(e) {}
     }
