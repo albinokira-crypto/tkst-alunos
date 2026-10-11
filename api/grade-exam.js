@@ -86,16 +86,18 @@ let promptText = '';
     if (step === 'code' || step === 'badge') {
       promptText = `
 Você é um especialista em OCR e visão computacional de alta precisão.
-Esta foto mostra especificamente o CÓDIGO de 5 caracteres de uma avaliação de karatê (badge com fundo preto e letras brancas no cabeçalho, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "5M4X7").
+Esta foto mostra o badge com o CÓDIGO de 5 caracteres alfanuméricos de uma avaliação de karatê (fundo preto e letras brancas no cabeçalho, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "5M4X7", "1M2OS").
+Também pode conter próximo o campo "Nome:" com o nome do aluno impresso ou escrito.
 
-SUA TAREFA ÚNICA:
-Extrair os 5 caracteres alfanuméricos que formam o código da prova.
-Ignore palavras como "CÓDIGO", "CODIGO", "PROVA", "#", espaços e dois-pontos.
+SUA TAREFA:
+1. Extrair os 5 caracteres alfanuméricos que formam o código da prova (ignore palavras como "CÓDIGO", "CODIGO", "PROVA", "#", espaços e dois-pontos).
+2. Se visível na foto, extrair o Nome do Aluno no campo "Nome:".
 
 Retorne estritamente um JSON no seguinte formato:
 {
   "codigo_prova": "0IZ96",
-  "examId": "0IZ96"
+  "examId": "0IZ96",
+  "aluno": "Nome do Aluno (ou string vazia se não visível)"
 }
 `.trim();
     } else if (Number(step) === 1) {
@@ -103,7 +105,7 @@ Retorne estritamente um JSON no seguinte formato:
 Você é um desenvolvedor sênior especialista em visão computacional e correção de avaliações de karatê.
 Esta foto mostra especificamente o CABEÇALHO oficial da prova de karatê, composto por:
 - LADO ESQUERDO:
-  1. Código da Prova no badge em destaque com 5 caracteres alfanuméricos (ex: "CÓDIGO: 5M4X7", "0IZ96").
+  1. Código da Prova no badge em destaque com 5 caracteres alfanuméricos (ex: "CÓDIGO: 5M4X7", "0IZ96", "1M2OS").
   2. Nome do aluno impresso ou escrito à mão no campo "Nome:".
   3. Descrição da avaliação (ex: "Avaliação Teórica: Faixa Branca para Faixa Amarela").
 - LADO DIREITO:
@@ -146,23 +148,27 @@ ATENÇÃO CRÍTICA À ORIENTAÇÃO E ROTAÇÃO DA FOTO:
 - A foto tirada pelo celular pode estar em qualquer orientação (ex: deitada em 90°, 180°, 270°, na vertical ou horizontal).
 - Gire mentalmente a imagem para ler o cabeçalho "CARTÃO DE RESPOSTAS Pinte [ ■ ]" e "NOTA: ___ / 10,0" na orientação correta de leitura humana.
 
-ESTRUTURA DO CARTÃO DE RESPOSTAS:
-O Cartão de Respostas possui 10 questões numeradas de 01 a 10 organizadas em duas colunas:
-- Coluna 1 (esquerda): Questões 01, 02, 03, 04, 05
-- Coluna 2 (direita): Questões 06, 07, 08, 09, 10
+ESTRUTURA DO CABEÇALHO E CARTÃO:
+1. No cabeçalho (lado esquerdo ou superior):
+   - Código da Prova de 5 caracteres (badge escuro, ex: "CÓDIGO: 1M2OS", "0IZ96");
+   - Campo "Nome:" com o nome do aluno impresso ou escrito à mão.
+2. No Cartão de Respostas (10 questões numeradas de 01 a 10 em duas colunas):
+   - Coluna 1 (esquerda): Questões 01 a 05
+   - Coluna 2 (direita): Questões 06 a 10
+   - Em cada linha há 4 opções: [A] [B] [C] [D].
 
-Em cada linha de questão há 4 opções em sequência: [A] [B] [C] [D].
-
-INSTRUÇÃO DE LEITURA DAS RESPOSTAS MARCADAS:
-Para cada uma das 10 questões (01 a 10), examine qual das 4 alternativas [A], [B], [C] ou [D] foi pintada/preenchida pelo aluno com caneta ou lápis escuro (grafite).
-Compare os 4 quadradinhos de cada questão:
-- O quadradinho preenchido de preto/escuro ou com rabisco denso cobrindo a letra é a resposta marcada pelo aluno.
-- Os quadradinhos brancos/limpos não foram marcados.
-- Se a questão estiver sem nenhuma marcação, retorne "EM_BRANCO".
-- Se houver dupla marcação ou rasura confusa, retorne "ANULADA" e aponte em questoes_duvidosas_rasura.
+INSTRUÇÃO DE LEITURA:
+- Identifique o Nome do Aluno no campo "Nome:".
+- Identifique o Código da Prova de 5 caracteres no badge (ex: 1M2OS).
+- Para cada questão de 1 a 10, verifique qual alternativa [A], [B], [C] ou [D] foi pintada/preenchida com lápis ou caneta.
+- Se nenhuma marcação: "EM_BRANCO".
+- Se rasura ou dupla marcação: "ANULADA" e aponte em questoes_duvidosas_rasura.
 
 Retorne estritamente um JSON no seguinte formato:
 {
+  "codigo_prova": "1M2OS",
+  "examId": "1M2OS",
+  "aluno": "Nome do Aluno impresso ou manuscrito (ou string vazia se em branco)",
   "respostas_aluno": {
     "1": "B",
     "2": "A",

@@ -802,6 +802,24 @@ window.TKST_EXAM_GENERATOR = {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
       if (store[cleanId]) return store[cleanId];
       if (store[baseCode]) return store[baseCode];
+      const foundKey = Object.keys(store).find(k => k.trim().toUpperCase() === cleanId || k.trim().toUpperCase() === baseCode);
+      if (foundKey && store[foundKey]) return store[foundKey];
+    } catch(e) {}
+
+    try {
+      if (window.TKST_GENERATED_EXAMS_CACHE) {
+        if (window.TKST_GENERATED_EXAMS_CACHE[cleanId]) return window.TKST_GENERATED_EXAMS_CACHE[cleanId];
+        if (window.TKST_GENERATED_EXAMS_CACHE[baseCode]) return window.TKST_GENERATED_EXAMS_CACHE[baseCode];
+        const cacheKey = Object.keys(window.TKST_GENERATED_EXAMS_CACHE).find(k => k.trim().toUpperCase() === cleanId || k.trim().toUpperCase() === baseCode);
+        if (cacheKey && window.TKST_GENERATED_EXAMS_CACHE[cacheKey]) return window.TKST_GENERATED_EXAMS_CACHE[cacheKey];
+      }
+    } catch(e) {}
+
+    try {
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.getGeneratedExam === 'function') {
+        const fromAuth = window.TKST_AUTH.getGeneratedExam(cleanId) || window.TKST_AUTH.getGeneratedExam(baseCode);
+        if (fromAuth) return fromAuth;
+      }
     } catch(e) {}
 
     // Decodificação matemática instantânea (sem internet / gerada em outro computador)
@@ -987,6 +1005,11 @@ window.TKST_EXAM_GENERATOR = {
         delete store[keys[0]];
       }
       localStorage.setItem('tkst_generated_exams', JSON.stringify(store));
+      if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+      window.TKST_GENERATED_EXAMS_CACHE[compactCode] = examRecord;
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastGeneratedExam === 'function') {
+        window.TKST_AUTH.broadcastGeneratedExam(examRecord);
+      }
     } catch(e) {}
 
     const renderOmrRow = (qNum) => {

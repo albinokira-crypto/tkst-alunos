@@ -931,6 +931,7 @@
         custom_albums,
         custom_subalbums,
         custom_curriculum: JSON.parse(localStorage.getItem(STORAGE_KEY_CURRICULUM)) || {},
+        generated_exams: JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'),
         deletedMediaIds,
         deletedAlbums,
         deletedSubAlbums,
@@ -1399,6 +1400,20 @@
         window.dispatchEvent(new CustomEvent('tkst_curriculum_updated'));
         changed = true;
       }
+    }
+
+    // 13. Sync Generated Exams (Provas Geradas vinculadas ao código de 5 caracteres)
+    if (cloudData.generated_exams && typeof cloudData.generated_exams === 'object') {
+      try {
+        let localExams = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+        const mergedExams = { ...localExams, ...cloudData.generated_exams };
+        const exStr = JSON.stringify(mergedExams);
+        if (localStorage.getItem('tkst_generated_exams') !== exStr) {
+          safeLocalStorageSet('tkst_generated_exams', exStr);
+          if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+          Object.assign(window.TKST_GENERATED_EXAMS_CACHE, mergedExams);
+        }
+      } catch(e) {}
     }
 
     if (changed) {
@@ -3678,6 +3693,31 @@
       pushToCloud();
       window.dispatchEvent(new CustomEvent('tkst_curriculum_updated', { detail: { kyuNumber: num } }));
       return { success: true };
+    },
+
+    broadcastGeneratedExam: function(record) {
+      if (!record || !record.examId) return;
+      try {
+        if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+        window.TKST_GENERATED_EXAMS_CACHE[record.examId] = record;
+        const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+        store[record.examId] = record;
+        safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
+        pushToCloud();
+      } catch(e) {}
+    },
+
+    getGeneratedExam: function(examId) {
+      if (!examId) return null;
+      const clean = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+      try {
+        if (window.TKST_GENERATED_EXAMS_CACHE && window.TKST_GENERATED_EXAMS_CACHE[clean]) {
+          return window.TKST_GENERATED_EXAMS_CACHE[clean];
+        }
+        const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+        if (store[clean]) return store[clean];
+      } catch(e) {}
+      return null;
     },
 
     deduplicateQuizSubmissions: deduplicateQuizSubmissions
