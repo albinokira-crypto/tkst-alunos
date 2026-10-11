@@ -1010,18 +1010,22 @@ window.TKST_EXAM_GENERATOR = {
         <div class="exam-portrait-header">
           <!-- 1. LADO ESQUERDO: LOGO MAIOR, DESCRIÇÃO, DADOS DO ALUNO E CÓDIGO DESTACADO -->
           <div class="exam-header-left">
-            <div class="exam-header-brand-row">
-              <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-portrait-logo">
-              <div class="exam-portrait-desc">
-                Avaliação Teórica: ${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}
+            <div class="exam-header-brand-wrap">
+              <div class="exam-header-brand-center">
+                <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-portrait-logo">
+                <div class="exam-portrait-desc">
+                  Avaliação Teórica: ${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}
+                </div>
+              </div>
+              <div class="exam-header-date-badge">
+                <strong>Data:</strong> <span class="exam-date-val">${dateStr}</span>
               </div>
             </div>
 
-            <!-- IDENTIFICAÇÃO DO ALUNO (ESPAÇO AMPLO PARA NOME, DOJÔ E DATA) -->
+            <!-- IDENTIFICAÇÃO DO ALUNO (ESPAÇO AMPLO PARA NOME E DOJÔ) -->
             <div class="exam-portrait-student-line">
               <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name"></span></div>
               <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo"></span></div>
-              <div class="exam-field-date"><strong>Data:</strong> <span class="exam-field-val">${dateStr}</span></div>
             </div>
 
             <!-- CÓDIGO DA PROVA DESTACADO + INSTRUÇÃO -->
@@ -1494,78 +1498,94 @@ window.TKST_EXAM_GENERATOR = {
         justify-content: space-between !important;
         gap: 1.2mm !important;
       }
-      .exam-header-brand-row {
+      .exam-header-brand-wrap {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+      }
+      .exam-header-brand-center {
         display: flex !important;
         flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 1px !important;
+        align-items: center !important;
+        text-align: center !important;
       }
       .exam-portrait-logo {
         height: auto !important;
-        max-height: 34px !important;
+        max-height: 33px !important;
         width: 100% !important;
-        max-width: 270px !important;
+        max-width: 250px !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
       }
       .exam-portrait-desc {
-        font-size: 8.8pt !important;
+        font-size: 8.5pt !important;
         font-weight: 900 !important;
         color: #000000 !important;
-        line-height: 1.16 !important;
-        text-align: left !important;
+        line-height: 1.15 !important;
+        text-align: center !important;
         letter-spacing: 0.1px !important;
         margin-top: 1px !important;
       }
+      .exam-header-date-badge {
+        position: absolute !important;
+        right: 0 !important;
+        top: 6px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 2.5px !important;
+        font-size: 7.4pt !important;
+        font-weight: 800 !important;
+        color: #0F172A !important;
+        background: #F1F5F9 !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 3px !important;
+        padding: 1.5px 5px !important;
+        white-space: nowrap !important;
+      }
 
-      /* IDENTIFICAÇÃO DO ALUNO (ESPAÇOSO E SEM APERTO) */
+      /* IDENTIFICAÇÃO DO ALUNO (ESPAÇO AMPLO PARA NOME E DOJÔ) */
       .exam-portrait-student-line {
         border: 1.2px solid #0F172A !important;
         border-radius: 3px !important;
         background: #F8FAFC !important;
         box-shadow: 1px 1px 0px #0F172A !important;
-        padding: 2.2px 6px !important;
-        font-size: 8pt !important;
+        padding: 2.5px 8px !important;
+        font-size: 8.2pt !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        gap: 6px !important;
+        gap: 12px !important;
         box-sizing: border-box !important;
         white-space: nowrap !important;
       }
       .exam-field-name {
-        flex: 2.2 !important;
+        flex: 1.5 !important;
         display: flex !important;
         align-items: flex-end !important;
-        gap: 3px !important;
+        gap: 4px !important;
         min-width: 0 !important;
       }
       .exam-field-line-name {
         flex: 1 !important;
-        min-width: 38mm !important;
+        min-width: 44mm !important;
         border-bottom: 1.2px solid #0F172A !important;
         height: 10px !important;
       }
       .exam-field-dojo {
-        flex: 1.2 !important;
+        flex: 1.3 !important;
         display: flex !important;
         align-items: flex-end !important;
-        gap: 3px !important;
+        gap: 4px !important;
         min-width: 0 !important;
       }
       .exam-field-line-dojo {
         flex: 1 !important;
-        min-width: 16mm !important;
+        min-width: 36mm !important;
         border-bottom: 1.2px solid #0F172A !important;
         height: 10px !important;
-      }
-      .exam-field-date {
-        flex: 0.9 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 2px !important;
-        white-space: nowrap !important;
       }
 
       /* CÓDIGO DA PROVA DESTACADO E INSTRUÇÃO */
@@ -1675,7 +1695,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-omr-grid-2col {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 5px !important;
+        gap: 10px !important;
       }
       .exam-omr-col {
         display: flex !important;
@@ -1714,17 +1734,17 @@ window.TKST_EXAM_GENERATOR = {
         margin-right: 2px !important;
       }
       .omr-sq-group {
-        flex: 1 !important;
-        display: flex !important;
+        display: inline-flex !important;
         align-items: center !important;
-        justify-content: space-between !important;
-        gap: 1.5px !important;
+        justify-content: flex-start !important;
+        gap: 2px !important;
+        flex-shrink: 0 !important;
       }
       .omr-sq {
-        width: 13px !important;
-        height: 13px !important;
-        min-width: 13px !important;
-        min-height: 13px !important;
+        width: 13.5px !important;
+        height: 13.5px !important;
+        min-width: 13.5px !important;
+        min-height: 13.5px !important;
         border: 1.4px solid #0F172A !important;
         border-radius: 2px !important;
         background: #FFF !important;

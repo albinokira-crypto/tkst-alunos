@@ -4979,7 +4979,7 @@ body.login-view-active .content-body {
 .exam-omr-grid-2col {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 6px !important;
+  gap: 10px !important;
 }
 .exam-omr-col {
   display: flex !important;
@@ -5017,11 +5017,11 @@ body.login-view-active .content-body {
   margin-right: 2px !important;
 }
 .omr-sq-group {
-  flex: 1 !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  gap: 1.5px !important;
+  justify-content: flex-start !important;
+  gap: 2px !important;
+  flex-shrink: 0 !important;
 }
 .omr-sq {
   width: 13.5px !important;

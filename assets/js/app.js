@@ -13115,10 +13115,10 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           body.innerHTML = `
             <div style="padding: 40px 20px; text-align: center; color: #FFF;">
               <div style="font-size: 2.8rem; color: var(--accent-gold); margin-bottom: 14px;">
-                <i class="fas fa-barcode fa-pulse"></i>
+                <i class="fas fa-clipboard-check fa-pulse"></i>
               </div>
-              <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Identificando Código de Barras...</h3>
-              <p style="font-size: 0.84rem; color: #94A3B8;">Lendo identificador da prova e carregando gabarito oficial.</p>
+              <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Analisando Prova e Cartão de Respostas...</h3>
+              <p style="font-size: 0.84rem; color: #94A3B8;">Lendo identificador da prova e conferindo respostas marcadas.</p>
             </div>
           `;
         }
@@ -13276,48 +13276,60 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
     // =========================================================================
     // CLIENT-SIDE CANVAS OMR (OPTICAL MARK RECOGNITION)
-    // Lê os quadradinhos TOTALMENTE PINTADOS a lápis ou caneta nas 10 questões
+    // Lê os quadradinhos marcados a LÁPIS (grafite) ou caneta nas 10 questões
     // =========================================================================
     analyzeExamMarksOMR: function(canvas, officialKey) {
-      const cw = canvas.width;
-      const ch = canvas.height;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-      const detectedAnswers = [];
-      const ambiguousQuestions = [];
-
-      // Detecta se a foto é do Cabeçalho / Cartão de Respostas (proporção horizontal cw >= ch * 0.85)
-      // ou da Folha Inteira Vertical A4 (ch > cw * 1.1)
-      const isHeaderCardMode = (cw >= ch * 0.85);
-
-      // Amostra luminosidade média do papel branco em região sem impressão
-      let paperBgLuma = 220;
-      try {
-        const bgSample = ctx.getImageData(Math.round(cw * 0.495), Math.round(ch * 0.5), 12, 12).data;
-        let sum = 0;
-        for (let i = 0; i < bgSample.length; i += 4) {
-          sum += (bgSample[i] * 0.299 + bgSample[i+1] * 0.587 + bgSample[i+2] * 0.114);
+      // Cria versão rotacionada do canvas para neutralizar fotos de celular tiradas na vertical
+      function createRotatedCanvas(srcCanvas, deg) {
+        if (deg === 0) return srcCanvas;
+        const c = document.createElement('canvas');
+        if (deg === 90 || deg === 270) {
+          c.width = srcCanvas.height;
+          c.height = srcCanvas.width;
+        } else {
+          c.width = srcCanvas.width;
+          c.height = srcCanvas.height;
         }
-        paperBgLuma = Math.max(160, sum / (bgSample.length / 4));
-      } catch(e) {}
+        const ctxR = c.getContext('2d');
+        ctxR.translate(c.width / 2, c.height / 2);
+        ctxR.rotate((deg * Math.PI) / 180);
+        ctxR.drawImage(srcCanvas, -srcCanvas.width / 2, -srcCanvas.height / 2);
+        return c;
+      }
 
-      // Limiar para considerar grafite ou tinta escura
-      const darkThreshold = paperBgLuma * 0.72;
+      function evaluateCardLayout(targetCanvas, boxXStart, boxXEnd, boxYStart, boxYEnd) {
+        const cw = targetCanvas.width;
+        const ch = targetCanvas.height;
+        const ctx = targetCanvas.getContext('2d', { willReadFrequently: true });
 
-      if (isHeaderCardMode) {
-        // MODO CARTÃO DE RESPOSTAS (CABEÇALHO FOTOGRAFADO DE PERTO):
-        // Se a foto for do cabeçalho inteiro, o cartão de respostas fica no lado direito (X de ~44% a 98%)
-        // Se a foto for focada apenas no cartão de respostas recortado, X ocupa de ~4% a 96%
-        const cardStartX = (cw > ch * 1.45) ? (0.44 * cw) : (0.05 * cw);
-        const cardEndX = 0.97 * cw;
+        // Amostra luminosidade média do papel branco
+        let paperBgLuma = 220;
+        try {
+          const bgSample = ctx.getImageData(Math.round(cw * 0.5), Math.round(ch * 0.5), 16, 16).data;
+          let sum = 0;
+          for (let i = 0; i < bgSample.length; i += 4) {
+            sum += (bgSample[i] * 0.299 + bgSample[i+1] * 0.587 + bgSample[i+2] * 0.114);
+          }
+          paperBgLuma = Math.max(160, sum / (bgSample.length / 4));
+        } catch(e) {}
+
+        const darkThreshold = paperBgLuma * 0.84;
+
+        const cardStartX = boxXStart * cw;
+        const cardEndX = boxXEnd * cw;
+        const cardTopY = boxYStart * ch;
+        const cardBottomY = boxYEnd * ch;
+
         const cardWidth = cardEndX - cardStartX;
-        const colWidth = cardWidth * 0.48;
-        const colGap = cardWidth * 0.04;
-
-        const cardTopY = 0.16 * ch;
-        const cardBottomY = 0.95 * ch;
         const totalCardH = cardBottomY - cardTopY;
+        const colWidth = cardWidth * 0.44;
+        const colGap = cardWidth * 0.12;
         const rowH = totalCardH / 5;
+
+        const detectedAnswers = [];
+        const ambiguousQuestions = [];
+        let markedCount = 0;
+        let totalConfidence = 0;
 
         for (let qIdx = 0; qIdx < 10; qIdx++) {
           const isCol2 = qIdx >= 5;
@@ -13325,21 +13337,21 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           const colX = isCol2 ? (cardStartX + colWidth + colGap) : cardStartX;
           const rowY = cardTopY + (rowIdx * rowH);
 
-          // Na linha do Cartão OMR: [Número (24%)] [A (19%)] [B (19%)] [C (19%)] [D (19%)]
-          const optsStartX = colX + (colWidth * 0.24);
-          const optWidth = (colWidth * 0.74) / 4;
+          // Posição dos 4 quadradinhos [A] [B] [C] [D]
+          const optsStartX = colX + (colWidth * 0.18);
+          const optWidth = (colWidth * 0.80) / 4;
 
           const optionScores = [];
           for (let optIdx = 0; optIdx < 4; optIdx++) {
             const optCenterX = optsStartX + (optIdx * optWidth) + (optWidth * 0.5);
             const optCenterY = rowY + (rowH * 0.5);
-            const sampleSize = Math.max(4, Math.round(Math.min(optWidth, rowH) * 0.38));
+            const sampleSize = Math.max(5, Math.round(Math.min(optWidth, rowH) * 0.42));
 
-            let bestFillRatio = 0;
+            let bestDarkRatio = 0;
             let bestDarkSum = 0;
-            let bestMeanLuma = 255;
+            let minMeanLuma = 255;
 
-            const offsets = [-1, 0, 1];
+            const offsets = [-2, 0, 2];
             for (const dy of offsets) {
               for (const dx of offsets) {
                 const sX = Math.max(0, Math.round(optCenterX - (sampleSize / 2) + dx));
@@ -13364,31 +13376,43 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                       }
                     }
 
-                    const fillRatio = darkCount / totalPixels;
-                    if (fillRatio > bestFillRatio) {
-                      bestFillRatio = fillRatio;
-                      bestDarkSum = darkSum;
-                      bestMeanLuma = lumaSum / totalPixels;
+                    const darkRatio = darkCount / totalPixels;
+                    const meanLuma = lumaSum / totalPixels;
+                    if (darkRatio > bestDarkRatio || meanLuma < minMeanLuma) {
+                      bestDarkRatio = Math.max(bestDarkRatio, darkRatio);
+                      bestDarkSum = Math.max(bestDarkSum, darkSum);
+                      minMeanLuma = Math.min(minMeanLuma, meanLuma);
                     }
                   } catch(e) {}
                 }
               }
             }
 
+            const lumaContrast = Math.max(0, paperBgLuma - minMeanLuma);
             optionScores.push({
               letter: ['A', 'B', 'C', 'D'][optIdx],
-              densityPct: Math.round(bestFillRatio * 100),
-              darkWeight: bestDarkSum,
-              meanLuma: bestMeanLuma
+              darkRatio: bestDarkRatio,
+              lumaContrast: lumaContrast,
+              score: (lumaContrast * 1.6) + (bestDarkRatio * 100 * 2.2)
             });
           }
 
+          optionScores.sort((a, b) => b.score - a.score);
+          const top1 = optionScores[0];
+          const top2 = optionScores[1];
+
           let chosen = null;
-          const candidates = optionScores.filter(o => o.densityPct >= 42);
-          if (candidates.length === 1) {
-            chosen = candidates[0].letter;
-          } else if (candidates.length > 1) {
-            ambiguousQuestions.push(qIdx + 1);
+          // Critério robusto para grafite de lápis
+          if (top1.score >= 26 || top1.darkRatio >= 0.14 || top1.lumaContrast >= 12) {
+            if (top2.score >= 24 && (top1.score - top2.score < 14) && top2.darkRatio >= 0.18) {
+              ambiguousQuestions.push(qIdx + 1);
+              chosen = null;
+            } else {
+              chosen = top1.letter;
+              markedCount++;
+              totalConfidence += (top1.score - top2.score);
+            }
+          } else {
             chosen = null;
           }
           detectedAnswers.push(chosen);
@@ -13396,128 +13420,40 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
         return {
           detectedAnswers: detectedAnswers,
-          ambiguousQuestions: ambiguousQuestions
+          ambiguousQuestions: ambiguousQuestions,
+          markedCount: markedCount,
+          totalConfidence: totalConfidence
         };
       }
 
-      // MODO FOLHA COMPLETA A4 (Modo Retrato Vertical):
-      // Cabeçalho: topo 0% a 21%
-      // Questões: 21% a 98% da altura total
-      // Coluna 1 (Q1-Q5): X de 3.5% a 48.5%
-      // Coluna 2 (Q6-Q10): X de 51.5% a 96.5%
-      const qTopPct = 0.21;
-      const qBottomPct = 0.98;
-      const totalQHeight = (qBottomPct - qTopPct) * ch;
-      const rowHeight = totalQHeight / 5;
-
-      const cols = [
-        { startX: 0.035 * cw, width: 0.450 * cw }, // Q1 - Q5
-        { startX: 0.515 * cw, width: 0.450 * cw }  // Q6 - Q10
+      // Testa automaticamente orientações (270° anti-horário, 90° horário e 0° original)
+      // Se a foto for vertical (celular em pé), 270° e 90° alinham a folha perfeitamente na horizontal!
+      const testAngles = (canvas.height > canvas.width) ? [270, 90, 0] : [0, 270, 90];
+      const boxConfigs = [
+        { xStart: 0.04, xEnd: 0.96, yStart: 0.18, yEnd: 0.95 }, // Foto aproximada do cartão
+        { xStart: 0.10, xEnd: 0.90, yStart: 0.14, yEnd: 0.88 }, // Foto com margem
+        { xStart: 0.44, xEnd: 0.98, yStart: 0.18, yEnd: 0.95 }  // Cabeçalho completo (cartão à direita)
       ];
 
-      for (let qIdx = 0; qIdx < 10; qIdx++) {
-        const colIdx = qIdx < 5 ? 0 : 1;
-        const rowIdx = qIdx % 5;
-        const colDef = cols[colIdx];
+      let bestResult = null;
+      let maxMarked = -1;
+      let maxConfidence = -1;
 
-        const qY = (qTopPct * ch) + (rowIdx * rowHeight);
-        const qH = rowHeight;
-
-        // Na questão, o título ocupa os primeiros 25%, as 4 alternativas ocupam os 75% restantes
-        const optAreaY = qY + (qH * 0.25);
-        const optAreaH = qH * 0.75;
-        const singleOptH = optAreaH / 4;
-
-        // O quadradinho de marcação fica no início da linha da alternativa
-        const boxBaseX = colDef.startX + (colDef.width * 0.006);
-        const squareW = Math.max(6, Math.round(colDef.width * 0.036)); // Largura estrita do quadradinho
-        const squareH = squareW; // O marcador é um quadrado perfeito
-
-        // Amostra estritamente o interior do quadradinho (inset de 22% para ignorar a borda preta impressa)
-        const innerInset = Math.max(1, Math.round(squareW * 0.22));
-        const sampleW = Math.max(3, squareW - (innerInset * 2));
-        const sampleH = Math.max(3, squareH - (innerInset * 2));
-
-        const optionScores = [];
-
-        for (let optIdx = 0; optIdx < 4; optIdx++) {
-          const optY = optAreaY + (optIdx * singleOptH);
-          const optH = singleOptH;
-          const boxCenterY = optY + (optH * 0.5);
-
-          let bestFillRatio = 0;
-          let bestIntegratedDarkness = 0;
-          let bestMeanLuma = 255;
-
-          // Busca no miolo interno do quadradinho com tolerância fina a pequenos desvios de alinhamento
-          const offsets = [-1, 0, 1];
-          for (const dy of offsets) {
-            for (const dx of offsets) {
-              const bX = Math.max(0, Math.round(boxBaseX + innerInset + dx));
-              const bY = Math.max(0, Math.round(boxCenterY - (sampleH / 2) + dy));
-              const bW = Math.min(cw - bX, sampleW);
-              const bH = Math.min(ch - bY, sampleH);
-
-              if (bW > 2 && bH > 2) {
-                try {
-                  const imgData = ctx.getImageData(bX, bY, bW, bH).data;
-                  const totalPixels = imgData.length / 4;
-                  let darkCount = 0;
-                  let darkSum = 0;
-                  let lumaSum = 0;
-
-                  for (let p = 0; p < imgData.length; p += 4) {
-                    const luma = imgData[p] * 0.299 + imgData[p+1] * 0.587 + imgData[p+2] * 0.114;
-                    lumaSum += luma;
-                    if (luma < darkThreshold) {
-                      darkCount++;
-                      darkSum += (darkThreshold - luma);
-                    }
-                  }
-
-                  const fillRatio = darkCount / totalPixels;
-                  const meanLuma = lumaSum / totalPixels;
-
-                  if (fillRatio > bestFillRatio) {
-                    bestFillRatio = fillRatio;
-                    bestIntegratedDarkness = darkSum;
-                    bestMeanLuma = meanLuma;
-                  }
-                } catch(e) {}
-              }
-            }
+      for (const angle of testAngles) {
+        const testCanvas = createRotatedCanvas(canvas, angle);
+        for (const cfg of boxConfigs) {
+          const res = evaluateCardLayout(testCanvas, cfg.xStart, cfg.xEnd, cfg.yStart, cfg.yEnd);
+          if (res.markedCount > maxMarked || (res.markedCount === maxMarked && res.totalConfidence > maxConfidence)) {
+            maxMarked = res.markedCount;
+            maxConfidence = res.totalConfidence;
+            bestResult = res;
           }
-
-          const densityPct = Math.round(bestFillRatio * 100);
-
-          optionScores.push({
-            letter: String.fromCharCode(65 + optIdx),
-            fillRatio: bestFillRatio,
-            densityPct: densityPct,
-            darkWeight: bestIntegratedDarkness,
-            meanLuma: bestMeanLuma
-          });
         }
-
-        // REGRAS ESTRITAS DE DECISÃO:
-        let chosen = null;
-        const candidateOptions = optionScores.filter(o => o.densityPct >= 45);
-
-        if (candidateOptions.length === 0) {
-          chosen = null;
-        } else if (candidateOptions.length === 1) {
-          chosen = candidateOptions[0].letter;
-        } else {
-          ambiguousQuestions.push(qIdx + 1);
-          chosen = null;
-        }
-
-        detectedAnswers.push(chosen);
       }
 
       return {
-        detectedAnswers: detectedAnswers,
-        ambiguousQuestions: ambiguousQuestions
+        detectedAnswers: (bestResult && bestResult.detectedAnswers) || new Array(10).fill(null),
+        ambiguousQuestions: (bestResult && bestResult.ambiguousQuestions) || []
       };
     },
 
@@ -13554,46 +13490,6 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       offCanvas.height = img.naturalHeight || img.height || 1080;
       const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
       offCtx.drawImage(img, 0, 0, offCanvas.width, offCanvas.height);
-
-      // 2. Leitura Inicial: Decodifica o Código de Barras (Code 128) no cabeçalho superior direito
-      if ('BarcodeDetector' in window) {
-        try {
-          const barcodeDetector = new BarcodeDetector({ formats: ['code_128', 'code_39', 'qr_code'] });
-          const barcodes = await barcodeDetector.detect(offCanvas);
-          if (barcodes && barcodes.length > 0) {
-            for (const b of barcodes) {
-              if (b.rawValue && window.TKST_BARCODE) {
-                const dec = window.TKST_BARCODE.decodeBarcodePayload(b.rawValue);
-                if (dec && dec.examId) {
-                  examScannerDetectedData = dec;
-                  break;
-                }
-              }
-            }
-          }
-        } catch(e) {}
-      }
-
-      // Se não detectou no frame inteiro, tenta na região recortada do topo da folha (cabeçalho completo)
-      if (!examScannerDetectedData && 'BarcodeDetector' in window) {
-        try {
-          const topCropCanvas = document.createElement('canvas');
-          topCropCanvas.width = offCanvas.width;
-          topCropCanvas.height = Math.round(offCanvas.height * 0.22);
-          const topCropCtx = topCropCanvas.getContext('2d');
-          topCropCtx.drawImage(
-            offCanvas, 
-            0, 0, topCropCanvas.width, topCropCanvas.height,
-            0, 0, topCropCanvas.width, topCropCanvas.height
-          );
-          const topDetector = new BarcodeDetector({ formats: ['code_128', 'code_39'] });
-          const topBarcodes = await topDetector.detect(topCropCanvas);
-          if (topBarcodes && topBarcodes.length > 0 && topBarcodes[0].rawValue && window.TKST_BARCODE) {
-            const dec = window.TKST_BARCODE.decodeBarcodePayload(topBarcodes[0].rawValue);
-            if (dec && dec.examId) examScannerDetectedData = dec;
-          }
-        } catch(e) {}
-      }
 
       const detected = examScannerDetectedData || {
         kyu: examGeneratorSelectedKyu || 6,

@@ -119,35 +119,36 @@ Retorne estritamente um JSON no seguinte formato:
     } else if (Number(step) === 2) {
       promptText = `
 Você é um desenvolvedor sênior especialista em visão computacional e correção de gabaritos escolares e de artes marciais.
-Esta imagem mostra o bloco de respostas de uma prova de karatê:
-Pode ser o "CARTÃO DE RESPOSTAS" (com Q01 a Q05 e Q06 a Q10 com quadradinhos [A] [B] [C] [D]) OU as 10 questões de múltipla escolha na folha.
-Nesta etapa, o foco é exclusivamente na leitura das respostas marcadas pelo aluno:
-- Números das questões (1 a 10)
-- Letras das alternativas (A, B, C, D)
-- Quadradinhos pintados a lápis ou caneta
+Esta imagem mostra especificamente o CARTÃO DE RESPOSTAS ou as 10 questões da prova de karatê:
+O Cartão de Respostas oficial possui 10 questões:
+- Coluna da esquerda: Questões 1 a 5 (com quadradinhos [A] [B] [C] [D])
+- Coluna da direita: Questões 6 a 10 (com quadradinhos [A] [B] [C] [D])
 
-REGRAS ESTRITAS DE PREENCHIMENTO:
-1. REGRA ABSOLUTA PARA PROVAS EM BRANCO: Se o aluno NÃO pintou nenhum quadradinho em uma questão (quadradinhos brancos/vazios), retorne OBRIGATORIAMENTE "EM_BRANCO" para essa questão. NUNCA presuma ou invente letras para questões vazias!
-2. SE O QUADRADINHO ESTIVER PINTADO: Retorne a letra correspondente ("A", "B", "C" ou "D") somente se houver preenchimento evidente a lápis ou caneta.
-3. SE HOUVER RASURA OU MARCAÇÃO DUPLA: Retorne "ANULADA" e aponte no array "questoes_duvidosas_rasura".
+DIRETRIZES CRÍTICAS PARA RECONHECIMENTO DE LÁPIS (GRAFITE):
+1. PREENCHIMENTO A LÁPIS: A maioria dos alunos responde utilizando LÁPIS grafite escolar comum. O grafite a lápis varia de cinza claro a escuro, podendo ser pintado por completo, preenchido com rabisco denso, xis ou traço cobrindo a letra.
+2. COMPARAÇÃO ENTRE AS 4 ALTERNATIVAS: Para cada questão (1 a 10), compare os 4 quadradinhos [A], [B], [C] e [D]:
+   - O quadradinho que apresenta grafite, sombra cinza ou marca a lápis/caneta em seu interior É A RESPOSTA ESCOLHIDA pelo aluno. Retorne a letra correspondente ("A", "B", "C" ou "D").
+   - Os quadradinhos não preenchidos estarão brancos/limpos no fundo.
+3. QUESTÃO EM BRANCO: Retorne "EM_BRANCO" APENAS se os 4 quadradinhos da questão estiverem totalmente brancos e vazios, sem nenhum traço de lápis ou caneta.
+4. RASURA OU DUPLA MARCAÇÃO: Se o aluno tiver marcado dois quadradinhos na mesma questão com grafite evidente, retorne "ANULADA" e aponte no array "questoes_duvidosas_rasura".
 
 Retorne estritamente um JSON no seguinte formato:
 {
   "respostas_aluno": {
-    "1": "EM_BRANCO",
-    "2": "EM_BRANCO",
+    "1": "A",
+    "2": "B",
     "3": "EM_BRANCO",
-    "4": "EM_BRANCO",
-    "5": "EM_BRANCO",
-    "6": "EM_BRANCO",
-    "7": "EM_BRANCO",
-    "8": "EM_BRANCO",
-    "9": "EM_BRANCO",
-    "10": "EM_BRANCO"
+    "4": "C",
+    "5": "D",
+    "6": "A",
+    "7": "B",
+    "8": "C",
+    "9": "D",
+    "10": "A"
   },
   "questoes_duvidosas_rasura": []
 }
-(Substitua "EM_BRANCO" pela letra A, B, C ou D APENAS quando o quadradinho estiver realmente preenchido pelo aluno).
+(Substitua os valores pelas letras reais identificadas no gabarito, ou "EM_BRANCO" apenas se vazia).
 `.trim();
     } else {
       promptText = `
