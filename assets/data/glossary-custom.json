@@ -248,11 +248,6 @@
         "updatedAt": 1791752183480
       },
       {
-        "japanese": "Juji Uke (Jodan / Gedan)",
-        "kanji": "十字受け",
-        "meaning": "Defesa em cruz com os punhos cruzados no nível alto (Jodan) ou baixo (Gedan)"
-      },
-      {
         "japanese": "Manji Uke",
         "kanji": "卍受け",
         "meaning": "Defesa em formato de suástica/redemoinho (Jodan Uchi Uke superior + Gedan Barai posterior)"
@@ -334,6 +329,16 @@
         "image": "",
         "videoUrl": "",
         "technicalTips": ""
+      },
+      {
+        "japanese": "Juji Uke  Jodan",
+        "kanji": "十字受け",
+        "meaning": "Defesa em cruz com os punhos cruzados no nível alto (Jodan) ou baixo (Gedan)",
+        "image": "",
+        "videoUrl": "",
+        "technicalTips": "",
+        "_edited": true,
+        "updatedAt": 1791752239800
       }
     ],
     "socosGolpes": [
@@ -778,7 +783,8 @@
     "sagate (ushiro)",
     "teiji dachi",
     "shizentai",
-    "test base dachi"
+    "test base dachi",
+    "juji uke (jodan / gedan)"
   ],
-  "updatedAt": 1791752184919
+  "updatedAt": 1791752241491
 }
