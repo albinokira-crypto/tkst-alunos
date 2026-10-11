@@ -12909,15 +12909,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
     },
 
-    // Digitação direta do código (ex: 0IZ96 ou 0IZ96-LUCAS.S) impresso no cabeçalho da prova
+    // Digitação direta do código de 5 caracteres (ex: 0IZ96) impresso no cabeçalho da prova
     submitManualExamCode: function(optCode) {
       const inputEl = document.getElementById('examManualCodeInput');
       const rawCode = optCode || (inputEl ? inputEl.value : '');
-      const cleanCode = String(rawCode || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z-]/g, '').trim().toUpperCase();
+      const cleanCode = String(rawCode || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase().slice(0, 5);
 
       if (!cleanCode) {
         if (typeof showToast === 'function') {
-          showToast('⚠️ Digite o código da prova (ex: 0IZ96)', 'warning');
+          showToast('⚠️ Digite o código de 5 caracteres da prova (ex: 0IZ96)', 'warning');
         }
         if (inputEl) inputEl.focus();
         return;
@@ -12934,8 +12934,14 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       let matchedExam = null;
       const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
-      if (!decoded && examGen && examGen.getSavedExamById) {
+      if (examGen && examGen.getSavedExamById) {
         matchedExam = examGen.getSavedExamById(cleanCode);
+      }
+      if (!matchedExam) {
+        try {
+          const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+          matchedExam = store[cleanCode] || null;
+        } catch(e) {}
       }
 
       let kyu = 6;
@@ -12972,7 +12978,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       examScannerDetectedData = {
         kyu: kyu,
         examId: cleanCode,
-        answers: answers
+        answers: answers,
+        studentName: (matchedExam && (matchedExam.studentName || matchedExam.studentAbbr)) || ''
       };
 
       window.TKST_APP.playChime();
@@ -13248,7 +13255,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
               <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <!-- Campo de Digitação -->
-                <input type="text" id="examManualCodeInput" placeholder="0IZ96" maxlength="8" style="flex: 1; min-width: 120px; max-width: 150px; padding: 12px 14px; border-radius: 8px; background: #0B0E14; border: 2px solid var(--border-color); color: #FFF; font-size: 1.25rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
+                <input type="text" id="examManualCodeInput" placeholder="0IZ96" maxlength="5" style="flex: 1; min-width: 120px; max-width: 150px; padding: 12px 14px; border-radius: 8px; background: #0B0E14; border: 2px solid var(--border-color); color: #FFF; font-size: 1.25rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
 
                 <!-- Botão de Câmera ao lado do campo para fotografar SOMENTE o código -->
                 <label title="Fotografar somente o badge do código da prova com a câmera" class="btn btn-secondary" style="padding: 12px 14px; font-size: 0.92rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; border-radius: 8px; border: 1.5px solid var(--accent-gold); background: rgba(245, 190, 0, 0.12); color: var(--accent-gold);">
@@ -14238,9 +14245,9 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       // Recupera dados salvos da prova pelo código se disponível
       const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
-      const cleanExamId = (detectedMeta && detectedMeta.examId) || (result && result.examId) || '';
+      const cleanExamId = String((detectedMeta && detectedMeta.examId) || (result && result.examId) || '').slice(0, 5);
       const savedExam = examGen && examGen.getSavedExamById ? examGen.getSavedExamById(cleanExamId) : null;
-      const initialDetectedName = (result && result.studentName) || (detectedMeta && detectedMeta.studentName) || (savedExam && savedExam.studentName) || (detectedMeta && detectedMeta.studentTag) || '';
+      const initialDetectedName = (result && result.studentName) || (detectedMeta && detectedMeta.studentName) || (savedExam && (savedExam.studentName || savedExam.studentAbbr)) || (result && result.aluno) || '';
 
       // Salva estado para edições e gravação
       examGradingPendingResult = {

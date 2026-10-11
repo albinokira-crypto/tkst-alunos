@@ -61,7 +61,7 @@ function decodeCompactExamCode(codeStr) {
   if (!codeStr) return null;
   const cleanRaw = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
   const parts = cleanRaw.split('-');
-  const clean = parts[0].replace(/[^0-9A-Z]/g, '');
+  const clean = parts[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
   const studentTag = parts.length > 1 ? parts.slice(1).join('-') : null;
   if (clean.length < 4) return null;
   try {
@@ -76,7 +76,7 @@ function decodeCompactExamCode(codeStr) {
       const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
       answers.push(['A', 'B', 'C', 'D'][val]);
     }
-    return { kyu, answers, examId: clean, fullExamId: cleanRaw, studentTag: studentTag };
+    return { kyu, answers, examId: clean, fullExamId: clean, studentTag: studentTag };
   } catch(e) {
     return null;
   }
@@ -86,10 +86,10 @@ let promptText = '';
     if (step === 'code' || step === 'badge') {
       promptText = `
 Você é um especialista em OCR e visão computacional de alta precisão.
-Esta foto mostra especificamente o CÓDIGO de uma avaliação de karatê (badge ou campo de texto com 4 a 6 caracteres alfanuméricos, ou com sufixo do aluno, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "0IZ96-CARLOS.S", "5M4X7", "5M4X7-LUCAS.S").
+Esta foto mostra especificamente o CÓDIGO de 5 caracteres de uma avaliação de karatê (badge com fundo preto e letras brancas no cabeçalho, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "5M4X7").
 
 SUA TAREFA ÚNICA:
-Extrair os caracteres alfanuméricos e hífens que formam o código completo da prova.
+Extrair os 5 caracteres alfanuméricos que formam o código da prova.
 Ignore palavras como "CÓDIGO", "CODIGO", "PROVA", "#", espaços e dois-pontos.
 
 Retorne estritamente um JSON no seguinte formato:
@@ -103,7 +103,7 @@ Retorne estritamente um JSON no seguinte formato:
 Você é um desenvolvedor sênior especialista em visão computacional e correção de avaliações de karatê.
 Esta foto mostra especificamente o CABEÇALHO oficial da prova de karatê, composto por:
 - LADO ESQUERDO:
-  1. Código da Prova no badge em destaque (ex: "CÓDIGO: 5M4X7", "5M4X7-LUCAS.S" ou 4 a 5 caracteres com ou sem sufixo do aluno).
+  1. Código da Prova no badge em destaque com 5 caracteres alfanuméricos (ex: "CÓDIGO: 5M4X7", "0IZ96").
   2. Nome do aluno impresso ou escrito à mão no campo "Nome:".
   3. Descrição da avaliação (ex: "Avaliação Teórica: Faixa Branca para Faixa Amarela").
 - LADO DIREITO:

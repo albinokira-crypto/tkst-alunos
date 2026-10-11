@@ -769,13 +769,12 @@ window.TKST_EXAM_GENERATOR = {
     return `${primeiro}.${ultimo[0]}`;
   },
 
-  // Decodifica o código Base36 (com suporte a sufixo do aluno ex: 0J8F3-LUCAS.S) 100% offline
+  // Decodifica o código Base36 de 5 caracteres 100% offline
   decodeCompactExamCode: function(codeStr) {
     if (!codeStr) return null;
     const cleanRaw = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
     const parts = cleanRaw.split('-');
-    const clean = parts[0].replace(/[^0-9A-Z]/g, '');
-    const studentTag = parts.length > 1 ? parts.slice(1).join('-') : null;
+    const clean = parts[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
     if (clean.length < 4) return null;
     try {
       const totalVal = parseInt(clean, 36);
@@ -788,7 +787,7 @@ window.TKST_EXAM_GENERATOR = {
         const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
         answers.push(['A', 'B', 'C', 'D'][val]);
       }
-      return { kyu, answers, examId: clean, fullExamId: cleanRaw, studentTag: studentTag };
+      return { kyu, answers, examId: clean, fullExamId: clean };
     } catch(e) {
       return null;
     }
@@ -989,30 +988,25 @@ window.TKST_EXAM_GENERATOR = {
 
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const compactCode = this.encodeCompactExamCode(kyu, answerLetters);
-    const studentSlug = this.createStudentCodeSlug(rawStudentName);
-    const fullExamCode = studentSlug ? `${compactCode}-${studentSlug}` : compactCode;
-    const examId = fullExamCode;
+    const examId = compactCode;
 
     // Registra a prova gerada no armazenamento persistente do Sensei para conferência imediata e offline
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
       const examRecord = {
         kyu: Number(kyu),
-        examId: fullExamCode,
-        baseCode: compactCode,
+        examId: compactCode,
         answers: answerLetters,
         date: dateStr,
         studentName: rawStudentName,
         studentAbbr: studentName,
-        studentSlug: studentSlug,
         studentId: options.studentId || options.id || '',
         dojoName: dojoName,
         timestamp: Date.now()
       };
-      store[fullExamCode] = examRecord;
       store[compactCode] = examRecord;
       const keys = Object.keys(store);
-      if (keys.length > 250) {
+      if (keys.length > 300) {
         delete store[keys[0]];
       }
       localStorage.setItem('tkst_generated_exams', JSON.stringify(store));
@@ -1114,11 +1108,11 @@ window.TKST_EXAM_GENERATOR = {
               <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo" style="${dojoName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 700; color: #000; font-size: 8.5pt; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' : ''}">${dojoName || ''}</span></div>
             </div>
 
-            <!-- CÓDIGO DA PROVA DESTACADO (COM VÍNCULO AO ALUNO SE PRÉ-IMPRESSA) -->
+            <!-- CÓDIGO DA PROVA DESTACADO (EXATAMENTE 5 CARACTERES) -->
             <div class="exam-header-code-row">
               <div class="exam-code-badge" style="background: #000000 !important; color: #FFFFFF !important; padding: 4px 14px !important; border-radius: 6px !important; display: inline-flex !important; align-items: center !important; gap: 8px !important; border: 2px solid #000000 !important;">
                 <span class="exam-code-lbl" style="font-size: 9pt !important; font-weight: 900 !important; color: #F5BE00 !important; letter-spacing: 1px !important; text-transform: uppercase !important;">CÓDIGO:</span>
-                <span class="exam-code-val" style="font-size: ${fullExamCode.length > 8 ? '14pt' : '20pt'} !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: ${fullExamCode.length > 8 ? '1.5px' : '3px'} !important; font-family: 'Consolas', 'Courier New', monospace, sans-serif !important; line-height: 1 !important;">${fullExamCode}</span>
+                <span class="exam-code-val" style="font-size: 20pt !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: 3px !important; font-family: 'Consolas', 'Courier New', monospace, sans-serif !important; line-height: 1 !important;">${compactCode}</span>
               </div>
               <div class="exam-instruction-tag">
                 ✏️ <strong>Atenção Aluno:</strong> Transfira suas respostas marcando totalmente o quadradinho no <strong>Cartão Oficial ao lado</strong>.
