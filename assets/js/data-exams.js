@@ -983,7 +983,7 @@ window.TKST_EXAM_GENERATOR = {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
     const rawStudentName = options.studentName || options.name || "";
-    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 38);
+    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 26);
     const dojoName = options.dojoName || options.dojo || "";
 
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
@@ -1102,16 +1102,10 @@ window.TKST_EXAM_GENERATOR = {
               </div>
             </div>
 
-            <!-- IDENTIFICAÇÃO DO ALUNO (2 LINHAS ESPAÇOSAS: NOME COMPLETO E DOJÔ SEM CORTES) -->
+            <!-- IDENTIFICAÇÃO DO ALUNO (NOME E DOJÔ LADO A LADO COM ALTURA AMPLA) -->
             <div class="exam-portrait-student-line">
-              <div class="exam-student-row">
-                <span class="exam-field-label"><strong>Nome:</strong></span>
-                <span class="exam-field-line-name" title="${rawStudentName || ''}">${studentName || ''}</span>
-              </div>
-              <div class="exam-student-row">
-                <span class="exam-field-label"><strong>Dojô:</strong></span>
-                <span class="exam-field-line-dojo" title="${dojoName || ''}">${dojoName || ''}</span>
-              </div>
+              <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name" title="${rawStudentName || ''}">${studentName || ''}</span></div>
+              <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo" title="${dojoName || ''}">${dojoName || ''}</span></div>
             </div>
 
             <!-- CÓDIGO DA PROVA DESTACADO (EXATAMENTE 5 CARACTERES) -->
@@ -1632,44 +1626,69 @@ window.TKST_EXAM_GENERATOR = {
         white-space: nowrap !important;
       }
 
-      /* IDENTIFICAÇÃO DO ALUNO (2 LINHAS ESPAÇOSAS: NOME E DOJÔ NUNCA CORTADOS) */
+      /* IDENTIFICAÇÃO DO ALUNO (NOME E DOJÔ LADO A LADO COM ALTURA SUFICIENTE SEM CORTES) */
       .exam-portrait-student-line {
         border: 1.2px solid #0F172A !important;
         border-radius: 3px !important;
         background: #F8FAFC !important;
         box-shadow: 1px 1px 0px #0F172A !important;
-        padding: 2.5px 8px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 2.5px !important;
-        box-sizing: border-box !important;
-      }
-      .exam-student-row {
+        padding: 3px 8px !important;
         display: flex !important;
         align-items: center !important;
-        gap: 6px !important;
-        width: 100% !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        box-sizing: border-box !important;
+        white-space: nowrap !important;
+      }
+      .exam-field-name {
+        flex: 1.35 !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
         min-width: 0 !important;
-      }
-      .exam-field-label {
         font-size: 8.5pt !important;
-        font-weight: 900 !important;
-        color: #0F172A !important;
-        flex-shrink: 0 !important;
-        line-height: 1.2 !important;
       }
-      .exam-field-line-name,
+      .exam-field-line-name {
+        flex: 1 !important;
+        min-width: 0 !important;
+        border-bottom: 1.2px solid #0F172A !important;
+        height: 18px !important;
+        min-height: 18px !important;
+        line-height: 1.25 !important;
+        font-size: 8.2pt !important;
+        font-weight: 800 !important;
+        color: #000000 !important;
+        padding-left: 4px !important;
+        padding-bottom: 1.5px !important;
+        display: inline-flex !important;
+        align-items: flex-end !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+      }
+      .exam-field-dojo {
+        flex: 1.15 !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+        min-width: 0 !important;
+        font-size: 8.5pt !important;
+      }
       .exam-field-line-dojo {
         flex: 1 !important;
         min-width: 0 !important;
         border-bottom: 1.2px solid #0F172A !important;
-        min-height: 15px !important;
+        height: 18px !important;
+        min-height: 18px !important;
         line-height: 1.25 !important;
-        font-size: 8.8pt !important;
-        font-weight: 800 !important;
+        font-size: 8.2pt !important;
+        font-weight: 700 !important;
         color: #000000 !important;
         padding-left: 4px !important;
-        padding-bottom: 1px !important;
+        padding-bottom: 1.5px !important;
+        display: inline-flex !important;
+        align-items: flex-end !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
