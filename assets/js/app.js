@@ -745,6 +745,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (dropdown && input && !dropdown.contains(e.target) && e.target !== input) {
         dropdown.style.display = 'none';
       }
+      const modalDropdown = document.getElementById('modalDojobookAutocompleteDropdown');
+      const modalInput = document.getElementById('modalDojobookStudentSearch');
+      if (modalDropdown && modalInput && !modalDropdown.contains(e.target) && e.target !== modalInput) {
+        modalDropdown.style.display = 'none';
+      }
     });
 
     const user = window.TKST_AUTH.getCurrentUser();
@@ -9314,6 +9319,117 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
+    onModalDojobookSearchInput: async function(query) {
+      const dropdown = document.getElementById('modalDojobookAutocompleteDropdown');
+      if (!dropdown) return;
+
+      const cleanQ = (query || '').toLowerCase().trim();
+      const data = await window.TKST_APP.loadDojobookCandidates();
+      const candidatos = data.candidatos || [];
+      const alunos = data.alunos || [];
+
+      let matches = [];
+      if (!cleanQ) {
+        matches = candidatos.slice(0, 15);
+      } else {
+        const cMatches = candidatos.filter(c => (c.nome || '').toLowerCase().includes(cleanQ));
+        const aMatches = alunos.filter(a => (a.nome || '').toLowerCase().includes(cleanQ) && !cMatches.some(c => c.id === a.id));
+        matches = [...cMatches, ...aMatches].slice(0, 15);
+      }
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = `
+          <div style="padding: 10px; text-align: center; color: #94A3B8; font-size: 0.8rem;">
+            Nenhum aluno encontrado no DojôBook com "${query || ''}".
+          </div>
+        `;
+        dropdown.style.display = 'block';
+        return;
+      }
+
+      dropdown.innerHTML = matches.map((m, idx) => {
+        const isExamCand = !!m.exame_id || !!m.participante_id;
+        const targetBelt = m.vai_para || m.graduacao_destino || 'Amarela';
+        return `
+          <div 
+            class="modal-dojobook-auto-item" 
+            onclick="window.TKST_APP.selectModalDojobookCandidateByIndex(${idx})" 
+            style="padding: 9px 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; transition: background 0.15s; border-bottom: 1px solid rgba(255,255,255,0.06);"
+            onmouseenter="this.style.background='rgba(245,190,0,0.18)'"
+            onmouseleave="this.style.background='transparent'"
+          >
+            <div>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                ${m.nome}
+                ${isExamCand ? '<span class="badge badge-gold" style="font-size: 0.62rem; padding: 1px 6px;">Inscrito no Exame</span>' : ''}
+              </div>
+              <div style="font-size: 0.74rem; color: #94A3B8; margin-top: 2px;">
+                ${m.graduacao_atual || 'Branca'} ➔ <strong style="color: var(--accent-gold);">${targetBelt}</strong>
+                ${m.dojo_nome ? ` · ${m.dojo_nome}` : ''}
+              </div>
+            </div>
+            <span style="font-size: 0.74rem; color: var(--accent-gold); font-weight: 700; white-space: nowrap;">Selecionar ➔</span>
+          </div>
+        `;
+      }).join('');
+      window._lastModalDojobookMatches = matches;
+      dropdown.style.display = 'block';
+    },
+
+    selectModalDojobookCandidateByIndex: function(idx) {
+      const matches = window._lastModalDojobookMatches || [];
+      const candidate = matches[idx];
+      if (candidate) {
+        window.TKST_APP.selectModalDojobookCandidate(candidate);
+      }
+    },
+
+    selectModalDojobookCandidate: function(candidate) {
+      if (examGradingPendingResult) {
+        examGradingPendingResult.selectedDojobookStudent = candidate;
+        examGradingPendingResult.detectedName = candidate.nome;
+      }
+      const dropdown = document.getElementById('modalDojobookAutocompleteDropdown');
+      if (dropdown) dropdown.style.display = 'none';
+
+      window.TKST_APP.refreshGradingReviewUI();
+      if (typeof showToast === 'function') {
+        showToast(`🥋 Aluno ${candidate.nome} vinculado à prova!`, 'success');
+      }
+    },
+
+    clearModalDojobookStudent: function() {
+      if (examGradingPendingResult) {
+        examGradingPendingResult.selectedDojobookStudent = null;
+        examGradingPendingResult.detectedName = '';
+      }
+      window.TKST_APP.refreshGradingReviewUI();
+    },
+
+    onModalStudentSelectChange: function(selectEl) {
+      if (!selectEl) return;
+      const customWrap = document.getElementById('examGradeCustomStudentWrap');
+      if (customWrap) {
+        customWrap.style.display = (selectEl.value === '__guest__') ? 'block' : 'none';
+      }
+      if (selectEl.value && selectEl.value.startsWith('dojo_')) {
+        const dId = selectEl.value.replace('dojo_', '');
+        const dataCands = dojobookCandidatesCache || { candidatos: [], alunos: [] };
+        const todos = [...(dataCands.candidatos || []), ...(dataCands.alunos || [])];
+        const match = todos.find(t => t.id === dId);
+        if (match && examGradingPendingResult) {
+          examGradingPendingResult.selectedDojobookStudent = match;
+          examGradingPendingResult.detectedName = match.nome;
+          const searchInput = document.getElementById('modalDojobookStudentSearch');
+          if (searchInput) searchInput.value = match.nome;
+        }
+      } else if (selectEl.value && selectEl.value !== '__guest__') {
+        if (examGradingPendingResult) {
+          examGradingPendingResult.selectedDojobookStudent = null;
+        }
+      }
+    },
+
     setExamGeneratorKyu: (kyu) => {
       examGeneratorSelectedKyu = parseInt(kyu);
       examCurrentRandomQuestions = null;
@@ -12647,6 +12763,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       examScannerScreenTorchActive = false;
       examScannerZoomActive = false;
 
+      // Pré-carrega lista de candidatos do DojôBook em background para busca instantânea na correção
+      if (typeof window.TKST_APP.loadDojobookCandidates === 'function') {
+        window.TKST_APP.loadDojobookCandidates().catch(() => {});
+      }
+
       const modal = document.getElementById('examCameraModal');
       if (!modal) return;
 
@@ -14120,8 +14241,20 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         ambiguousQuestions: ambiguousQuestions,
         imagePreviewUrl: imagePreviewUrl,
         detectedName: (result && result.studentName) || '',
-        detectedDojo: (result && result.dojo) || ''
+        detectedDojo: (result && result.dojo) || '',
+        selectedDojobookStudent: null
       };
+
+      // Tenta associar automaticamente com candidato do DojôBook se o nome foi detectado na prova
+      if (examGradingPendingResult.detectedName && dojobookCandidatesCache) {
+        const todos = [...(dojobookCandidatesCache.candidatos || []), ...(dojobookCandidatesCache.alunos || [])];
+        const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const detNorm = norm(examGradingPendingResult.detectedName);
+        const autoMatch = todos.find(a => norm(a.nome) === detNorm || (detNorm.length > 3 && (norm(a.nome).includes(detNorm) || detNorm.includes(norm(a.nome)))));
+        if (autoMatch) {
+          examGradingPendingResult.selectedDojobookStudent = autoMatch;
+        }
+      }
 
       window.TKST_APP.refreshGradingReviewUI();
     },
@@ -14206,6 +14339,18 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         `;
       }).join('');
 
+      // Candidatos do DojôBook para compor o dropdown se já carregados
+      const hasDojobookCands = dojobookCandidatesCache && Array.isArray(dojobookCandidatesCache.candidatos) && dojobookCandidatesCache.candidatos.length > 0;
+      const dojobookCandidatesOptionsHtml = hasDojobookCands ? `
+        <optgroup label="🥋 Candidatos ao Exame de Faixa (DojôBook)">
+          ${dojobookCandidatesCache.candidatos.map(c => `
+            <option value="dojo_${c.id}" ${(data.selectedDojobookStudent && data.selectedDojobookStudent.id === c.id) ? 'selected' : ''}>
+              ${c.nome} — vai para ${c.vai_para || c.graduacao_destino || 'Faixa'} ${c.dojo_nome ? `(${c.dojo_nome})` : ''}
+            </option>
+          `).join('')}
+        </optgroup>
+      ` : '';
+
       body.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <!-- Card de Resumo de Desempenho -->
@@ -14230,21 +14375,75 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             </div>
           </div>
 
-          <!-- Seleção do Aluno do Dojô -->
-          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 14px;">
-            <label style="display: block; font-size: 0.84rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">
-              <i class="fas fa-user-check" style="color: var(--accent-gold); margin-right: 6px;"></i> Vincular ao Aluno:
-            </label>
-            <select id="examGradeStudentSelect" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.88rem;">
+          <!-- Seleção e Busca Inteligente do Aluno (DojôBook / Matrícula) -->
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 14px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+              <label for="modalDojobookStudentSearch" style="font-size: 0.84rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 6px; margin: 0;">
+                <i class="fas fa-user-graduate" style="color: var(--accent-gold);"></i> Vincular ao Aluno:
+              </label>
+              ${data.selectedDojobookStudent ? `
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.clearModalDojobookStudent()" style="font-size: 0.72rem; padding: 2px 8px; color: #F87171; border-color: rgba(248,113,113,0.4);" title="Remover vinculação">
+                  <i class="fas fa-times"></i> Desvincular (${data.selectedDojobookStudent.nome})
+                </button>
+              ` : `
+                <span style="font-size: 0.72rem; color: #94A3B8;">Busca inteligente DojôBook</span>
+              `}
+            </div>
+
+            <!-- Campo de Busca em Tempo Real com Autocomplete -->
+            <div style="position: relative; margin-bottom: 8px;">
+              <div style="position: relative; display: flex; align-items: center;">
+                <i class="fas fa-search" style="position: absolute; left: 12px; color: var(--accent-gold); font-size: 0.85rem; pointer-events: none;"></i>
+                <input
+                  type="text"
+                  id="modalDojobookStudentSearch"
+                  class="form-control"
+                  placeholder="Digite o nome para buscar no DojôBook..."
+                  value="${data.selectedDojobookStudent ? data.selectedDojobookStudent.nome : (data.detectedName || '')}"
+                  oninput="window.TKST_APP.onModalDojobookSearchInput(this.value)"
+                  onfocus="window.TKST_APP.onModalDojobookSearchInput(this.value)"
+                  autocomplete="off"
+                  style="width: 100%; padding: 10px 12px 10px 36px; background: #0B0E14; border: 1.5px solid ${data.selectedDojobookStudent ? '#10B981' : 'var(--border-color)'}; border-radius: var(--radius-sm); color: #FFF; font-size: 0.88rem; font-weight: 700; transition: border-color 0.2s;"
+                >
+                ${data.selectedDojobookStudent ? `
+                  <span style="position: absolute; right: 10px; background: #10B981; color: #000; font-weight: 900; font-size: 0.68rem; padding: 2px 7px; border-radius: 4px;">
+                    ✓ Vinculado
+                  </span>
+                ` : ''}
+              </div>
+
+              <!-- Dropdown de Autocomplete na Modal -->
+              <div id="modalDojobookAutocompleteDropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0F1420; border: 1.5px solid var(--accent-gold); border-radius: 8px; max-height: 220px; overflow-y: auto; z-index: 1050; box-shadow: 0 14px 32px rgba(0,0,0,0.95); padding: 4px;">
+              </div>
+            </div>
+
+            ${data.selectedDojobookStudent ? `
+              <div style="margin-bottom: 10px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); padding: 7px 12px; border-radius: 6px; font-size: 0.78rem; color: #A7F3D0; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                  <span>Aluno: <strong style="color: #FFF;">${data.selectedDojobookStudent.nome}</strong> ${data.selectedDojobookStudent.dojo_nome ? `(${data.selectedDojobookStudent.dojo_nome})` : ''} · Vai para: <strong style="color: var(--accent-gold);">${data.selectedDojobookStudent.vai_para || data.selectedDojobookStudent.graduacao_destino || data.beltName}</strong></span>
+                </div>
+                <span style="font-size: 0.7rem; color: #6EE7B7; font-weight: 700;">DojôBook</span>
+              </div>
+            ` : ''}
+
+            <!-- Seleção Alternativa por Dropdown (mantida como solicitado) -->
+            <div style="font-size: 0.74rem; color: #94A3B8; margin-bottom: 4px;">
+              Ou selecione da lista:
+            </div>
+            <select id="examGradeStudentSelect" class="form-control" onchange="window.TKST_APP.onModalStudentSelectChange(this)" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.88rem;">
               <option value="">-- Selecione o Aluno Matriculado --</option>
-              ${matchingStudents.map(s => {
-                const isSelected = data.detectedName && s.name.toLowerCase().includes(data.detectedName.toLowerCase().trim());
-                return `
-                  <option value="${s.id}" ${isSelected ? 'selected' : ''}>
-                    ${s.name} (@${s.username}) — ${s.currentBelt || 'Branca'}
-                  </option>
-                `;
-              }).join('')}
+              ${dojobookCandidatesOptionsHtml}
+              <optgroup label="📋 Alunos Cadastrados no App">
+                ${matchingStudents.map(s => {
+                  const isSelected = !data.selectedDojobookStudent && data.detectedName && s.name.toLowerCase().includes(data.detectedName.toLowerCase().trim());
+                  return `
+                    <option value="${s.id}" ${isSelected ? 'selected' : ''}>
+                      ${s.name} (@${s.username}) — ${s.currentBelt || 'Branca'}
+                    </option>
+                  `;
+                }).join('')}
+              </optgroup>
               <option value="__guest__">➕ Aluno Avulso / Não Listado (Digitar Nome)</option>
             </select>
 
@@ -14315,6 +14514,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       const studentSelect = document.getElementById('examGradeStudentSelect');
       const customNameInput = document.getElementById('examGradeCustomStudentName');
+      const modalSearchInput = document.getElementById('modalDojobookStudentSearch');
 
       let targetStudent = null;
       let studentName = '';
@@ -14322,10 +14522,29 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       let studentId = '';
       let studentBelt = data.beltName;
       let studentKyu = data.kyu;
+      let dojobookId = null;
 
       const allStudents = (window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || [];
 
-      if (studentSelect && studentSelect.value && studentSelect.value !== '__guest__') {
+      if (data.selectedDojobookStudent) {
+        studentName = data.selectedDojobookStudent.nome;
+        studentId = data.selectedDojobookStudent.id;
+        studentUsername = data.selectedDojobookStudent.nome.toLowerCase().replace(/\s+/g, '.');
+        studentBelt = data.selectedDojobookStudent.vai_para || data.selectedDojobookStudent.graduacao_destino || data.beltName;
+        dojobookId = data.selectedDojobookStudent.id;
+      } else if (studentSelect && studentSelect.value && studentSelect.value.startsWith('dojo_')) {
+        const dId = studentSelect.value.replace('dojo_', '');
+        const dataCands = dojobookCandidatesCache || { candidatos: [], alunos: [] };
+        const todos = [...(dataCands.candidatos || []), ...(dataCands.alunos || [])];
+        const match = todos.find(t => t.id === dId);
+        if (match) {
+          studentName = match.nome;
+          studentId = match.id;
+          studentUsername = match.nome.toLowerCase().replace(/\s+/g, '.');
+          studentBelt = match.vai_para || match.graduacao_destino || data.beltName;
+          dojobookId = match.id;
+        }
+      } else if (studentSelect && studentSelect.value && studentSelect.value !== '__guest__') {
         targetStudent = allStudents.find(s => s.id === studentSelect.value);
         if (targetStudent) {
           studentId = targetStudent.id;
@@ -14334,14 +14553,18 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           studentBelt = targetStudent.currentBelt || data.beltName;
           studentKyu = (targetStudent.currentKyu !== undefined) ? targetStudent.currentKyu : data.kyu;
         }
+      } else if (modalSearchInput && modalSearchInput.value.trim()) {
+        studentName = modalSearchInput.value.trim();
+        studentUsername = studentName.toLowerCase().replace(/\s+/g, '.');
+        studentId = 'std_manual_' + Date.now();
       } else if (customNameInput && customNameInput.value.trim()) {
         studentName = customNameInput.value.trim();
-        studentUsername = studentName.toLowerCase().replace(/\s+/g, '.');
+        studentUsername = customNameInput.toLowerCase().replace(/\s+/g, '.');
         studentId = 'std_manual_' + Date.now();
       }
 
       if (!studentName) {
-        alert('Por favor, selecione um aluno matriculado ou digite o nome do aluno avulso para registrar a nota.');
+        alert('Por favor, busque e selecione o aluno no DojôBook ou selecione um aluno matriculado para registrar a nota.');
         return;
       }
 
@@ -14386,11 +14609,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       if (typeof window.TKST_APP.pushGradeToDojobook === 'function') {
         window.TKST_APP.pushGradeToDojobook({
           studentName: studentName,
-          studentId: studentId,
+          studentId: dojobookId || studentId,
           score: score,
           total: 10,
-          beltName: data.beltName,
-          kyu: data.kyu,
+          beltName: studentBelt || data.beltName,
+          kyu: (studentKyu !== undefined) ? studentKyu : data.kyu,
           examId: data.examId
         });
       }
