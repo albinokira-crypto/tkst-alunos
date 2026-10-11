@@ -676,6 +676,17 @@ window.TKST_OFFICIAL_EXAMS = {
 };
 
 window.TKST_EXAM_GENERATOR = {
+  // Busca prova gerada salva no histórico persistente do Sensei
+  getSavedExamById: function(examId) {
+    if (!examId) return null;
+    const cleanId = String(examId).replace(/^#/, '').trim().toUpperCase();
+    try {
+      const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+      if (store[cleanId]) return store[cleanId];
+    } catch(e) {}
+    return null;
+  },
+
   getExamData: function(kyu) {
     return window.TKST_OFFICIAL_EXAMS[kyu] || window.TKST_OFFICIAL_EXAMS[6];
   },
@@ -853,6 +864,24 @@ window.TKST_EXAM_GENERATOR = {
 
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const examId = options.examId || (Math.random().toString(36).substring(2, 6).toUpperCase());
+
+    // Registra a prova gerada no armazenamento persistente do Sensei para conferência imediata e offline
+    try {
+      const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+      store[examId] = {
+        kyu: Number(kyu),
+        examId: examId,
+        answers: answerLetters,
+        date: dateStr,
+        timestamp: Date.now()
+      };
+      const keys = Object.keys(store);
+      if (keys.length > 250) {
+        delete store[keys[0]];
+      }
+      localStorage.setItem('tkst_generated_exams', JSON.stringify(store));
+    } catch(e) {}
+
     const qrPayload = (window.TKST_QR && window.TKST_QR.encodeExamPayload)
       ? window.TKST_QR.encodeExamPayload(kyu, examId, answerLetters)
       : ('TKST:' + kyu + ':' + examId + ':' + answerLetters.join(''));
@@ -1905,3 +1934,7 @@ window.TKST_EXAM_GENERATOR = {
     printWindow.document.close();
   }
 };
+
+// Aliases globais unificados para compatibilidade total entre gerador e leitor
+window.TKST_EXAMS = window.TKST_EXAM_GENERATOR;
+
