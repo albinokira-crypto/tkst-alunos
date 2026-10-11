@@ -1379,11 +1379,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!examCurrentRandomQuestions) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
-      if (examPreviewGenerated === 'key') {
-        examPreviewHtml = window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
-      } else {
-        examPreviewHtml = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
-      }
+      examPreviewHtml = window.TKST_EXAM_GENERATOR.buildQuizExamSheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
     }
 
     let html = `
@@ -2470,9 +2466,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <button class="btn btn-primary" onclick="window.TKST_APP.generateExamPreview('exam')" style="font-size: 0.85rem; padding: 10px 18px; font-weight: 800; box-shadow: 0 4px 14px rgba(255, 183, 3, 0.35);">
                 <i class="fas fa-file-alt"></i> Gerar Prova
               </button>
-              <button class="btn btn-success" onclick="window.TKST_APP.generateExamPreview('key')" style="font-size: 0.85rem; padding: 10px 16px; font-weight: 700; background: #059669; color: #FFF; border: none;">
-                <i class="fas fa-check-double"></i> Gerar Gabarito
-              </button>
               <button class="btn btn-secondary" onclick="window.TKST_APP.printCurrentExam()" style="font-size: 0.85rem; padding: 10px 14px; font-weight: 700;">
                 <i class="fas fa-print"></i> Imprimir Direto
               </button>
@@ -2484,10 +2477,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="padding: 20px 14px; background: rgba(0,0,0,0.5); overflow-x: auto;">
               <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto 12px auto; flex-wrap: wrap; gap: 8px;">
                 <div style="font-size: 0.82rem; color: #94A3B8; display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-eye" style="color: var(--accent-gold);"></i> <strong>${examPreviewGenerated === 'key' ? 'Gabarito Oficial do Sensei' : 'Prova Oficial Diagramada'} (1 Folha A4):</strong>
+                  <i class="fas fa-eye" style="color: var(--accent-gold);"></i> <strong>Prova Oficial Diagramada (1 Folha A4 com QR Code):</strong>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                  <button class="btn btn-sm btn-primary" onclick="${examPreviewGenerated === 'key' ? 'window.TKST_APP.printCurrentAnswerKey()' : 'window.TKST_APP.printCurrentExam()'}" style="font-size: 0.78rem; padding: 6px 14px; font-weight: 800;">
+                  <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.printCurrentExam()" style="font-size: 0.78rem; padding: 6px 14px; font-weight: 800;">
                     <i class="fas fa-print"></i> Imprimir Esta Folha A4
                   </button>
                   <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.closeExamPreview()" style="font-size: 0.78rem; padding: 6px 10px;">
@@ -2504,10 +2497,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="padding: 40px 20px; text-align: center; color: #94A3B8; background: rgba(0,0,0,0.2);">
               <i class="fas fa-file-invoice" style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 12px; display: block; opacity: 0.7;"></i>
               <div style="font-size: 1rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
-                Selecione a faixa acima e clique em <strong>"Gerar Prova"</strong> ou <strong>"Gerar Gabarito"</strong>
+                Selecione a faixa acima e clique em <strong>"Gerar Prova"</strong> ou <strong>"Imprimir Direto"</strong>
               </div>
               <div style="font-size: 0.82rem; color: #64748B;">
-                A prova será gerada compactada em formato oficial para visualização e impressão em folha única A4.
+                A prova é montada automaticamente em folha única A4 paisagem com 10 questões e QR Code de correção instantânea pela câmera do app.
               </div>
             </div>
           `}
@@ -9099,7 +9092,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
       const html = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
-      window.TKST_EXAM_GENERATOR.printHtml(`${exam.title} (Prova + Gabarito) - ${exam.targetBelt}`, html);
+      window.TKST_EXAM_GENERATOR.printHtml(`Prova Oficial - ${exam.targetBelt}`, html);
     },
     printCurrentAnswerKey: () => {
       if (!window.TKST_EXAM_GENERATOR) return;

@@ -864,6 +864,9 @@ window.TKST_EXAM_GENERATOR = {
       `;
     };
 
+    const col1Questions = questions.slice(0, 5).map((q, idx) => renderSingleQuestion(q, idx)).join('');
+    const col2Questions = questions.slice(5, 10).map((q, idx) => renderSingleQuestion(q, idx + 5)).join('');
+
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const examId = options.examId || (Math.random().toString(36).substring(2, 6).toUpperCase());
     const qrPayload = (window.TKST_QR && window.TKST_QR.encodeExamPayload)
@@ -999,19 +1002,15 @@ window.TKST_EXAM_GENERATOR = {
     `;
   },
 
-  // Gera a Prova Completa de 2 Folhas (Folha 1: Prova Sorteada + Folha 2: Gabarito Oficial)
+  // Gera a Prova em Folha Única A4 (com QR Code de Correção Rápida pelo App)
   buildQuizExamWithKeyHtml: function(kyu, questions = null, options = {}) {
     const activeQuestions = questions || this.getRandomQuizQuestionsForKyu(kyu, 10);
     const page1Html = this.buildQuizExamSheetHtml(kyu, activeQuestions, options);
-    const page2Html = this.buildQuizAnswerKeySheetHtml(kyu, activeQuestions);
 
     return `
       <div class="exam-print-bundle">
         <div class="exam-page-break-wrapper">
           ${page1Html}
-        </div>
-        <div class="exam-page-break-wrapper">
-          ${page2Html}
         </div>
       </div>
     `;
@@ -1277,8 +1276,6 @@ window.TKST_EXAM_GENERATOR = {
         box-sizing: border-box;
       }
       .exam-sheet-page1 {
-        page-break-after: always !important;
-        break-after: page !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
@@ -1671,7 +1668,7 @@ window.TKST_EXAM_GENERATOR = {
             }
             .exam-print-bundle {
               width: 100%;
-              max-width: 190mm;
+              max-width: 290mm;
               display: flex;
               flex-direction: column;
               gap: 20px;
@@ -1684,7 +1681,7 @@ window.TKST_EXAM_GENERATOR = {
             }
             .no-print-bar {
               width: 100%;
-              max-width: 190mm;
+              max-width: 290mm;
               background: #1E293B;
               border: 1px solid #334155;
               padding: 10px 16px;
@@ -1726,7 +1723,7 @@ window.TKST_EXAM_GENERATOR = {
         <div class="no-print-bar">
           <div>
             <strong style="font-size: 0.95rem;">📄 ${title}</strong>
-            <div style="font-size: 0.75rem; color: #94A3B8;">Folha 1: Prova • Folha 2: Gabarito Oficial</div>
+            <div style="font-size: 0.75rem; color: #94A3B8;">Folha Única A4 (Com QR Code de Correção Rápida pelo App)</div>
           </div>
           <div style="display: flex; gap: 8px;">
             <button class="print-btn-action" onclick="window.print()">
