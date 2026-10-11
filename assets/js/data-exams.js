@@ -1300,8 +1300,8 @@ window.TKST_EXAM_GENERATOR = {
   getPrintStyles: function() {
     return `
       @page {
-        size: 297mm 210mm landscape;
-        margin: 3mm 4mm 3mm 4mm;
+        size: A4 landscape;
+        margin: 2mm 3.5mm 2mm 3.5mm;
       }
       * {
         box-sizing: border-box;
@@ -1315,17 +1315,17 @@ window.TKST_EXAM_GENERATOR = {
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
         color: #0F172A;
         background: #FFF;
-        font-size: 8.8pt;
-        line-height: 1.25;
+        font-size: 8.5pt;
+        line-height: 1.2;
       }
       .exam-sheet-a4 {
         position: relative !important;
-        width: 100%;
-        max-width: 289mm;
-        margin: 0 auto;
-        padding: 1.5mm 2.5mm !important;
+        width: 100% !important;
+        max-width: 290mm !important;
+        margin: 0 auto !important;
+        padding: 0.5mm 1.5mm !important;
         box-sizing: border-box !important;
-        background: #FFF;
+        background: #FFF !important;
       }
       .single-page-a4 {
         position: relative !important;
@@ -1348,14 +1348,14 @@ window.TKST_EXAM_GENERATOR = {
         break-inside: avoid !important;
       }
       .exam-landscape-sheet {
-        height: 195mm !important;
-        min-height: 195mm !important;
-        max-height: 195mm !important;
+        height: 204mm !important;
+        min-height: 202mm !important;
+        max-height: 205mm !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: space-between !important;
+        justify-content: flex-start !important;
         position: relative !important;
         page-break-after: avoid !important;
         page-break-inside: avoid !important;
@@ -1398,33 +1398,33 @@ window.TKST_EXAM_GENERATOR = {
         flex: 0 0 auto !important;
         display: flex !important;
         align-items: stretch !important;
-        gap: 10px !important;
-        margin-top: 1.5mm !important;
-        padding-top: 0.5mm !important;
-        margin-bottom: 2mm !important;
-        padding-bottom: 1.5mm !important;
+        gap: 8px !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        margin-bottom: 1.5mm !important;
+        padding-bottom: 1mm !important;
         border-bottom: 1.5px solid #0F172A !important;
       }
       .exam-landscape-header-col {
-        flex: 1.1 !important;
+        flex: 1.05 !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        gap: 2px !important;
+        gap: 1.5px !important;
       }
       .exam-landscape-logo {
         height: auto !important;
-        max-height: 40px !important;
+        max-height: 28px !important;
         width: 100% !important;
-        max-width: 290px !important;
+        max-width: 240px !important;
         object-fit: contain !important;
         display: block !important;
         margin: 0 auto !important;
       }
       .exam-clean-subtitle {
-        font-size: 9.6pt !important;
+        font-size: 8.4pt !important;
         font-weight: 800 !important;
         color: #B45309 !important;
         line-height: 1.15 !important;
@@ -1436,19 +1436,19 @@ window.TKST_EXAM_GENERATOR = {
       .exam-print-student-box {
         border: 1.5px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 3px 8px !important;
-        font-size: 8.8pt !important;
+        padding: 2px 6px !important;
+        font-size: 8pt !important;
         background: #F8FAFC !important;
-        box-shadow: 1.5px 1.5px 0px #0F172A !important;
+        box-shadow: 1px 1px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
         gap: 2px;
-        margin-top: 0.5mm !important;
+        margin-top: 0 !important;
         box-sizing: border-box !important;
       }
       .exam-landscape-student-box {
-        flex: 1.35 !important;
+        flex: 1.4 !important;
       }
       .exam-print-row {
         display: flex;
@@ -1460,15 +1460,15 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 2.5px !important;
+        gap: 2px !important;
       }
       .exam-barcode-box {
         background: #FFF !important;
         border: 1.2px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 1px 4px !important;
-        height: 14mm !important;
-        max-height: 14.5mm !important;
+        padding: 1px 3px !important;
+        height: 10.5mm !important;
+        max-height: 11mm !important;
         box-sizing: border-box !important;
         display: flex !important;
         align-items: center !important;
@@ -1480,7 +1480,7 @@ window.TKST_EXAM_GENERATOR = {
         width: 100% !important;
         height: 100% !important;
         display: block !important;
-        max-height: 13.5mm !important;
+        max-height: 10mm !important;
       }
       .exam-header-quote-card {
         border: 1.2px solid #0F172A !important;
@@ -1490,45 +1490,43 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        padding: 2px 5px !important;
+        padding: 1.5px 4px !important;
         text-align: center !important;
         box-sizing: border-box !important;
       }
       .exam-instruction-badge {
-        font-size: 6.8pt !important;
+        font-size: 6.2pt !important;
         color: #1E293B !important;
         font-weight: 800 !important;
         background: #FEF3C7 !important;
         border: 1px dashed #D97706 !important;
-        padding: 1px 4px !important;
+        padding: 1px 3px !important;
         border-radius: 3px !important;
-        margin-bottom: 1.5px !important;
+        margin-bottom: 1px !important;
         line-height: 1.15 !important;
       }
       .exam-quote-body {
-        font-size: 6.8pt !important;
+        font-size: 6.2pt !important;
         font-weight: 700 !important;
         font-style: italic !important;
         color: #0F172A !important;
         line-height: 1.15 !important;
       }
 
-
-
-      /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM (PREENCHENDO A FOLHA TOTALMENTE) */
+      /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM (PREENCHENDO A FOLHA TOTALMENTE SEM CORTES) */
       .exam-landscape-grid-2col {
         position: relative !important;
         z-index: 1 !important;
         flex: 1 1 auto !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 5px 24px !important;
-        height: calc(195mm - 37mm) !important;
-        min-height: calc(195mm - 37mm) !important;
-        max-height: calc(195mm - 37mm) !important;
+        gap: 2px 20px !important;
+        height: calc(204mm - 21.5mm) !important;
+        min-height: calc(204mm - 21.5mm) !important;
+        max-height: calc(204mm - 21.5mm) !important;
         margin-bottom: 0 !important;
-        padding-left: 2mm !important;
-        padding-right: 2mm !important;
+        padding-left: 1mm !important;
+        padding-right: 1mm !important;
         box-sizing: border-box !important;
       }
       .exam-landscape-col {
@@ -1536,29 +1534,34 @@ window.TKST_EXAM_GENERATOR = {
         flex-direction: column !important;
         justify-content: space-between !important;
         height: 100% !important;
+        gap: 1px !important;
       }
       .exam-landscape-q-card {
-        border-bottom: 1.4px dashed #CBD5E1 !important;
-        padding-bottom: 5px !important;
+        border-bottom: 1.2px dashed #CBD5E1 !important;
+        padding-bottom: 2px !important;
+        margin-bottom: 1px !important;
         page-break-inside: avoid !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
       }
       .exam-landscape-q-card:last-child {
         border-bottom: none !important;
         padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
       }
 
       .exam-q-title-row {
-        font-size: 11.4pt !important;
-        line-height: 1.28 !important;
+        font-size: 9.4pt !important;
+        line-height: 1.2 !important;
         font-weight: 800 !important;
         color: #0F172A !important;
-        margin-bottom: 3.5px !important;
+        margin-bottom: 2px !important;
       }
       .exam-q-number {
-        font-size: 12pt !important;
+        font-size: 9.8pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
       }
@@ -1567,23 +1570,23 @@ window.TKST_EXAM_GENERATOR = {
       .exam-mcq-options-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 3.2px !important;
+        gap: 1.5px !important;
         width: 100% !important;
       }
       .exam-mcq-option {
         display: flex !important;
         align-items: center !important;
-        gap: 6px !important;
-        font-size: 10.4pt !important;
-        line-height: 1.28 !important;
+        gap: 5px !important;
+        font-size: 8.6pt !important;
+        line-height: 1.2 !important;
         white-space: normal !important;
       }
       .exam-mcq-square {
-        width: 13.5px !important;
-        height: 13.5px !important;
-        min-width: 13.5px !important;
-        min-height: 13.5px !important;
-        border: 1.8px solid #0F172A !important;
+        width: 12px !important;
+        height: 12px !important;
+        min-width: 12px !important;
+        min-height: 12px !important;
+        border: 1.6px solid #0F172A !important;
         border-radius: 2px !important;
         background: #FFF !important;
         display: inline-block !important;
@@ -1592,7 +1595,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-mcq-letter {
         font-weight: 900 !important;
         color: #0F172A !important;
-        font-size: 10.6pt !important;
+        font-size: 8.8pt !important;
         flex-shrink: 0 !important;
         margin-right: 1px !important;
       }
@@ -1604,16 +1607,16 @@ window.TKST_EXAM_GENERATOR = {
       /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES COM ALTURA EXATA DA LETRA A ATÉ A LETRA D */
       .exam-q-side-row {
         display: flex !important;
-        align-items: stretch !important;
+        align-items: center !important;
         justify-content: flex-start !important;
-        gap: 10px !important;
-        margin-top: 1.5px !important;
+        gap: 8px !important;
+        margin-top: 1px !important;
         width: 100% !important;
       }
       .exam-q-side-row .exam-mcq-options-col {
-        flex: 0 0 auto !important;
+        flex: 1 1 auto !important;
         width: auto !important;
-        max-width: 60% !important;
+        max-width: 62% !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
@@ -1626,18 +1629,18 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0 !important;
         width: auto !important;
-        max-width: 165px !important;
+        max-width: 130px !important;
         height: auto !important;
-        align-self: stretch !important;
+        align-self: center !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
       }
       .exam-side-img {
-        height: 100% !important;
-        max-height: 94px !important;
+        height: auto !important;
+        max-height: 56px !important;
         width: auto !important;
-        max-width: 160px !important;
+        max-width: 125px !important;
         object-fit: contain !important;
         display: block !important;
         image-rendering: -webkit-optimize-contrast;
@@ -1843,13 +1846,16 @@ window.TKST_EXAM_GENERATOR = {
             }
           }
           @media print {
+            @page {
+              size: A4 landscape;
+              margin: 2mm 3.5mm 2mm 3.5mm;
+            }
             html, body {
               margin: 0 !important;
               padding: 0 !important;
               background: #FFF !important;
-              height: 100% !important;
-              max-height: 210mm !important;
-              overflow: hidden !important;
+              width: 100% !important;
+              height: auto !important;
             }
             .no-print-bar {
               display: none !important;

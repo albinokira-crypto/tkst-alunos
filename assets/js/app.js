@@ -13132,12 +13132,12 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const ambiguousQuestions = [];
 
       // Prova em Modo Paisagem A4:
-      // Cabeçalho: topo 0% a 19%
-      // Questões: 19% a 95% da altura total
+      // Cabeçalho: topo 0% a 11%
+      // Questões: 11% a 98% da altura total
       // Coluna 1 (Q1-Q5): X de 3.5% a 48%
       // Coluna 2 (Q6-Q10): X de 52% a 96.5%
-      const qTopPct = 0.19;
-      const qBottomPct = 0.95;
+      const qTopPct = 0.11;
+      const qBottomPct = 0.98;
       const totalQHeight = (qBottomPct - qTopPct) * ch;
       const rowHeight = totalQHeight / 5;
 
