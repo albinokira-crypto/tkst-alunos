@@ -937,10 +937,12 @@ window.TKST_EXAM_GENERATOR = {
       return `
         <div class="exam-omr-row">
           <span class="omr-q-num">${numStr}</span>
-          <span class="omr-sq">A</span>
-          <span class="omr-sq">B</span>
-          <span class="omr-sq">C</span>
-          <span class="omr-sq">D</span>
+          <div class="omr-sq-group">
+            <span class="omr-sq">A</span>
+            <span class="omr-sq">B</span>
+            <span class="omr-sq">C</span>
+            <span class="omr-sq">D</span>
+          </div>
         </div>
       `;
     };
@@ -1683,15 +1685,40 @@ window.TKST_EXAM_GENERATOR = {
       .exam-omr-row {
         display: flex !important;
         align-items: center !important;
-        justify-content: space-between !important;
-        gap: 2px !important;
+        justify-content: flex-start !important;
+        gap: 2.5px !important;
+        padding: 1px 2px !important;
+        border-radius: 2.5px !important;
+        box-sizing: border-box !important;
+        border: 0.8px solid transparent !important;
+      }
+      /* LINHAS ZEBRADAS PARA FACILITAR PREENCHIMENTO SEM CONFUSÃO */
+      .exam-omr-row:nth-child(even) {
+        background: #E2E8F0 !important;
+        border-color: #CBD5E1 !important;
+      }
+      .exam-omr-row:nth-child(odd) {
+        background: #FFFFFF !important;
+        border-color: #E2E8F0 !important;
       }
       .omr-q-num {
         font-size: 7pt !important;
         font-weight: 900 !important;
-        color: #334155 !important;
-        width: 13px !important;
+        color: #0F172A !important;
+        width: 14px !important;
+        min-width: 14px !important;
         text-align: right !important;
+        letter-spacing: -0.2px !important;
+        line-height: 1 !important;
+        flex-shrink: 0 !important;
+        margin-right: 2px !important;
+      }
+      .omr-sq-group {
+        flex: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 1.5px !important;
       }
       .omr-sq {
         width: 13px !important;
@@ -1707,6 +1734,7 @@ window.TKST_EXAM_GENERATOR = {
         font-size: 6.8pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
+        flex-shrink: 0 !important;
       }
 
       /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 282mm DE ALTURA TOTAL) */

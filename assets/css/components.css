@@ -4989,15 +4989,39 @@ body.login-view-active .content-body {
 .exam-omr-row {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  gap: 2px !important;
+  justify-content: flex-start !important;
+  gap: 2.5px !important;
+  padding: 1px 2px !important;
+  border-radius: 2.5px !important;
+  box-sizing: border-box !important;
+  border: 0.8px solid transparent !important;
+}
+.exam-omr-row:nth-child(even) {
+  background: #E2E8F0 !important;
+  border-color: #CBD5E1 !important;
+}
+.exam-omr-row:nth-child(odd) {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
 }
 .omr-q-num {
   font-size: 7.2pt !important;
   font-weight: 900 !important;
-  color: #334155 !important;
+  color: #0F172A !important;
   width: 14px !important;
+  min-width: 14px !important;
   text-align: right !important;
+  letter-spacing: -0.2px !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+  margin-right: 2px !important;
+}
+.omr-sq-group {
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.5px !important;
 }
 .omr-sq {
   width: 13.5px !important;
@@ -5013,6 +5037,7 @@ body.login-view-active .content-body {
   font-size: 7pt !important;
   font-weight: 900 !important;
   color: #0F172A !important;
+  flex-shrink: 0 !important;
 }
 
 .exam-vertical-questions-flow {
