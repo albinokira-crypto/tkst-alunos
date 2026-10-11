@@ -913,7 +913,7 @@ window.TKST_EXAM_GENERATOR = {
       pool = all.filter(q => q.kyuNumber !== undefined);
     }
 
-    // Deduplica por ID e texto único preservando a ordem original do Simulado
+    // Deduplica por ID e texto único
     const uniquePool = [];
     const seenQuestionKeys = new Set();
     for (const q of pool) {
@@ -924,11 +924,18 @@ window.TKST_EXAM_GENERATOR = {
       }
     }
 
-    // Seleciona as questões na ordem oficial do simulado, preservando as alternativas e gabarito idênticos
+    // Embaralha aleatoriamente as questões daquela graduação (Fisher-Yates) para garantir provas dinâmicas e diferentes
+    const shuffledPool = [...uniquePool];
+    for (let i = shuffledPool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledPool[i], shuffledPool[j]] = [shuffledPool[j], shuffledPool[i]];
+    }
+
+    // Seleciona as 10 questões sorteadas. Elas receberão numeração sequencial crescente de 1 a 10 na prova,
+    // enquanto as alternativas [A, B, C, D] de cada questão mantêm a ordem e gabarito originais do simulado.
     const selected = [];
-    for (const q of uniquePool) {
+    for (const q of shuffledPool) {
       const qClone = JSON.parse(JSON.stringify(q));
-      // As alternativas [A, B, C, D] mantêm rigorosamente a mesma ordem e gabarito do simulado
       selected.push(qClone);
       if (selected.length >= count) break;
     }

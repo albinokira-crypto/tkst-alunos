@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tkst-alunos-v249';
+const CACHE_NAME = 'tkst-alunos-v250';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -12,9 +12,9 @@ const ASSETS_TO_CACHE = [
   './assets/js/data-glossary.js?v=208',
   './assets/js/data-quiz.js?v=200',
   './assets/js/qr-generator.js?v=242',
-  './assets/js/data-exams.js?v=249',
+  './assets/js/data-exams.js?v=250',
   './assets/js/data-media.js?v=200',
-  './assets/js/app.js?v=249',
+  './assets/js/app.js?v=250',
   './assets/audio/interstellar-ticktock-15s.mp3',
   './assets/images/logo-tkst.png',
   './assets/images/logo-header-tkst.png',
