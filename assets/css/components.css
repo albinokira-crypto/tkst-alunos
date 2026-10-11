@@ -4915,33 +4915,33 @@ body.login-view-active .content-body {
 .exam-code-badge {
   background: #000000 !important;
   color: #FFFFFF !important;
-  border: 1.5px solid #000000 !important;
-  padding: 2px 8px !important;
-  border-radius: 4px !important;
+  border: 2px solid #000000 !important;
+  padding: 4px 14px !important;
+  border-radius: 6px !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 8px !important;
   flex-shrink: 0 !important;
   white-space: nowrap !important;
   box-sizing: border-box !important;
-  box-shadow: 1px 1px 0px rgba(0,0,0,0.25) !important;
+  box-shadow: none !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 .exam-code-lbl {
-  font-size: 8pt !important;
+  font-size: 9pt !important;
   font-weight: 900 !important;
   color: #F5BE00 !important;
-  letter-spacing: 0.8px !important;
+  letter-spacing: 1px !important;
   text-transform: uppercase !important;
   white-space: nowrap !important;
   line-height: 1 !important;
 }
 .exam-code-val {
-  font-size: 16.5pt !important;
+  font-size: 20pt !important;
   font-weight: 900 !important;
   color: #FFFFFF !important;
-  letter-spacing: 2.5px !important;
+  letter-spacing: 3px !important;
   font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
   white-space: nowrap !important;
   line-height: 1 !important;

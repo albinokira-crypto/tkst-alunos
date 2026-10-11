@@ -13464,13 +13464,61 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       reader.readAsDataURL(file);
     },
 
-    handleExamQuestionsUpload: function(input) {
+    handleExamQuestionsUpload: async function(input) {
       if (!input || !input.files || !input.files[0]) return;
       const file = input.files[0];
 
+      const body = document.getElementById('examCameraModalBody');
+      if (body) {
+        body.innerHTML = `
+          <div style="padding: 40px 20px; text-align: center; color: #FFF;">
+            <div style="font-size: 2.8rem; color: var(--accent-gold); margin-bottom: 14px;">
+              <i class="fas fa-brain fa-pulse"></i>
+            </div>
+            <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Processando Foto do Cartão de Respostas...</h3>
+            <p style="font-size: 0.84rem; color: #94A3B8;">Otimizando resolução da imagem para reconhecimento preciso das respostas.</p>
+          </div>
+        `;
+      }
+
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target.result;
+      reader.onload = async (e) => {
+        const rawDataUrl = e.target.result;
+        let dataUrl = rawDataUrl;
+
+        try {
+          const compResult = await new Promise((resolve) => {
+            const tempImg = new Image();
+            tempImg.onload = () => {
+              const maxDim = 1280;
+              let w = tempImg.naturalWidth || tempImg.width;
+              let h = tempImg.naturalHeight || tempImg.height;
+              if (w > maxDim || h > maxDim) {
+                if (w > h) {
+                  h = Math.round((h * maxDim) / w);
+                  w = maxDim;
+                } else {
+                  w = Math.round((w * maxDim) / h);
+                  h = maxDim;
+                }
+              }
+              const cv = document.createElement('canvas');
+              cv.width = w;
+              cv.height = h;
+              const ctx = cv.getContext('2d');
+              ctx.drawImage(tempImg, 0, 0, w, h);
+              resolve({ dataUrl: cv.toDataURL('image/jpeg', 0.85) });
+            };
+            tempImg.onerror = () => resolve({ dataUrl: rawDataUrl });
+            tempImg.src = rawDataUrl;
+          });
+          if (compResult && compResult.dataUrl) {
+            dataUrl = compResult.dataUrl;
+          }
+        } catch(err) {
+          dataUrl = rawDataUrl;
+        }
+
         examScannerCapturedImage = dataUrl;
         window.TKST_APP.executeGradingPipeline(dataUrl);
       };

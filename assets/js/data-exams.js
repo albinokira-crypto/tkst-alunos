@@ -911,13 +911,6 @@ window.TKST_EXAM_GENERATOR = {
     const compactCode = this.encodeCompactExamCode(kyu, answerLetters);
     const examId = compactCode;
 
-    // Mini Código de Barras Code 128 vetorial SVG embutido no badge para reconhecimento óptico imediato
-    const miniBarcodeSvg = (typeof TKST_BARCODE !== 'undefined' && TKST_BARCODE.createBarcodeSvg)
-      ? TKST_BARCODE.createBarcodeSvg('TKST-' + compactCode, { showText: false })
-      : ((typeof window !== 'undefined' && window.TKST_BARCODE && window.TKST_BARCODE.createBarcodeSvg)
-          ? window.TKST_BARCODE.createBarcodeSvg('TKST-' + compactCode, { showText: false })
-          : '');
-
     // Registra a prova gerada no armazenamento persistente do Sensei para conferência imediata e offline
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
@@ -1031,12 +1024,11 @@ window.TKST_EXAM_GENERATOR = {
               <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo"></span></div>
             </div>
 
-            <!-- CÓDIGO DA PROVA DESTACADO (FONTE +50%, CONTRASTE MÁXIMO E MINI BARCODE CODE 128) -->
+            <!-- CÓDIGO DA PROVA DESTACADO (SOMENTE ALFANUMÉRICO COM FONTE EXPANDIDA 20pt E ALTO CONTRASTE) -->
             <div class="exam-header-code-row">
-              <div class="exam-code-badge">
-                <span class="exam-code-lbl">CÓDIGO:</span>
-                <span class="exam-code-val">${compactCode}</span>
-                ${miniBarcodeSvg ? `<div class="exam-code-mini-barcode" title="Leitura óptica Code 128: TKST-${compactCode}">${miniBarcodeSvg}</div>` : ''}
+              <div class="exam-code-badge" style="background: #000000 !important; color: #FFFFFF !important; padding: 4px 14px !important; border-radius: 6px !important; display: inline-flex !important; align-items: center !important; gap: 8px !important; border: 2px solid #000000 !important;">
+                <span class="exam-code-lbl" style="font-size: 9pt !important; font-weight: 900 !important; color: #F5BE00 !important; letter-spacing: 1px !important; text-transform: uppercase !important;">CÓDIGO:</span>
+                <span class="exam-code-val" style="font-size: 20pt !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: 3px !important; font-family: 'Consolas', 'Courier New', monospace, sans-serif !important; line-height: 1 !important;">${compactCode}</span>
               </div>
               <div class="exam-instruction-tag">
                 ✏️ <strong>Atenção Aluno:</strong> Transfira suas respostas marcando totalmente o quadradinho no <strong>Cartão Oficial ao lado</strong>.
@@ -1614,30 +1606,21 @@ window.TKST_EXAM_GENERATOR = {
         print-color-adjust: exact !important;
       }
       .exam-code-lbl {
-        font-size: 8pt !important;
+        font-size: 9pt !important;
         font-weight: 900 !important;
         color: #F5BE00 !important;
-        letter-spacing: 0.8px !important;
+        letter-spacing: 1px !important;
         text-transform: uppercase !important;
         line-height: 1 !important;
       }
       .exam-code-val {
-        font-size: 16.5pt !important;
+        font-size: 20pt !important;
         font-weight: 900 !important;
         color: #FFFFFF !important;
-        letter-spacing: 2.5px !important;
+        letter-spacing: 3px !important;
         font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
         line-height: 1 !important;
         display: inline-block !important;
-      }
-      .exam-code-mini-barcode {
-        display: inline-block !important;
-        width: 75px !important;
-        height: 18px !important;
-        background: #FFFFFF !important;
-        padding: 1px 2px !important;
-        border-radius: 2px !important;
-        vertical-align: middle !important;
       }
       .exam-instruction-tag {
         font-size: 6.8pt !important;
