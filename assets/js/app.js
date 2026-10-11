@@ -70,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let examGeneratorFormat = 'quiz'; // Modelo oficial de múltipla escolha
   let examPreviewGenerated = false; // false, 'exam', 'key'
   let examCurrentRandomQuestions = null; // 10 questões sorteadas ativas
+  let examSelectedDojobookStudent = null; // Aluno selecionado do DojôBook para a prova
+  let dojobookCandidatesCache = null; // Cache de alunos e candidatos do DojôBook
   let quizModalTempImage = '';
 
   // Camera Exam Scanner State (Abordagem Direta sem QR Code: Foto em Modo Paisagem com Seleção de Faixa)
@@ -736,6 +738,15 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch(e) {}
     });
 
+    // Fecha dropdown de autocomplete do DojôBook ao clicar fora
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('examDojobookAutocompleteDropdown');
+      const input = document.getElementById('examDojobookStudentSearch');
+      if (dropdown && input && !dropdown.contains(e.target) && e.target !== input) {
+        dropdown.style.display = 'none';
+      }
+    });
+
     const user = window.TKST_AUTH.getCurrentUser();
     if (!user) {
       if (!window.location.hash) {
@@ -1385,7 +1396,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!examCurrentRandomQuestions) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
-      examPreviewHtml = window.TKST_EXAM_GENERATOR.buildQuizExamSheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
+      const studentOptions = examSelectedDojobookStudent ? {
+        studentName: examSelectedDojobookStudent.nome,
+        dojoName: examSelectedDojobookStudent.dojo_nome
+      } : {};
+      examPreviewHtml = window.TKST_EXAM_GENERATOR.buildQuizExamSheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions, studentOptions);
     }
 
     let html = `
@@ -2449,6 +2464,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${examGeneratorSelectedKyu === b.kyu ? '✓ ' : ''}${b.label}
               </button>
             `).join('')}
+          </div>
+
+          <!-- CAMPO DE BUSCA INTELIGENTE DE ALUNOS DO EXAME DE FAIXA (DOJÔBOOK) -->
+          <div style="padding: 14px 20px; border-bottom: 1px solid var(--border-color); background: rgba(18, 23, 34, 0.95); position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+              <label for="examDojobookStudentSearch" style="font-size: 0.88rem; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 8px; margin: 0;">
+                <i class="fas fa-user-graduate" style="color: var(--accent-gold);"></i> Vincular Aluno do Exame de Faixa (DojôBook):
+              </label>
+              ${examSelectedDojobookStudent ? `
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.clearExamDojobookStudent()" style="font-size: 0.74rem; padding: 3px 10px; color: #F87171; border-color: rgba(248,113,113,0.4);" title="Remover vinculação e deixar folha em branco">
+                  <i class="fas fa-times"></i> Desvincular (${examSelectedDojobookStudent.nome})
+                </button>
+              ` : `
+                <span style="font-size: 0.74rem; color: #94A3B8;">Digite para autocompletar</span>
+              `}
+            </div>
+
+            <div style="position: relative;">
+              <div style="position: relative; display: flex; align-items: center;">
+                <i class="fas fa-search" style="position: absolute; left: 14px; color: var(--accent-gold); font-size: 0.9rem; pointer-events: none;"></i>
+                <input
+                  type="text"
+                  id="examDojobookStudentSearch"
+                  class="form-control"
+                  placeholder="Digite as primeiras letras do nome do aluno inscrito no exame..."
+                  value="${examSelectedDojobookStudent ? examSelectedDojobookStudent.nome : ''}"
+                  oninput="window.TKST_APP.onDojobookStudentSearchInput(this.value)"
+                  onfocus="window.TKST_APP.onDojobookStudentSearchInput(this.value)"
+                  autocomplete="off"
+                  style="width: 100%; padding: 11px 14px 11px 40px; background: #0B0E14; border: 1.5px solid ${examSelectedDojobookStudent ? '#10B981' : 'var(--border-color)'}; border-radius: var(--radius-sm); color: #FFF; font-size: 0.9rem; font-weight: 700; transition: border-color 0.2s;"
+                >
+                ${examSelectedDojobookStudent ? `
+                  <span style="position: absolute; right: 12px; background: #10B981; color: #000; font-weight: 900; font-size: 0.68rem; padding: 3px 8px; border-radius: 4px;">
+                    ✓ Vinculado
+                  </span>
+                ` : ''}
+              </div>
+
+              <!-- Dropdown Suspenso de Resultados -->
+              <div id="examDojobookAutocompleteDropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0F1420; border: 1.5px solid var(--accent-gold); border-radius: 8px; max-height: 280px; overflow-y: auto; z-index: 1000; box-shadow: 0 14px 32px rgba(0,0,0,0.9); padding: 6px;">
+              </div>
+            </div>
+
+            ${examSelectedDojobookStudent ? `
+              <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; color: #A7F3D0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-check-circle" style="color: #10B981; font-size: 1rem;"></i>
+                  <span>Aluno: <strong>${examSelectedDojobookStudent.nome}</strong> ${examSelectedDojobookStudent.dojo_nome ? `(${examSelectedDojobookStudent.dojo_nome})` : ''} · Vai para: <strong style="color: #FFF;">${examSelectedDojobookStudent.vai_para || 'Próxima Faixa'}</strong></span>
+                </div>
+                <span style="font-size: 0.72rem; color: #6EE7B7; font-weight: 600;">Folha preenchida com o nome do aluno</span>
+              </div>
+            ` : `
+              <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-info-circle" style="color: var(--accent-gold);"></i>
+                <span>Conforme você digita o nome, aparecem os alunos do DojôBook para você selecionar com 1 toque.</span>
+              </div>
+            `}
           </div>
 
           <!-- BARRA DE AÇÕES PRINCIPAL COM BOTÕES DE GERAR -->
@@ -9073,6 +9145,175 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAdminMaster();
     },
 
+    loadDojobookCandidates: async function() {
+      if (dojobookCandidatesCache && Array.isArray(dojobookCandidatesCache.candidatos)) {
+        return dojobookCandidatesCache;
+      }
+      try {
+        const cached = localStorage.getItem('tkst_dojobook_candidates_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && Array.isArray(parsed.candidatos)) {
+            dojobookCandidatesCache = parsed;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const res = await fetch('https://tkst.vercel.app/api/exames/candidatos');
+        if (res.ok) {
+          const data = await res.json();
+          dojobookCandidatesCache = data;
+          try {
+            localStorage.setItem('tkst_dojobook_candidates_cache', JSON.stringify(data));
+          } catch(e) {}
+          return data;
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar candidatos do DojôBook:', err);
+      }
+      return dojobookCandidatesCache || { candidatos: [], alunos: [], exames: [] };
+    },
+
+    onDojobookStudentSearchInput: async function(query) {
+      const dropdown = document.getElementById('examDojobookAutocompleteDropdown');
+      if (!dropdown) return;
+      
+      const cleanQ = (query || '').toLowerCase().trim();
+      const data = await window.TKST_APP.loadDojobookCandidates();
+      const candidatos = data.candidatos || [];
+      const alunos = data.alunos || [];
+
+      let matches = [];
+      if (!cleanQ) {
+        matches = candidatos.slice(0, 15);
+      } else {
+        const cMatches = candidatos.filter(c => (c.nome || '').toLowerCase().includes(cleanQ));
+        const aMatches = alunos.filter(a => (a.nome || '').toLowerCase().includes(cleanQ) && !cMatches.some(c => c.id === a.id));
+        matches = [...cMatches, ...aMatches].slice(0, 15);
+      }
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = `
+          <div style="padding: 12px; text-align: center; color: #94A3B8; font-size: 0.8rem;">
+            Nenhum aluno encontrado no DojôBook com "${query || ''}".
+          </div>
+        `;
+        dropdown.style.display = 'block';
+        return;
+      }
+
+      dropdown.innerHTML = matches.map((m, idx) => {
+        const isExamCand = !!m.exame_id || !!m.participante_id;
+        const targetBelt = m.vai_para || m.graduacao_destino || 'Amarela';
+        return `
+          <div 
+            class="dojobook-auto-item" 
+            onclick="window.TKST_APP.selectDojobookCandidateByIndex(${idx})" 
+            style="padding: 8px 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; transition: background 0.15s; border-bottom: 1px solid rgba(255,255,255,0.05);"
+            onmouseenter="this.style.background='rgba(245,190,0,0.15)'"
+            onmouseleave="this.style.background='transparent'"
+          >
+            <div>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                ${m.nome}
+                ${isExamCand ? '<span class="badge badge-gold" style="font-size: 0.62rem; padding: 1px 6px;">Inscrito no Exame</span>' : ''}
+              </div>
+              <div style="font-size: 0.74rem; color: #94A3B8; margin-top: 2px;">
+                ${m.graduacao_atual || 'Branca'} ➔ <strong style="color: var(--accent-gold);">${targetBelt}</strong>
+                ${m.dojo_nome ? ` · ${m.dojo_nome}` : ''}
+              </div>
+            </div>
+            <span style="font-size: 0.74rem; color: var(--accent-gold); font-weight: 700; white-space: nowrap;">Selecionar ➔</span>
+          </div>
+        `;
+      }).join('');
+      window._lastDojobookMatches = matches;
+      dropdown.style.display = 'block';
+    },
+
+    selectDojobookCandidateByIndex: function(idx) {
+      const matches = window._lastDojobookMatches || [];
+      const candidate = matches[idx];
+      if (candidate) {
+        window.TKST_APP.selectDojobookCandidate(candidate);
+      }
+    },
+
+    selectDojobookCandidate: function(candidate) {
+      examSelectedDojobookStudent = candidate;
+      const targetBelt = candidate.vai_para || candidate.graduacao_destino || '';
+      
+      const s = String(targetBelt).toLowerCase();
+      let targetKyu = 6;
+      if (s.includes('amarela') || s.includes('6º') || s.includes('6o')) targetKyu = 6;
+      else if (s.includes('vermelha') || s.includes('5º') || s.includes('5o')) targetKyu = 5;
+      else if (s.includes('laranja') || s.includes('4º') || s.includes('4o')) targetKyu = 4;
+      else if (s.includes('verde') || s.includes('3º') || s.includes('3o')) targetKyu = 3;
+      else if (s.includes('roxa') || s.includes('2º') || s.includes('2o')) targetKyu = 2;
+      else if (s.includes('marrom') || s.includes('1º') || s.includes('1o')) targetKyu = 1;
+      else if (s.includes('shodan') || s.includes('1º dan') || (s.includes('preta') && !s.includes('2') && !s.includes('3'))) targetKyu = 0;
+      else if (s.includes('nidan') || s.includes('2º dan')) targetKyu = -1;
+      else if (s.includes('sandan') || s.includes('3º dan')) targetKyu = -2;
+
+      examGeneratorSelectedKyu = targetKyu;
+      examCurrentRandomQuestions = null;
+      if (examPreviewGenerated && window.TKST_EXAM_GENERATOR) {
+        examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+      }
+      renderAdminMaster();
+      if (typeof showToast === 'function') {
+        showToast(`🥋 Aluno ${candidate.nome} vinculado! Faixa: ${targetBelt || 'Ajustada'}`, 'success');
+      }
+    },
+
+    clearExamDojobookStudent: function() {
+      examSelectedDojobookStudent = null;
+      renderAdminMaster();
+    },
+
+    pushGradeToDojobook: async function({ studentName, studentId, score, total, beltName, kyu, examId }) {
+      try {
+        const data = await window.TKST_APP.loadDojobookCandidates();
+        const todos = [...(data.candidatos || []), ...(data.alunos || [])];
+
+        const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const targetNorm = norm(studentName);
+
+        let match = todos.find(a => a.id === studentId);
+        if (!match) {
+          match = todos.find(a => norm(a.nome) === targetNorm);
+        }
+        if (!match) {
+          match = todos.find(a => norm(a.nome).includes(targetNorm) || targetNorm.includes(norm(a.nome)));
+        }
+
+        if (match && match.id) {
+          const res = await fetch(`https://tkst.vercel.app/api/alunos/${match.id}/notas-exame`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              nota: Number(score),
+              total: Number(total) || 10,
+              data: new Date().toISOString().slice(0, 10),
+              graduacao: beltName || 'Exame de Faixa',
+              exam_id: examId || null,
+              origem: 'tkst-alunos-camera'
+            })
+          });
+
+          if (res.ok) {
+            console.log(`[DojôBook] Nota ${score}/10 gravada com sucesso para ${match.nome}`);
+            if (typeof showToast === 'function') {
+              showToast(`🥋 Nota ${score}/10 gravada na ficha de ${match.nome} no DojôBook!`, 'success');
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[DojôBook] Erro ao sincronizar nota com DojôBook:', err);
+      }
+    },
+
     setExamGeneratorKyu: (kyu) => {
       examGeneratorSelectedKyu = parseInt(kyu);
       examCurrentRandomQuestions = null;
@@ -9109,7 +9350,11 @@ document.addEventListener('DOMContentLoaded', () => {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
-      const html = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
+      const studentOptions = examSelectedDojobookStudent ? {
+        studentName: examSelectedDojobookStudent.nome,
+        dojoName: examSelectedDojobookStudent.dojo_nome
+      } : {};
+      const html = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions, studentOptions);
       window.TKST_EXAM_GENERATOR.printHtml(`Prova Oficial - ${exam.targetBelt}`, html);
       // Reseta para que a próxima impressão gere novo sorteio dinâmico
       examCurrentRandomQuestions = null;
@@ -14135,6 +14380,19 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       // Grava no Auth
       if (window.TKST_AUTH && window.TKST_AUTH.recordQuizSubmission) {
         window.TKST_AUTH.recordQuizSubmission(submissionData, userContext);
+      }
+
+      // Sincroniza e grava na ficha do aluno no DojôBook
+      if (typeof window.TKST_APP.pushGradeToDojobook === 'function') {
+        window.TKST_APP.pushGradeToDojobook({
+          studentName: studentName,
+          studentId: studentId,
+          score: score,
+          total: 10,
+          beltName: data.beltName,
+          kyu: data.kyu,
+          examId: data.examId
+        });
       }
 
       window.TKST_APP.closeExamCameraScanner();

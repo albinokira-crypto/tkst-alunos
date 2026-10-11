@@ -906,6 +906,8 @@ window.TKST_EXAM_GENERATOR = {
   buildQuizExamSheetHtml: function(kyu, questions, options = {}) {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
+    const studentName = options.studentName || options.name || "";
+    const dojoName = options.dojoName || options.dojo || "";
 
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const compactCode = this.encodeCompactExamCode(kyu, answerLetters);
@@ -1020,8 +1022,8 @@ window.TKST_EXAM_GENERATOR = {
 
             <!-- IDENTIFICAÇÃO DO ALUNO (ESPAÇO AMPLO PARA NOME E DOJÔ) -->
             <div class="exam-portrait-student-line">
-              <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name"></span></div>
-              <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo"></span></div>
+              <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name" style="${studentName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 800; color: #000; font-size: 8.8pt;' : ''}">${studentName || ''}</span></div>
+              <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo" style="${dojoName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 700; color: #000; font-size: 8.5pt;' : ''}">${dojoName || ''}</span></div>
             </div>
 
             <!-- CÓDIGO DA PROVA DESTACADO (SOMENTE ALFANUMÉRICO COM FONTE EXPANDIDA 20pt E ALTO CONTRASTE) -->
