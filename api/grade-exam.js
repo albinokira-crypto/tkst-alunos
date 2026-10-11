@@ -54,35 +54,76 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    let promptText = '';
+function decodeCompactExamCode(codeStr) {
+  if (!codeStr) return null;
+  const clean = String(codeStr).replace(/^#/, '').replace(/[^0-9A-Za-z]/g, '').trim().toUpperCase();
+  if (clean.length < 4) return null;
+  try {
+    const totalVal = parseInt(clean, 36);
+    if (isNaN(totalVal) || totalVal < 0) return null;
+    const kyuIdx = Math.floor(totalVal / 1048576);
+    const ansVal = totalVal % 1048576;
+    const kyuList = [6, 5, 4, 3, 2, 1, 0, -1, -2];
+    const kyu = kyuList[kyuIdx] !== undefined ? kyuList[kyuIdx] : 6;
+    const answers = [];
+    for (let i = 0; i < 10; i++) {
+      const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
+      answers.push(['A', 'B', 'C', 'D'][val]);
+    }
+    return { kyu, answers, examId: clean };
+  } catch(e) {
+    return null;
+  }
+}
+
+let promptText = '';
     if (Number(step) === 1) {
       promptText = `
-Você é um desenvolvedor sênior especialista em visão computacional e leitura de cabeçalhos de provas de karatê.
-Sua tarefa é analisar o topo/cabeçalho desta folha de prova:
-1. Localize e decodifique o Código de Barras (padrão Code 128) ou o código da prova [#XXXX] impresso na folha (ex: [#FRWV]).
-2. Identifique a graduação/faixa indicada (ex: "Faixa Branca para Faixa Amarela", "6º Kyu").
-3. Extraia o nome do aluno escrito à mão no campo "Nome:".
+Você é um desenvolvedor sênior especialista em visão computacional e correção de avaliações de karatê.
+Esta foto mostra especificamente o CABEÇALHO oficial da prova de karatê, composto por:
+- LADO ESQUERDO:
+  1. Código da Prova no badge em destaque (ex: "CÓDIGO: 5M4X7", [#5M4X7] ou 4 a 5 caracteres alfanuméricos).
+  2. Nome do aluno escrito à mão no campo "Nome:".
+  3. Descrição da avaliação (ex: "Avaliação Teórica: Faixa Branca para Faixa Amarela").
+- LADO DIREITO:
+  4. "CARTÃO DE RESPOSTAS" oficial contendo as 10 questões (Q01 a Q05 na esquerda, Q06 a Q10 na direita) com quadradinhos [A] [B] [C] [D] pintados a lápis ou caneta pelo aluno.
+
+REGRAS ESTRITAS DE PREENCHIMENTO:
+1. REGRA ABSOLUTA PARA PROVAS EM BRANCO: Se o aluno NÃO pintou nenhum quadradinho em uma questão do Cartão de Respostas, retorne OBRIGATORIAMENTE "EM_BRANCO" para essa questão. NUNCA presuma ou invente letras para questões vazias!
+2. SE O QUADRADINHO ESTIVER PINTADO: Retorne a letra correspondente ("A", "B", "C" ou "D") somente se houver preenchimento evidente a lápis ou caneta.
+3. SE HOUVER RASURA OU MARCAÇÃO DUPLA: Retorne "ANULADA" e aponte no array "questoes_duvidosas_rasura".
 
 Retorne estritamente um JSON no seguinte formato:
 {
-  "sucesso_leitura_codigo_barras": true,
-  "codigo_barras_payload": "TKST-FAIXA-AMARELA-06KYU-FRWV",
-  "examId": "FRWV",
-  "kyu": 6,
+  "sucesso_leitura_cabecalho": true,
+  "codigo_prova": "5M4X7",
+  "examId": "5M4X7",
   "aluno": "Nome do Aluno (ou string vazia se em branco)",
-  "dados_prova": {
-    "graduacao": "Faixa Branca (7º Kyu) para Faixa Amarela (6º Kyu)",
-    "exam_id": "FRWV"
-  }
+  "graduacao": "Faixa Branca para Faixa Amarela",
+  "respostas_aluno": {
+    "1": "EM_BRANCO",
+    "2": "EM_BRANCO",
+    "3": "EM_BRANCO",
+    "4": "EM_BRANCO",
+    "5": "EM_BRANCO",
+    "6": "EM_BRANCO",
+    "7": "EM_BRANCO",
+    "8": "EM_BRANCO",
+    "9": "EM_BRANCO",
+    "10": "EM_BRANCO"
+  },
+  "questoes_duvidosas_rasura": []
 }
+(Substitua "EM_BRANCO" pela letra A, B, C ou D APENAS se o quadradinho correspondente estiver pintado no Cartão de Respostas).
 `.trim();
     } else if (Number(step) === 2) {
       promptText = `
 Você é um desenvolvedor sênior especialista em visão computacional e correção de gabaritos escolares e de artes marciais.
-Esta imagem mostra especificamente o bloco das 10 questões de múltipla escolha de uma prova de karatê (questões 1 a 5 na coluna esquerda, 6 a 10 na coluna direita).
-Nesta etapa, o foco é exclusivamente na leitura das respostas dos alunos:
+Esta imagem mostra o bloco de respostas de uma prova de karatê:
+Pode ser o "CARTÃO DE RESPOSTAS" (com Q01 a Q05 e Q06 a Q10 com quadradinhos [A] [B] [C] [D]) OU as 10 questões de múltipla escolha na folha.
+Nesta etapa, o foco é exclusivamente na leitura das respostas marcadas pelo aluno:
 - Números das questões (1 a 10)
-- Letras das alternativas ((A), (B), (C), (D))
+- Letras das alternativas (A, B, C, D)
 - Quadradinhos pintados a lápis ou caneta
 
 REGRAS ESTRITAS DE PREENCHIMENTO:
@@ -112,21 +153,18 @@ Retorne estritamente um JSON no seguinte formato:
       promptText = `
 Você é um desenvolvedor sênior especialista em visão computacional e sistemas de correção de provas de karatê.
 Sua tarefa é analisar a imagem da folha de prova de karatê:
-1. Identifique o Código de Barras ou código [#ID] e o nome do aluno.
-2. Analise as 10 questões (1 a 5 na esquerda, 6 a 10 na direita).
+1. Identifique o Código da Prova (ex: CÓDIGO: 5M4X7 ou [#ID]) e o nome do aluno no campo "Nome:".
+2. Analise as 10 respostas do aluno, preferencialmente lendo o "CARTÃO DE RESPOSTAS" no cabeçalho ou as 10 questões da folha.
 Se o quadradinho não foi pintado pelo aluno, retorne "EM_BRANCO".
 Se foi pintado, retorne a letra ("A", "B", "C", "D").
 Se houver rasura/dupla marcação, aponte em questoes_duvidosas_rasura.
 
 Retorne estritamente um JSON:
 {
-  "sucesso_leitura_codigo_barras": true,
-  "codigo_barras_payload": "TKST-FAIXA-AMARELA-06KYU-FRWV",
+  "codigo_prova": "5M4X7",
+  "examId": "5M4X7",
   "aluno": "Nome do Aluno",
-  "dados_prova": {
-    "graduacao": "Faixa Branca (7º Kyu) para Faixa Amarela (6º Kyu)",
-    "exam_id": "FRWV"
-  },
+  "graduacao": "Faixa Branca para Faixa Amarela",
   "respostas_aluno": {
     "1": "EM_BRANCO",
     "2": "EM_BRANCO",
@@ -271,6 +309,21 @@ Retorne estritamente um JSON:
       });
     }
 
+    // Extrai identificador da prova e decodifica matematicamente
+    const aiExamCode = parsedAi.codigo_prova || parsedAi.examId || (parsedAi.dados_prova && parsedAi.dados_prova.exam_id) || '';
+    if (aiExamCode) {
+      detectedExamId = String(aiExamCode).replace(/^#/, '').trim().toUpperCase();
+    }
+
+    if (detectedExamId) {
+      const decodedCompact = decodeCompactExamCode(detectedExamId);
+      if (decodedCompact) {
+        detectedKyu = decodedCompact.kyu;
+        detectedAnswerKey = decodedCompact.answers;
+        detectedExamId = decodedCompact.examId;
+      }
+    }
+
     const barcodePayload = parsedAi.codigo_barras_payload || (parsedAi.dados_prova && parsedAi.dados_prova.codigo_barras_payload) || '';
     if (typeof barcodePayload === 'string' && barcodePayload.toUpperCase().includes('TKST')) {
       const bStr = barcodePayload.toUpperCase();
@@ -282,22 +335,26 @@ Retorne estritamente um JSON:
       else if (bStr.includes('MARROM') || bStr.includes('01KYU') || bStr.includes('1KYU')) detectedKyu = 1;
       else if (bStr.includes('PRETA') || bStr.includes('SHODAN')) detectedKyu = 0;
 
-      const idMatch = bStr.match(/([A-Z0-9]{4})(?:-|$)/);
-      if (idMatch && idMatch[1]) detectedExamId = idMatch[1];
+      const idMatch = bStr.match(/([A-Z0-9]{4,6})(?:-|$)/);
+      if (idMatch && idMatch[1]) {
+        detectedExamId = idMatch[1];
+        const dec = decodeCompactExamCode(detectedExamId);
+        if (dec) {
+          detectedKyu = dec.kyu;
+          detectedAnswerKey = dec.answers;
+        }
+      }
     }
 
-    if (parsedAi.dados_prova) {
-      if (parsedAi.dados_prova.exam_id) detectedExamId = parsedAi.dados_prova.exam_id;
-      if (parsedAi.dados_prova.graduacao) {
-        const gradText = parsedAi.dados_prova.graduacao.toLowerCase();
-        if (gradText.includes('amarela') || gradText.includes('6º kyu') || gradText.includes('6 kyu')) detectedKyu = 6;
-        else if (gradText.includes('vermelha') || gradText.includes('5º kyu') || gradText.includes('5 kyu')) detectedKyu = 5;
-        else if (gradText.includes('laranja') || gradText.includes('4º kyu') || gradText.includes('4 kyu')) detectedKyu = 4;
-        else if (gradText.includes('verde') || gradText.includes('3º kyu') || gradText.includes('3 kyu')) detectedKyu = 3;
-        else if (gradText.includes('roxa') || gradText.includes('2º kyu') || gradText.includes('2 kyu')) detectedKyu = 2;
-        else if (gradText.includes('marrom') || gradText.includes('1º kyu') || gradText.includes('1 kyu')) detectedKyu = 1;
-        else if (gradText.includes('preta') || gradText.includes('shodan')) detectedKyu = 0;
-      }
+    const gradText = (parsedAi.graduacao || (parsedAi.dados_prova && parsedAi.dados_prova.graduacao) || '').toLowerCase();
+    if (gradText && (detectedKyu === undefined || detectedKyu === null)) {
+      if (gradText.includes('amarela') || gradText.includes('6º kyu') || gradText.includes('6 kyu')) detectedKyu = 6;
+      else if (gradText.includes('vermelha') || gradText.includes('5º kyu') || gradText.includes('5 kyu')) detectedKyu = 5;
+      else if (gradText.includes('laranja') || gradText.includes('4º kyu') || gradText.includes('4 kyu')) detectedKyu = 4;
+      else if (gradText.includes('verde') || gradText.includes('3º kyu') || gradText.includes('3 kyu')) detectedKyu = 3;
+      else if (gradText.includes('roxa') || gradText.includes('2º kyu') || gradText.includes('2 kyu')) detectedKyu = 2;
+      else if (gradText.includes('marrom') || gradText.includes('1º kyu') || gradText.includes('1 kyu')) detectedKyu = 1;
+      else if (gradText.includes('preta') || gradText.includes('shodan')) detectedKyu = 0;
     }
 
     const studentName = parsedAi.aluno || parsedAi.studentName || null;

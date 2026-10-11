@@ -4805,6 +4805,216 @@ body.login-view-active .content-body {
   border-radius: 2px !important;
 }
 
+/* CABEÇALHO OFICIAL COM CARTÃO DE RESPOSTAS */
+.exam-portrait-header {
+  position: relative !important;
+  z-index: 1 !important;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin-bottom: 2mm !important;
+  padding-bottom: 1.5mm !important;
+  border-bottom: 1.8px solid #0F172A !important;
+  box-sizing: border-box !important;
+}
+
+.exam-header-left {
+  flex: 1 1 58% !important;
+  max-width: 60% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 1.5mm !important;
+}
+.exam-header-brand-row {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 1px !important;
+}
+.exam-portrait-logo {
+  height: auto !important;
+  max-height: 38px !important;
+  width: 100% !important;
+  max-width: 290px !important;
+  object-fit: contain !important;
+  display: block !important;
+  margin: 0 !important;
+}
+.exam-portrait-desc {
+  font-size: 9.2pt !important;
+  font-weight: 900 !important;
+  color: #000000 !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+  letter-spacing: 0.15px !important;
+  margin-top: 1px !important;
+}
+
+.exam-portrait-student-line {
+  border: 1.2px solid #0F172A !important;
+  border-radius: 3px !important;
+  background: #F8FAFC !important;
+  box-shadow: 1px 1px 0px #0F172A !important;
+  padding: 2.5px 6px !important;
+  font-size: 7.8pt !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+.exam-field-name {
+  flex: 2.4 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 3px !important;
+}
+.exam-field-line-name {
+  flex: 1 !important;
+  min-width: 45mm !important;
+  border-bottom: 1.2px solid #0F172A !important;
+  height: 10px !important;
+}
+.exam-field-dojo {
+  flex: 1.1 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 3px !important;
+}
+.exam-field-line-dojo {
+  flex: 1 !important;
+  min-width: 18mm !important;
+  border-bottom: 1.2px solid #0F172A !important;
+  height: 10px !important;
+}
+.exam-field-date {
+  flex: 0.8 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+}
+.exam-field-grade {
+  flex: 1.0 !important;
+  text-align: right !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.exam-header-code-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+}
+.exam-code-badge {
+  background: #0F172A !important;
+  color: #FFF !important;
+  padding: 2px 7px !important;
+  border-radius: 3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-shrink: 0 !important;
+}
+.exam-code-lbl {
+  font-size: 7.2pt !important;
+  font-weight: 800 !important;
+  color: #94A3B8 !important;
+  letter-spacing: 0.5px !important;
+}
+.exam-code-val {
+  font-size: 11pt !important;
+  font-weight: 900 !important;
+  color: #F5BE00 !important;
+  letter-spacing: 2px !important;
+  font-family: monospace, Courier, sans-serif !important;
+}
+.exam-instruction-tag {
+  font-size: 7pt !important;
+  color: #1E293B !important;
+  background: #FEF3C7 !important;
+  border: 1px dashed #D97706 !important;
+  padding: 2px 5px !important;
+  border-radius: 3px !important;
+  line-height: 1.2 !important;
+}
+
+.exam-header-omr-card {
+  flex: 0 0 auto !important;
+  width: 40% !important;
+  max-width: 82mm !important;
+  border: 1.8px solid #0F172A !important;
+  border-radius: 4px !important;
+  background: #F8FAFC !important;
+  padding: 2mm 3.5mm !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  box-shadow: 1.5px 1.5px 0px #0F172A !important;
+}
+.exam-omr-title {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 7.4pt !important;
+  font-weight: 900 !important;
+  color: #0F172A !important;
+  text-transform: uppercase !important;
+  border-bottom: 1.2px solid #CBD5E1 !important;
+  padding-bottom: 1.5px !important;
+  margin-bottom: 1.5px !important;
+  letter-spacing: 0.2px !important;
+}
+.exam-omr-sub {
+  font-size: 6.5pt !important;
+  color: #059669 !important;
+  font-weight: 800 !important;
+}
+.exam-omr-grid-2col {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 6px !important;
+}
+.exam-omr-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5px !important;
+}
+.exam-omr-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 2px !important;
+}
+.omr-q-num {
+  font-size: 7.2pt !important;
+  font-weight: 900 !important;
+  color: #334155 !important;
+  width: 14px !important;
+  text-align: right !important;
+}
+.omr-sq {
+  width: 13.5px !important;
+  height: 13.5px !important;
+  min-width: 13.5px !important;
+  min-height: 13.5px !important;
+  border: 1.5px solid #0F172A !important;
+  border-radius: 2px !important;
+  background: #FFF !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 7pt !important;
+  font-weight: 900 !important;
+  color: #0F172A !important;
+}
+
 .exam-vertical-questions-flow {
   display: flex !important;
   flex-direction: column !important;

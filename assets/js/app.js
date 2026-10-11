@@ -12528,7 +12528,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         kyu = matchedExam.kyu;
         answers = matchedExam.answers;
         if (typeof showToast === 'function') {
-          showToast(`🎯 Prova #${cleanCode} localizada no histórico (${getBeltNameFromKyu(kyu)})!`, 'success');
+          showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) decodificada 100% offline!`, 'success');
         }
       } else {
         // Se impresso em outro dispositivo/sessão, associa à graduação selecionada no menu
@@ -12808,7 +12808,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 </div>
                 <div>
                   <strong style="font-size: 0.98rem; color: #FFF;">1ª Etapa: Identificar a Prova</strong>
-                  <div style="font-size: 0.78rem; color: #CBD5E1;">Aponte para o Código de Barras ou digite o código ao lado da nota.</div>
+                  <div style="font-size: 0.78rem; color: #CBD5E1;">Aponte para o Cabeçalho (Código à esquerda + Cartão de Respostas) ou digite o código de 5 caracteres.</div>
                 </div>
               </div>
               <span class="badge" style="background: rgba(245,190,0,0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold); font-size: 0.75rem; font-weight: 800; padding: 4px 8px;">
@@ -12816,41 +12816,41 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               </span>
             </div>
 
-            <!-- Opção A: Câmera do Celular para Ler o Código de Barras -->
+            <!-- Opção A: Câmera do Celular para Ler o Cabeçalho -->
             <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
               <label class="btn btn-primary" style="width: 100%; max-width: 460px; font-size: 1.05rem; font-weight: 800; padding: 15px 20px; cursor: pointer; background: linear-gradient(135deg, #F5BE00, #D97706); color: #000; border: none; border-radius: 8px; box-shadow: 0 4px 16px rgba(245, 190, 0, 0.4); display: flex; align-items: center; justify-content: center; gap: 12px; text-align: center;">
-                <i class="fas fa-barcode" style="font-size: 1.4rem;"></i>
-                <span>Fotografar Código de Barras (Câmera)</span>
+                <i class="fas fa-camera" style="font-size: 1.4rem;"></i>
+                <span>Fotografar Cabeçalho da Prova (Câmera)</span>
                 <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamBarcodeUpload(this)">
               </label>
 
               <label class="btn btn-secondary" style="width: 100%; max-width: 460px; font-size: 0.84rem; font-weight: 700; padding: 10px 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; border-color: rgba(255,255,255,0.2);">
                 <i class="fas fa-images"></i>
-                <span>Foto do Código da Galeria</span>
+                <span>Foto do Cabeçalho da Galeria</span>
                 <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamBarcodeUpload(this)">
               </label>
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px; margin: 2px 0;">
               <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.15);"></div>
-              <span style="font-size: 0.78rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;">OU INSERÇÃO DIRETA</span>
+              <span style="font-size: 0.78rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;">OU DIGITE O CÓDIGO (100% OFFLINE)</span>
               <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.15);"></div>
             </div>
 
-            <!-- Opção B: Digitação do Código ao lado da Nota (ex: [#FRWV]) -->
+            <!-- Opção B: Digitação do Código Alfanumérico da Prova (ex: 5M4X7) -->
             <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid var(--border-color); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
               <div style="font-size: 0.84rem; color: #E2E8F0; font-weight: 700;">
                 <i class="fas fa-keyboard" style="color: var(--accent-gold); margin-right: 6px;"></i>
-                Digite o Código da Prova (ao lado da Nota, ex: <strong style="color: var(--accent-gold);">FRWV</strong>):
+                Digite o Código da Prova (exibido no Cabeçalho, ex: <strong style="color: var(--accent-gold);">5M4X7</strong>):
               </div>
               <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="text" id="examManualCodeInput" placeholder="Ex: FRWV" maxlength="8" style="flex: 1; max-width: 130px; padding: 10px 12px; border-radius: 6px; background: #0B0E14; border: 1.5px solid var(--border-color); color: #FFF; font-size: 1.05rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
+                <input type="text" id="examManualCodeInput" placeholder="Ex: 5M4X7" maxlength="8" style="flex: 1; max-width: 140px; padding: 10px 12px; border-radius: 6px; background: #0B0E14; border: 1.5px solid var(--border-color); color: #FFF; font-size: 1.05rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
                 <button type="button" class="btn btn-primary" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 10px 18px; font-size: 0.88rem; font-weight: 800; background: var(--accent-gold); color: #000; border: none; border-radius: 6px;">
                   Confirmar e Avançar <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
                 </button>
               </div>
               <div style="font-size: 0.74rem; color: #94A3B8;">
-                Localize no cabeçalho da folha: <em>Nota: _____ / 10,0 [#XXXX]</em>
+                💡 <em>Decodificação matemática offline: carrega a graduação e o gabarito oficial mesmo sem internet no Dojô.</em>
               </div>
             </div>
 
@@ -12906,17 +12906,17 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid #3B82F6; border-radius: var(--radius-sm); padding: 14px 16px; color: #FFF; display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 8px; color: #60A5FA; font-weight: 800; font-size: 0.95rem;">
               <i class="fas fa-crop-alt" style="font-size: 1.2rem;"></i>
-              <span>2ª Etapa: Fotografar Respostas (10 Questões)</span>
+              <span>2ª Etapa: Fotografar Respostas (Cartão de Respostas)</span>
             </div>
             <div style="font-size: 0.84rem; color: #E2E8F0; line-height: 1.45;">
-              📐 <strong>Como Enquadrar:</strong> Aproxime a câmera do celular para focar <strong>apenas nas 10 questões</strong>.
+              📐 <strong>Como Enquadrar:</strong> Aproxime a câmera do celular para focar de perto no <strong>Cartão de Respostas no Cabeçalho</strong> (ou nas 10 questões da folha).
               O que mais importa nesta foto são:
               <ul style="margin: 6px 0 6px 18px; padding: 0;">
                 <li>Os <strong>números das questões (1 a 10)</strong>;</li>
                 <li>As <strong>letras das alternativas (A, B, C, D)</strong>;</li>
                 <li>Os <strong>quadradinhos pintados a lápis ou caneta</strong>.</li>
               </ul>
-              <em>(Não é necessário mostrar o cabeçalho nem o código de barras nesta foto).</em>
+              <em>(Fotografar de perto elimina reflexos e garante 100% de precisão na leitura).</em>
             </div>
           </div>
 
@@ -12924,7 +12924,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 6px 0;">
             <label class="btn btn-primary" style="width: 100%; max-width: 460px; font-size: 1.08rem; font-weight: 800; padding: 16px 22px; cursor: pointer; background: linear-gradient(135deg, #10B981, #059669); border: none; border-radius: 8px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45); display: flex; align-items: center; justify-content: center; gap: 12px; color: #FFF; text-align: center;">
               <i class="fas fa-camera" style="font-size: 1.5rem;"></i>
-              <span>Fotografar Respostas das 10 Questões</span>
+              <span>Fotografar Cartão de Respostas (Câmera)</span>
               <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamQuestionsUpload(this)">
             </label>
 
@@ -13179,16 +13179,40 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               })
             });
             const json = await resp.json();
-            if (json && (json.examId || (json.dados_prova && json.dados_prova.exam_id))) {
-              const exId = json.examId || json.dados_prova.exam_id;
+            if (json && (json.examId || json.codigo_prova || (json.dados_prova && json.dados_prova.exam_id))) {
+              const exId = json.examId || json.codigo_prova || (json.dados_prova && json.dados_prova.exam_id);
               const kyuVal = json.kyu !== undefined ? json.kyu : 6;
               const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
               const saved = examGen && examGen.getSavedExamById ? examGen.getSavedExamById(exId) : null;
               detected = {
                 kyu: (saved && saved.kyu !== undefined) ? saved.kyu : kyuVal,
                 examId: exId,
-                answers: (saved && Array.isArray(saved.answers)) ? saved.answers : (json.answerKey || null)
+                answers: (saved && Array.isArray(saved.answers)) ? saved.answers : (json.answerKey || null),
+                studentName: json.aluno || ''
               };
+
+              // Se a foto de perto do cabeçalho já contiver o Cartão de Respostas preenchido:
+              const hasMarked = Array.isArray(json.detectedAnswers) && json.detectedAnswers.some(a => a !== null);
+              if (hasMarked) {
+                examScannerDetectedData = detected;
+                window.TKST_APP.playChime();
+                if (navigator.vibrate) {
+                  try { navigator.vibrate([40, 80]); } catch(err) {}
+                }
+                if (typeof showToast === 'function') {
+                  showToast(`✅ Cabeçalho e Cartão de Respostas lidos com sucesso!`, 'success');
+                }
+                return window.TKST_APP.renderGradingReviewModal({
+                  success: true,
+                  aiAvailable: true,
+                  detectedAnswers: json.detectedAnswers,
+                  ambiguousQuestions: json.ambiguousQuestions || [],
+                  studentName: json.aluno || '',
+                  kyu: detected.kyu,
+                  examId: detected.examId,
+                  answerKey: detected.answers
+                }, dataUrl, detected);
+              }
             }
           } catch(e) {}
         }
@@ -13220,7 +13244,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           window.TKST_APP.renderExamCameraModalUI();
         } else {
           if (typeof showToast === 'function') {
-            showToast('⚠️ Código de barras não identificado na foto. Digite o código de 4 letras ao lado da nota (ex: FRWV).', 'warning');
+            showToast('⚠️ Código da prova não identificado na foto. Digite o código de 5 caracteres exibido no cabeçalho (ex: 5M4X7).', 'warning');
           }
           examScannerStep = 1;
           window.TKST_APP.renderExamCameraModalUI();
@@ -13262,20 +13286,9 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const detectedAnswers = [];
       const ambiguousQuestions = [];
 
-      // Prova em Modo Retrato A4 (Folha Única Vertical):
-      // Cabeçalho: topo 0% a 21%
-      // Questões: 21% a 98% da altura total
-      // Coluna 1 (Q1-Q5): X de 3.5% a 48.5%
-      // Coluna 2 (Q6-Q10): X de 51.5% a 96.5%
-      const qTopPct = 0.21;
-      const qBottomPct = 0.98;
-      const totalQHeight = (qBottomPct - qTopPct) * ch;
-      const rowHeight = totalQHeight / 5;
-
-      const cols = [
-        { startX: 0.035 * cw, width: 0.450 * cw }, // Q1 - Q5
-        { startX: 0.515 * cw, width: 0.450 * cw }  // Q6 - Q10
-      ];
+      // Detecta se a foto é do Cabeçalho / Cartão de Respostas (proporção horizontal cw >= ch * 0.85)
+      // ou da Folha Inteira Vertical A4 (ch > cw * 1.1)
+      const isHeaderCardMode = (cw >= ch * 0.85);
 
       // Amostra luminosidade média do papel branco em região sem impressão
       let paperBgLuma = 220;
@@ -13290,6 +13303,117 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       // Limiar para considerar grafite ou tinta escura
       const darkThreshold = paperBgLuma * 0.72;
+
+      if (isHeaderCardMode) {
+        // MODO CARTÃO DE RESPOSTAS (CABEÇALHO FOTOGRAFADO DE PERTO):
+        // Se a foto for do cabeçalho inteiro, o cartão de respostas fica no lado direito (X de ~44% a 98%)
+        // Se a foto for focada apenas no cartão de respostas recortado, X ocupa de ~4% a 96%
+        const cardStartX = (cw > ch * 1.45) ? (0.44 * cw) : (0.05 * cw);
+        const cardEndX = 0.97 * cw;
+        const cardWidth = cardEndX - cardStartX;
+        const colWidth = cardWidth * 0.48;
+        const colGap = cardWidth * 0.04;
+
+        const cardTopY = 0.16 * ch;
+        const cardBottomY = 0.95 * ch;
+        const totalCardH = cardBottomY - cardTopY;
+        const rowH = totalCardH / 5;
+
+        for (let qIdx = 0; qIdx < 10; qIdx++) {
+          const isCol2 = qIdx >= 5;
+          const rowIdx = qIdx % 5;
+          const colX = isCol2 ? (cardStartX + colWidth + colGap) : cardStartX;
+          const rowY = cardTopY + (rowIdx * rowH);
+
+          // Na linha do Cartão OMR: [Número (24%)] [A (19%)] [B (19%)] [C (19%)] [D (19%)]
+          const optsStartX = colX + (colWidth * 0.24);
+          const optWidth = (colWidth * 0.74) / 4;
+
+          const optionScores = [];
+          for (let optIdx = 0; optIdx < 4; optIdx++) {
+            const optCenterX = optsStartX + (optIdx * optWidth) + (optWidth * 0.5);
+            const optCenterY = rowY + (rowH * 0.5);
+            const sampleSize = Math.max(4, Math.round(Math.min(optWidth, rowH) * 0.38));
+
+            let bestFillRatio = 0;
+            let bestDarkSum = 0;
+            let bestMeanLuma = 255;
+
+            const offsets = [-1, 0, 1];
+            for (const dy of offsets) {
+              for (const dx of offsets) {
+                const sX = Math.max(0, Math.round(optCenterX - (sampleSize / 2) + dx));
+                const sY = Math.max(0, Math.round(optCenterY - (sampleSize / 2) + dy));
+                const sW = Math.min(cw - sX, sampleSize);
+                const sH = Math.min(ch - sY, sampleSize);
+
+                if (sW > 2 && sH > 2) {
+                  try {
+                    const imgData = ctx.getImageData(sX, sY, sW, sH).data;
+                    const totalPixels = imgData.length / 4;
+                    let darkCount = 0;
+                    let darkSum = 0;
+                    let lumaSum = 0;
+
+                    for (let p = 0; p < imgData.length; p += 4) {
+                      const luma = imgData[p] * 0.299 + imgData[p+1] * 0.587 + imgData[p+2] * 0.114;
+                      lumaSum += luma;
+                      if (luma < darkThreshold) {
+                        darkCount++;
+                        darkSum += (darkThreshold - luma);
+                      }
+                    }
+
+                    const fillRatio = darkCount / totalPixels;
+                    if (fillRatio > bestFillRatio) {
+                      bestFillRatio = fillRatio;
+                      bestDarkSum = darkSum;
+                      bestMeanLuma = lumaSum / totalPixels;
+                    }
+                  } catch(e) {}
+                }
+              }
+            }
+
+            optionScores.push({
+              letter: ['A', 'B', 'C', 'D'][optIdx],
+              densityPct: Math.round(bestFillRatio * 100),
+              darkWeight: bestDarkSum,
+              meanLuma: bestMeanLuma
+            });
+          }
+
+          let chosen = null;
+          const candidates = optionScores.filter(o => o.densityPct >= 42);
+          if (candidates.length === 1) {
+            chosen = candidates[0].letter;
+          } else if (candidates.length > 1) {
+            ambiguousQuestions.push(qIdx + 1);
+            chosen = null;
+          }
+          detectedAnswers.push(chosen);
+        }
+
+        return {
+          detectedAnswers: detectedAnswers,
+          ambiguousQuestions: ambiguousQuestions
+        };
+      }
+
+      // MODO FOLHA COMPLETA A4 (Modo Retrato Vertical):
+      // Cabeçalho: topo 0% a 21%
+      // Questões: 21% a 98% da altura total
+      // Coluna 1 (Q1-Q5): X de 3.5% a 48.5%
+      // Coluna 2 (Q6-Q10): X de 51.5% a 96.5%
+      const qTopPct = 0.21;
+      const qBottomPct = 0.98;
+      const totalQHeight = (qBottomPct - qTopPct) * ch;
+      const rowHeight = totalQHeight / 5;
+
+      const cols = [
+        { startX: 0.035 * cw, width: 0.450 * cw }, // Q1 - Q5
+        { startX: 0.515 * cw, width: 0.450 * cw }  // Q6 - Q10
+      ];
 
       for (let qIdx = 0; qIdx < 10; qIdx++) {
         const colIdx = qIdx < 5 ? 0 : 1;
@@ -13306,7 +13430,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
         // O quadradinho de marcação fica no início da linha da alternativa
         const boxBaseX = colDef.startX + (colDef.width * 0.006);
-        const squareW = Math.max(6, Math.round(colDef.width * 0.036)); // Largura estrita do quadradinho (SEM pegar a letra A, B, C, D)
+        const squareW = Math.max(6, Math.round(colDef.width * 0.036)); // Largura estrita do quadradinho
         const squareH = squareW; // O marcador é um quadrado perfeito
 
         // Amostra estritamente o interior do quadradinho (inset de 22% para ignorar a borda preta impressa)
@@ -13364,7 +13488,6 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             }
           }
 
-          // Porcentagem de preenchimento do interior do quadradinho (0% a 100%)
           const densityPct = Math.round(bestFillRatio * 100);
 
           optionScores.push({
@@ -13376,25 +13499,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           });
         }
 
-        // Ordena opções da maior para menor densidade
-        const sorted = optionScores.slice().sort((a, b) => b.densityPct - a.densityPct);
-
-        // REGRAS ESTRITAS DE DECISÃO (Sem Falsos Positivos em Provas Não Marcadas):
-        // 1. Interior com menos de 45% de pixels escuros -> NÃO MARCADO (quadradinho em branco ou sujeira leve)
-        // 2. Apenas UMA opção >= 45% -> Marcada pelo aluno
-        // 3. Duas ou mais opções >= 40% -> Marcada como DUVIDOSA / RASURA (não chuta resposta)
-        // 4. Se todas estiverem < 45% -> QUESTÃO TOTALMENTE EM BRANCO (null)
+        // REGRAS ESTRITAS DE DECISÃO:
         let chosen = null;
         const candidateOptions = optionScores.filter(o => o.densityPct >= 45);
 
         if (candidateOptions.length === 0) {
-          // Nenhum quadradinho pintado nesta questão -> EM BRANCO
           chosen = null;
         } else if (candidateOptions.length === 1) {
-          // Apenas um quadradinho pintado com convicção
           chosen = candidateOptions[0].letter;
         } else {
-          // Rasura ou dupla marcação: sinaliza dúvida e não força resposta
           ambiguousQuestions.push(qIdx + 1);
           chosen = null;
         }

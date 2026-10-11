@@ -676,7 +676,52 @@ window.TKST_OFFICIAL_EXAMS = {
 };
 
 window.TKST_EXAM_GENERATOR = {
-  // Busca prova gerada salva no histórico persistente do Sensei
+  kyuToIdx: function(k) {
+    const map = { '6': 0, '5': 1, '4': 2, '3': 3, '2': 4, '1': 5, '0': 6, '-1': 7, '-2': 8 };
+    return map[String(k)] !== undefined ? map[String(k)] : 0;
+  },
+  idxToKyu: function(idx) {
+    const list = [6, 5, 4, 3, 2, 1, 0, -1, -2];
+    return list[idx] !== undefined ? list[idx] : 6;
+  },
+
+  // Codifica 10 respostas (A=0, B=1, C=2, D=3) + Kyu em código curto Base36 (5 caracteres) 100% offline
+  encodeCompactExamCode: function(kyu, answers) {
+    const kyuIdx = this.kyuToIdx(kyu);
+    let ansVal = 0;
+    const ansArray = Array.isArray(answers) ? answers : [];
+    for (let i = 0; i < 10; i++) {
+      const ch = String(ansArray[i] || 'A').trim().toUpperCase();
+      const code = (ch === 'B') ? 1 : (ch === 'C') ? 2 : (ch === 'D') ? 3 : 0;
+      ansVal += code * Math.pow(4, i);
+    }
+    const totalVal = (kyuIdx * 1048576) + ansVal;
+    return totalVal.toString(36).toUpperCase().padStart(5, '0');
+  },
+
+  // Decodifica o código Base36 de volta para { kyu, answers: ['A','B',...] } 100% offline
+  decodeCompactExamCode: function(codeStr) {
+    if (!codeStr) return null;
+    const clean = String(codeStr).replace(/^#/, '').replace(/[^0-9A-Za-z]/g, '').trim().toUpperCase();
+    if (clean.length < 4) return null;
+    try {
+      const totalVal = parseInt(clean, 36);
+      if (isNaN(totalVal) || totalVal < 0) return null;
+      const kyuIdx = Math.floor(totalVal / 1048576);
+      const ansVal = totalVal % 1048576;
+      const kyu = this.idxToKyu(kyuIdx);
+      const answers = [];
+      for (let i = 0; i < 10; i++) {
+        const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
+        answers.push(['A', 'B', 'C', 'D'][val]);
+      }
+      return { kyu, answers, examId: clean };
+    } catch(e) {
+      return null;
+    }
+  },
+
+  // Busca prova gerada no armazenamento persistente ou decodifica matematicamente offline
   getSavedExamById: function(examId) {
     if (!examId) return null;
     const cleanId = String(examId).replace(/^#/, '').trim().toUpperCase();
@@ -684,6 +729,18 @@ window.TKST_EXAM_GENERATOR = {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
       if (store[cleanId]) return store[cleanId];
     } catch(e) {}
+
+    // Decodificação matemática instantânea (sem internet / gerada em outro computador)
+    const decoded = this.decodeCompactExamCode(cleanId);
+    if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
+      return {
+        kyu: decoded.kyu,
+        examId: cleanId,
+        answers: decoded.answers,
+        date: "_____/_____/2026",
+        timestamp: Date.now()
+      };
+    }
     return null;
   },
 
@@ -849,33 +906,21 @@ window.TKST_EXAM_GENERATOR = {
     return selected.slice(0, count);
   },
 
-  getSavedExamById: function(examId) {
-    if (!examId) return null;
-    try {
-      const clean = String(examId).replace(/^#/, '').trim().toUpperCase();
-      const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-      return store[clean] || null;
-    } catch(e) {
-      return null;
-    }
-  },
-
-  // Gera HTML da Folha 1 (Prova de Múltipla Escolha)
+  // Gera HTML da Folha 1 (Prova de Múltipla Escolha com Cartão de Respostas no Cabeçalho)
   buildQuizExamSheetHtml: function(kyu, questions, options = {}) {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
 
-
-
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
-    const examId = options.examId || (Math.random().toString(36).substring(2, 6).toUpperCase());
+    const compactCode = this.encodeCompactExamCode(kyu, answerLetters);
+    const examId = compactCode;
 
     // Registra a prova gerada no armazenamento persistente do Sensei para conferência imediata e offline
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-      store[examId] = {
+      store[compactCode] = {
         kyu: Number(kyu),
-        examId: examId,
+        examId: compactCode,
         answers: answerLetters,
         date: dateStr,
         timestamp: Date.now()
@@ -887,12 +932,21 @@ window.TKST_EXAM_GENERATOR = {
       localStorage.setItem('tkst_generated_exams', JSON.stringify(store));
     } catch(e) {}
 
-    const barcodeText = (window.TKST_BARCODE && window.TKST_BARCODE.encodeExamText)
-      ? window.TKST_BARCODE.encodeExamText(kyu, examId, answerLetters)
-      : ('TKST-FAIXA-AMARELA-06KYU-' + examId);
-    const barcodeSvg = (window.TKST_BARCODE && window.TKST_BARCODE.createBarcodeSvg)
-      ? window.TKST_BARCODE.createBarcodeSvg(barcodeText)
-      : '';
+    const renderOmrRow = (qNum) => {
+      const numStr = String(qNum).padStart(2, '0');
+      return `
+        <div class="exam-omr-row">
+          <span class="omr-q-num">${numStr}</span>
+          <span class="omr-sq">A</span>
+          <span class="omr-sq">B</span>
+          <span class="omr-sq">C</span>
+          <span class="omr-sq">D</span>
+        </div>
+      `;
+    };
+
+    const omrCol1 = [1, 2, 3, 4, 5].map(renderOmrRow).join('');
+    const omrCol2 = [6, 7, 8, 9, 10].map(renderOmrRow).join('');
 
     const renderSingleQuestion = (q, idx) => {
       const qNum = idx + 1;
@@ -950,36 +1004,50 @@ window.TKST_EXAM_GENERATOR = {
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- CABEÇALHO OFICIAL EM MODO RETRATO (FOLHA ÚNICA A4) -->
+        <!-- CABEÇALHO OFICIAL: ESQUERDA (DADOS + CÓDIGO) E DIREITA (CARTÃO OFICIAL DE RESPOSTAS) -->
         <div class="exam-portrait-header">
-          <!-- 1. LOGO DO DOJÔ + DESCRIÇÃO DA PROVA EM PRETO LOGO ABAIXO -->
-          <div class="exam-portrait-brand">
-            <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-portrait-logo">
-            <div class="exam-portrait-desc">
-              Avaliação Teórica: ${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}
+          <!-- 1. LADO ESQUERDO: LOGO MAIOR, DESCRIÇÃO, DADOS DO ALUNO E CÓDIGO DESTACADO -->
+          <div class="exam-header-left">
+            <div class="exam-header-brand-row">
+              <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-portrait-logo">
+              <div class="exam-portrait-desc">
+                Avaliação Teórica: ${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}
+              </div>
+            </div>
+
+            <!-- IDENTIFICAÇÃO DO ALUNO -->
+            <div class="exam-portrait-student-line">
+              <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name"></span></div>
+              <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo"></span></div>
+              <div class="exam-field-date"><strong>Data:</strong> <span class="exam-field-val">${dateStr}</span></div>
+              <div class="exam-field-grade"><strong>Nota:</strong> <span class="exam-field-val">_____ / 10,0</span></div>
+            </div>
+
+            <!-- CÓDIGO DA PROVA DESTACADO + INSTRUÇÃO -->
+            <div class="exam-header-code-row">
+              <div class="exam-code-badge">
+                <span class="exam-code-lbl">CÓDIGO:</span>
+                <span class="exam-code-val">${compactCode}</span>
+              </div>
+              <div class="exam-instruction-tag">
+                ✏️ <strong>Atenção Aluno:</strong> Transfira suas respostas marcando totalmente o quadradinho no <strong>Cartão Oficial ao lado</strong>.
+              </div>
             </div>
           </div>
 
-          <!-- 2. CÓDIGO DE BARRAS CODE 128 (AMPLO E DESTACADO ACIMA DA IDENTIFICAÇÃO DO ALUNO) -->
-          <div class="exam-portrait-barcode-box">
-            ${barcodeSvg}
-          </div>
-
-          <!-- 3. IDENTIFICAÇÃO DO ALUNO EM UMA LINHA SÓ -->
-          <div class="exam-portrait-student-line">
-            <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name"></span></div>
-            <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo"></span></div>
-            <div class="exam-field-date"><strong>Data:</strong> <span class="exam-field-val">${dateStr}</span></div>
-            <div class="exam-field-grade"><strong>Nota:</strong> <span class="exam-field-val">_____ / 10,0</span> &nbsp;<span class="exam-id-tag">[#${examId}]</span></div>
-          </div>
-
-          <!-- 4. QUADRADO DE CITAÇÃO DE FUNAKOSHI E INSTRUÇÕES (SEM ATRAPALHAR QUESTÕES) -->
-          <div class="exam-portrait-banner-box">
-            <div class="exam-funakoshi-quote">
-              “O objetivo final do Karatê está na perfeição do caráter de seus participantes.” — Mestre Gichin Funakoshi
+          <!-- 2. LADO DIREITO: CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR) -->
+          <div class="exam-header-omr-card">
+            <div class="exam-omr-title">
+              <span>📋 CARTÃO DE RESPOSTAS</span>
+              <span class="exam-omr-sub">Pinte [ ■ ]</span>
             </div>
-            <div class="exam-instruction-pill">
-              ✏️ <strong>Atenção:</strong> <strong>Pinte totalmente o quadradinho</strong> da alternativa correta a lápis ou caneta. Caso apague para corrigir, limpe bem com a borracha.
+            <div class="exam-omr-grid-2col">
+              <div class="exam-omr-col">
+                ${omrCol1}
+              </div>
+              <div class="exam-omr-col">
+                ${omrCol2}
+              </div>
             </div>
           </div>
         </div>
@@ -1394,156 +1462,218 @@ window.TKST_EXAM_GENERATOR = {
         display: block !important;
       }
 
-      /* CABEÇALHO OFICIAL EM MODO RETRATO (A4) */
+      /* CABEÇALHO OFICIAL EM MODO RETRATO: ESQUERDA (DADOS + CÓDIGO) E DIREITA (CARTÃO DE RESPOSTAS) */
       .exam-portrait-header {
         position: relative !important;
         z-index: 1 !important;
         flex: 0 0 auto !important;
         display: flex !important;
-        flex-direction: column !important;
-        gap: 1.5mm !important;
+        flex-direction: row !important;
+        align-items: stretch !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
         margin-bottom: 2mm !important;
         padding-bottom: 1.5mm !important;
-        border-bottom: 1.5px solid #0F172A !important;
+        border-bottom: 1.8px solid #0F172A !important;
+        box-sizing: border-box !important;
       }
-      .exam-portrait-brand {
+
+      /* LADO ESQUERDO: LOGO MAIOR, DESCRIÇÃO, DADOS DO ALUNO E CÓDIGO DESTACADO */
+      .exam-header-left {
+        flex: 1 1 58% !important;
+        max-width: 60% !important;
         display: flex !important;
         flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
+        justify-content: space-between !important;
+        gap: 1.5mm !important;
+      }
+      .exam-header-brand-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
         gap: 1px !important;
       }
       .exam-portrait-logo {
         height: auto !important;
-        max-height: 32px !important;
+        max-height: 38px !important;
         width: 100% !important;
-        max-width: 270px !important;
+        max-width: 290px !important;
         object-fit: contain !important;
         display: block !important;
-        margin: 0 auto !important;
+        margin: 0 !important;
       }
       .exam-portrait-desc {
-        font-size: 9pt !important;
+        font-size: 9.2pt !important;
         font-weight: 900 !important;
         color: #000000 !important;
         line-height: 1.2 !important;
-        text-align: center !important;
+        text-align: left !important;
         letter-spacing: 0.15px !important;
         margin-top: 1px !important;
       }
 
-      /* CÓDIGO DE BARRAS CODE 128 (AMPLO E DESTACADO ACIMA DOS DADOS DO ALUNO) */
-      .exam-portrait-barcode-box {
-        background: #FFF !important;
-        border: 1.2px solid #0F172A !important;
-        border-radius: 4px !important;
-        padding: 1.5px 8px !important;
-        height: 14mm !important;
-        max-height: 14.5mm !important;
-        width: 100% !important;
-        max-width: 135mm !important;
-        margin: 0 auto !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 1px 1px 0px #0F172A !important;
-        overflow: hidden !important;
-      }
-      .exam-portrait-barcode-box svg {
-        width: 100% !important;
-        height: 100% !important;
-        max-height: 13.5mm !important;
-        display: block !important;
-      }
-
-      /* IDENTIFICAÇÃO DO ALUNO EM UMA LINHA SÓ COM LINHAS DE PREENCHIMENTO */
+      /* IDENTIFICAÇÃO DO ALUNO */
       .exam-portrait-student-line {
-        border: 1.5px solid #0F172A !important;
-        border-radius: 4px !important;
+        border: 1.2px solid #0F172A !important;
+        border-radius: 3px !important;
         background: #F8FAFC !important;
         box-shadow: 1px 1px 0px #0F172A !important;
-        padding: 3.5px 8px !important;
-        font-size: 8pt !important;
+        padding: 2.5px 6px !important;
+        font-size: 7.8pt !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        gap: 10px !important;
+        gap: 8px !important;
         box-sizing: border-box !important;
         white-space: nowrap !important;
       }
       .exam-field-name {
-        flex: 2.8 !important;
+        flex: 2.4 !important;
         display: flex !important;
         align-items: flex-end !important;
-        gap: 4px !important;
+        gap: 3px !important;
       }
       .exam-field-line-name {
         flex: 1 !important;
-        min-width: 55mm !important;
+        min-width: 45mm !important;
         border-bottom: 1.2px solid #0F172A !important;
-        height: 12px !important;
+        height: 10px !important;
       }
       .exam-field-dojo {
-        flex: 1.2 !important;
+        flex: 1.1 !important;
         display: flex !important;
         align-items: flex-end !important;
-        gap: 4px !important;
+        gap: 3px !important;
       }
       .exam-field-line-dojo {
         flex: 1 !important;
-        min-width: 22mm !important;
+        min-width: 18mm !important;
         border-bottom: 1.2px solid #0F172A !important;
-        height: 12px !important;
+        height: 10px !important;
       }
       .exam-field-date {
         flex: 0.8 !important;
         display: flex !important;
         align-items: center !important;
-        gap: 4px !important;
+        gap: 2px !important;
       }
       .exam-field-grade {
         flex: 1.0 !important;
         text-align: right !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
         white-space: nowrap !important;
       }
-      .exam-id-tag {
-        font-size: 7.2pt !important;
-        color: #475569 !important;
-        font-weight: 800 !important;
-      }
 
-      /* QUADRADO DE CITAÇÃO DE FUNAKOSHI E INSTRUÇÕES (SEM ATRAPALHAR QUESTÕES) */
-      .exam-portrait-banner-box {
-        border: 1.2px solid #0F172A !important;
-        border-radius: 4px !important;
-        background: #FFF !important;
-        box-shadow: 1px 1px 0px #0F172A !important;
-        padding: 2.5px 8px !important;
+      /* CÓDIGO DA PROVA DESTACADO E INSTRUÇÃO */
+      .exam-header-code-row {
         display: flex !important;
-        flex-direction: column !important;
-        gap: 2px !important;
-        text-align: center !important;
-        box-sizing: border-box !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
       }
-      .exam-funakoshi-quote {
-        font-size: 8pt !important;
-        font-weight: 700 !important;
-        font-style: italic !important;
-        color: #0F172A !important;
-        line-height: 1.25 !important;
+      .exam-code-badge {
+        background: #0F172A !important;
+        color: #FFF !important;
+        padding: 2px 7px !important;
+        border-radius: 3px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        flex-shrink: 0 !important;
       }
-      .exam-instruction-pill {
-        font-size: 7.8pt !important;
-        color: #1E293B !important;
+      .exam-code-lbl {
+        font-size: 7.2pt !important;
         font-weight: 800 !important;
+        color: #94A3B8 !important;
+        letter-spacing: 0.5px !important;
+      }
+      .exam-code-val {
+        font-size: 11pt !important;
+        font-weight: 900 !important;
+        color: #F5BE00 !important;
+        letter-spacing: 2px !important;
+        font-family: monospace, Courier, sans-serif !important;
+      }
+      .exam-instruction-tag {
+        font-size: 7pt !important;
+        color: #1E293B !important;
         background: #FEF3C7 !important;
         border: 1px dashed #D97706 !important;
-        padding: 2px 8px !important;
+        padding: 2px 5px !important;
         border-radius: 3px !important;
-        line-height: 1.25 !important;
+        line-height: 1.2 !important;
+      }
+
+      /* CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR NO CABEÇALHO) */
+      .exam-header-omr-card {
+        flex: 0 0 auto !important;
+        width: 40% !important;
+        max-width: 82mm !important;
+        border: 1.8px solid #0F172A !important;
+        border-radius: 4px !important;
+        background: #F8FAFC !important;
+        padding: 2mm 3.5mm !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        box-shadow: 1.5px 1.5px 0px #0F172A !important;
+      }
+      .exam-omr-title {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        font-size: 7.4pt !important;
+        font-weight: 900 !important;
+        color: #0F172A !important;
+        text-transform: uppercase !important;
+        border-bottom: 1.2px solid #CBD5E1 !important;
+        padding-bottom: 1.5px !important;
+        margin-bottom: 1.5px !important;
+        letter-spacing: 0.2px !important;
+      }
+      .exam-omr-sub {
+        font-size: 6.5pt !important;
+        color: #059669 !important;
+        font-weight: 800 !important;
+      }
+      .exam-omr-grid-2col {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+      }
+      .exam-omr-col {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5px !important;
+      }
+      .exam-omr-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 2px !important;
+      }
+      .omr-q-num {
+        font-size: 7.2pt !important;
+        font-weight: 900 !important;
+        color: #334155 !important;
+        width: 14px !important;
+        text-align: right !important;
+      }
+      .omr-sq {
+        width: 13.5px !important;
+        height: 13.5px !important;
+        min-width: 13.5px !important;
+        min-height: 13.5px !important;
+        border: 1.5px solid #0F172A !important;
+        border-radius: 2px !important;
+        background: #FFF !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 7pt !important;
+        font-weight: 900 !important;
+        color: #0F172A !important;
       }
 
       /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 297mm DE ALTURA TOTAL) */
@@ -1554,9 +1684,9 @@ window.TKST_EXAM_GENERATOR = {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 6px 16px !important;
-        height: calc(288mm - 60mm) !important;
-        min-height: calc(288mm - 60mm) !important;
-        max-height: calc(288mm - 60mm) !important;
+        height: calc(288mm - 46mm) !important;
+        min-height: calc(288mm - 46mm) !important;
+        max-height: calc(288mm - 46mm) !important;
         margin-bottom: 0 !important;
         box-sizing: border-box !important;
       }
