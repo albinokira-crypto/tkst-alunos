@@ -12501,37 +12501,75 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
     },
 
-    // Digitação direta do código (#FRWV) impresso abaixo do QR Code na folha
+    // Decodifica o código Base36 (ex: 0IZ96) de volta para { kyu, answers: ['A','B',...] } 100% offline
+    decodeCompactExamCode: function(codeStr) {
+      if (!codeStr) return null;
+      const clean = String(codeStr).replace(/^#/, '').replace(/[^0-9A-Za-z]/g, '').trim().toUpperCase();
+      if (clean.length < 4) return null;
+      try {
+        const totalVal = parseInt(clean, 36);
+        if (isNaN(totalVal) || totalVal < 0) return null;
+        const kyuIdx = Math.floor(totalVal / 1048576);
+        const ansVal = totalVal % 1048576;
+        const kyuList = [6, 5, 4, 3, 2, 1, 0, -1, -2];
+        const kyu = kyuList[kyuIdx] !== undefined ? kyuList[kyuIdx] : 6;
+        const answers = [];
+        for (let i = 0; i < 10; i++) {
+          const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
+          answers.push(['A', 'B', 'C', 'D'][val]);
+        }
+        return { kyu, answers, examId: clean };
+      } catch(e) {
+        return null;
+      }
+    },
+
+    // Digitação direta do código (ex: 0IZ96) impresso no cabeçalho da prova
     submitManualExamCode: function(optCode) {
       const inputEl = document.getElementById('examManualCodeInput');
       const rawCode = optCode || (inputEl ? inputEl.value : '');
-      const cleanCode = String(rawCode || '').replace(/^#/, '').trim().toUpperCase();
+      const cleanCode = String(rawCode || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase();
 
       if (!cleanCode) {
         if (typeof showToast === 'function') {
-          showToast('⚠️ Digite o código da prova impresso na folha (ex: FRWV)', 'warning');
+          showToast('⚠️ Digite o código de 5 caracteres da prova (ex: 0IZ96)', 'warning');
         }
         if (inputEl) inputEl.focus();
         return;
       }
 
-      const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
+      // 1. Tenta decodificação matemática compacta Base36 (100% offline, ex: 0IZ96 -> 885498)
+      let decoded = null;
+      if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
+        decoded = window.TKST_EXAM_GENERATOR.decodeCompactExamCode(cleanCode);
+      }
+      if (!decoded && typeof window.TKST_APP.decodeCompactExamCode === 'function') {
+        decoded = window.TKST_APP.decodeCompactExamCode(cleanCode);
+      }
+
       let matchedExam = null;
-      if (examGen && examGen.getSavedExamById) {
+      const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
+      if (!decoded && examGen && examGen.getSavedExamById) {
         matchedExam = examGen.getSavedExamById(cleanCode);
       }
 
       let kyu = 6;
       let answers = [];
 
-      if (matchedExam && Array.isArray(matchedExam.answers) && matchedExam.answers.length === 10) {
-        kyu = matchedExam.kyu;
-        answers = matchedExam.answers;
+      if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
+        kyu = decoded.kyu;
+        answers = decoded.answers;
         if (typeof showToast === 'function') {
           showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) decodificada 100% offline!`, 'success');
         }
+      } else if (matchedExam && Array.isArray(matchedExam.answers) && matchedExam.answers.length === 10) {
+        kyu = matchedExam.kyu;
+        answers = matchedExam.answers;
+        if (typeof showToast === 'function') {
+          showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) carregada com sucesso!`, 'success');
+        }
       } else {
-        // Se impresso em outro dispositivo/sessão, associa à graduação selecionada no menu
+        // Se não conseguiu decodificar matematicamente, associa à graduação selecionada no menu
         const kyuSelect = document.getElementById('examCorrectionKyuSelect');
         kyu = kyuSelect ? Number(kyuSelect.value) : (examGeneratorSelectedKyu !== undefined ? examGeneratorSelectedKyu : 6);
         if (examGen && examGen.getRandomQuizQuestionsForKyu) {
@@ -12542,7 +12580,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           answers = ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
         }
         if (typeof showToast === 'function') {
-          showToast(`🎯 Prova #${cleanCode} carregada com gabarito da ${getBeltNameFromKyu(kyu)}!`, 'success');
+          showToast(`🎯 Prova #${cleanCode} associada à ${getBeltNameFromKyu(kyu)}!`, 'info');
         }
       }
 
@@ -12795,7 +12833,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       ];
 
       // =========================================================================
-      // 1ª ETAPA: IDENTIFICAR A PROVA (CÓDIGO DE BARRAS OU CÓDIGO AO LADO DA NOTA)
+      // 1ª ETAPA: IDENTIFICAR A PROVA (DIGITAÇÃO DO CÓDIGO OU FOTO DO CÓDIGO)
       // =========================================================================
       if (examScannerStep === 1) {
         body.innerHTML = `
@@ -12808,7 +12846,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 </div>
                 <div>
                   <strong style="font-size: 0.98rem; color: #FFF;">1ª Etapa: Identificar a Prova</strong>
-                  <div style="font-size: 0.78rem; color: #CBD5E1;">Aponte para o Cabeçalho (Código à esquerda + Cartão de Respostas) ou digite o código de 5 caracteres.</div>
+                  <div style="font-size: 0.78rem; color: #CBD5E1;">Digite o código de 5 caracteres ou use a câmera ao lado para fotografá-lo.</div>
                 </div>
               </div>
               <span class="badge" style="background: rgba(245,190,0,0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold); font-size: 0.75rem; font-weight: 800; padding: 4px 8px;">
@@ -12816,45 +12854,37 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               </span>
             </div>
 
-            <!-- Opção A: Câmera do Celular para Ler o Cabeçalho -->
-            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-              <label class="btn btn-primary" style="width: 100%; max-width: 460px; font-size: 1.05rem; font-weight: 800; padding: 15px 20px; cursor: pointer; background: linear-gradient(135deg, #F5BE00, #D97706); color: #000; border: none; border-radius: 8px; box-shadow: 0 4px 16px rgba(245, 190, 0, 0.4); display: flex; align-items: center; justify-content: center; gap: 12px; text-align: center;">
-                <i class="fas fa-camera" style="font-size: 1.4rem;"></i>
-                <span>Fotografar Cabeçalho da Prova (Câmera)</span>
-                <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamBarcodeUpload(this)">
-              </label>
-
-              <label class="btn btn-secondary" style="width: 100%; max-width: 460px; font-size: 0.84rem; font-weight: 700; padding: 10px 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; border-color: rgba(255,255,255,0.2);">
-                <i class="fas fa-images"></i>
-                <span>Foto do Cabeçalho da Galeria</span>
-                <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamBarcodeUpload(this)">
-              </label>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 10px; margin: 2px 0;">
-              <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.15);"></div>
-              <span style="font-size: 0.78rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;">OU DIGITE O CÓDIGO (100% OFFLINE)</span>
-              <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.15);"></div>
-            </div>
-
-            <!-- Opção B: Digitação do Código Alfanumérico da Prova (ex: 5M4X7) -->
-            <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid var(--border-color); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
-              <div style="font-size: 0.84rem; color: #E2E8F0; font-weight: 700;">
-                <i class="fas fa-keyboard" style="color: var(--accent-gold); margin-right: 6px;"></i>
-                Digite o Código da Prova (exibido no Cabeçalho, ex: <strong style="color: var(--accent-gold);">5M4X7</strong>):
+            <!-- Card Principal: Digitação do Código Alfanumérico da Prova com Câmera ao Lado -->
+            <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid var(--accent-gold); border-radius: 10px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+              <div style="font-size: 0.92rem; color: #FFF; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-barcode" style="color: var(--accent-gold); font-size: 1.15rem;"></i>
+                <span>Código da Avaliação (5 caracteres, ex: <span style="color: var(--accent-gold);">0IZ96</span>):</span>
               </div>
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="text" id="examManualCodeInput" placeholder="Ex: 5M4X7" maxlength="8" style="flex: 1; max-width: 140px; padding: 10px 12px; border-radius: 6px; background: #0B0E14; border: 1.5px solid var(--border-color); color: #FFF; font-size: 1.05rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
-                <button type="button" class="btn btn-primary" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 10px 18px; font-size: 0.88rem; font-weight: 800; background: var(--accent-gold); color: #000; border: none; border-radius: 6px;">
-                  Confirmar e Avançar <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
+
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <!-- Campo de Digitação -->
+                <input type="text" id="examManualCodeInput" placeholder="0IZ96" maxlength="8" style="flex: 1; min-width: 120px; max-width: 150px; padding: 12px 14px; border-radius: 8px; background: #0B0E14; border: 2px solid var(--border-color); color: #FFF; font-size: 1.25rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
+
+                <!-- Botão de Câmera ao lado do campo para fotografar SOMENTE o código -->
+                <label title="Fotografar somente o badge do código da prova com a câmera" class="btn btn-secondary" style="padding: 12px 14px; font-size: 0.92rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; border-radius: 8px; border: 1.5px solid var(--accent-gold); background: rgba(245, 190, 0, 0.12); color: var(--accent-gold);">
+                  <i class="fas fa-camera" style="font-size: 1.15rem;"></i>
+                  <span>Foto do Código</span>
+                  <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamCodePhotoUpload(this)">
+                </label>
+
+                <!-- Botão Confirmar e Avançar -->
+                <button type="button" class="btn btn-primary" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 12px 18px; font-size: 0.92rem; font-weight: 800; background: var(--accent-gold); color: #000; border: none; border-radius: 8px; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                  <span>Avançar</span>
+                  <i class="fas fa-arrow-right"></i>
                 </button>
               </div>
-              <div style="font-size: 0.74rem; color: #94A3B8;">
-                💡 <em>Decodificação matemática offline: carrega a graduação e o gabarito oficial mesmo sem internet no Dojô.</em>
+
+              <div style="font-size: 0.76rem; color: #94A3B8; line-height: 1.4;">
+                💡 <em>O código de 5 caracteres fica no cabeçalho da prova (ex: CÓDIGO: 0IZ96). Digite ou toque em <strong>Foto do Código</strong> para capturar somente o código. O gabarito é decodificado 100% offline.</em>
               </div>
             </div>
 
-            <!-- Opção C: Seleção Direta da Faixa -->
+            <!-- Opção B: Seleção Direta da Faixa -->
             <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <label for="examCorrectionKyuSelect" style="font-size: 0.8rem; color: #94A3B8;">Ou selecione a Faixa:</label>
@@ -13100,6 +13130,90 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       window.TKST_APP.stopScannerCameraStream();
       window.TKST_APP.executeGradingPipeline(capturedDataUrl);
+    },
+
+    handleExamCodePhotoUpload: async function(input) {
+      if (!input || !input.files || !input.files[0]) return;
+      const file = input.files[0];
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target.result;
+
+        const body = document.getElementById('examCameraModalBody');
+        if (body) {
+          body.innerHTML = `
+            <div style="padding: 40px 20px; text-align: center; color: #FFF;">
+              <div style="font-size: 2.8rem; color: var(--accent-gold); margin-bottom: 14px;">
+                <i class="fas fa-camera-retro fa-pulse"></i>
+              </div>
+              <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Lendo Código da Prova...</h3>
+              <p style="font-size: 0.84rem; color: #94A3B8;">Analisando foto de perto do badge de identificação.</p>
+            </div>
+          `;
+        }
+
+        let detectedCode = null;
+
+        // 1. Tenta BarcodeDetector nativo caso haja código de barras na foto de perto
+        if ('BarcodeDetector' in window) {
+          try {
+            const img = new Image();
+            img.src = dataUrl;
+            await new Promise(r => { img.onload = r; img.onerror = r; });
+            const detector = new BarcodeDetector({ formats: ['code_128', 'code_39', 'qr_code'] });
+            const barcodes = await detector.detect(img);
+            if (barcodes && barcodes.length > 0) {
+              for (const b of barcodes) {
+                if (b.rawValue && window.TKST_BARCODE) {
+                  const dec = window.TKST_BARCODE.decodeBarcodePayload(b.rawValue);
+                  if (dec && dec.examId) {
+                    detectedCode = dec.examId;
+                    break;
+                  }
+                }
+              }
+            }
+          } catch(err) {}
+        }
+
+        // 2. Chama API Gemini OCR para extrair os 5 caracteres alfanuméricos
+        if (!detectedCode) {
+          try {
+            const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || '';
+            const resp = await fetch('/api/grade-exam', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                image: dataUrl,
+                step: 'code',
+                apiKey: clientApiKey
+              })
+            });
+            const json = await resp.json();
+            if (json && (json.examId || json.codigo_prova)) {
+              detectedCode = json.examId || json.codigo_prova;
+            }
+          } catch(err) {}
+        }
+
+        if (detectedCode) {
+          const cleanCode = String(detectedCode).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase();
+          if (typeof showToast === 'function') {
+            showToast(`📸 Código #${cleanCode} lido com sucesso na foto!`, 'success');
+          }
+          window.TKST_APP.submitManualExamCode(cleanCode);
+        } else {
+          if (typeof showToast === 'function') {
+            showToast('⚠️ Não foi possível ler o código na foto. Digite os 5 caracteres no campo (ex: 0IZ96).', 'warning');
+          }
+          examScannerStep = 1;
+          window.TKST_APP.renderExamCameraModalUI();
+          const inputEl = document.getElementById('examManualCodeInput');
+          if (inputEl) inputEl.focus();
+        }
+      };
+      reader.readAsDataURL(file);
     },
 
     handleExamBarcodeUpload: async function(input) {
@@ -13403,8 +13517,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
           let chosen = null;
           // Critério robusto para grafite de lápis
-          if (top1.score >= 26 || top1.darkRatio >= 0.14 || top1.lumaContrast >= 12) {
-            if (top2.score >= 24 && (top1.score - top2.score < 14) && top2.darkRatio >= 0.18) {
+          if (top1.score >= 18 || top1.darkRatio >= 0.09 || top1.lumaContrast >= 8) {
+            if (top2.score >= 22 && (top1.score - top2.score < 12) && top2.darkRatio >= 0.16) {
               ambiguousQuestions.push(qIdx + 1);
               chosen = null;
             } else {
@@ -13426,13 +13540,13 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         };
       }
 
-      // Testa automaticamente orientações (270° anti-horário, 90° horário e 0° original)
-      // Se a foto for vertical (celular em pé), 270° e 90° alinham a folha perfeitamente na horizontal!
-      const testAngles = (canvas.height > canvas.width) ? [270, 90, 0] : [0, 270, 90];
+      // Testa automaticamente orientações (90° horário, 0° original e 270° anti-horário)
+      // Fotos de celular tiradas com folha deitada normalmente precisam de rotação de 90° no sentido horário!
+      const testAngles = (canvas.height > canvas.width) ? [90, 0, 270] : [0, 90, 270];
       const boxConfigs = [
-        { xStart: 0.04, xEnd: 0.96, yStart: 0.18, yEnd: 0.95 }, // Foto aproximada do cartão
-        { xStart: 0.10, xEnd: 0.90, yStart: 0.14, yEnd: 0.88 }, // Foto com margem
-        { xStart: 0.44, xEnd: 0.98, yStart: 0.18, yEnd: 0.95 }  // Cabeçalho completo (cartão à direita)
+        { xStart: 0.02, xEnd: 0.98, yStart: 0.12, yEnd: 0.96 }, // Foto aproximada do cartão
+        { xStart: 0.08, xEnd: 0.92, yStart: 0.14, yEnd: 0.90 }, // Foto com margem
+        { xStart: 0.38, xEnd: 0.98, yStart: 0.16, yEnd: 0.96 }  // Cabeçalho completo (cartão à direita)
       ];
 
       let bestResult = null;
@@ -13497,6 +13611,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         answers: ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B']
       };
 
+      // Garante que o código Base36 (ex: 0IZ96) tenha o gabarito matemático completo
+      if (detected.examId && (!detected.answers || detected.answers.length < 10)) {
+        const dec = window.TKST_APP.decodeCompactExamCode(detected.examId);
+        if (dec && dec.answers) {
+          detected.answers = dec.answers;
+          detected.kyu = dec.kyu;
+        }
+      }
+
       // 3. Executa OMR Client-Side direto no Canvas (Lê grafite/X nos quadradinhos)
       const omrResult = window.TKST_APP.analyzeExamMarksOMR(offCanvas, detected.answers);
 
@@ -13547,21 +13670,26 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             detected.examId = json.examId;
           }
           if (Array.isArray(json.answerKey) && json.answerKey.length === 10) {
-            finalResult.answerKey = json.answerKey;
-            detected.answers = json.answerKey;
+            // Preserva gabarito já decodificado pelo código
+            if (!detected.answers || detected.answers.length < 10) {
+              finalResult.answerKey = json.answerKey;
+              detected.answers = json.answerKey;
+            }
           }
           if (Array.isArray(json.detectedAnswers) && json.detectedAnswers.length === 10) {
-            finalResult.detectedAnswers = json.detectedAnswers.map(aiAns => {
-              return (typeof aiAns === 'string' && ['A', 'B', 'C', 'D'].includes(aiAns.trim().toUpperCase()))
+            finalResult.detectedAnswers = json.detectedAnswers.map((aiAns, idx) => {
+              const clean = (typeof aiAns === 'string' && ['A', 'B', 'C', 'D'].includes(aiAns.trim().toUpperCase()))
                 ? aiAns.trim().toUpperCase()
                 : null;
+              // Fusão inteligente: se a IA não identificou, aproveita a leitura do OMR
+              return clean || (omrResult.detectedAnswers && omrResult.detectedAnswers[idx]) || null;
             });
           }
           if (Array.isArray(json.ambiguousQuestions)) {
             finalResult.ambiguousQuestions = Array.from(new Set([...(json.ambiguousQuestions || []), ...omrResult.ambiguousQuestions]));
           }
           if (typeof showToast === 'function') {
-            showToast(`🤖 IA Gemini: Folha analisada! Aluno: ${finalResult.studentName || 'Identificado'}`, 'success');
+            showToast(`🤖 IA Gemini: Folha analisada com sucesso!`, 'success');
           }
         }
       } catch(apiErr) {
@@ -13575,7 +13703,17 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const body = document.getElementById('examCameraModalBody');
       if (!body) return;
 
-      const officialKey = (detectedMeta && detectedMeta.answers) || (result && result.answerKey) || [];
+      let officialKey = (detectedMeta && detectedMeta.answers && detectedMeta.answers.length === 10)
+        ? detectedMeta.answers
+        : ((result && result.answerKey && result.answerKey.length === 10) ? result.answerKey : []);
+
+      if ((!officialKey || officialKey.length < 10) && detectedMeta && detectedMeta.examId) {
+        const dec = window.TKST_APP.decodeCompactExamCode(detectedMeta.examId);
+        if (dec && dec.answers) {
+          officialKey = dec.answers;
+        }
+      }
+
       const detectedAnswers = (result && Array.isArray(result.detectedAnswers) && result.detectedAnswers.length === 10)
         ? result.detectedAnswers
         : officialKey.map(() => null);

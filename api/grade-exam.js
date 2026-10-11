@@ -77,7 +77,22 @@ function decodeCompactExamCode(codeStr) {
 }
 
 let promptText = '';
-    if (Number(step) === 1) {
+    if (step === 'code' || step === 'badge') {
+      promptText = `
+Você é um especialista em OCR e visão computacional de alta precisão.
+Esta foto mostra especificamente o CÓDIGO de uma avaliação de karatê (badge ou campo de texto com 4 a 6 caracteres alfanuméricos em caixa alta, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "5M4X7", "CÓDIGO: 5M4X7", "CÓDIGO: 9K2L1").
+
+SUA TAREFA ÚNICA:
+Extrair os 4 a 6 caracteres alfanuméricos que formam o código da prova.
+Ignore palavras como "CÓDIGO", "CODIGO", "PROVA", "#", espaços e dois-pontos.
+
+Retorne estritamente um JSON no seguinte formato:
+{
+  "codigo_prova": "0IZ96",
+  "examId": "0IZ96"
+}
+`.trim();
+    } else if (Number(step) === 1) {
       promptText = `
 Você é um desenvolvedor sênior especialista em visão computacional e correção de avaliações de karatê.
 Esta foto mostra especificamente o CABEÇALHO oficial da prova de karatê, composto por:
@@ -119,13 +134,19 @@ Retorne estritamente um JSON no seguinte formato:
     } else if (Number(step) === 2) {
       promptText = `
 Você é um desenvolvedor sênior especialista em visão computacional e correção de gabaritos escolares e de artes marciais.
-Esta imagem mostra especificamente o CARTÃO DE RESPOSTAS ou as 10 questões da prova de karatê:
-O Cartão de Respostas oficial possui 10 questões:
-- Coluna da esquerda: Questões 1 a 5 (com quadradinhos [A] [B] [C] [D])
-- Coluna da direita: Questões 6 a 10 (com quadradinhos [A] [B] [C] [D])
+Esta imagem mostra o CARTÃO DE RESPOSTAS ou as 10 questões da prova de karatê.
+
+O Cartão de Respostas oficial possui 10 questões organizadas em duas colunas:
+- Coluna 1 (Questões 01 a 05): Linhas 01, 02, 03, 04, 05, cada uma com opções [A] [B] [C] [D]
+- Coluna 2 (Questões 06 a 10): Linhas 06, 07, 08, 09, 10, cada uma com opções [A] [B] [C] [D]
+
+ATENÇÃO CRÍTICA À ORIENTAÇÃO E ROTAÇÃO DA FOTO:
+- A foto tirada pela câmera do celular pode estar em qualquer orientação (deitada em 90°, 270°, invertida ou na horizontal).
+- Localize o título "CARTÃO DE RESPOSTAS" e as colunas numeradas "01 a 05" e "06 a 10".
+- Oriente a sua leitura pela numeração das questões de 1 a 10 e pelas 4 letras [A] [B] [C] [D] de cada alternativa.
 
 DIRETRIZES CRÍTICAS PARA RECONHECIMENTO DE LÁPIS (GRAFITE):
-1. PREENCHIMENTO A LÁPIS: A maioria dos alunos responde utilizando LÁPIS grafite escolar comum. O grafite a lápis varia de cinza claro a escuro, podendo ser pintado por completo, preenchido com rabisco denso, xis ou traço cobrindo a letra.
+1. PREENCHIMENTO A LÁPIS: Os alunos respondem utilizando LÁPIS grafite escolar comum. O grafite a lápis varia de cinza claro a escuro, podendo ser pintado por completo, preenchido com rabisco denso, xis ou traço cobrindo a letra.
 2. COMPARAÇÃO ENTRE AS 4 ALTERNATIVAS: Para cada questão (1 a 10), compare os 4 quadradinhos [A], [B], [C] e [D]:
    - O quadradinho que apresenta grafite, sombra cinza ou marca a lápis/caneta em seu interior É A RESPOSTA ESCOLHIDA pelo aluno. Retorne a letra correspondente ("A", "B", "C" ou "D").
    - Os quadradinhos não preenchidos estarão brancos/limpos no fundo.
@@ -137,14 +158,14 @@ Retorne estritamente um JSON no seguinte formato:
   "respostas_aluno": {
     "1": "A",
     "2": "B",
-    "3": "EM_BRANCO",
-    "4": "C",
-    "5": "D",
-    "6": "A",
-    "7": "B",
-    "8": "C",
-    "9": "D",
-    "10": "A"
+    "3": "C",
+    "4": "D",
+    "5": "A",
+    "6": "B",
+    "7": "C",
+    "8": "D",
+    "9": "A",
+    "10": "B"
   },
   "questoes_duvidosas_rasura": []
 }
@@ -271,6 +292,23 @@ Retorne estritamente um JSON:
       });
     }
 
+    // Se for o passo exclusivo de leitura de código de prova (OCR do badge)
+    if (step === 'code' || step === 'badge') {
+      const rawCode = parsedAi.codigo_prova || parsedAi.examId || '';
+      let cleanCode = String(rawCode).replace(/^#/, '').trim().toUpperCase();
+      cleanCode = cleanCode.replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim();
+
+      const dec = decodeCompactExamCode(cleanCode);
+      return res.status(200).json({
+        success: true,
+        aiAvailable: true,
+        codigo_prova: cleanCode,
+        examId: cleanCode,
+        kyu: dec ? dec.kyu : (kyu !== undefined ? kyu : 6),
+        answerKey: dec ? dec.answers : (officialKey || [])
+      });
+    }
+
     // Processa respostas do aluno (formato solicitado pelo usuário e compatibilidade)
     const detectedAnswers = [];
     const ambiguousQuestions = [];
@@ -299,7 +337,7 @@ Retorne estritamente um JSON:
     // Interpreta dados da prova e payload do Código de Barras se extraído pela IA
     let detectedKyu = kyu;
     let detectedExamId = examId;
-    let detectedAnswerKey = officialKey;
+    let detectedAnswerKey = (officialKey && officialKey.length === 10) ? officialKey : [];
 
     if (Array.isArray(parsedAi.questoes_duvidosas_rasura)) {
       parsedAi.questoes_duvidosas_rasura.forEach(q => {
@@ -313,7 +351,7 @@ Retorne estritamente um JSON:
     // Extrai identificador da prova e decodifica matematicamente
     const aiExamCode = parsedAi.codigo_prova || parsedAi.examId || (parsedAi.dados_prova && parsedAi.dados_prova.exam_id) || '';
     if (aiExamCode) {
-      detectedExamId = String(aiExamCode).replace(/^#/, '').trim().toUpperCase();
+      detectedExamId = String(aiExamCode).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase();
     }
 
     if (detectedExamId) {
@@ -323,6 +361,11 @@ Retorne estritamente um JSON:
         detectedAnswerKey = decodedCompact.answers;
         detectedExamId = decodedCompact.examId;
       }
+    }
+
+    // Preserva o answerKey oficial se já veio do cliente (ex: decodificado do código 0IZ96)
+    if ((!detectedAnswerKey || detectedAnswerKey.length < 10) && officialKey && officialKey.length === 10) {
+      detectedAnswerKey = officialKey;
     }
 
     const barcodePayload = parsedAi.codigo_barras_payload || (parsedAi.dados_prova && parsedAi.dados_prova.codigo_barras_payload) || '';
