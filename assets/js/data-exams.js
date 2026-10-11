@@ -983,7 +983,7 @@ window.TKST_EXAM_GENERATOR = {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
     const rawStudentName = options.studentName || options.name || "";
-    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 28);
+    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 38);
     const dojoName = options.dojoName || options.dojo || "";
 
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
@@ -1102,10 +1102,16 @@ window.TKST_EXAM_GENERATOR = {
               </div>
             </div>
 
-            <!-- IDENTIFICAÇÃO DO ALUNO (ESPAÇO AMPLO PARA NOME E DOJÔ) -->
+            <!-- IDENTIFICAÇÃO DO ALUNO (2 LINHAS ESPAÇOSAS: NOME COMPLETO E DOJÔ SEM CORTES) -->
             <div class="exam-portrait-student-line">
-              <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name" style="${studentName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 800; color: #000; font-size: ' + (studentName.length > 20 ? '8pt' : '8.6pt') + '; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' : ''}" title="${rawStudentName || ''}">${studentName || ''}</span></div>
-              <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo" style="${dojoName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 700; color: #000; font-size: 8.5pt; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' : ''}">${dojoName || ''}</span></div>
+              <div class="exam-student-row">
+                <span class="exam-field-label"><strong>Nome:</strong></span>
+                <span class="exam-field-line-name" title="${rawStudentName || ''}">${studentName || ''}</span>
+              </div>
+              <div class="exam-student-row">
+                <span class="exam-field-label"><strong>Dojô:</strong></span>
+                <span class="exam-field-line-dojo" title="${dojoName || ''}">${dojoName || ''}</span>
+              </div>
             </div>
 
             <!-- CÓDIGO DA PROVA DESTACADO (EXATAMENTE 5 CARACTERES) -->
@@ -1626,58 +1632,48 @@ window.TKST_EXAM_GENERATOR = {
         white-space: nowrap !important;
       }
 
-      /* IDENTIFICAÇÃO DO ALUNO (ESPAÇO AMPLO PARA NOME E DOJÔ) */
+      /* IDENTIFICAÇÃO DO ALUNO (2 LINHAS ESPAÇOSAS: NOME E DOJÔ NUNCA CORTADOS) */
       .exam-portrait-student-line {
         border: 1.2px solid #0F172A !important;
         border-radius: 3px !important;
         background: #F8FAFC !important;
         box-shadow: 1px 1px 0px #0F172A !important;
         padding: 2.5px 8px !important;
-        font-size: 8.2pt !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2.5px !important;
+        box-sizing: border-box !important;
+      }
+      .exam-student-row {
         display: flex !important;
         align-items: center !important;
-        justify-content: space-between !important;
-        gap: 12px !important;
-        box-sizing: border-box !important;
-        white-space: nowrap !important;
-      }
-      .exam-field-name {
-        flex: 1.6 !important;
-        display: flex !important;
-        align-items: flex-end !important;
-        gap: 4px !important;
+        gap: 6px !important;
+        width: 100% !important;
         min-width: 0 !important;
-        max-width: 62% !important;
-        overflow: hidden !important;
       }
-      .exam-field-line-name {
-        flex: 1 !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        border-bottom: 1.2px solid #0F172A !important;
-        height: 10px !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
+      .exam-field-label {
+        font-size: 8.5pt !important;
+        font-weight: 900 !important;
+        color: #0F172A !important;
+        flex-shrink: 0 !important;
+        line-height: 1.2 !important;
       }
-      .exam-field-dojo {
-        flex: 1.1 !important;
-        display: flex !important;
-        align-items: flex-end !important;
-        gap: 4px !important;
-        min-width: 0 !important;
-        max-width: 38% !important;
-        overflow: hidden !important;
-      }
+      .exam-field-line-name,
       .exam-field-line-dojo {
         flex: 1 !important;
         min-width: 0 !important;
-        max-width: 100% !important;
         border-bottom: 1.2px solid #0F172A !important;
-        height: 10px !important;
+        min-height: 15px !important;
+        line-height: 1.25 !important;
+        font-size: 8.8pt !important;
+        font-weight: 800 !important;
+        color: #000000 !important;
+        padding-left: 4px !important;
+        padding-bottom: 1px !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
+        box-sizing: border-box !important;
       }
 
       /* CÓDIGO DA PROVA DESTACADO E INSTRUÇÃO */
