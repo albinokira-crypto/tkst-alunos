@@ -601,6 +601,23 @@
     </div>
   </div>
 
+  <!-- Modal de Leitura e Correção de Prova por Câmera (Sensei) -->
+  <div class="modal-overlay" id="examCameraModal">
+    <div class="modal-container" style="max-width: 650px; width: 95%; max-height: 94vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="background: #0B0E14; border-bottom: 1px solid var(--border-color); padding: 12px 16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-camera" style="color: var(--accent-gold); font-size: 1.15rem;"></i>
+          <h3 style="margin: 0; font-size: 1rem; color: #FFF;">Correção de Prova por Câmera</h3>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeExamCameraScanner()" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-body" id="examCameraModalBody" style="padding: 16px; overflow-y: auto; flex: 1;">
+        <!-- Injetado dinamicamente via app.js -->
+      </div>
+    </div>
+  </div>
+
   <!-- Mozilla PDF.js Engine for Native Mobile & Desktop PDF Rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
@@ -610,15 +627,16 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/auth.js?v=207"></script>
-  <script src="assets/js/data-curriculum.js?v=207"></script>
+  <script src="assets/js/auth.js?v=208"></script>
+  <script src="assets/js/data-curriculum.js?v=208"></script>
   <script src="assets/js/data-katas.js?v=200"></script>
   <script src="assets/js/data-kumite.js?v=200"></script>
   <script src="assets/js/data-glossary.js?v=208"></script>
   <script src="assets/js/data-quiz.js?v=200"></script>
-  <script src="assets/js/data-exams.js?v=200"></script>
+  <script src="assets/js/qr-generator.js?v=201"></script>
+  <script src="assets/js/data-exams.js?v=201"></script>
   <script src="assets/js/data-media.js?v=200"></script>
-  <script src="assets/js/app.js?v=212"></script>
+  <script src="assets/js/app.js?v=213"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>

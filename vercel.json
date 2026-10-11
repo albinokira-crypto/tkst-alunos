@@ -34,6 +34,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/grade-exam.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "**/*",
       "use": "@vercel/static"
     }
@@ -70,6 +74,10 @@
     {
       "src": "/api/kata-commit",
       "dest": "/api/kata-commit.js"
+    },
+    {
+      "src": "/api/grade-exam",
+      "dest": "/api/grade-exam.js"
     },
     {
       "handle": "filesystem"

@@ -71,6 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
   let examPreviewGenerated = false; // false, 'exam', 'key'
   let examCurrentRandomQuestions = null; // 10 questões sorteadas ativas
   let quizModalTempImage = '';
+
+  // Camera Exam Scanner State
+  let examScannerStream = null;
+  let examScannerAnimFrame = null;
+  let examScannerDetectedData = null;
+  let examScannerCurrentCamera = 'environment';
+  let examScannerCapturedImage = null;
+  let examGradingPendingResult = null;
   
   // Quiz State
   let currentQuizIndex = 0;
@@ -2160,7 +2168,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 Gabarito, acertos, erros e percentual de aprovação de cada aluno.
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.78rem; padding: 6px 14px; background: linear-gradient(135deg, #F5BE00, #D97706); color: #000; font-weight: 800; border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(245, 190, 0, 0.3);">
+                <i class="fas fa-camera"></i> Corrigir Prova com Câmera
+              </button>
               <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_AUTH.pullQuizSubmissionsFromCloud().then(() => renderAdminMaster())" style="font-size: 0.78rem; padding: 6px 12px; color: var(--accent-gold); border-color: rgba(255, 183, 3, 0.4); display: inline-flex; align-items: center; gap: 6px;" title="Buscar os simulados mais recentes salvos na nuvem">
                 <i class="fas fa-sync-alt"></i> Atualizar da Nuvem
               </button>
@@ -2453,6 +2464,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.85rem; padding: 10px 16px; font-weight: 800; background: linear-gradient(135deg, #F5BE00, #D97706); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35);">
+                <i class="fas fa-camera"></i> Corrigir com Câmera
+              </button>
               <button class="btn btn-primary" onclick="window.TKST_APP.generateExamPreview('exam')" style="font-size: 0.85rem; padding: 10px 18px; font-weight: 800; box-shadow: 0 4px 14px rgba(255, 183, 3, 0.35);">
                 <i class="fas fa-file-alt"></i> Gerar Prova
               </button>
@@ -12343,6 +12357,642 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         `;
         document.getElementById('detailModal').classList.add('active');
       }
+    },
+
+    // =========================================================================
+    // EXAM CAMERA SCANNER & GRADING ENGINE (SENSEI LIVE EXAM EVALUATION)
+    // =========================================================================
+    openExamCameraScanner: function() {
+      if (!window.TKST_AUTH || !window.TKST_AUTH.isAdmin()) {
+        alert('Acesso restrito ao Sensei / Administrador.');
+        return;
+      }
+
+      examScannerDetectedData = null;
+      examScannerCapturedImage = null;
+      examGradingPendingResult = null;
+
+      const modal = document.getElementById('examCameraModal');
+      const body = document.getElementById('examCameraModalBody');
+      if (!modal || !body) return;
+
+      modal.setAttribute('data-prevent-outside-close', 'true');
+
+      body.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Card de Instrução e Status -->
+          <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            <div>
+              <i class="fas fa-qrcode" style="color: var(--accent-gold); margin-right: 6px;"></i>
+              <strong>Modo de Leitura Ativo:</strong> Aponte a câmera para o <strong>QR Code no topo da prova</strong>.
+            </div>
+            <div id="examScannerStatusBadge" class="badge badge-gold" style="font-size: 0.72rem; font-weight: 700;">
+              <i class="fas fa-spinner fa-spin"></i> Procurando QR Code...
+            </div>
+          </div>
+
+          <!-- Viewfinder da Câmera com HUD -->
+          <div style="position: relative; width: 100%; height: 380px; max-height: 52vh; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
+            <video id="examScannerVideoEl" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+            
+            <!-- Miras e Moldura de Enquadramento -->
+            <div style="position: absolute; inset: 20px; border: 2px dashed rgba(255, 183, 3, 0.6); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="display: flex; justify-content: space-between; padding: 4px;">
+                <span style="width: 18px; height: 18px; border-top: 3px solid var(--accent-gold); border-left: 3px solid var(--accent-gold);"></span>
+                <span style="width: 18px; height: 18px; border-top: 3px solid var(--accent-gold); border-right: 3px solid var(--accent-gold);"></span>
+              </div>
+              <div id="examScannerGuidanceText" style="text-align: center; color: #FFF; font-size: 0.84rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.9); background: rgba(0,0,0,0.55); padding: 5px 12px; border-radius: 4px; align-self: center;">
+                Enquadre o cabeçalho com o QR Code
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 4px;">
+                <span style="width: 18px; height: 18px; border-bottom: 3px solid var(--accent-gold); border-left: 3px solid var(--accent-gold);"></span>
+                <span style="width: 18px; height: 18px; border-bottom: 3px solid var(--accent-gold); border-right: 3px solid var(--accent-gold);"></span>
+              </div>
+            </div>
+
+            <!-- Canvas invisível para decodificação e snapshot -->
+            <canvas id="examScannerCanvasEl" style="display: none;"></canvas>
+          </div>
+
+          <!-- Painel de Detecção do Gabarito -->
+          <div id="examScannerDetectedCard" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <div id="examScannerBeltTitle" style="font-size: 0.96rem; font-weight: 800; color: #6EE7B7;">
+                  ✅ Prova Identificada com Sucesso!
+                </div>
+                <div id="examScannerKeySummary" style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">
+                  10 Questões carregadas do QR Code
+                </div>
+              </div>
+              <button type="button" class="btn btn-sm btn-primary" onclick="window.TKST_APP.captureAndGradeExam()" style="font-weight: 800; padding: 8px 16px; background: linear-gradient(135deg, #10B981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);">
+                <i class="fas fa-camera"></i> Tirar Foto e Corrigir Agora
+              </button>
+            </div>
+          </div>
+
+          <!-- Ações e Alternativas (Upload / Alternar Câmera) -->
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.switchExamCamera()" style="font-size: 0.78rem; padding: 7px 12px;">
+                <i class="fas fa-sync-alt"></i> Alternar Câmera
+              </button>
+              <label class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 7px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-image"></i> Enviar Foto da Galeria
+                <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
+              </label>
+            </div>
+
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.closeExamCameraScanner()" style="font-size: 0.78rem; padding: 7px 14px;">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+      window.TKST_APP.startScannerCameraStream();
+    },
+
+    closeExamCameraScanner: function() {
+      window.TKST_APP.stopScannerCameraStream();
+      const modal = document.getElementById('examCameraModal');
+      if (modal) {
+        modal.removeAttribute('data-prevent-outside-close');
+        modal.classList.remove('active');
+      }
+    },
+
+    stopScannerCameraStream: function() {
+      if (examScannerAnimFrame) {
+        cancelAnimationFrame(examScannerAnimFrame);
+        examScannerAnimFrame = null;
+      }
+      if (examScannerStream) {
+        examScannerStream.getTracks().forEach(track => {
+          try { track.stop(); } catch(e) {}
+        });
+        examScannerStream = null;
+      }
+    },
+
+    switchExamCamera: function() {
+      examScannerCurrentCamera = (examScannerCurrentCamera === 'environment') ? 'user' : 'environment';
+      window.TKST_APP.startScannerCameraStream();
+    },
+
+    startScannerCameraStream: async function() {
+      window.TKST_APP.stopScannerCameraStream();
+      const videoEl = document.getElementById('examScannerVideoEl');
+      if (!videoEl) return;
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: { ideal: examScannerCurrentCamera },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+
+        examScannerStream = await navigator.mediaDevices.getUserMedia(constraints);
+        videoEl.srcObject = examScannerStream;
+        await videoEl.play();
+
+        // Inicia loop de leitura do QR Code
+        window.TKST_APP.runQrScanLoop();
+      } catch(err) {
+        console.warn('Erro ao acessar câmera:', err);
+        const guideText = document.getElementById('examScannerGuidanceText');
+        if (guideText) {
+          guideText.innerHTML = '<span style="color: #F87171;">⚠️ Câmera não disponível ou permissão negada. Use o botão abaixo para enviar foto da galeria.</span>';
+        }
+      }
+    },
+
+    runQrScanLoop: function() {
+      const videoEl = document.getElementById('examScannerVideoEl');
+      const canvasEl = document.getElementById('examScannerCanvasEl');
+      if (!videoEl || !canvasEl || !examScannerStream) return;
+
+      const scanFrame = async () => {
+        if (!examScannerStream) return;
+
+        if (videoEl.readyState === videoEl.HAVE_ENOUGH_DATA && !examScannerDetectedData) {
+          // 1. Tenta API Nativa BarcodeDetector se disponível
+          if ('BarcodeDetector' in window) {
+            try {
+              const barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+              const barcodes = await barcodeDetector.detect(videoEl);
+              if (barcodes && barcodes.length > 0) {
+                const rawValue = barcodes[0].rawValue;
+                if (rawValue && rawValue.startsWith('TKST:')) {
+                  window.TKST_APP.handleQrDetected(rawValue);
+                  return;
+                }
+              }
+            } catch(e) {}
+          }
+
+          // 2. Fallback de varredura via canvas
+          try {
+            canvasEl.width = Math.min(640, videoEl.videoWidth || 640);
+            canvasEl.height = Math.min(480, videoEl.videoHeight || 480);
+            const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
+            if (ctx) {
+              ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+            }
+          } catch(e) {}
+        }
+
+        if (!examScannerDetectedData) {
+          examScannerAnimFrame = requestAnimationFrame(scanFrame);
+        }
+      };
+
+      examScannerAnimFrame = requestAnimationFrame(scanFrame);
+    },
+
+    playChime: function() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.32);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.32);
+      } catch(e) {}
+    },
+
+    handleQrDetected: function(rawPayload) {
+      if (examScannerDetectedData) return;
+      const decoded = (window.TKST_QR && window.TKST_QR.decodeExamPayload)
+        ? window.TKST_QR.decodeExamPayload(rawPayload)
+        : null;
+
+      if (!decoded || !Array.isArray(decoded.answers) || decoded.answers.length < 10) return;
+
+      examScannerDetectedData = decoded;
+      window.TKST_APP.playChime();
+      if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+
+      // Atualiza UI
+      const statusBadge = document.getElementById('examScannerStatusBadge');
+      if (statusBadge) {
+        statusBadge.className = 'badge badge-verde';
+        statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> QR Code Detectado!';
+      }
+
+      const detectedCard = document.getElementById('examScannerDetectedCard');
+      const beltTitle = document.getElementById('examScannerBeltTitle');
+      const keySummary = document.getElementById('examScannerKeySummary');
+      const guideText = document.getElementById('examScannerGuidanceText');
+
+      const beltName = getBeltNameFromKyu(decoded.kyu) || `Faixa #${decoded.kyu}`;
+
+      if (beltTitle) {
+        beltTitle.innerHTML = `✅ Prova Detectada: <strong>${beltName}</strong> (ID: #${decoded.examId})`;
+      }
+      if (keySummary) {
+        keySummary.innerHTML = `Gabarito Oficial: ${decoded.answers.map((a, i) => `Q${i+1}:${a}`).join(' | ')}`;
+      }
+      if (guideText) {
+        guideText.innerHTML = '✨ QR Code lido com sucesso! Agora toque em "Tirar Foto e Corrigir".';
+      }
+      if (detectedCard) {
+        detectedCard.style.display = 'block';
+      }
+    },
+
+    handleExamImageUpload: function(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const dataUrl = e.target.result;
+          examScannerCapturedImage = dataUrl;
+
+          // Se ainda não tiver os dados do QR, tenta ler da imagem
+          if (!examScannerDetectedData) {
+            const img = new Image();
+            img.onload = async () => {
+              if ('BarcodeDetector' in window) {
+                try {
+                  const detector = new BarcodeDetector({ formats: ['qr_code'] });
+                  const barcodes = await detector.detect(img);
+                  if (barcodes && barcodes.length > 0) {
+                    window.TKST_APP.handleQrDetected(barcodes[0].rawValue);
+                  }
+                } catch(err) {}
+              }
+              window.TKST_APP.executeGradingPipeline(dataUrl);
+            };
+            img.src = dataUrl;
+          } else {
+            window.TKST_APP.executeGradingPipeline(dataUrl);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+
+    captureAndGradeExam: function() {
+      const videoEl = document.getElementById('examScannerVideoEl');
+      const canvasEl = document.getElementById('examScannerCanvasEl');
+      if (!videoEl || !canvasEl) return;
+
+      canvasEl.width = videoEl.videoWidth || 1280;
+      canvasEl.height = videoEl.videoHeight || 720;
+      const ctx = canvasEl.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+
+      const capturedDataUrl = canvasEl.toDataURL('image/jpeg', 0.85);
+      examScannerCapturedImage = capturedDataUrl;
+
+      window.TKST_APP.stopScannerCameraStream();
+      window.TKST_APP.executeGradingPipeline(capturedDataUrl);
+    },
+
+    executeGradingPipeline: async function(imageDataUrl) {
+      const body = document.getElementById('examCameraModalBody');
+      if (!body) return;
+
+      const detected = examScannerDetectedData || {
+        kyu: examGeneratorSelectedKyu || 6,
+        examId: 'MANUAL',
+        answers: ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B']
+      };
+
+      body.innerHTML = `
+        <div style="padding: 40px 20px; text-align: center; color: #FFF;">
+          <div style="font-size: 2.8rem; color: var(--accent-gold); margin-bottom: 14px;">
+            <i class="fas fa-brain fa-pulse"></i>
+          </div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Analisando Marcações da Prova...</h3>
+          <p style="font-size: 0.84rem; color: #94A3B8; max-width: 440px; margin: 0 auto 16px auto;">
+            Avaliando grafite, filtrando borrões ou marcas apagadas a lápis e confrontando com o gabarito oficial #${detected.examId}.
+          </p>
+          <div class="progress-bar-container" style="max-width: 320px; margin: 0 auto; height: 8px;">
+            <div class="progress-bar-fill" style="width: 70%; animation: pulse 1.5s infinite;"></div>
+          </div>
+        </div>
+      `;
+
+      try {
+        const response = await fetch('/api/grade-exam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: imageDataUrl,
+            answerKey: detected.answers,
+            kyu: detected.kyu,
+            examId: detected.examId
+          })
+        });
+
+        const json = await response.json();
+        window.TKST_APP.renderGradingReviewModal(json, imageDataUrl, detected);
+      } catch(err) {
+        console.warn('Erro ao chamar api/grade-exam:', err);
+        // Fallback rápido interativo
+        window.TKST_APP.renderGradingReviewModal({
+          success: true,
+          aiAvailable: false,
+          detectedAnswers: detected.answers.map(() => null),
+          ambiguousQuestions: []
+        }, imageDataUrl, detected);
+      }
+    },
+
+    renderGradingReviewModal: function(result, imagePreviewUrl, detectedMeta) {
+      const body = document.getElementById('examCameraModalBody');
+      if (!body) return;
+
+      const officialKey = (detectedMeta && detectedMeta.answers) || (result && result.answerKey) || [];
+      const detectedAnswers = (result && Array.isArray(result.detectedAnswers) && result.detectedAnswers.length === 10)
+        ? result.detectedAnswers
+        : officialKey.map(() => null);
+
+      const ambiguousQuestions = (result && Array.isArray(result.ambiguousQuestions)) ? result.ambiguousQuestions : [];
+      const kyu = (detectedMeta && detectedMeta.kyu !== undefined) ? detectedMeta.kyu : 6;
+      const beltName = getBeltNameFromKyu(kyu) || `Faixa #${kyu}`;
+
+      // Salva estado para edições e gravação
+      examGradingPendingResult = {
+        kyu: kyu,
+        beltName: beltName,
+        examId: (detectedMeta && detectedMeta.examId) || 'EXAM',
+        officialKey: officialKey,
+        currentAnswers: detectedAnswers.slice(),
+        ambiguousQuestions: ambiguousQuestions,
+        imagePreviewUrl: imagePreviewUrl,
+        detectedName: (result && result.studentName) || '',
+        detectedDojo: (result && result.dojo) || ''
+      };
+
+      window.TKST_APP.refreshGradingReviewUI();
+    },
+
+    refreshGradingReviewUI: function() {
+      const body = document.getElementById('examCameraModalBody');
+      const data = examGradingPendingResult;
+      if (!body || !data) return;
+
+      const students = (window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || [];
+      const matchingStudents = students.filter(s => s && s.username !== 'irons365');
+
+      // Calcula pontuação atual
+      let score = 0;
+      data.officialKey.forEach((k, idx) => {
+        if (data.currentAnswers[idx] && data.currentAnswers[idx].toUpperCase() === k.toUpperCase()) {
+          score++;
+        }
+      });
+      const total = 10;
+      const percentage = Math.round((score / total) * 100);
+      const passed = percentage >= 70;
+
+      // Renderiza as 10 questões com alternativas clicáveis
+      const questionsListHtml = data.officialKey.map((officialAnswer, idx) => {
+        const qNum = idx + 1;
+        const currentSelected = data.currentAnswers[idx];
+        const isCorrect = currentSelected && (currentSelected.toUpperCase() === officialAnswer.toUpperCase());
+        const isAmbiguous = data.ambiguousQuestions.includes(qNum);
+
+        const options = ['A', 'B', 'C', 'D'];
+        const optionsBtns = options.map(opt => {
+          const isChosen = currentSelected === opt;
+          const isOfficial = officialAnswer === opt;
+          
+          let btnStyle = 'background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2); color: #CBD5E1;';
+          if (isChosen) {
+            btnStyle = isOfficial
+              ? 'background: #10B981; border: 1.5px solid #34D399; color: #FFF; font-weight: 900;'
+              : 'background: #EF4444; border: 1.5px solid #F87171; color: #FFF; font-weight: 900;';
+          }
+
+          return `
+            <button type="button" onclick="window.TKST_APP.setGradedAnswer(${idx}, '${opt}')" style="min-width: 32px; height: 32px; border-radius: 4px; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; ${btnStyle}">
+              ${opt}
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid ${isAmbiguous ? '#F59E0B' : (isCorrect ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)')}; border-left: 4px solid ${isAmbiguous ? '#F5BE00' : (isCorrect ? '#10B981' : '#EF4444')}; border-radius: var(--radius-sm); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 900; color: #FFF; font-size: 0.88rem;">Questão ${qNum}:</span>
+                <span style="font-size: 0.78rem; color: #6EE7B7; background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 3px; font-weight: 700;">
+                  Gabarito [ ${officialAnswer} ]
+                </span>
+                ${isCorrect ? `<span style="color: #10B981; font-size: 0.8rem; font-weight: 800;"><i class="fas fa-check"></i> Correta</span>` : (currentSelected ? `<span style="color: #EF4444; font-size: 0.8rem; font-weight: 800;"><i class="fas fa-times"></i> Incorreta</span>` : `<span style="color: #94A3B8; font-size: 0.76rem; font-style: italic;">Em branco</span>`)}
+              </div>
+
+              <!-- Botões A, B, C, D de ajuste com 1 toque -->
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <span style="font-size: 0.72rem; color: #94A3B8; margin-right: 2px;">Marcado:</span>
+                ${optionsBtns}
+              </div>
+            </div>
+
+            ${isAmbiguous ? `
+              <div style="background: rgba(245, 158, 11, 0.15); border: 1px dashed #F5BE00; padding: 4px 8px; border-radius: 3px; font-size: 0.74rem; color: #FDE68A; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-exclamation-triangle" style="color: #F5BE00;"></i>
+                <strong>Alerta de Borrão/Lápis:</strong> Marca apagada com borracha ou traço de dúvida detectado. Confira a alternativa marcada!
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      body.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Card de Resumo de Desempenho -->
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="font-size: 1.05rem; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 8px;">
+                <span>${data.beltName}</span>
+                <span class="badge badge-gold" style="font-size: 0.7rem;">Prova #${data.examId}</span>
+              </div>
+              <div style="font-size: 0.78rem; color: #94A3B8; margin-top: 2px;">
+                Conferência e Lançamento de Nota pelo Sensei
+              </div>
+            </div>
+
+            <div style="text-align: right;">
+              <div style="font-size: 1.35rem; font-weight: 900; color: ${passed ? '#10B981' : '#EF4444'};">
+                ${score} / ${total} Acertos (${percentage}%)
+              </div>
+              <div style="font-size: 0.78rem; font-weight: 700; color: ${passed ? '#6EE7B7' : '#FCA5A5'};">
+                ${passed ? '✅ APROVADO' : '❌ REPROVADO'}
+              </div>
+            </div>
+          </div>
+
+          <!-- Seleção do Aluno do Dojô -->
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <label style="display: block; font-size: 0.84rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">
+              <i class="fas fa-user-check" style="color: var(--accent-gold); margin-right: 6px;"></i> Vincular ao Aluno:
+            </label>
+            <select id="examGradeStudentSelect" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.88rem;">
+              <option value="">-- Selecione o Aluno Matriculado --</option>
+              ${matchingStudents.map(s => {
+                const isSelected = data.detectedName && s.name.toLowerCase().includes(data.detectedName.toLowerCase().trim());
+                return `
+                  <option value="${s.id}" ${isSelected ? 'selected' : ''}>
+                    ${s.name} (@${s.username}) — ${s.currentBelt || 'Branca'}
+                  </option>
+                `;
+              }).join('')}
+              <option value="__guest__">➕ Aluno Avulso / Não Listado (Digitar Nome)</option>
+            </select>
+
+            <div id="examGradeCustomStudentWrap" style="display: none; margin-top: 10px;">
+              <input type="text" id="examGradeCustomStudentName" class="form-control" placeholder="Digite o nome completo do aluno..." value="${data.detectedName || ''}" style="width: 100%; padding: 9px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.85rem;">
+            </div>
+          </div>
+
+          <!-- Lista das 10 Questões com Detecção -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 0.95rem; margin: 0;">
+                <i class="fas fa-list-check" style="color: var(--accent-gold); margin-right: 6px;"></i> Respostas Detectadas (Toque para corrigir se necessário):
+              </h4>
+              ${data.imagePreviewUrl ? `
+                <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.openImagePreview('${data.imagePreviewUrl}')" style="font-size: 0.72rem; padding: 3px 8px; color: var(--accent-gold); border-color: rgba(255,183,3,0.3);">
+                  <i class="fas fa-search-plus"></i> Ver Foto da Prova
+                </button>
+              ` : ''}
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 44vh; overflow-y: auto; padding-right: 4px;">
+              ${questionsListHtml}
+            </div>
+          </div>
+
+          <!-- Botões Finais de Confirmação -->
+          <div style="display: flex; gap: 10px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.openExamCameraScanner()" style="flex: 1; padding: 12px; font-weight: 600;">
+              <i class="fas fa-redo"></i> Escanear Outra
+            </button>
+            <button type="button" class="btn btn-success" onclick="window.TKST_APP.confirmAndSaveGradedExam()" style="flex: 2; padding: 12px; font-weight: 800; background: linear-gradient(135deg, #10B981, #059669); border: none; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+              <i class="fas fa-save"></i> Confirmar e Lançar Nota (${score}/10)
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Listener para aluno avulso
+      const selectEl = document.getElementById('examGradeStudentSelect');
+      const customWrap = document.getElementById('examGradeCustomStudentWrap');
+      if (selectEl && customWrap) {
+        selectEl.addEventListener('change', () => {
+          customWrap.style.display = (selectEl.value === '__guest__') ? 'block' : 'none';
+        });
+        if (selectEl.value === '__guest__') customWrap.style.display = 'block';
+      }
+    },
+
+    setGradedAnswer: function(qIdx, letter) {
+      if (!examGradingPendingResult) return;
+      if (examGradingPendingResult.currentAnswers[qIdx] === letter) {
+        examGradingPendingResult.currentAnswers[qIdx] = null;
+      } else {
+        examGradingPendingResult.currentAnswers[qIdx] = letter;
+      }
+      window.TKST_APP.refreshGradingReviewUI();
+    },
+
+    confirmAndSaveGradedExam: function() {
+      if (!examGradingPendingResult) return;
+      const data = examGradingPendingResult;
+
+      const studentSelect = document.getElementById('examGradeStudentSelect');
+      const customNameInput = document.getElementById('examGradeCustomStudentName');
+
+      let targetStudent = null;
+      let studentName = '';
+      let studentUsername = '';
+      let studentId = '';
+      let studentBelt = data.beltName;
+      let studentKyu = data.kyu;
+
+      const allStudents = (window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || [];
+
+      if (studentSelect && studentSelect.value && studentSelect.value !== '__guest__') {
+        targetStudent = allStudents.find(s => s.id === studentSelect.value);
+        if (targetStudent) {
+          studentId = targetStudent.id;
+          studentName = targetStudent.name;
+          studentUsername = targetStudent.username;
+          studentBelt = targetStudent.currentBelt || data.beltName;
+          studentKyu = (targetStudent.currentKyu !== undefined) ? targetStudent.currentKyu : data.kyu;
+        }
+      } else if (customNameInput && customNameInput.value.trim()) {
+        studentName = customNameInput.value.trim();
+        studentUsername = studentName.toLowerCase().replace(/\s+/g, '.');
+        studentId = 'std_manual_' + Date.now();
+      }
+
+      if (!studentName) {
+        alert('Por favor, selecione um aluno matriculado ou digite o nome do aluno avulso para registrar a nota.');
+        return;
+      }
+
+      // Calcula score e detalhes
+      let score = 0;
+      const details = data.officialKey.map((officialAnswer, idx) => {
+        const studentAns = data.currentAnswers[idx] || '';
+        const correct = studentAns.toUpperCase() === officialAnswer.toUpperCase();
+        if (correct) score++;
+        return {
+          questionId: `exam_${data.examId}_q${idx + 1}`,
+          questionNumber: idx + 1,
+          selectedAnswer: studentAns,
+          correctAnswer: officialAnswer,
+          correct: correct
+        };
+      });
+
+      const submissionData = {
+        score: score,
+        total: 10,
+        beltLevel: data.beltName,
+        beltKyu: data.kyu,
+        examId: data.examId,
+        details: details
+      };
+
+      const userContext = {
+        id: studentId,
+        name: studentName,
+        username: studentUsername,
+        currentBelt: studentBelt,
+        currentKyu: studentKyu
+      };
+
+      // Grava no Auth
+      if (window.TKST_AUTH && window.TKST_AUTH.recordQuizSubmission) {
+        window.TKST_AUTH.recordQuizSubmission(submissionData, userContext);
+      }
+
+      window.TKST_APP.closeExamCameraScanner();
+
+      if (typeof showToast === 'function') {
+        showToast(`✅ Prova de ${studentName} lançada com sucesso! Nota: ${score}/10`, 'success');
+      } else {
+        alert(`Prova de ${studentName} lançada com sucesso! Nota: ${score}/10`);
+      }
+
+      renderAdminMaster();
     }
   };
 

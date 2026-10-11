@@ -864,15 +864,21 @@ window.TKST_EXAM_GENERATOR = {
       `;
     };
 
-    const col1Questions = questions.slice(0, 5).map((q, idx) => renderSingleQuestion(q, idx)).join('');
-    const col2Questions = questions.slice(5, 10).map((q, idx) => renderSingleQuestion(q, idx + 5)).join('');
+    const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
+    const examId = options.examId || (Math.random().toString(36).substring(2, 6).toUpperCase());
+    const qrPayload = (window.TKST_QR && window.TKST_QR.encodeExamPayload)
+      ? window.TKST_QR.encodeExamPayload(kyu, examId, answerLetters)
+      : ('TKST:' + kyu + ':' + examId + ':' + answerLetters.join(','));
+    const qrSvg = (window.TKST_QR && window.TKST_QR.createSvg)
+      ? window.TKST_QR.createSvg(qrPayload, 110, 1)
+      : '';
 
     return `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1 exam-landscape-sheet">
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO) -->
+        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO + QR CODE) -->
         <div class="exam-landscape-top-bar">
           <!-- LOGO SEM CNPJ AMPLIADA + GRADUAÇÃO REFERENTE À PROVA -->
           <div class="exam-landscape-header-col">
@@ -892,10 +898,23 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
 
-          <!-- CITAÇÃO FUNAKOSHI (SEM KANJI) -->
-          <div class="exam-header-quote-card exam-landscape-quote-box">
-            <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
-            <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
+          <!-- CITAÇÃO FUNAKOSHI + AVISO AO ALUNO + QR CODE DE CORREÇÃO -->
+          <div class="exam-header-quote-card exam-landscape-quote-box" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 6px;">
+            <div style="flex: 1; text-align: left; display: flex; flex-direction: column; justify-content: center;">
+              <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
+              <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
+              <div style="font-size: 6.8pt; color: #1E293B; margin-top: 2px; font-weight: 700; background: #FEF3C7; border: 1px dashed #D97706; padding: 1px 4px; border-radius: 3px; display: inline-block;">
+                ✏️ <strong>Atenção:</strong> Marque com <strong>X bem escuro</strong> no quadradinho.
+              </div>
+            </div>
+
+            <!-- QR CODE DE CORREÇÃO RÁPIDA PELA CÂMERA -->
+            <div class="exam-qr-box" style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FFF; border: 1.2px solid #0F172A; border-radius: 3px; padding: 1.5px;">
+              <div style="width: 31mm; height: 31mm; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                ${qrSvg}
+              </div>
+              <span style="font-size: 5.2pt; font-weight: 900; color: #0F172A; letter-spacing: 0.4px; line-height: 1; margin-top: 1px;">CORREÇÃO CÂMERA #${examId}</span>
+            </div>
           </div>
         </div>
 
@@ -1266,6 +1285,16 @@ window.TKST_EXAM_GENERATOR = {
       .exam-sheet-page2 {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+      }
+      .exam-landscape-sheet {
+        max-height: 204mm !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+      }
+      .exam-qr-box svg {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
       }
       .exam-page-break-wrapper {
         page-break-after: always;
