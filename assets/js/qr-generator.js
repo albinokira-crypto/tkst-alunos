@@ -106,7 +106,9 @@
       // 4
       [1, 100, 80], [2, 50, 32], [2, 50, 24], [4, 25, 9],
       // 5
-      [1, 134, 108], [2, 67, 43], [2, 33, 15, 2, 34, 16], [2, 33, 11, 2, 34, 12]
+      [1, 134, 108], [2, 67, 43], [2, 33, 15, 2, 34, 16], [2, 33, 11, 2, 34, 12],
+      // 6
+      [2, 86, 68], [4, 43, 27], [4, 43, 19], [4, 43, 15]
     ],
     getRSBlocks: function(typeNumber, errorCorrectLevel) {
       var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
@@ -448,6 +450,21 @@
     }
   };
 
+  function getMinTypeNumber(length, errorCorrectLevel) {
+    for (var type = 1; type <= 6; type++) {
+      var rsBlocks = QRRSBlock.getRSBlocks(type, errorCorrectLevel);
+      if (!rsBlocks || rsBlocks.length === 0) continue;
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i++) totalDataCount += rsBlocks[i].dataCount;
+      var lengthBits = QRUtil.getLengthInBits(4, type);
+      var needed = 4 + lengthBits + (length * 8);
+      if (needed <= totalDataCount * 8) {
+        return type;
+      }
+    }
+    return 4;
+  }
+
   /**
    * API Pública TKST_QR
    */
@@ -455,21 +472,18 @@
     /**
      * Gera string SVG pura e autocontida para um determinado texto
      * @param {string} text - Texto a codificar
-     * @param {number} sizePx - Dimensão em pixels (ex: 130)
-     * @param {number} margin - Módulos de margem (ex: 2)
+     * @param {number} sizePx - Dimensão em pixels (ex: 125)
+     * @param {number} margin - Módulos de margem (Quiet Zone ISO padrão = 4)
      * @returns {string} Código SVG
      */
     createSvg: function(text, sizePx, margin) {
-      sizePx = sizePx || 120;
-      margin = (typeof margin === 'number') ? margin : 2;
+      sizePx = sizePx || 125;
+      margin = (typeof margin === 'number' && margin >= 2) ? margin : 4; // Quiet Zone ISO/IEC 18004 = 4
 
-      // Determina versão mínima adequada automaticamente
-      var len = (text || '').length;
-      var typeNum = 2; // até 34 bytes (nível M)
-      if (len > 32) typeNum = 3; // até 53 bytes (nível M)
-      if (len > 53) typeNum = 4; // até 78 bytes
+      var ecc = 0; // Level M (15% recuperação de erro para scanner e celular)
+      var typeNum = getMinTypeNumber((text || '').length, ecc);
 
-      var qr = new QRCodeModel(typeNum, 0); // 0 = M (15% error correction)
+      var qr = new QRCodeModel(typeNum, ecc);
       qr.addData(text);
       qr.make();
 
@@ -483,7 +497,7 @@
           if (qr.isDark(r, c)) {
             var x = (c + margin) * cellSize;
             var y = (r + margin) * cellSize;
-            path += 'M' + x.toFixed(2) + ',' + y.toFixed(2) + 'h' + cellSize.toFixed(2) + 'v' + cellSize.toFixed(2) + 'h-' + cellSize.toFixed(2) + 'z ';
+            path += 'M' + x.toFixed(2) + ',' + y.toFixed(2) + 'h' + (cellSize + 0.05).toFixed(2) + 'v' + (cellSize + 0.05).toFixed(2) + 'h-' + (cellSize + 0.05).toFixed(2) + 'z ';
           }
         }
       }
@@ -495,19 +509,21 @@
     },
 
     /**
-     * Codifica os dados de uma prova em payload padronizado
+     * Codifica os dados de uma prova em payload padronizado compacto
      * @param {number} kyu - Graduação do Kyu (ex: 5)
-     * @param {string} examId - ID único do sorteio (ex: "e4a2")
+     * @param {string} examId - ID único do sorteio (ex: "5SUM")
      * @param {Array<string>} answerLetters - Array com as 10 letras ['A', 'C', ...]
-     * @returns {string} Exemplo: "TKST:5:e4a2:A,B,C,D,A,B,C,D,A,B"
+     * @returns {string} Exemplo: "TKST:5:5SUM:ABCDABCDAB" (apenas 22 caracteres)
      */
     encodeExamPayload: function(kyu, examId, answerLetters) {
-      var letters = (answerLetters || []).join(',');
-      return 'TKST:' + kyu + ':' + examId + ':' + letters;
+      var compact = (answerLetters || []).map(function(s) {
+        return (typeof s === 'string') ? s.trim().toUpperCase() : '';
+      }).filter(Boolean).join('');
+      return 'TKST:' + kyu + ':' + examId + ':' + compact;
     },
 
     /**
-     * Decodifica o payload do QR Code lido pela câmera
+     * Decodifica o payload do QR Code lido pela câmera (aceita formato compacto ou com vírgulas)
      * @param {string} rawString 
      * @returns {object|null} { kyu, examId, answers: [...] }
      */
@@ -521,11 +537,18 @@
       if (parts.length < 4 || parts[0] !== 'TKST') return null;
       var kyu = Number(parts[1]);
       var examId = parts[2];
-      var answers = parts[3].split(',').map(function(s) { return s.trim().toUpperCase(); }).filter(Boolean).slice(0, 10);
+      var rawAns = parts[3].trim().toUpperCase();
+      var answers = [];
+      if (rawAns.includes(',')) {
+        answers = rawAns.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      } else {
+        answers = rawAns.split('').filter(function(c) { return ['A', 'B', 'C', 'D'].includes(c); });
+      }
+      if (answers.length < 10) return null;
       return {
         kyu: kyu,
         examId: examId,
-        answers: answers
+        answers: answers.slice(0, 10)
       };
     }
   };

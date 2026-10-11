@@ -12634,6 +12634,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             50%, 70% { transform: rotate(-90deg); }
             100% { transform: rotate(0deg); }
           }
+          @keyframes laserScanPulse {
+            0% { top: 6%; opacity: 0.9; }
+            50% { top: 92%; opacity: 0.6; }
+            100% { top: 6%; opacity: 0.9; }
+          }
         </style>
 
         <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -12659,25 +12664,32 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             </div>
           </div>
 
+          <!-- Banner Dinâmico de Reconhecimento do QR Code -->
+          <div id="examScannerQrBanner" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1.5px solid #10B981; border-radius: var(--radius-sm); padding: 8px 12px; align-items: center; gap: 10px;">
+          </div>
+
           <!-- Card de Instrução Simples e Claro -->
           <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 9px 13px; font-size: 0.82rem; color: #E2E8F0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <i class="fas fa-mobile-alt" style="color: #6EE7B7; font-size: 1.2rem; animation: examPhoneRotate 2.5s infinite ease-in-out;"></i>
+              <i class="fas fa-qrcode" style="color: #6EE7B7; font-size: 1.2rem;"></i>
               <div>
-                <strong>Gire o celular na HORIZONTAL (Modo Paisagem)</strong>
+                <strong>Aponte para a Prova (Gire na Horizontal)</strong>
                 <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 2px;">
-                  Enquadre a folha da prova inteira (as 10 questões). Sem necessidade de ler QR Code!
+                  O QR Code no topo carrega o gabarito oficial e a câmera lê as 10 questões marcadas a lápis.
                 </div>
               </div>
             </div>
             <div class="badge badge-verde" style="font-size: 0.72rem; font-weight: 800;">
-              <i class="fas fa-check-circle"></i> Correção Direta
+              <i class="fas fa-check-circle"></i> Correção Inteligente
             </div>
           </div>
 
           <!-- Viewfinder da Câmera em Modo Paisagem com HUD -->
           <div id="examScannerViewportWrap" onclick="window.TKST_APP.triggerTapToFocus(event)" style="position: relative; width: 100%; height: 410px; max-height: 50vh; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #10B981; display: flex; align-items: center; justify-content: center; cursor: crosshair; transition: box-shadow 0.3s ease;">
             <video id="examScannerVideoEl" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+
+            <!-- Linha Laser de Leitura de QR Code e Folha -->
+            <div style="position: absolute; left: 16px; right: 16px; height: 2px; background: linear-gradient(90deg, transparent, #10B981, #34D399, transparent); box-shadow: 0 0 10px #10B981; animation: laserScanPulse 2.8s infinite ease-in-out; pointer-events: none; z-index: 10;"></div>
 
             <!-- Moldura Horizontal HUD para Enquadramento da Folha A4 -->
             <div style="position: absolute; inset: 14px; border: 2px dashed rgba(16, 185, 129, 0.85); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);">
@@ -12704,7 +12716,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               </div>
             </div>
 
-            <!-- Canvas invisível para captura de alta resolução -->
+            <!-- Canvas invisível para captura e processamento -->
             <canvas id="examScannerCanvasEl" style="display: none;"></canvas>
           </div>
 
@@ -12817,9 +12829,79 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             console.warn('Nota sobre restrições de câmera:', e);
           }
         }
+
+        // Inicia escaneamento em tempo real do QR Code na câmera
+        window.TKST_APP.runScannerQrDetectionLoop();
       } catch(err) {
         console.warn('Erro ao acessar câmera:', err);
       }
+    },
+
+    runScannerQrDetectionLoop: function() {
+      const videoEl = document.getElementById('examScannerVideoEl');
+      const canvasEl = document.getElementById('examScannerCanvasEl');
+      if (!videoEl || !canvasEl) return;
+
+      const scanFrame = () => {
+        if (!examScannerStream) return;
+        if (videoEl.readyState >= videoEl.HAVE_CURRENT_DATA && videoEl.videoWidth > 0) {
+          try {
+            const scanW = 640;
+            const scanH = Math.round((videoEl.videoHeight / videoEl.videoWidth) * scanW) || 360;
+            canvasEl.width = scanW;
+            canvasEl.height = scanH;
+            const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(videoEl, 0, 0, scanW, scanH);
+
+            let decoded = null;
+            if (window.jsQR) {
+              const imgData = ctx.getImageData(0, 0, scanW, scanH);
+              const code = window.jsQR(imgData.data, scanW, scanH, { inversionAttempts: 'dontInvert' });
+              if (code && code.data && window.TKST_QR) {
+                decoded = window.TKST_QR.decodeExamPayload(code.data);
+              }
+            }
+
+            if (decoded && decoded.examId && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
+              examScannerDetectedData = decoded;
+              window.TKST_APP.playChime();
+
+              const badge = document.getElementById('examCurrentBeltBadge');
+              const beltName = getBeltNameFromKyu(decoded.kyu);
+              if (badge) {
+                badge.innerHTML = `<span style="color: #10B981;">✅ ${beltName} (Prova #${decoded.examId})</span>`;
+              }
+              const select = document.getElementById('examCorrectionKyuSelect');
+              if (select) {
+                select.value = decoded.kyu;
+              }
+
+              const qrAlert = document.getElementById('examScannerQrBanner');
+              if (qrAlert) {
+                qrAlert.style.display = 'flex';
+                qrAlert.innerHTML = `
+                  <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.25rem;"></i>
+                  <div>
+                    <strong style="color: #34D399;">QR Code Identificado com Sucesso!</strong>
+                    <div style="font-size: 0.75rem; color: #E2E8F0;">Gabarito da Prova #${decoded.examId} (${beltName}) carregado. Agora enquadre a folha e tire a foto!</div>
+                  </div>
+                `;
+              }
+
+              if (typeof showToast === 'function') {
+                showToast(`🎯 QR Code Lido: Prova #${decoded.examId} (${beltName})`, 'success');
+              }
+
+              // Não precisa reescanear repetidamente o mesmo frame
+              return;
+            }
+          } catch(e) {}
+        }
+
+        examScannerAnimFrame = requestAnimationFrame(scanFrame);
+      };
+
+      examScannerAnimFrame = requestAnimationFrame(scanFrame);
     },
 
     playChime: function() {
@@ -12852,7 +12934,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const ctx = canvasEl.getContext('2d');
       ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
 
-      const capturedDataUrl = canvasEl.toDataURL('image/jpeg', 0.90);
+      const capturedDataUrl = canvasEl.toDataURL('image/jpeg', 0.92);
       examScannerCapturedImage = capturedDataUrl;
 
       window.TKST_APP.stopScannerCameraStream();
@@ -12873,25 +12955,134 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
     },
 
+    // =========================================================================
+    // CLIENT-SIDE CANVAS OMR (OPTICAL MARK RECOGNITION)
+    // Lê os quadradinhos marcados com grafite/lápis X nas 10 questões da prova
+    // =========================================================================
+    analyzeExamMarksOMR: function(canvas, officialKey) {
+      const cw = canvas.width;
+      const ch = canvas.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      const detectedAnswers = [];
+      const ambiguousQuestions = [];
+
+      // Prova em Modo Paisagem A4:
+      // Cabeçalho: topo 0% a 19%
+      // Questões: 19% a 95% da altura total
+      // Coluna 1 (Q1-Q5): X de 3% a 48%
+      // Coluna 2 (Q6-Q10): X de 52% a 97%
+      const qTopPct = 0.19;
+      const qBottomPct = 0.95;
+      const totalQHeight = (qBottomPct - qTopPct) * ch;
+      const rowHeight = totalQHeight / 5;
+
+      const cols = [
+        { startX: 0.04 * cw, width: 0.44 * cw }, // Q1 - Q5
+        { startX: 0.52 * cw, width: 0.44 * cw }  // Q6 - Q10
+      ];
+
+      // Amostra luminosidade do papel em região sem impressão
+      let paperBgLuma = 220;
+      try {
+        const bgSample = ctx.getImageData(Math.round(cw * 0.49), Math.round(ch * 0.5), 10, 10).data;
+        let sum = 0;
+        for (let i = 0; i < bgSample.length; i += 4) {
+          sum += (bgSample[i] * 0.299 + bgSample[i+1] * 0.587 + bgSample[i+2] * 0.114);
+        }
+        paperBgLuma = Math.max(150, sum / (bgSample.length / 4));
+      } catch(e) {}
+
+      for (let qIdx = 0; qIdx < 10; qIdx++) {
+        const colIdx = qIdx < 5 ? 0 : 1;
+        const rowIdx = qIdx % 5;
+        const colDef = cols[colIdx];
+
+        const qY = (qTopPct * ch) + (rowIdx * rowHeight);
+        const qH = rowHeight;
+
+        // Na questão, título ocupa primeiros 26%, as 4 opções ocupam os 74% restantes
+        const optAreaY = qY + (qH * 0.26);
+        const optAreaH = qH * 0.74;
+        const singleOptH = optAreaH / 4;
+
+        // O quadradinho de marcação fica no lado esquerdo da linha da alternativa
+        const boxX = colDef.startX + (colDef.width * 0.015);
+        const boxW = colDef.width * 0.20;
+
+        const optionScores = [];
+
+        for (let optIdx = 0; optIdx < 4; optIdx++) {
+          const boxY = optAreaY + (optIdx * singleOptH) + (singleOptH * 0.05);
+          const boxH = Math.max(8, singleOptH * 0.85);
+
+          const bX = Math.max(0, Math.round(boxX));
+          const bY = Math.max(0, Math.round(boxY));
+          const bW = Math.min(cw - bX, Math.round(boxW));
+          const bH = Math.min(ch - bY, Math.round(boxH));
+
+          let darkPixels = 0;
+          let totalDarkWeight = 0;
+
+          if (bW > 0 && bH > 0) {
+            try {
+              const imgData = ctx.getImageData(bX, bY, bW, bH).data;
+              const threshold = paperBgLuma * 0.68; // Grafite ou caneta escura
+              for (let p = 0; p < imgData.length; p += 4) {
+                const r = imgData[p];
+                const g = imgData[p+1];
+                const b = imgData[p+2];
+                const luma = r * 0.299 + g * 0.587 + b * 0.114;
+                if (luma < threshold) {
+                  darkPixels++;
+                  totalDarkWeight += (threshold - luma);
+                }
+              }
+            } catch(e) {}
+          }
+
+          optionScores.push({
+            letter: String.fromCharCode(65 + optIdx),
+            darkPixels: darkPixels,
+            weight: totalDarkWeight
+          });
+        }
+
+        const sorted = optionScores.slice().sort((a, b) => b.weight - a.weight);
+        const best = sorted[0];
+        const second = sorted[1];
+
+        let chosen = null;
+        if (best.weight > 300 && (best.weight > second.weight * 1.25 || (best.weight - second.weight) > 250)) {
+          chosen = best.letter;
+        } else if (best.weight > 400 && second.weight > 350 && (best.weight - second.weight) < 200) {
+          chosen = best.letter;
+          ambiguousQuestions.push(qIdx + 1);
+        } else if (best.darkPixels > 35 && (best.darkPixels > second.darkPixels * 1.30)) {
+          chosen = best.letter;
+        }
+
+        detectedAnswers.push(chosen);
+      }
+
+      return {
+        detectedAnswers: detectedAnswers,
+        ambiguousQuestions: ambiguousQuestions
+      };
+    },
 
     executeGradingPipeline: async function(imageDataUrl) {
       const body = document.getElementById('examCameraModalBody');
       if (!body) return;
-
-      const detected = examScannerDetectedData || {
-        kyu: examGeneratorSelectedKyu || 6,
-        examId: 'MANUAL',
-        answers: ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B']
-      };
 
       body.innerHTML = `
         <div style="padding: 40px 20px; text-align: center; color: #FFF;">
           <div style="font-size: 2.8rem; color: var(--accent-gold); margin-bottom: 14px;">
             <i class="fas fa-brain fa-pulse"></i>
           </div>
-          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Analisando Marcações da Prova...</h3>
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Analisando Foto da Prova...</h3>
           <p style="font-size: 0.84rem; color: #94A3B8; max-width: 440px; margin: 0 auto 16px auto;">
-            Avaliando grafite, filtrando borrões ou marcas apagadas a lápis e confrontando com o gabarito oficial #${detected.examId}.
+            Detectando marcações a lápis nos quadradinhos das 10 questões e confrontando com o gabarito oficial.
           </p>
           <div class="progress-bar-container" style="max-width: 320px; margin: 0 auto; height: 8px;">
             <div class="progress-bar-fill" style="width: 70%; animation: pulse 1.5s infinite;"></div>
@@ -12899,6 +13090,58 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         </div>
       `;
 
+      // 1. Carrega imagem em canvas offscreen de alta fidelidade
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = imageDataUrl;
+      });
+
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = img.naturalWidth || img.width || 1920;
+      offCanvas.height = img.naturalHeight || img.height || 1080;
+      const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
+      offCtx.drawImage(img, 0, 0, offCanvas.width, offCanvas.height);
+
+      // 2. Se o QR Code da folha puder ser lido direto da foto, atualiza dados da prova
+      if (window.jsQR) {
+        try {
+          const imgData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+          const code = window.jsQR(imgData.data, offCanvas.width, offCanvas.height, { inversionAttempts: 'dontInvert' });
+          if (code && code.data && window.TKST_QR) {
+            const decodedFromPhoto = window.TKST_QR.decodeExamPayload(code.data);
+            if (decodedFromPhoto && decodedFromPhoto.answers && decodedFromPhoto.answers.length === 10) {
+              examScannerDetectedData = decodedFromPhoto;
+            }
+          }
+        } catch(e) {}
+      }
+
+      const detected = examScannerDetectedData || {
+        kyu: examGeneratorSelectedKyu || 6,
+        examId: 'SENSEI',
+        answers: ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B']
+      };
+
+      // 3. Executa OMR Client-Side direto no Canvas (Lê grafite/X nos quadradinhos)
+      const omrResult = window.TKST_APP.analyzeExamMarksOMR(offCanvas, detected.answers);
+
+      // 4. Estrutura base de resultado com garantia de detecção pelo OMR
+      let finalResult = {
+        success: true,
+        aiAvailable: false,
+        detectedAnswers: omrResult.detectedAnswers,
+        ambiguousQuestions: omrResult.ambiguousQuestions,
+        studentName: '',
+        dojo: '',
+        kyu: detected.kyu,
+        examId: detected.examId,
+        answerKey: detected.answers
+      };
+
+      // 5. Tenta complementar via API Gemini (se configurada no servidor Vercel)
       try {
         const response = await fetch('/api/grade-exam', {
           method: 'POST',
@@ -12912,17 +13155,20 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         });
 
         const json = await response.json();
-        window.TKST_APP.renderGradingReviewModal(json, imageDataUrl, detected);
-      } catch(err) {
-        console.warn('Erro ao chamar api/grade-exam:', err);
-        // Fallback rápido interativo
-        window.TKST_APP.renderGradingReviewModal({
-          success: true,
-          aiAvailable: false,
-          detectedAnswers: detected.answers.map(() => null),
-          ambiguousQuestions: []
-        }, imageDataUrl, detected);
+        if (json && json.aiAvailable && Array.isArray(json.detectedAnswers) && json.detectedAnswers.some(a => a !== null)) {
+          finalResult.aiAvailable = true;
+          finalResult.studentName = json.studentName || '';
+          finalResult.dojo = json.dojo || '';
+          finalResult.detectedAnswers = json.detectedAnswers.map((aiAns, i) => {
+            return aiAns || omrResult.detectedAnswers[i];
+          });
+          finalResult.ambiguousQuestions = Array.from(new Set([...(json.ambiguousQuestions || []), ...omrResult.ambiguousQuestions]));
+        }
+      } catch(apiErr) {
+        console.warn('API grade-exam indisponível, usando OMR puro:', apiErr);
       }
+
+      window.TKST_APP.renderGradingReviewModal(finalResult, imageDataUrl, detected);
     },
 
     renderGradingReviewModal: function(result, imagePreviewUrl, detectedMeta) {

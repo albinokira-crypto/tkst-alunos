@@ -855,9 +855,9 @@ window.TKST_EXAM_GENERATOR = {
     const examId = options.examId || (Math.random().toString(36).substring(2, 6).toUpperCase());
     const qrPayload = (window.TKST_QR && window.TKST_QR.encodeExamPayload)
       ? window.TKST_QR.encodeExamPayload(kyu, examId, answerLetters)
-      : ('TKST:' + kyu + ':' + examId + ':' + answerLetters.join(','));
+      : ('TKST:' + kyu + ':' + examId + ':' + answerLetters.join(''));
     const qrSvg = (window.TKST_QR && window.TKST_QR.createSvg)
-      ? window.TKST_QR.createSvg(qrPayload, 110, 1)
+      ? window.TKST_QR.createSvg(qrPayload, 120, 4)
       : '';
 
     const renderSingleQuestion = (q, idx) => {
@@ -914,7 +914,7 @@ window.TKST_EXAM_GENERATOR = {
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO) -->
+        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO + QR CODE) -->
         <div class="exam-landscape-top-bar">
           <!-- LOGO SEM CNPJ AMPLIADA + GRADUAÇÃO REFERENTE À PROVA -->
           <div class="exam-landscape-header-col">
@@ -941,6 +941,12 @@ window.TKST_EXAM_GENERATOR = {
             <div style="font-size: 7.2pt; color: #1E293B; margin-top: 2px; font-weight: 700; background: #FEF3C7; border: 1px dashed #D97706; padding: 1px 4px; border-radius: 3px; display: inline-block;">
               ✏️ <strong>Atenção:</strong> Marque com <strong>X bem escuro</strong> no quadradinho.
             </div>
+          </div>
+
+          <!-- QR CODE OFICIAL DE CORREÇÃO INSTANTÂNEA -->
+          <div class="exam-header-qr-card">
+            <div class="exam-header-qr-svg">${qrSvg}</div>
+            <div class="exam-header-qr-label">CORREÇÃO #${examId}</div>
           </div>
         </div>
 
@@ -1439,6 +1445,45 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 800;
         color: #B45309;
         margin-top: 1px;
+      }
+
+      /* QR CODE OFICIAL NO CABEÇALHO (MODO PAISAGEM) */
+      .exam-header-qr-card {
+        border: 1.5px solid #0F172A !important;
+        border-radius: 4px !important;
+        background: #FFF !important;
+        box-shadow: 1.5px 1.5px 0px #0F172A !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 2px !important;
+        flex: 0 0 24mm !important;
+        width: 24mm !important;
+        box-sizing: border-box !important;
+        margin-top: 0.5mm !important;
+      }
+      .exam-header-qr-svg {
+        width: 19.5mm !important;
+        height: 19.5mm !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      .exam-header-qr-svg svg {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+      }
+      .exam-header-qr-label {
+        font-size: 5.6pt !important;
+        font-weight: 900 !important;
+        color: #0F172A !important;
+        letter-spacing: 0.3px !important;
+        line-height: 1 !important;
+        margin-top: 1.5px !important;
+        white-space: nowrap !important;
+        text-align: center !important;
       }
 
       /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM (PREENCHENDO A FOLHA TOTALMENTE) */
