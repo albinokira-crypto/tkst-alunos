@@ -1015,12 +1015,11 @@ window.TKST_EXAM_GENERATOR = {
               </div>
             </div>
 
-            <!-- IDENTIFICAÇÃO DO ALUNO -->
+            <!-- IDENTIFICAÇÃO DO ALUNO (ESPAÇO AMPLO PARA NOME, DOJÔ E DATA) -->
             <div class="exam-portrait-student-line">
               <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name"></span></div>
               <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo"></span></div>
               <div class="exam-field-date"><strong>Data:</strong> <span class="exam-field-val">${dateStr}</span></div>
-              <div class="exam-field-grade"><strong>Nota:</strong> <span class="exam-field-val">_____ / 10,0</span></div>
             </div>
 
             <!-- CÓDIGO DA PROVA DESTACADO + INSTRUÇÃO -->
@@ -1035,11 +1034,17 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
 
-          <!-- 2. LADO DIREITO: CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR) -->
+          <!-- 2. LADO DIREITO: CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR COM NOTA INTEGRADA) -->
           <div class="exam-header-omr-card">
-            <div class="exam-omr-title">
-              <span>📋 CARTÃO DE RESPOSTAS</span>
-              <span class="exam-omr-sub">Pinte [ ■ ]</span>
+            <div class="exam-omr-header-bar">
+              <div class="exam-omr-title-wrap">
+                <span class="exam-omr-title">📋 CARTÃO DE RESPOSTAS</span>
+                <span class="exam-omr-sub">Pinte [ ■ ]</span>
+              </div>
+              <div class="exam-omr-grade-box">
+                <span class="exam-omr-grade-lbl">NOTA:</span>
+                <span class="exam-omr-grade-val">_____ / 10,0</span>
+              </div>
             </div>
             <div class="exam-omr-grid-2col">
               <div class="exam-omr-col">
@@ -1424,9 +1429,9 @@ window.TKST_EXAM_GENERATOR = {
         break-inside: avoid !important;
       }
       .exam-portrait-sheet {
-        height: 288mm !important;
-        min-height: 285mm !important;
-        max-height: 289mm !important;
+        height: 282mm !important;
+        min-height: 280mm !important;
+        max-height: 283mm !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
         display: flex !important;
@@ -1471,21 +1476,21 @@ window.TKST_EXAM_GENERATOR = {
         flex-direction: row !important;
         align-items: stretch !important;
         justify-content: space-between !important;
-        gap: 10px !important;
-        margin-bottom: 2mm !important;
-        padding-bottom: 1.5mm !important;
+        gap: 8px !important;
+        margin-bottom: 1.5mm !important;
+        padding-bottom: 1.2mm !important;
         border-bottom: 1.8px solid #0F172A !important;
         box-sizing: border-box !important;
       }
 
-      /* LADO ESQUERDO: LOGO MAIOR, DESCRIÇÃO, DADOS DO ALUNO E CÓDIGO DESTACADO */
+      /* LADO ESQUERDO: LOGO, DESCRIÇÃO, DADOS DO ALUNO E CÓDIGO DESTACADO */
       .exam-header-left {
-        flex: 1 1 58% !important;
-        max-width: 60% !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 1.5mm !important;
+        gap: 1.2mm !important;
       }
       .exam-header-brand-row {
         display: flex !important;
@@ -1495,72 +1500,69 @@ window.TKST_EXAM_GENERATOR = {
       }
       .exam-portrait-logo {
         height: auto !important;
-        max-height: 38px !important;
+        max-height: 34px !important;
         width: 100% !important;
-        max-width: 290px !important;
+        max-width: 270px !important;
         object-fit: contain !important;
         display: block !important;
         margin: 0 !important;
       }
       .exam-portrait-desc {
-        font-size: 9.2pt !important;
+        font-size: 8.8pt !important;
         font-weight: 900 !important;
         color: #000000 !important;
-        line-height: 1.2 !important;
+        line-height: 1.16 !important;
         text-align: left !important;
-        letter-spacing: 0.15px !important;
+        letter-spacing: 0.1px !important;
         margin-top: 1px !important;
       }
 
-      /* IDENTIFICAÇÃO DO ALUNO */
+      /* IDENTIFICAÇÃO DO ALUNO (ESPAÇOSO E SEM APERTO) */
       .exam-portrait-student-line {
         border: 1.2px solid #0F172A !important;
         border-radius: 3px !important;
         background: #F8FAFC !important;
         box-shadow: 1px 1px 0px #0F172A !important;
-        padding: 2.5px 6px !important;
-        font-size: 7.8pt !important;
+        padding: 2.2px 6px !important;
+        font-size: 8pt !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        gap: 8px !important;
+        gap: 6px !important;
         box-sizing: border-box !important;
         white-space: nowrap !important;
       }
       .exam-field-name {
-        flex: 2.4 !important;
+        flex: 2.2 !important;
         display: flex !important;
         align-items: flex-end !important;
         gap: 3px !important;
+        min-width: 0 !important;
       }
       .exam-field-line-name {
         flex: 1 !important;
-        min-width: 45mm !important;
+        min-width: 38mm !important;
         border-bottom: 1.2px solid #0F172A !important;
         height: 10px !important;
       }
       .exam-field-dojo {
-        flex: 1.1 !important;
+        flex: 1.2 !important;
         display: flex !important;
         align-items: flex-end !important;
         gap: 3px !important;
+        min-width: 0 !important;
       }
       .exam-field-line-dojo {
         flex: 1 !important;
-        min-width: 18mm !important;
+        min-width: 16mm !important;
         border-bottom: 1.2px solid #0F172A !important;
         height: 10px !important;
       }
       .exam-field-date {
-        flex: 0.8 !important;
+        flex: 0.9 !important;
         display: flex !important;
         align-items: center !important;
         gap: 2px !important;
-      }
-      .exam-field-grade {
-        flex: 1.0 !important;
-        text-align: right !important;
-        font-weight: 800 !important;
         white-space: nowrap !important;
       }
 
@@ -1582,70 +1584,101 @@ window.TKST_EXAM_GENERATOR = {
         flex-shrink: 0 !important;
       }
       .exam-code-lbl {
-        font-size: 7.2pt !important;
+        font-size: 7pt !important;
         font-weight: 800 !important;
         color: #94A3B8 !important;
         letter-spacing: 0.5px !important;
       }
       .exam-code-val {
-        font-size: 11pt !important;
+        font-size: 10.5pt !important;
         font-weight: 900 !important;
         color: #F5BE00 !important;
         letter-spacing: 2px !important;
         font-family: monospace, Courier, sans-serif !important;
       }
       .exam-instruction-tag {
-        font-size: 7pt !important;
+        font-size: 6.8pt !important;
         color: #1E293B !important;
         background: #FEF3C7 !important;
         border: 1px dashed #D97706 !important;
         padding: 2px 5px !important;
         border-radius: 3px !important;
-        line-height: 1.2 !important;
+        line-height: 1.15 !important;
       }
 
-      /* CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR NO CABEÇALHO) */
+      /* CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR COM NOTA INTEGRADA) */
       .exam-header-omr-card {
         flex: 0 0 auto !important;
-        width: 40% !important;
-        max-width: 82mm !important;
+        width: 86mm !important;
+        max-width: 88mm !important;
         border: 1.8px solid #0F172A !important;
         border-radius: 4px !important;
         background: #F8FAFC !important;
-        padding: 2mm 3.5mm !important;
+        padding: 1.6mm 2.5mm !important;
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
         box-shadow: 1.5px 1.5px 0px #0F172A !important;
       }
-      .exam-omr-title {
+      .exam-omr-header-bar {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        font-size: 7.4pt !important;
+        border-bottom: 1.2px solid #0F172A !important;
+        padding-bottom: 1.5px !important;
+        margin-bottom: 2px !important;
+        gap: 4px !important;
+      }
+      .exam-omr-title-wrap {
+        display: flex !important;
+        align-items: baseline !important;
+        gap: 3px !important;
+      }
+      .exam-omr-title {
+        font-size: 7.2pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
         text-transform: uppercase !important;
-        border-bottom: 1.2px solid #CBD5E1 !important;
-        padding-bottom: 1.5px !important;
-        margin-bottom: 1.5px !important;
         letter-spacing: 0.2px !important;
       }
       .exam-omr-sub {
-        font-size: 6.5pt !important;
+        font-size: 6.2pt !important;
         color: #059669 !important;
         font-weight: 800 !important;
+      }
+      .exam-omr-grade-box {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 3px !important;
+        background: #FFF !important;
+        border: 1.3px solid #DC2626 !important;
+        border-radius: 3px !important;
+        padding: 1px 5px !important;
+        box-shadow: 0.5px 0.5px 0px #DC2626 !important;
+        flex-shrink: 0 !important;
+      }
+      .exam-omr-grade-lbl {
+        font-size: 6.8pt !important;
+        font-weight: 900 !important;
+        color: #DC2626 !important;
+        letter-spacing: 0.3px !important;
+      }
+      .exam-omr-grade-val {
+        font-size: 7.6pt !important;
+        font-weight: 900 !important;
+        color: #0F172A !important;
+        white-space: nowrap !important;
       }
       .exam-omr-grid-2col {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 6px !important;
+        gap: 5px !important;
       }
       .exam-omr-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 1.5px !important;
+        gap: 1.2px !important;
       }
       .exam-omr-row {
         display: flex !important;
@@ -1654,39 +1687,39 @@ window.TKST_EXAM_GENERATOR = {
         gap: 2px !important;
       }
       .omr-q-num {
-        font-size: 7.2pt !important;
+        font-size: 7pt !important;
         font-weight: 900 !important;
         color: #334155 !important;
-        width: 14px !important;
+        width: 13px !important;
         text-align: right !important;
       }
       .omr-sq {
-        width: 13.5px !important;
-        height: 13.5px !important;
-        min-width: 13.5px !important;
-        min-height: 13.5px !important;
-        border: 1.5px solid #0F172A !important;
+        width: 13px !important;
+        height: 13px !important;
+        min-width: 13px !important;
+        min-height: 13px !important;
+        border: 1.4px solid #0F172A !important;
         border-radius: 2px !important;
         background: #FFF !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 7pt !important;
+        font-size: 6.8pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
       }
 
-      /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 297mm DE ALTURA TOTAL) */
+      /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 282mm DE ALTURA TOTAL) */
       .exam-portrait-grid-2col {
         position: relative !important;
         z-index: 1 !important;
         flex: 1 1 auto !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 6px 16px !important;
-        height: calc(288mm - 46mm) !important;
-        min-height: calc(288mm - 46mm) !important;
-        max-height: calc(288mm - 46mm) !important;
+        gap: 4px 14px !important;
+        height: calc(282mm - 42mm) !important;
+        min-height: calc(282mm - 42mm) !important;
+        max-height: calc(282mm - 42mm) !important;
         margin-bottom: 0 !important;
         box-sizing: border-box !important;
       }
@@ -1695,17 +1728,17 @@ window.TKST_EXAM_GENERATOR = {
         flex-direction: column !important;
         justify-content: space-between !important;
         height: 100% !important;
-        gap: 4px !important;
+        gap: 3px !important;
       }
       .exam-portrait-q-card {
         border-bottom: 1.2px dashed #CBD5E1 !important;
-        padding-top: 2px !important;
-        padding-bottom: 3px !important;
+        padding-top: 1px !important;
+        padding-bottom: 2px !important;
         page-break-inside: avoid !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 2px !important;
+        gap: 1.5px !important;
         flex: 1 1 0 !important;
         min-height: 0 !important;
         box-sizing: border-box !important;
@@ -1716,14 +1749,14 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 10.6pt !important;
-        line-height: 1.28 !important;
+        font-size: 10pt !important;
+        line-height: 1.22 !important;
         font-weight: 800 !important;
         color: #0F172A !important;
-        margin-bottom: 3px !important;
+        margin-bottom: 2px !important;
       }
       .exam-q-number {
-        font-size: 11pt !important;
+        font-size: 10.4pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
         margin-right: 2px !important;
@@ -1734,25 +1767,25 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 3.5px !important;
+        gap: 2.2px !important;
         width: 100% !important;
         flex: 1 1 auto !important;
       }
       .exam-mcq-option {
         display: flex !important;
         align-items: center !important;
-        gap: 6px !important;
-        font-size: 9.8pt !important;
-        line-height: 1.25 !important;
+        gap: 5px !important;
+        font-size: 9.3pt !important;
+        line-height: 1.2 !important;
         white-space: normal !important;
       }
       .exam-mcq-square {
-        width: 15px !important;
-        height: 15px !important;
-        min-width: 15px !important;
-        min-height: 15px !important;
-        border: 1.8px solid #0F172A !important;
-        border-radius: 2.5px !important;
+        width: 14px !important;
+        height: 14px !important;
+        min-width: 14px !important;
+        min-height: 14px !important;
+        border: 1.6px solid #0F172A !important;
+        border-radius: 2px !important;
         background: #FFF !important;
         display: inline-block !important;
         flex-shrink: 0 !important;
@@ -1760,14 +1793,14 @@ window.TKST_EXAM_GENERATOR = {
       .exam-mcq-letter {
         font-weight: 900 !important;
         color: #0F172A !important;
-        font-size: 10pt !important;
+        font-size: 9.4pt !important;
         flex-shrink: 0 !important;
         margin-right: 2px !important;
       }
       .exam-mcq-opt-text {
         color: #1E293B !important;
         font-weight: 600 !important;
-        font-size: 9.6pt !important;
+        font-size: 9.2pt !important;
       }
 
       /* ILUSTRAÇÃO TÉCNICA: IMAGEM AMPLIADA SEM CARD/MOLDURA, ALTURA TOTAL DA LETRA A A D */
@@ -1775,8 +1808,8 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         align-items: stretch !important;
         justify-content: space-between !important;
-        gap: 10px !important;
-        margin-top: 2px !important;
+        gap: 8px !important;
+        margin-top: 1px !important;
         width: 100% !important;
         flex: 1 1 auto !important;
         min-height: 0 !important;
@@ -1785,12 +1818,12 @@ window.TKST_EXAM_GENERATOR = {
         flex: 0 1 auto !important;
         width: auto !important;
         min-width: 40% !important;
-        max-width: 50% !important;
+        max-width: 52% !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
         height: 100% !important;
-        gap: 2.5px !important;
+        gap: 2px !important;
       }
       .exam-q-img-wrap {
         border: none !important;
@@ -1800,10 +1833,11 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex: 1 1 auto !important;
         width: auto !important;
-        max-width: 60% !important;
-        min-width: 110px !important;
+        max-width: 58% !important;
+        min-width: 100px !important;
         height: 100% !important;
-        min-height: 90px !important;
+        max-height: 35mm !important;
+        min-height: 65px !important;
         align-self: stretch !important;
         display: flex !important;
         align-items: center !important;
@@ -2024,7 +2058,7 @@ window.TKST_EXAM_GENERATOR = {
           @media print {
             @page {
               size: A4 portrait;
-              margin: 3.5mm 4.5mm 3.5mm 4.5mm;
+              margin: 2.8mm 4.5mm 2.8mm 4.5mm;
             }
             html, body {
               margin: 0 !important;
