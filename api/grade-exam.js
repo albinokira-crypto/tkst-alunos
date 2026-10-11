@@ -59,7 +59,10 @@ module.exports = async function handler(req, res) {
 
 function decodeCompactExamCode(codeStr) {
   if (!codeStr) return null;
-  const clean = String(codeStr).replace(/^#/, '').replace(/[^0-9A-Za-z]/g, '').trim().toUpperCase();
+  const cleanRaw = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+  const parts = cleanRaw.split('-');
+  const clean = parts[0].replace(/[^0-9A-Z]/g, '');
+  const studentTag = parts.length > 1 ? parts.slice(1).join('-') : null;
   if (clean.length < 4) return null;
   try {
     const totalVal = parseInt(clean, 36);
@@ -73,7 +76,7 @@ function decodeCompactExamCode(codeStr) {
       const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
       answers.push(['A', 'B', 'C', 'D'][val]);
     }
-    return { kyu, answers, examId: clean };
+    return { kyu, answers, examId: clean, fullExamId: cleanRaw, studentTag: studentTag };
   } catch(e) {
     return null;
   }
@@ -83,10 +86,10 @@ let promptText = '';
     if (step === 'code' || step === 'badge') {
       promptText = `
 Você é um especialista em OCR e visão computacional de alta precisão.
-Esta foto mostra especificamente o CÓDIGO de uma avaliação de karatê (badge ou campo de texto com 4 a 6 caracteres alfanuméricos em caixa alta, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "5M4X7", "CÓDIGO: 5M4X7", "CÓDIGO: 9K2L1").
+Esta foto mostra especificamente o CÓDIGO de uma avaliação de karatê (badge ou campo de texto com 4 a 6 caracteres alfanuméricos, ou com sufixo do aluno, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "0IZ96-CARLOS.S", "5M4X7", "5M4X7-LUCAS.S").
 
 SUA TAREFA ÚNICA:
-Extrair os 4 a 6 caracteres alfanuméricos que formam o código da prova.
+Extrair os caracteres alfanuméricos e hífens que formam o código completo da prova.
 Ignore palavras como "CÓDIGO", "CODIGO", "PROVA", "#", espaços e dois-pontos.
 
 Retorne estritamente um JSON no seguinte formato:
@@ -100,8 +103,8 @@ Retorne estritamente um JSON no seguinte formato:
 Você é um desenvolvedor sênior especialista em visão computacional e correção de avaliações de karatê.
 Esta foto mostra especificamente o CABEÇALHO oficial da prova de karatê, composto por:
 - LADO ESQUERDO:
-  1. Código da Prova no badge em destaque (ex: "CÓDIGO: 5M4X7", [#5M4X7] ou 4 a 5 caracteres alfanuméricos).
-  2. Nome do aluno escrito à mão no campo "Nome:".
+  1. Código da Prova no badge em destaque (ex: "CÓDIGO: 5M4X7", "5M4X7-LUCAS.S" ou 4 a 5 caracteres com ou sem sufixo do aluno).
+  2. Nome do aluno impresso ou escrito à mão no campo "Nome:".
   3. Descrição da avaliação (ex: "Avaliação Teórica: Faixa Branca para Faixa Amarela").
 - LADO DIREITO:
   4. "CARTÃO DE RESPOSTAS" oficial contendo as 10 questões (Q01 a Q05 na esquerda, Q06 a Q10 na direita) com quadradinhos [A] [B] [C] [D] pintados a lápis ou caneta pelo aluno.
@@ -316,7 +319,7 @@ Retorne estritamente um JSON:
     if (step === 'code' || step === 'badge') {
       const rawCode = parsedAi.codigo_prova || parsedAi.examId || '';
       let cleanCode = String(rawCode).replace(/^#/, '').trim().toUpperCase();
-      cleanCode = cleanCode.replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim();
+      cleanCode = cleanCode.replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z-]/g, '').trim();
 
       const dec = decodeCompactExamCode(cleanCode);
       return res.status(200).json({
@@ -324,6 +327,9 @@ Retorne estritamente um JSON:
         aiAvailable: true,
         codigo_prova: cleanCode,
         examId: cleanCode,
+        studentSlug: dec ? dec.studentTag : null,
+        aluno: (dec && dec.studentTag) || parsedAi.aluno || null,
+        studentName: (dec && dec.studentTag) || parsedAi.aluno || null,
         kyu: dec ? dec.kyu : (kyu !== undefined ? kyu : 6),
         answerKey: dec ? dec.answers : (officialKey || [])
       });
@@ -374,15 +380,16 @@ Retorne estritamente um JSON:
     // Extrai identificador da prova e decodifica matematicamente
     const aiExamCode = parsedAi.codigo_prova || parsedAi.examId || (parsedAi.dados_prova && parsedAi.dados_prova.exam_id) || '';
     if (aiExamCode) {
-      detectedExamId = String(aiExamCode).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase();
+      detectedExamId = String(aiExamCode).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z-]/g, '').trim().toUpperCase();
     }
 
+    let decodedCompact = null;
     if (detectedExamId) {
-      const decodedCompact = decodeCompactExamCode(detectedExamId);
+      decodedCompact = decodeCompactExamCode(detectedExamId);
       if (decodedCompact) {
         detectedKyu = decodedCompact.kyu;
         detectedAnswerKey = decodedCompact.answers;
-        detectedExamId = decodedCompact.examId;
+        detectedExamId = decodedCompact.fullExamId || decodedCompact.examId;
       }
     }
 
@@ -402,13 +409,14 @@ Retorne estritamente um JSON:
       else if (bStr.includes('MARROM') || bStr.includes('01KYU') || bStr.includes('1KYU')) detectedKyu = 1;
       else if (bStr.includes('PRETA') || bStr.includes('SHODAN')) detectedKyu = 0;
 
-      const idMatch = bStr.match(/([A-Z0-9]{4,6})(?:-|$)/);
+      const idMatch = bStr.match(/([A-Z0-9-]{4,15})(?:-|$)/);
       if (idMatch && idMatch[1]) {
         detectedExamId = idMatch[1];
         const dec = decodeCompactExamCode(detectedExamId);
         if (dec) {
           detectedKyu = dec.kyu;
           detectedAnswerKey = dec.answers;
+          if (!decodedCompact) decodedCompact = dec;
         }
       }
     }
@@ -424,7 +432,7 @@ Retorne estritamente um JSON:
       else if (gradText.includes('preta') || gradText.includes('shodan')) detectedKyu = 0;
     }
 
-    const studentName = parsedAi.aluno || parsedAi.studentName || null;
+    const studentName = parsedAi.aluno || parsedAi.studentName || (decodedCompact && decodedCompact.studentTag) || null;
 
     return res.status(200).json({
       success: true,

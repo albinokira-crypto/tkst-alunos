@@ -1403,6 +1403,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const studentOptions = examSelectedDojobookStudent ? {
         studentName: examSelectedDojobookStudent.nome,
+        studentId: examSelectedDojobookStudent.id,
         dojoName: examSelectedDojobookStudent.dojo_nome
       } : {};
       examPreviewHtml = window.TKST_EXAM_GENERATOR.buildQuizExamSheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions, studentOptions);
@@ -9468,6 +9469,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
       const studentOptions = examSelectedDojobookStudent ? {
         studentName: examSelectedDojobookStudent.nome,
+        studentId: examSelectedDojobookStudent.id,
         dojoName: examSelectedDojobookStudent.dojo_nome
       } : {};
       const html = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions, studentOptions);
@@ -12881,10 +12883,13 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
     },
 
-    // Decodifica o código Base36 (ex: 0IZ96) de volta para { kyu, answers: ['A','B',...] } 100% offline
+    // Decodifica o código Base36 (com suporte a sufixo do aluno ex: 0IZ96-LUCAS.S) 100% offline
     decodeCompactExamCode: function(codeStr) {
       if (!codeStr) return null;
-      const clean = String(codeStr).replace(/^#/, '').replace(/[^0-9A-Za-z]/g, '').trim().toUpperCase();
+      const cleanRaw = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+      const parts = cleanRaw.split('-');
+      const clean = parts[0].replace(/[^0-9A-Z]/g, '');
+      const studentTag = parts.length > 1 ? parts.slice(1).join('-') : null;
       if (clean.length < 4) return null;
       try {
         const totalVal = parseInt(clean, 36);
@@ -12898,21 +12903,21 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
           answers.push(['A', 'B', 'C', 'D'][val]);
         }
-        return { kyu, answers, examId: clean };
+        return { kyu, answers, examId: clean, fullExamId: cleanRaw, studentTag: studentTag };
       } catch(e) {
         return null;
       }
     },
 
-    // Digitação direta do código (ex: 0IZ96) impresso no cabeçalho da prova
+    // Digitação direta do código (ex: 0IZ96 ou 0IZ96-LUCAS.S) impresso no cabeçalho da prova
     submitManualExamCode: function(optCode) {
       const inputEl = document.getElementById('examManualCodeInput');
       const rawCode = optCode || (inputEl ? inputEl.value : '');
-      const cleanCode = String(rawCode || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase();
+      const cleanCode = String(rawCode || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z-]/g, '').trim().toUpperCase();
 
       if (!cleanCode) {
         if (typeof showToast === 'function') {
-          showToast('⚠️ Digite o código de 5 caracteres da prova (ex: 0IZ96)', 'warning');
+          showToast('⚠️ Digite o código da prova (ex: 0IZ96)', 'warning');
         }
         if (inputEl) inputEl.focus();
         return;
@@ -14231,6 +14236,12 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const kyu = (detectedMeta && detectedMeta.kyu !== undefined) ? detectedMeta.kyu : 6;
       const beltName = getBeltNameFromKyu(kyu) || `Faixa #${kyu}`;
 
+      // Recupera dados salvos da prova pelo código se disponível
+      const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
+      const cleanExamId = (detectedMeta && detectedMeta.examId) || (result && result.examId) || '';
+      const savedExam = examGen && examGen.getSavedExamById ? examGen.getSavedExamById(cleanExamId) : null;
+      const initialDetectedName = (result && result.studentName) || (detectedMeta && detectedMeta.studentName) || (savedExam && savedExam.studentName) || (detectedMeta && detectedMeta.studentTag) || '';
+
       // Salva estado para edições e gravação
       examGradingPendingResult = {
         kyu: kyu,
@@ -14240,19 +14251,35 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         currentAnswers: detectedAnswers.slice(),
         ambiguousQuestions: ambiguousQuestions,
         imagePreviewUrl: imagePreviewUrl,
-        detectedName: (result && result.studentName) || '',
-        detectedDojo: (result && result.dojo) || '',
+        detectedName: initialDetectedName,
+        detectedDojo: (result && result.dojo) || (savedExam && savedExam.dojoName) || '',
         selectedDojobookStudent: null
       };
 
-      // Tenta associar automaticamente com candidato do DojôBook se o nome foi detectado na prova
+      // Tenta associar automaticamente com candidato do DojôBook pelo nome completo ou pelo slug do código
       if (examGradingPendingResult.detectedName && dojobookCandidatesCache) {
         const todos = [...(dojobookCandidatesCache.candidatos || []), ...(dojobookCandidatesCache.alunos || [])];
         const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
         const detNorm = norm(examGradingPendingResult.detectedName);
-        const autoMatch = todos.find(a => norm(a.nome) === detNorm || (detNorm.length > 3 && (norm(a.nome).includes(detNorm) || detNorm.includes(norm(a.nome)))));
+        
+        let autoMatch = todos.find(a => norm(a.nome) === detNorm);
+        if (!autoMatch && detNorm.length > 3) {
+          autoMatch = todos.find(a => norm(a.nome).includes(detNorm) || detNorm.includes(norm(a.nome)));
+        }
+        // Se for um slug vindo do código (ex: "CARLOS.S" ou "LUCAS"):
+        if (!autoMatch && detNorm.includes('.')) {
+          const [slugPrimeiro, slugUltimo] = detNorm.split('.');
+          autoMatch = todos.find(a => {
+            const aParts = norm(a.nome).split(/\s+/);
+            if (aParts.length >= 2) {
+              return aParts[0].startsWith(slugPrimeiro) && aParts[aParts.length - 1].startsWith(slugUltimo);
+            }
+            return aParts[0].startsWith(slugPrimeiro);
+          });
+        }
         if (autoMatch) {
           examGradingPendingResult.selectedDojobookStudent = autoMatch;
+          examGradingPendingResult.detectedName = autoMatch.nome;
         }
       }
 

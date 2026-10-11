@@ -4873,24 +4873,36 @@ body.login-view-active .content-body {
   display: flex !important;
   align-items: flex-end !important;
   gap: 3px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
 }
 .exam-field-line-name {
   flex: 1 !important;
-  min-width: 45mm !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
   border-bottom: 1.2px solid #0F172A !important;
   height: 10px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 .exam-field-dojo {
   flex: 1.1 !important;
   display: flex !important;
   align-items: flex-end !important;
   gap: 3px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
 }
 .exam-field-line-dojo {
   flex: 1 !important;
-  min-width: 18mm !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
   border-bottom: 1.2px solid #0F172A !important;
   height: 10px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 .exam-field-date {
   flex: 0.8 !important;
@@ -6198,6 +6210,47 @@ body.login-view-active .content-body {
   font-size: 0.6rem;
   line-height: 1;
 }
+
+/* Proteção contra transbordamento de nome e dados do aluno na folha de avaliação */
+.exam-field-name {
+  flex: 1.6 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  max-width: 62% !important;
+  overflow: hidden !important;
+}
+.exam-field-line-name {
+  flex: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  border-bottom: 1.2px solid #0F172A !important;
+  height: 10px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.exam-field-dojo {
+  flex: 1.1 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  max-width: 38% !important;
+  overflow: hidden !important;
+}
+.exam-field-line-dojo {
+  flex: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  border-bottom: 1.2px solid #0F172A !important;
+  height: 10px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
 
 
 

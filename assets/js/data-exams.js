@@ -699,10 +699,83 @@ window.TKST_EXAM_GENERATOR = {
     return totalVal.toString(36).toUpperCase().padStart(5, '0');
   },
 
-  // Decodifica o código Base36 de volta para { kyu, answers: ['A','B',...] } 100% offline
+  // Regra Oficial de Abreviação de Nomes Próprios da Língua Portuguesa do Brasil (ABNT / Cartório):
+  // 1. O primeiro nome e o último sobrenome NUNCA são abreviados.
+  // 2. Conectivos e preposições ("de", "da", "do", "das", "dos", "e") são descartados nos nomes do meio abreviados.
+  // 3. Os nomes intermediários (do meio) são abreviados com a inicial maiúscula seguida de ponto final ("E.", "S.").
+  // 4. Agnomes de parentesco ("Júnior", "Filho", "Neto", "Sobrinho") são preservados junto ao último sobrenome.
+  abbreviateStudentNamePtBr: function(fullName, maxChars = 28) {
+    if (!fullName || typeof fullName !== 'string') return '';
+    const clean = fullName.trim().replace(/\s+/g, ' ');
+    if (clean.length <= maxChars) return clean;
+
+    const parts = clean.split(' ');
+    if (parts.length <= 2) {
+      if (clean.length > maxChars) {
+        return clean.slice(0, maxChars - 1).trim() + '…';
+      }
+      return clean;
+    }
+
+    const preposicoes = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
+    const agnomes = new Set(['filho', 'filha', 'junior', 'júnior', 'neto', 'neta', 'sobrinho', 'sobrinha', 'segundo', 'terceiro']);
+
+    let lastIdx = parts.length - 1;
+    let agnomeStr = '';
+    if (parts.length > 2 && agnomes.has(parts[lastIdx].toLowerCase())) {
+      agnomeStr = ' ' + parts[lastIdx];
+      lastIdx--;
+    }
+
+    const primeiro = parts[0];
+    const ultimo = parts[lastIdx];
+    const meios = parts.slice(1, lastIdx);
+
+    // Abrevia nomes do meio descartando preposições
+    let meiosAbreviados = meios.map(m => {
+      if (preposicoes.has(m.toLowerCase())) return '';
+      return m[0].toUpperCase() + '.';
+    }).filter(Boolean);
+
+    let formatado = `${primeiro} ${meiosAbreviados.join(' ')} ${ultimo}${agnomeStr}`.replace(/\s+/g, ' ').trim();
+
+    if (formatado.length > maxChars && meiosAbreviados.length > 1) {
+      formatado = `${primeiro} ${meiosAbreviados[0]} ${ultimo}${agnomeStr}`.replace(/\s+/g, ' ').trim();
+    }
+
+    if (formatado.length > maxChars) {
+      formatado = formatado.slice(0, maxChars - 1).trim() + '…';
+    }
+
+    return formatado;
+  },
+
+  // Gera o identificador compacto do aluno para inclusão no código da prova (ex: "CARLOS.S" ou "LUCAS")
+  createStudentCodeSlug: function(fullName) {
+    if (!fullName || typeof fullName !== 'string') return '';
+    const clean = fullName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '';
+    if (parts.length === 1) return parts[0].slice(0, 8);
+
+    const agnomes = new Set(['FILHO', 'FILHA', 'JUNIOR', 'NETO', 'NETA', 'SOBRINHO', 'SOBRINHA']);
+    let lastIdx = parts.length - 1;
+    if (parts.length > 2 && agnomes.has(parts[lastIdx])) {
+      lastIdx--;
+    }
+
+    const primeiro = parts[0].slice(0, 8);
+    const ultimo = parts[lastIdx];
+    return `${primeiro}.${ultimo[0]}`;
+  },
+
+  // Decodifica o código Base36 (com suporte a sufixo do aluno ex: 0J8F3-LUCAS.S) 100% offline
   decodeCompactExamCode: function(codeStr) {
     if (!codeStr) return null;
-    const clean = String(codeStr).replace(/^#/, '').replace(/[^0-9A-Za-z]/g, '').trim().toUpperCase();
+    const cleanRaw = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+    const parts = cleanRaw.split('-');
+    const clean = parts[0].replace(/[^0-9A-Z]/g, '');
+    const studentTag = parts.length > 1 ? parts.slice(1).join('-') : null;
     if (clean.length < 4) return null;
     try {
       const totalVal = parseInt(clean, 36);
@@ -715,7 +788,7 @@ window.TKST_EXAM_GENERATOR = {
         const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
         answers.push(['A', 'B', 'C', 'D'][val]);
       }
-      return { kyu, answers, examId: clean };
+      return { kyu, answers, examId: clean, fullExamId: cleanRaw, studentTag: studentTag };
     } catch(e) {
       return null;
     }
@@ -724,10 +797,12 @@ window.TKST_EXAM_GENERATOR = {
   // Busca prova gerada no armazenamento persistente ou decodifica matematicamente offline
   getSavedExamById: function(examId) {
     if (!examId) return null;
-    const cleanId = String(examId).replace(/^#/, '').trim().toUpperCase();
+    const cleanId = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+    const baseCode = cleanId.split('-')[0];
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
       if (store[cleanId]) return store[cleanId];
+      if (store[baseCode]) return store[baseCode];
     } catch(e) {}
 
     // Decodificação matemática instantânea (sem internet / gerada em outro computador)
@@ -735,7 +810,9 @@ window.TKST_EXAM_GENERATOR = {
     if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
       return {
         kyu: decoded.kyu,
-        examId: cleanId,
+        examId: decoded.fullExamId || decoded.examId,
+        baseExamId: decoded.examId,
+        studentTag: decoded.studentTag,
         answers: decoded.answers,
         date: "_____/_____/2026",
         timestamp: Date.now()
@@ -906,23 +983,34 @@ window.TKST_EXAM_GENERATOR = {
   buildQuizExamSheetHtml: function(kyu, questions, options = {}) {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
-    const studentName = options.studentName || options.name || "";
+    const rawStudentName = options.studentName || options.name || "";
+    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 28);
     const dojoName = options.dojoName || options.dojo || "";
 
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const compactCode = this.encodeCompactExamCode(kyu, answerLetters);
-    const examId = compactCode;
+    const studentSlug = this.createStudentCodeSlug(rawStudentName);
+    const fullExamCode = studentSlug ? `${compactCode}-${studentSlug}` : compactCode;
+    const examId = fullExamCode;
 
     // Registra a prova gerada no armazenamento persistente do Sensei para conferência imediata e offline
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-      store[compactCode] = {
+      const examRecord = {
         kyu: Number(kyu),
-        examId: compactCode,
+        examId: fullExamCode,
+        baseCode: compactCode,
         answers: answerLetters,
         date: dateStr,
+        studentName: rawStudentName,
+        studentAbbr: studentName,
+        studentSlug: studentSlug,
+        studentId: options.studentId || options.id || '',
+        dojoName: dojoName,
         timestamp: Date.now()
       };
+      store[fullExamCode] = examRecord;
+      store[compactCode] = examRecord;
       const keys = Object.keys(store);
       if (keys.length > 250) {
         delete store[keys[0]];
@@ -1022,15 +1110,15 @@ window.TKST_EXAM_GENERATOR = {
 
             <!-- IDENTIFICAÇÃO DO ALUNO (ESPAÇO AMPLO PARA NOME E DOJÔ) -->
             <div class="exam-portrait-student-line">
-              <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name" style="${studentName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 800; color: #000; font-size: 8.8pt;' : ''}">${studentName || ''}</span></div>
-              <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo" style="${dojoName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 700; color: #000; font-size: 8.5pt;' : ''}">${dojoName || ''}</span></div>
+              <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name" style="${studentName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 800; color: #000; font-size: ' + (studentName.length > 20 ? '8pt' : '8.6pt') + '; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' : ''}" title="${rawStudentName || ''}">${studentName || ''}</span></div>
+              <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo" style="${dojoName ? 'display: inline-flex; align-items: flex-end; padding-left: 6px; font-weight: 700; color: #000; font-size: 8.5pt; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' : ''}">${dojoName || ''}</span></div>
             </div>
 
-            <!-- CÓDIGO DA PROVA DESTACADO (SOMENTE ALFANUMÉRICO COM FONTE EXPANDIDA 20pt E ALTO CONTRASTE) -->
+            <!-- CÓDIGO DA PROVA DESTACADO (COM VÍNCULO AO ALUNO SE PRÉ-IMPRESSA) -->
             <div class="exam-header-code-row">
               <div class="exam-code-badge" style="background: #000000 !important; color: #FFFFFF !important; padding: 4px 14px !important; border-radius: 6px !important; display: inline-flex !important; align-items: center !important; gap: 8px !important; border: 2px solid #000000 !important;">
                 <span class="exam-code-lbl" style="font-size: 9pt !important; font-weight: 900 !important; color: #F5BE00 !important; letter-spacing: 1px !important; text-transform: uppercase !important;">CÓDIGO:</span>
-                <span class="exam-code-val" style="font-size: 20pt !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: 3px !important; font-family: 'Consolas', 'Courier New', monospace, sans-serif !important; line-height: 1 !important;">${compactCode}</span>
+                <span class="exam-code-val" style="font-size: ${fullExamCode.length > 8 ? '14pt' : '20pt'} !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: ${fullExamCode.length > 8 ? '1.5px' : '3px'} !important; font-family: 'Consolas', 'Courier New', monospace, sans-serif !important; line-height: 1 !important;">${fullExamCode}</span>
               </div>
               <div class="exam-instruction-tag">
                 ✏️ <strong>Atenção Aluno:</strong> Transfira suas respostas marcando totalmente o quadradinho no <strong>Cartão Oficial ao lado</strong>.
@@ -1560,30 +1648,42 @@ window.TKST_EXAM_GENERATOR = {
         white-space: nowrap !important;
       }
       .exam-field-name {
-        flex: 1.5 !important;
+        flex: 1.6 !important;
         display: flex !important;
         align-items: flex-end !important;
         gap: 4px !important;
         min-width: 0 !important;
+        max-width: 62% !important;
+        overflow: hidden !important;
       }
       .exam-field-line-name {
         flex: 1 !important;
-        min-width: 44mm !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
         border-bottom: 1.2px solid #0F172A !important;
         height: 10px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
       }
       .exam-field-dojo {
-        flex: 1.3 !important;
+        flex: 1.1 !important;
         display: flex !important;
         align-items: flex-end !important;
         gap: 4px !important;
         min-width: 0 !important;
+        max-width: 38% !important;
+        overflow: hidden !important;
       }
       .exam-field-line-dojo {
         flex: 1 !important;
-        min-width: 36mm !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
         border-bottom: 1.2px solid #0F172A !important;
         height: 10px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
       }
 
       /* CÓDIGO DA PROVA DESTACADO E INSTRUÇÃO */
