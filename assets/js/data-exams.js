@@ -873,6 +873,31 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }).join('');
 
+      // Se for a Questão 10 (idx === 9): Título na largura total (sem sobreposição!)
+      // e na linha das alternativas: Opções à esquerda e QR Code de correção à direita
+      if (idx === 9) {
+        return `
+          <div class="exam-vertical-q-item exam-landscape-q-card exam-q10-card">
+            <div class="exam-q-title-row">
+              <span class="exam-q-number">${qNum}.</span> ${q.question}
+            </div>
+            <div class="exam-q-side-row exam-q10-side-row">
+              <div class="exam-mcq-options-col exam-q10-options-col">
+                ${optionsHtml}
+              </div>
+              <div class="exam-q10-qr-wrap">
+                <div class="exam-q10-qr-box">
+                  <div class="exam-q10-qr-svg">
+                    ${qrSvg}
+                  </div>
+                  <span class="exam-q10-qr-label">CORREÇÃO #${examId}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       const imgSrc = q.image || q.fallbackImage;
 
       if (imgSrc) {
@@ -951,16 +976,6 @@ window.TKST_EXAM_GENERATOR = {
           </div>
           <div class="exam-landscape-col">
             ${col2Questions}
-          </div>
-        </div>
-
-        <!-- QR CODE OFICIAL DE CORREÇÃO (CANTO INFERIOR DIREITO, FLUTUANTE FORA DO FLUXO DO TEXTO) -->
-        <div class="exam-corner-qr-wrap">
-          <div class="exam-corner-qr-box">
-            <div class="exam-corner-qr-svg">
-              ${qrSvg}
-            </div>
-            <span class="exam-corner-qr-label">CORREÇÃO #${examId}</span>
           </div>
         </div>
       </div>
@@ -1279,7 +1294,7 @@ window.TKST_EXAM_GENERATOR = {
     return `
       @page {
         size: A4 landscape;
-        margin: 2mm 3mm 2mm 3mm;
+        margin: 3.5mm 5mm 3.5mm 5mm;
       }
       * {
         box-sizing: border-box;
@@ -1299,9 +1314,10 @@ window.TKST_EXAM_GENERATOR = {
       .exam-sheet-a4 {
         position: relative !important;
         width: 100%;
-        max-width: 291mm;
+        max-width: 287mm;
         margin: 0 auto;
-        padding: 0;
+        padding: 1.5mm 2.5mm !important;
+        box-sizing: border-box !important;
         background: #FFF;
       }
       .single-page-a4 {
@@ -1317,9 +1333,9 @@ window.TKST_EXAM_GENERATOR = {
         break-inside: avoid !important;
       }
       .exam-landscape-sheet {
-        height: 204mm !important;
-        min-height: 204mm !important;
-        max-height: 204mm !important;
+        height: 198mm !important;
+        min-height: 198mm !important;
+        max-height: 198mm !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
         display: flex !important;
@@ -1364,8 +1380,10 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         align-items: stretch !important;
         gap: 10px !important;
+        margin-top: 1.5mm !important;
+        padding-top: 0.5mm !important;
         margin-bottom: 2mm !important;
-        padding-bottom: 2mm !important;
+        padding-bottom: 1.5mm !important;
         border-bottom: 1.5px solid #0F172A !important;
       }
       .exam-landscape-header-col {
@@ -1407,6 +1425,8 @@ window.TKST_EXAM_GENERATOR = {
         flex-direction: column !important;
         justify-content: center !important;
         gap: 2px;
+        margin-top: 0.5mm !important;
+        box-sizing: border-box !important;
       }
       .exam-landscape-student-box {
         flex: 1.35 !important;
@@ -1426,6 +1446,8 @@ window.TKST_EXAM_GENERATOR = {
         justify-content: center !important;
         padding: 3px 6px !important;
         text-align: center !important;
+        margin-top: 0.5mm !important;
+        box-sizing: border-box !important;
       }
       .exam-landscape-quote-box {
         flex: 1.25 !important;
@@ -1451,10 +1473,13 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1 1 auto !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 6px 28px !important;
-        height: calc(204mm - 38mm) !important;
-        min-height: calc(204mm - 38mm) !important;
+        gap: 6px 26px !important;
+        height: calc(198mm - 38mm) !important;
+        min-height: calc(198mm - 38mm) !important;
         margin-bottom: 0 !important;
+        padding-left: 3.5mm !important;
+        padding-right: 3.5mm !important;
+        box-sizing: border-box !important;
       }
       .exam-landscape-col {
         display: flex !important;
@@ -1526,18 +1551,22 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 600 !important;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES COM ALTURA EXATA DA LETRA A ATÉ A LETRA D */
       .exam-q-side-row {
         display: flex !important;
-        align-items: center !important;
+        align-items: stretch !important;
         justify-content: flex-start !important;
-        gap: 14px !important;
-        margin-top: 1px !important;
+        gap: 10px !important;
+        margin-top: 1.5px !important;
         width: 100% !important;
       }
       .exam-q-side-row .exam-mcq-options-col {
-        flex: 1 1 auto !important;
+        flex: 0 0 auto !important;
         width: auto !important;
+        max-width: 60% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
       }
       .exam-q-img-wrap {
         border: none !important;
@@ -1547,17 +1576,18 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0 !important;
         width: auto !important;
-        max-width: 215px !important;
-        height: 72px !important;
+        max-width: 165px !important;
+        height: auto !important;
+        align-self: stretch !important;
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important;
+        justify-content: center !important;
       }
       .exam-side-img {
-        max-height: 72px !important;
-        max-width: 210px !important;
+        height: 100% !important;
+        max-height: 94px !important;
         width: auto !important;
-        height: auto !important;
+        max-width: 160px !important;
         object-fit: contain !important;
         display: block !important;
         image-rendering: -webkit-optimize-contrast;
@@ -1570,18 +1600,25 @@ window.TKST_EXAM_GENERATOR = {
         gap: 3px;
       }
 
-      /* QR CODE OFICIAL NO CANTO INFERIOR DIREITO DA FOLHA (FORA DO FLUXO DO TEXTO) */
-      .exam-corner-qr-wrap {
-        position: absolute !important;
-        right: 2.5mm !important;
-        bottom: 2mm !important;
-        z-index: 10 !important;
+      /* QUESTÃO 10: QR CODE EMBUTIDO AO LADO DAS OPÇÕES (SEM SOBREPOSIÇÃO) */
+      .exam-q10-side-row {
         display: flex !important;
-        flex-direction: column !important;
         align-items: center !important;
-        justify-content: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        margin-top: 1px !important;
       }
-      .exam-corner-qr-box {
+      .exam-q10-options-col {
+        flex: 1 1 auto !important;
+        max-width: 68% !important;
+      }
+      .exam-q10-qr-wrap {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+      }
+      .exam-q10-qr-box {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -1589,29 +1626,34 @@ window.TKST_EXAM_GENERATOR = {
         background: #FFF !important;
         border: 1.5px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 2.5px !important;
-        box-shadow: 2px 2px 0px #0F172A !important;
+        padding: 2px !important;
+        box-shadow: 1.5px 1.5px 0px #0F172A !important;
       }
-      .exam-corner-qr-svg {
-        width: 25mm !important;
-        height: 25mm !important;
+      .exam-q10-qr-svg {
+        width: 22mm !important;
+        height: 22mm !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
       }
-      .exam-corner-qr-svg svg {
+      .exam-q10-qr-svg svg {
         width: 100% !important;
         height: 100% !important;
         display: block !important;
       }
-      .exam-corner-qr-label {
-        font-size: 5.6pt !important;
+      .exam-q10-qr-label {
+        font-size: 6.2pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
-        letter-spacing: 0.3px !important;
+        letter-spacing: 0.4px !important;
         line-height: 1 !important;
-        margin-top: 1.5px !important;
+        margin-top: 1px !important;
         white-space: nowrap !important;
+      }
+
+      /* QR CODE DE CANTO (FALLBACK) */
+      .exam-corner-qr-wrap {
+        display: none !important;
       }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */
