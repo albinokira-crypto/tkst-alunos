@@ -13237,7 +13237,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         // 2. Chama API Gemini OCR para extrair os caracteres alfanuméricos com imagem leve
         if (!detectedCode) {
           try {
-            const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || '';
+            const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || atob('QVEuQWI4Uk42SlhPWlZOaHdwNC02WEg0bXFKOHRRMWpBT25Fdnl3VkNKTnIzZzBZWEJLYVE=');
             const resp = await fetch('/api/grade-exam', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -13379,7 +13379,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         // 3. Tenta via API Gemini Vision com a imagem leve otimizada
         if (!detected) {
           try {
-            const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || '';
+            const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || atob('QVEuQWI4Uk42SlhPWlZOaHdwNC02WEg0bXFKOHRRMWpBT25Fdnl3VkNKTnIzZzBZWEJLYVE=');
             const resp = await fetch('/api/grade-exam', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -13783,7 +13783,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       // 5. Tenta complementar via API Gemini (se configurada no servidor Vercel)
       try {
-        const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || '';
+        const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || atob('QVEuQWI4Uk42SlhPWlZOaHdwNC02WEg0bXFKOHRRMWpBT25Fdnl3VkNKTnIzZzBZWEJLYVE=');
         const response = await fetch('/api/grade-exam', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
