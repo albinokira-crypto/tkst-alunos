@@ -872,60 +872,48 @@ window.TKST_EXAM_GENERATOR = {
     return words.slice(0, 3).join(' ');
   },
 
-  // Mapeia o Exame Selecionado para a graduação correspondente no Banco de Questões
+  // Mapeia o Exame Selecionado para a graduação correspondente no Banco de Questões (Regra estrita do Sensei)
+  // - Branca para Amarela: questões do 6º Kyu do simulado
+  // - Amarela para Vermelha: questões do 5º Kyu do simulado
+  // - Vermelha para Laranja: questões do 4º Kyu do simulado
+  // - Laranja para Verde: questões do 3º Kyu do simulado
+  // - Verde para Roxa: questões do 2º Kyu do simulado
+  // - Roxa para Marrom: questões do 1º Kyu do simulado
+  // - Marrom para Preta (Shodan): questões do 0 (Shodan) do simulado
+  // - Shodan para Nidan: questões do -1 do simulado
+  // - Nidan para Sandan: questões do -2 do simulado
   getQuizBankKyuForExam: function(examKey) {
     const map = {
-      '6': 7,  // Exame Branca para Amarela -> Questões do 7º Kyu (Heian Shodan)
-      '5': 6,  // Exame Amarela para Vermelha -> Questões do 6º Kyu (Heian Nidan)
-      '4': 5,  // Exame Vermelha para Laranja -> Questões do 5º Kyu (Heian Sandan)
-      '3': 4,  // Exame Laranja para Verde -> Questões do 4º Kyu
-      '2': 3,  // Exame Verde para Roxa -> Questões do 3º Kyu (Heian Yondan)
-      '1': 2,  // Exame Roxa para Marrom -> Questões do 2º Kyu (Heian Godan / Tekki Shodan)
-      '0': 1,  // Exame Marrom para Shodan -> Questões do 1º Kyu (Bassai Dai / Tekki Shodan)
-      '-1': 0, // Exame Shodan para Nidan -> Questões do 0 (Shodan / WKF / Funakoshi)
-      '-2': -1 // Exame Nidan para Sandan -> Questões do -1 (Katas Superiores)
+      '6': 6,   // Exame Branca para Amarela -> 6º Kyu
+      '5': 5,   // Exame Amarela para Vermelha -> 5º Kyu
+      '4': 4,   // Exame Vermelha para Laranja -> 4º Kyu
+      '3': 3,   // Exame Laranja para Verde -> 3º Kyu
+      '2': 2,   // Exame Verde para Roxa -> 2º Kyu
+      '1': 1,   // Exame Roxa para Marrom -> 1º Kyu
+      '0': 0,   // Exame Marrom para Shodan -> Shodan (0)
+      '-1': -1, // Exame Shodan para Nidan -> Nidan (-1)
+      '-2': -2  // Exame Nidan para Sandan -> Sandan (-2)
     };
-    return map[String(examKey)] !== undefined ? map[String(examKey)] : parseInt(examKey);
+    return map[String(examKey)] !== undefined ? map[String(examKey)] : Number(examKey);
   },
 
-  // Obtém 10 questões aleatórias da faixa a partir do banco de questões (garantindo sempre 10 e SEM NENHUMA CONTAGEM)
+  // Obtém as 10 questões oficiais da faixa a partir do banco de questões do simulado
+  // Segue estritamente a ordem oficial do simulado, sem misturar faixas e sem alterar alternativas
   getRandomQuizQuestionsForKyu: function(kyu, count = 10) {
     const rawAll = (window.TKST_AUTH && window.TKST_AUTH.getCustomQuizBank()) || window.TKST_DEFAULT_QUIZ_BANK || [];
     // Filtra sumariamente qualquer questão de contagem ou questão sem alternativas válidas
     const all = rawAll.filter(q => q && !this.isCountingQuestion(q) && q.options && q.options.length >= 2);
-    const kyuNum = Number(kyu);
-    const originKyu = this.getQuizBankKyuForExam(kyu);
+    const targetKyu = this.getQuizBankKyuForExam(kyu);
 
-    // Conjunto de Kyus e termos aceitáveis para o exame da faixa (abrange origem e destino)
-    const targetKyus = new Set([originKyu, kyuNum]);
+    // Filtra EXCLUSIVAMENTE as questões da graduação solicitada pelo Sensei para o gerador de provas
+    let pool = all.filter(q => Number(q.kyuNumber) === targetKyu);
 
-    // Filtra questões da graduação correspondente (ex: para 6º Kyu Amarela aceita 7º e 6º Kyu)
-    let pool = all.filter(q => {
-      if (targetKyus.has(Number(q.kyuNumber))) return true;
-      const bName = String(q.beltName || '').toLowerCase();
-      if (kyuNum === 6 && (bName.includes('branca') || bName.includes('amarela'))) return true;
-      if (kyuNum === 5 && (bName.includes('amarela') || bName.includes('vermelha'))) return true;
-      if (kyuNum === 4 && (bName.includes('vermelha') || bName.includes('laranja'))) return true;
-      if (kyuNum === 3 && (bName.includes('laranja') || bName.includes('verde'))) return true;
-      if (kyuNum === 2 && (bName.includes('verde') || bName.includes('roxa'))) return true;
-      if (kyuNum === 1 && (bName.includes('roxa') || bName.includes('marrom'))) return true;
-      if (kyuNum === 0 && (bName.includes('marrom') || bName.includes('preta') || bName.includes('shodan'))) return true;
-      if (kyuNum === -1 && (bName.includes('nidan') || bName.includes('shodan'))) return true;
-      if (kyuNum === -2 && (bName.includes('sandan') || bName.includes('nidan'))) return true;
-      return false;
-    });
-
-    // Se o banco da faixa tiver menos que 'count' questões, busca no restante do banco para garantir o total
-    if (pool.length < count) {
-      const fallback = all.filter(q => !targetKyus.has(Number(q.kyuNumber)));
-      for (let i = fallback.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [fallback[i], fallback[j]] = [fallback[j], fallback[i]];
-      }
-      pool = pool.concat(fallback.slice(0, count - pool.length));
+    // Fallback de segurança se o banco da faixa estiver vazio
+    if (pool.length === 0) {
+      pool = all.filter(q => q.kyuNumber !== undefined);
     }
 
-    // Deduplica a pool por ID e texto da pergunta única (sem descartar por palavra-chave conceitual)
+    // Deduplica por ID e texto único preservando a ordem original do Simulado
     const uniquePool = [];
     const seenQuestionKeys = new Set();
     for (const q of pool) {
@@ -936,40 +924,22 @@ window.TKST_EXAM_GENERATOR = {
       }
     }
 
-    // Embaralha a pool principal de forma 100% aleatória (Fisher-Yates) a cada sorteio
-    const shuffled = [...uniquePool];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    // Sorteia as primeiras 'count' questões da pool embaralhada
+    // Seleciona as questões na ordem oficial do simulado, preservando as alternativas e gabarito idênticos
     const selected = [];
-    for (const q of shuffled) {
+    for (const q of uniquePool) {
       const qClone = JSON.parse(JSON.stringify(q));
-
-      // Embaralha as alternativas [A, B, C, D] a cada geração de prova para garantir dinamismo total
-      if (qClone.options && qClone.options.length > 1) {
-        const correctStr = qClone.options[qClone.correctIndex || 0];
-        for (let i = qClone.options.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [qClone.options[i], qClone.options[j]] = [qClone.options[j], qClone.options[i]];
-        }
-        qClone.correctIndex = qClone.options.indexOf(correctStr);
-      }
-
+      // As alternativas [A, B, C, D] mantêm rigorosamente a mesma ordem e gabarito do simulado
       selected.push(qClone);
       if (selected.length >= count) break;
     }
 
-    // Garantia absoluta: se ainda faltar alguma para 10, completa com qualquer outra questão do banco
+    // Garantia de 10 questões: se faltar por algum motivo, completa com o restante do banco
     if (selected.length < count) {
       const selectedIds = new Set(selected.map(s => s.id));
       for (const q of all) {
         if (!selectedIds.has(q.id)) {
           selectedIds.add(q.id);
-          const qClone = JSON.parse(JSON.stringify(q));
-          selected.push(qClone);
+          selected.push(JSON.parse(JSON.stringify(q)));
           if (selected.length >= count) break;
         }
       }

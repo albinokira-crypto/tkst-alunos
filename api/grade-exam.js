@@ -400,16 +400,21 @@ Retorne estritamente um JSON:
 
     const barcodePayload = parsedAi.codigo_barras_payload || (parsedAi.dados_prova && parsedAi.dados_prova.codigo_barras_payload) || '';
     if (typeof barcodePayload === 'string' && barcodePayload.toUpperCase().includes('TKST')) {
-      const bStr = barcodePayload.toUpperCase();
-      if (bStr.includes('AMARELA') || bStr.includes('06KYU') || bStr.includes('6KYU')) detectedKyu = 6;
-      else if (bStr.includes('VERMELHA') || bStr.includes('05KYU') || bStr.includes('5KYU')) detectedKyu = 5;
-      else if (bStr.includes('LARANJA') || bStr.includes('04KYU') || bStr.includes('4KYU')) detectedKyu = 4;
-      else if (bStr.includes('VERDE') || bStr.includes('03KYU') || bStr.includes('3KYU')) detectedKyu = 3;
-      else if (bStr.includes('ROXA') || bStr.includes('02KYU') || bStr.includes('2KYU')) detectedKyu = 2;
+      let bStr = barcodePayload.toUpperCase();
+      if (bStr.includes(' PARA ')) {
+        bStr = bStr.split(' PARA ')[1];
+      }
+      if (bStr.includes('SANDAN') || bStr.includes('03DAN') || bStr.includes('3DAN')) detectedKyu = -2;
+      else if (bStr.includes('NIDAN') || bStr.includes('02DAN') || bStr.includes('2DAN')) detectedKyu = -1;
+      else if (bStr.includes('PRETA') || bStr.includes('SHODAN') || bStr.includes('01DAN')) detectedKyu = 0;
       else if (bStr.includes('MARROM') || bStr.includes('01KYU') || bStr.includes('1KYU')) detectedKyu = 1;
-      else if (bStr.includes('PRETA') || bStr.includes('SHODAN')) detectedKyu = 0;
+      else if (bStr.includes('ROXA') || bStr.includes('02KYU') || bStr.includes('2KYU')) detectedKyu = 2;
+      else if (bStr.includes('VERDE') || bStr.includes('03KYU') || bStr.includes('3KYU')) detectedKyu = 3;
+      else if (bStr.includes('LARANJA') || bStr.includes('04KYU') || bStr.includes('4KYU')) detectedKyu = 4;
+      else if (bStr.includes('VERMELHA') || bStr.includes('05KYU') || bStr.includes('5KYU')) detectedKyu = 5;
+      else if (bStr.includes('AMARELA') || bStr.includes('06KYU') || bStr.includes('6KYU')) detectedKyu = 6;
 
-      const idMatch = bStr.match(/([A-Z0-9-]{4,15})(?:-|$)/);
+      const idMatch = barcodePayload.toUpperCase().match(/([A-Z0-9-]{4,15})(?:-|$)/);
       if (idMatch && idMatch[1]) {
         detectedExamId = idMatch[1];
         const dec = decodeCompactExamCode(detectedExamId);
@@ -421,15 +426,23 @@ Retorne estritamente um JSON:
       }
     }
 
-    const gradText = (parsedAi.graduacao || (parsedAi.dados_prova && parsedAi.dados_prova.graduacao) || '').toLowerCase();
+    const gradRaw = (parsedAi.graduacao || (parsedAi.dados_prova && parsedAi.dados_prova.graduacao) || '').toLowerCase();
+    let gradText = gradRaw;
+    if (gradRaw.includes(' para ')) {
+      gradText = gradRaw.split(' para ')[1];
+    } else if (gradRaw.includes(' -> ')) {
+      gradText = gradRaw.split(' -> ')[1];
+    }
     if (gradText && (detectedKyu === undefined || detectedKyu === null)) {
-      if (gradText.includes('amarela') || gradText.includes('6º kyu') || gradText.includes('6 kyu')) detectedKyu = 6;
-      else if (gradText.includes('vermelha') || gradText.includes('5º kyu') || gradText.includes('5 kyu')) detectedKyu = 5;
-      else if (gradText.includes('laranja') || gradText.includes('4º kyu') || gradText.includes('4 kyu')) detectedKyu = 4;
-      else if (gradText.includes('verde') || gradText.includes('3º kyu') || gradText.includes('3 kyu')) detectedKyu = 3;
-      else if (gradText.includes('roxa') || gradText.includes('2º kyu') || gradText.includes('2 kyu')) detectedKyu = 2;
+      if (gradText.includes('sandan') || gradText.includes('3º dan') || gradText.includes('3 dan')) detectedKyu = -2;
+      else if (gradText.includes('nidan') || gradText.includes('2º dan') || gradText.includes('2 dan')) detectedKyu = -1;
+      else if (gradText.includes('preta') || gradText.includes('shodan') || gradText.includes('1º dan')) detectedKyu = 0;
       else if (gradText.includes('marrom') || gradText.includes('1º kyu') || gradText.includes('1 kyu')) detectedKyu = 1;
-      else if (gradText.includes('preta') || gradText.includes('shodan')) detectedKyu = 0;
+      else if (gradText.includes('roxa') || gradText.includes('2º kyu') || gradText.includes('2 kyu')) detectedKyu = 2;
+      else if (gradText.includes('verde') || gradText.includes('3º kyu') || gradText.includes('3 kyu')) detectedKyu = 3;
+      else if (gradText.includes('laranja') || gradText.includes('4º kyu') || gradText.includes('4 kyu')) detectedKyu = 4;
+      else if (gradText.includes('vermelha') || gradText.includes('5º kyu') || gradText.includes('5 kyu')) detectedKyu = 5;
+      else if (gradText.includes('amarela') || gradText.includes('6º kyu') || gradText.includes('6 kyu')) detectedKyu = 6;
     }
 
     const studentName = parsedAi.aluno || parsedAi.studentName || (decodedCompact && decodedCompact.studentTag) || null;
