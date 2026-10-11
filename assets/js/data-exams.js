@@ -873,31 +873,6 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }).join('');
 
-      // Se for a Questão 10 (idx === 9): Título na largura total (sem sobreposição!)
-      // e na linha das alternativas: Opções à esquerda e QR Code de correção à direita
-      if (idx === 9) {
-        return `
-          <div class="exam-vertical-q-item exam-landscape-q-card exam-q10-card">
-            <div class="exam-q-title-row">
-              <span class="exam-q-number">${qNum}.</span> ${q.question}
-            </div>
-            <div class="exam-q-side-row exam-q10-side-row">
-              <div class="exam-mcq-options-col exam-q10-options-col">
-                ${optionsHtml}
-              </div>
-              <div class="exam-q10-qr-wrap">
-                <div class="exam-q10-qr-box">
-                  <div class="exam-q10-qr-svg">
-                    ${qrSvg}
-                  </div>
-                  <span class="exam-q10-qr-label">CORREÇÃO #${examId}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
       const imgSrc = q.image || q.fallbackImage;
 
       if (imgSrc) {
@@ -955,7 +930,7 @@ window.TKST_EXAM_GENERATOR = {
             </div>
             <div class="exam-print-row" style="margin-top: 3px;">
               <div style="flex: 1.2;"><strong>Data:</strong> ${dateStr}</div>
-              <div style="flex: 1.1; text-align: right;"><strong>Nota:</strong> _____ / 10,0</div>
+              <div style="flex: 1.1; text-align: right;"><strong>Nota:</strong> _____ / 10,0 &nbsp; <span style="font-size: 7.2pt; color: #475569; font-weight: 800;">[#${examId}]</span></div>
             </div>
           </div>
 
