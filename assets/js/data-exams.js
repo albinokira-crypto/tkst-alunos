@@ -735,22 +735,25 @@ window.TKST_EXAM_GENERATOR = {
     return map[String(examKey)] !== undefined ? map[String(examKey)] : parseInt(examKey);
   },
 
-  // Obtém 10 questões aleatórias da faixa a partir do banco de questões (excluindo contagem e respostas repetidas)
+  // Obtém 10 questões aleatórias da faixa a partir do banco de questões (garantindo sempre 10)
   getRandomQuizQuestionsForKyu: function(kyu, count = 10) {
-    const all = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_DEFAULT_QUIZ_BANK || []);
+    const all = (window.TKST_AUTH && window.TKST_AUTH.getCustomQuizBank()) || window.TKST_DEFAULT_QUIZ_BANK || [];
     const bankKyu = this.getQuizBankKyuForExam(kyu);
 
-    // Filtra questões da graduação correta e remove questões de contagem
-    let pool = all.filter(q => {
-      if (this.isCountingQuestion(q)) return false;
-      return q.kyuNumber === bankKyu;
-    });
+    // Filtra questões com alternativas válidas da graduação correspondente
+    let pool = all.filter(q => q.kyuNumber === bankKyu && q.options && q.options.length >= 2);
 
-    if (pool.length === 0) {
-      pool = all.filter(q => !this.isCountingQuestion(q));
+    // Se o banco da faixa tiver menos que 'count' questões, busca no restante do banco para garantir o total
+    if (pool.length < count) {
+      const fallback = all.filter(q => q.kyuNumber !== bankKyu && q.options && q.options.length >= 2);
+      for (let i = fallback.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [fallback[i], fallback[j]] = [fallback[j], fallback[i]];
+      }
+      pool = pool.concat(fallback.slice(0, count - pool.length));
     }
 
-    // Embaralhamento seguro (Fisher-Yates)
+    // Embaralha a pool principal (Fisher-Yates)
     const shuffled = [...pool];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -760,7 +763,7 @@ window.TKST_EXAM_GENERATOR = {
     const selected = [];
     const seenSignatures = new Set();
 
-    // Seleciona questões evitando respostas corretas com o mesmo conceito/texto
+    // 1ª seleção: prioriza conceitos e respostas distintas
     for (const q of shuffled) {
       const correctText = (q.options && q.options[q.correctIndex] != null)
         ? q.options[q.correctIndex]
@@ -771,7 +774,6 @@ window.TKST_EXAM_GENERATOR = {
         seenSignatures.add(sig);
         const qClone = JSON.parse(JSON.stringify(q));
 
-        // Embaralha as alternativas para balancear as letras (A, B, C, D)
         if (qClone.options && qClone.options.length > 1) {
           const correctStr = qClone.options[qClone.correctIndex || 0];
           for (let i = qClone.options.length - 1; i > 0; i--) {
@@ -783,11 +785,10 @@ window.TKST_EXAM_GENERATOR = {
 
         selected.push(qClone);
       }
-
       if (selected.length >= count) break;
     }
 
-    // Se o banco for pequeno e não atingiu 10 conceitos únicos, completa com as restantes sem repetir a mesma questão
+    // 2ª seleção: preenche até 10 com as questões restantes da pool
     if (selected.length < count) {
       const selectedIds = new Set(selected.map(s => s.id));
       for (const q of shuffled) {
@@ -807,6 +808,19 @@ window.TKST_EXAM_GENERATOR = {
           selected.push(qClone);
         }
         if (selected.length >= count) break;
+      }
+    }
+
+    // 3ª seleção de garantia: se ainda faltar alguma para 10, completa com qualquer questão do banco
+    if (selected.length < count) {
+      const selectedIds = new Set(selected.map(s => s.id));
+      for (const q of all) {
+        if (!selectedIds.has(q.id) && q.options && q.options.length >= 2) {
+          selectedIds.add(q.id);
+          const qClone = JSON.parse(JSON.stringify(q));
+          selected.push(qClone);
+          if (selected.length >= count) break;
+        }
       }
     }
 
@@ -881,7 +895,7 @@ window.TKST_EXAM_GENERATOR = {
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO + QR CODE) -->
+        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO) -->
         <div class="exam-landscape-top-bar">
           <!-- LOGO SEM CNPJ AMPLIADA + GRADUAÇÃO REFERENTE À PROVA -->
           <div class="exam-landscape-header-col">
@@ -901,22 +915,12 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
 
-          <!-- CITAÇÃO FUNAKOSHI + AVISO AO ALUNO + QR CODE DE CORREÇÃO -->
-          <div class="exam-header-quote-card exam-landscape-quote-box" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 6px;">
-            <div style="flex: 1; text-align: left; display: flex; flex-direction: column; justify-content: center;">
-              <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
-              <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
-              <div style="font-size: 6.8pt; color: #1E293B; margin-top: 2px; font-weight: 700; background: #FEF3C7; border: 1px dashed #D97706; padding: 1px 4px; border-radius: 3px; display: inline-block;">
-                ✏️ <strong>Atenção:</strong> Marque com <strong>X bem escuro</strong> no quadradinho.
-              </div>
-            </div>
-
-            <!-- QR CODE DE CORREÇÃO RÁPIDA PELA CÂMERA -->
-            <div class="exam-qr-box" style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FFF; border: 1.2px solid #0F172A; border-radius: 3px; padding: 1.5px;">
-              <div style="width: 31mm; height: 31mm; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                ${qrSvg}
-              </div>
-              <span style="font-size: 5.2pt; font-weight: 900; color: #0F172A; letter-spacing: 0.4px; line-height: 1; margin-top: 1px;">CORREÇÃO CÂMERA #${examId}</span>
+          <!-- CITAÇÃO FUNAKOSHI + AVISO AO ALUNO -->
+          <div class="exam-header-quote-card exam-landscape-quote-box">
+            <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
+            <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
+            <div style="font-size: 6.8pt; color: #1E293B; margin-top: 2px; font-weight: 700; background: #FEF3C7; border: 1px dashed #D97706; padding: 1px 4px; border-radius: 3px; display: inline-block;">
+              ✏️ <strong>Atenção:</strong> Marque com <strong>X bem escuro</strong> no quadradinho.
             </div>
           </div>
         </div>
@@ -929,6 +933,20 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-landscape-col">
             ${col2Questions}
           </div>
+        </div>
+
+        <!-- QR CODE NO CANTO INFERIOR ESQUERDO (BEM NA PONTA DA FOLHA) -->
+        <div class="exam-bottom-left-qr-box">
+          <div class="exam-bottom-qr-inner">
+            ${qrSvg}
+          </div>
+          <span class="exam-bottom-qr-label">CORREÇÃO #${examId}</span>
+        </div>
+
+        <!-- RODAPÉ OFICIAL AO LADO DO QR CODE -->
+        <div class="exam-landscape-footer-bar">
+          <div>📷 <strong>Correção Instantânea por Câmera</strong> • Avaliação Teórica Oficial TKST</div>
+          <div>Sensei Diego Albino • Tradicional Karatê-Dō Shotokan Tsuyoi</div>
         </div>
       </div>
     `;
@@ -1323,31 +1341,31 @@ window.TKST_EXAM_GENERATOR = {
         z-index: 1 !important;
         display: flex !important;
         align-items: stretch !important;
-        gap: 12px !important;
-        margin-bottom: 6px !important;
-        padding-bottom: 3px !important;
-        border-bottom: 1.8px solid #0F172A !important;
+        gap: 10px !important;
+        margin-bottom: 4px !important;
+        padding-bottom: 2px !important;
+        border-bottom: 1.5px solid #0F172A !important;
       }
       .exam-landscape-header-col {
-        flex: 1.25 !important;
+        flex: 1.1 !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        gap: 3px !important;
+        gap: 2px !important;
       }
       .exam-landscape-logo {
         height: auto !important;
-        max-height: 48px !important;
+        max-height: 40px !important;
         width: 100% !important;
-        max-width: 330px !important;
+        max-width: 290px !important;
         object-fit: contain !important;
         display: block !important;
         margin: 0 auto !important;
       }
       .exam-clean-subtitle {
-        font-size: 10.2pt !important;
+        font-size: 9.6pt !important;
         font-weight: 800 !important;
         color: #B45309 !important;
         line-height: 1.15 !important;
@@ -1359,14 +1377,14 @@ window.TKST_EXAM_GENERATOR = {
       .exam-print-student-box {
         border: 1.5px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 4px 10px !important;
-        font-size: 9.2pt !important;
+        padding: 3px 8px !important;
+        font-size: 8.8pt !important;
         background: #F8FAFC !important;
         box-shadow: 1.5px 1.5px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        gap: 3px;
+        gap: 2px;
       }
       .exam-landscape-student-box {
         flex: 1.35 !important;
@@ -1384,24 +1402,24 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        padding: 4px 8px !important;
+        padding: 3px 6px !important;
         text-align: center !important;
       }
       .exam-landscape-quote-box {
-        flex: 1.1 !important;
+        flex: 1.25 !important;
       }
       .exam-quote-body {
-        font-size: 8.0pt;
+        font-size: 7.6pt;
         font-weight: 700;
         font-style: italic;
         color: #0F172A;
-        line-height: 1.22;
+        line-height: 1.2;
       }
       .exam-quote-author {
-        font-size: 7.4pt;
+        font-size: 7.0pt;
         font-weight: 800;
         color: #B45309;
-        margin-top: 2px;
+        margin-top: 1px;
       }
 
       /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM */
@@ -1410,16 +1428,17 @@ window.TKST_EXAM_GENERATOR = {
         z-index: 1 !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 6px 24px !important;
+        gap: 3px 20px !important;
+        margin-bottom: 21mm !important;
       }
       .exam-landscape-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 5px !important;
+        gap: 2.5px !important;
       }
       .exam-landscape-q-card {
-        border-bottom: 1.4px dashed #CBD5E1 !important;
-        padding-bottom: 4.5px !important;
+        border-bottom: 1.2px dashed #CBD5E1 !important;
+        padding-bottom: 2.5px !important;
         page-break-inside: avoid !important;
       }
       .exam-landscape-q-card:last-child {
@@ -1427,41 +1446,39 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 13pt;
-        line-height: 1.24;
+        font-size: 9.6pt;
+        line-height: 1.22;
         font-weight: 800;
         color: #0F172A;
-        margin-bottom: 2px;
+        margin-bottom: 1px;
       }
       .exam-q-number {
-        font-size: 13.5pt;
+        font-size: 10.2pt;
         font-weight: 900;
         color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS COM QUADRADINHO DE MARCAÇÃO PERFEITO */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS COM QUADRADINHO DE MARCAÇÃO */
       .exam-mcq-options-col {
         display: flex;
         flex-direction: column;
-        gap: 2.5px;
-        flex: 0 0 auto;
-        min-width: 190px;
-        max-width: 58%;
+        gap: 1.5px;
+        flex: 1 1 auto;
       }
       .exam-mcq-option {
         display: flex;
         align-items: center;
-        gap: 5px;
-        font-size: 12pt;
-        line-height: 1.28;
+        gap: 4px;
+        font-size: 9.0pt;
+        line-height: 1.2;
         white-space: normal;
       }
       .exam-mcq-square {
-        width: 13px;
-        height: 13px;
-        min-width: 13px;
-        min-height: 13px;
-        border: 1.5px solid #0F172A;
+        width: 11px;
+        height: 11px;
+        min-width: 11px;
+        min-height: 11px;
+        border: 1.4px solid #0F172A;
         border-radius: 2px;
         background: #FFF;
         display: inline-block;
@@ -1470,7 +1487,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-mcq-letter {
         font-weight: 900;
         color: #0F172A;
-        font-size: 12pt;
+        font-size: 9.2pt;
         flex-shrink: 0;
         margin-right: 1px;
       }
@@ -1479,12 +1496,12 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AMPLIADA PROPORCIONALMENTE (104px) COLADA ÀS RESPOSTAS */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM EQUILIBRADA (56px) */
       .exam-q-side-row {
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        gap: 14px;
+        justify-content: space-between;
+        gap: 8px;
         margin-top: 1px;
         width: 100%;
       }
@@ -1496,15 +1513,15 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0;
         width: auto;
-        max-width: 250px;
-        height: 104px;
+        max-width: 130px;
+        height: 56px;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
+        justify-content: center;
       }
       .exam-side-img {
-        max-height: 104px !important;
-        max-width: 245px !important;
+        max-height: 56px !important;
+        max-width: 125px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
@@ -1517,6 +1534,61 @@ window.TKST_EXAM_GENERATOR = {
         display: flex;
         flex-direction: column;
         gap: 3px;
+      }
+
+      /* QR CODE NO CANTO INFERIOR ESQUERDO (BEM NA PONTA DA FOLHA) */
+      .exam-bottom-left-qr-box {
+        position: absolute !important;
+        bottom: 2mm !important;
+        left: 3mm !important;
+        z-index: 10 !important;
+        background: #FFF !important;
+        border: 1.2px solid #0F172A !important;
+        border-radius: 3px !important;
+        padding: 1px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 1px 1px 0px #0F172A !important;
+      }
+      .exam-bottom-qr-inner {
+        width: 18mm !important;
+        height: 18mm !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      .exam-bottom-qr-inner svg {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+      }
+      .exam-bottom-qr-label {
+        font-size: 4.8pt !important;
+        font-weight: 900 !important;
+        color: #0F172A !important;
+        letter-spacing: 0.3px !important;
+        line-height: 1 !important;
+        margin-top: 1px !important;
+        white-space: nowrap !important;
+      }
+
+      /* RODAPÉ ELEGANTE AO LADO DO QR CODE */
+      .exam-landscape-footer-bar {
+        position: absolute !important;
+        bottom: 2mm !important;
+        left: 24mm !important;
+        right: 3mm !important;
+        height: 19mm !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0 10px !important;
+        border-top: 1px dashed #CBD5E1 !important;
+        font-size: 7.2pt !important;
+        color: #64748B !important;
+        z-index: 5 !important;
       }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */
