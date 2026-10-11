@@ -72,10 +72,10 @@ Sua tarefa é analisar a imagem fornecida da folha de prova de karatê (formato 
 ### ETAPA 2: Extração das Respostas Marcadas com Tolerância a Lápis e Rasuras
 Analise as 10 questões de múltipla escolha (1 a 5 na coluna esquerda, 6 a 10 na coluna direita).
 Para cada questão de 1 a 10, examine a porcentagem de preenchimento (densidade) dos quadradinhos das alternativas ((A), (B), (C), (D)) considerando marcas a lápis/grafite e borracha:
-1. Se o quadradinho tiver menos de 35% de preenchimento escuro (resíduo leve de borracha ou sujeira), considere NÃO MARCADO.
-2. Se ultrapassar 60% de densidade/preenchimento escuro, considere MARCADO.
-3. Se houver duas ou mais opções com densidade intermediária/alta (indicando rasura, marcação dupla ou tentativa de apagar com borracha sem apagar direito), defina a questão como "DUVIDOSA" e aponte no array de duvidosas.
-4. Se a questão estiver sem nenhuma marcação significativa, marque como "EM_BRANCO".
+1. REGRA CRÍTICA PARA PROVA EM BRANCO: Se o aluno NÃO pintou nenhum quadradinho em uma questão (todos os quadradinhos da questão estão brancos/vazios), retorne OBRIGATORIAMENTE "EM_BRANCO" para essa questão. NUNCA invente ou presuma letras para questões não respondidas.
+2. Se o quadradinho tiver menos de 40% de preenchimento escuro (resíduo leve de borracha, sombra ou papel em branco), considere NÃO MARCADO.
+3. Se ultrapassar 60% de preenchimento escuro, considere MARCADO com convicção.
+4. Se houver duas ou mais opções com preenchimento (indicando rasura ou marcação dupla sem apagar direito), defina a questão como "DUVIDOSA" e aponte no array de duvidosas.
 
 ---
 
@@ -85,25 +85,26 @@ Retorne estritamente um objeto JSON com a seguinte estrutura, sem explicações 
 {
   "sucesso_leitura_codigo_barras": true,
   "codigo_barras_payload": "TKST-FAIXA-AMARELA-06KYU-FRWV",
-  "aluno": "Nome do Aluno",
+  "aluno": "Nome do Aluno (ou string vazia se em branco)",
   "dados_prova": {
     "graduacao": "Faixa Branca (7º Kyu) para Faixa Amarela (6º Kyu)",
     "exam_id": "FRWV"
   },
   "respostas_aluno": {
-    "1": "B",
-    "2": "A",
-    "3": "C",
-    "4": "C",
-    "5": "C",
-    "6": "A",
-    "7": "C",
-    "8": "A",
-    "9": "B",
-    "10": "D"
+    "1": "EM_BRANCO",
+    "2": "EM_BRANCO",
+    "3": "EM_BRANCO",
+    "4": "EM_BRANCO",
+    "5": "EM_BRANCO",
+    "6": "EM_BRANCO",
+    "7": "EM_BRANCO",
+    "8": "EM_BRANCO",
+    "9": "EM_BRANCO",
+    "10": "EM_BRANCO"
   },
   "questoes_duvidosas_rasura": []
 }
+(Substitua "EM_BRANCO" por "A", "B", "C" ou "D" APENAS quando o quadradinho estiver visivelmente preenchido pelo aluno a lápis ou caneta).
 `.trim();
 
     const requestPayload = JSON.stringify({
@@ -201,13 +202,14 @@ Retorne estritamente um objeto JSON com a seguinte estrutura, sem explicações 
     if (parsedAi.respostas_aluno && typeof parsedAi.respostas_aluno === 'object') {
       for (let i = 1; i <= 10; i++) {
         const val = parsedAi.respostas_aluno[String(i)] || parsedAi.respostas_aluno[i];
-        if (!val || val === 'EM_BRANCO') {
+        const cleanVal = typeof val === 'string' ? val.trim().toUpperCase() : '';
+        if (!val || cleanVal === 'EM_BRANCO' || cleanVal === 'BRANCO' || cleanVal === 'VAZIO' || cleanVal === 'VAZIA' || cleanVal === 'NULL') {
           detectedAnswers.push(null);
-        } else if (val === 'ANULADA') {
+        } else if (cleanVal === 'ANULADA' || cleanVal === 'DUVIDOSA' || cleanVal === 'RASURA') {
           ambiguousQuestions.push(i);
           detectedAnswers.push(null);
-        } else if (typeof val === 'string' && ['A', 'B', 'C', 'D'].includes(val.trim().toUpperCase())) {
-          detectedAnswers.push(val.trim().toUpperCase());
+        } else if (['A', 'B', 'C', 'D'].includes(cleanVal)) {
+          detectedAnswers.push(cleanVal);
         } else {
           detectedAnswers.push(null);
         }

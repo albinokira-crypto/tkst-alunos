@@ -1518,21 +1518,21 @@ window.TKST_EXAM_GENERATOR = {
         box-sizing: border-box !important;
       }
       .exam-funakoshi-quote {
-        font-size: 7.2pt !important;
+        font-size: 8pt !important;
         font-weight: 700 !important;
         font-style: italic !important;
         color: #0F172A !important;
-        line-height: 1.2 !important;
+        line-height: 1.25 !important;
       }
       .exam-instruction-pill {
-        font-size: 7.0pt !important;
+        font-size: 7.8pt !important;
         color: #1E293B !important;
         font-weight: 800 !important;
         background: #FEF3C7 !important;
         border: 1px dashed #D97706 !important;
-        padding: 1.5px 6px !important;
+        padding: 2px 8px !important;
         border-radius: 3px !important;
-        line-height: 1.2 !important;
+        line-height: 1.25 !important;
       }
 
       /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 297mm DE ALTURA TOTAL) */
@@ -1542,7 +1542,7 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1 1 auto !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 4px 14px !important;
+        gap: 6px 16px !important;
         height: calc(288mm - 60mm) !important;
         min-height: calc(288mm - 60mm) !important;
         max-height: calc(288mm - 60mm) !important;
@@ -1554,17 +1554,20 @@ window.TKST_EXAM_GENERATOR = {
         flex-direction: column !important;
         justify-content: space-between !important;
         height: 100% !important;
-        gap: 3px !important;
+        gap: 4px !important;
       }
       .exam-portrait-q-card {
         border-bottom: 1.2px dashed #CBD5E1 !important;
+        padding-top: 3px !important;
         padding-bottom: 4px !important;
         page-break-inside: avoid !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
+        gap: 2.5px !important;
         flex: 1 1 0 !important;
         min-height: 0 !important;
+        box-sizing: border-box !important;
       }
       .exam-portrait-q-card:last-child {
         border-bottom: none !important;
@@ -1572,40 +1575,43 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 9.2pt !important;
-        line-height: 1.25 !important;
+        font-size: 10.6pt !important;
+        line-height: 1.28 !important;
         font-weight: 800 !important;
         color: #0F172A !important;
-        margin-bottom: 2.5px !important;
+        margin-bottom: 3px !important;
       }
       .exam-q-number {
-        font-size: 9.6pt !important;
+        font-size: 11pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
+        margin-right: 2px !important;
       }
 
       /* MÚLTIPLA ESCOLHA: ALTERNATIVAS COM QUADRADINHO DE MARCAÇÃO PERFEITO */
       .exam-mcq-options-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 2.2px !important;
+        justify-content: space-between !important;
+        gap: 3.5px !important;
         width: 100% !important;
+        flex: 1 1 auto !important;
       }
       .exam-mcq-option {
         display: flex !important;
         align-items: center !important;
-        gap: 5px !important;
-        font-size: 8.4pt !important;
-        line-height: 1.2 !important;
+        gap: 6px !important;
+        font-size: 9.8pt !important;
+        line-height: 1.25 !important;
         white-space: normal !important;
       }
       .exam-mcq-square {
-        width: 12.5px !important;
-        height: 12.5px !important;
-        min-width: 12.5px !important;
-        min-height: 12.5px !important;
-        border: 1.6px solid #0F172A !important;
-        border-radius: 2px !important;
+        width: 15px !important;
+        height: 15px !important;
+        min-width: 15px !important;
+        min-height: 15px !important;
+        border: 1.8px solid #0F172A !important;
+        border-radius: 2.5px !important;
         background: #FFF !important;
         display: inline-block !important;
         flex-shrink: 0 !important;
@@ -1613,52 +1619,56 @@ window.TKST_EXAM_GENERATOR = {
       .exam-mcq-letter {
         font-weight: 900 !important;
         color: #0F172A !important;
-        font-size: 8.6pt !important;
+        font-size: 10pt !important;
         flex-shrink: 0 !important;
-        margin-right: 1px !important;
+        margin-right: 2px !important;
       }
       .exam-mcq-opt-text {
         color: #1E293B !important;
         font-weight: 600 !important;
+        font-size: 9.6pt !important;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES COM ALTURA PERFEITA */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES COM ALTURA EXATA DA LETRA A A D */
       .exam-q-side-row {
         display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 6px !important;
-        margin-top: 1.5px !important;
+        align-items: stretch !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        margin-top: 2px !important;
         width: 100% !important;
+        flex: 1 1 auto !important;
       }
       .exam-q-side-row .exam-mcq-options-col {
         flex: 1 1 auto !important;
         width: auto !important;
-        max-width: 62% !important;
+        max-width: 63% !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
+        gap: 3px !important;
       }
       .exam-q-img-wrap {
-        border: none !important;
-        border-radius: 0 !important;
-        padding: 0 !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        flex-shrink: 0 !important;
-        width: auto !important;
-        max-width: 110px !important;
-        height: auto !important;
-        align-self: center !important;
+        border: 1.2px solid #CBD5E1 !important;
+        border-radius: 4px !important;
+        padding: 3px !important;
+        background: #FFFFFF !important;
+        box-shadow: 1px 1px 0px rgba(15, 23, 42, 0.08) !important;
+        flex: 0 0 35% !important;
+        width: 35% !important;
+        max-width: 125px !important;
+        align-self: stretch !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
       }
       .exam-side-img {
-        height: auto !important;
-        max-height: 60px !important;
-        width: auto !important;
-        max-width: 105px !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
         object-fit: contain !important;
         display: block !important;
         image-rendering: -webkit-optimize-contrast;

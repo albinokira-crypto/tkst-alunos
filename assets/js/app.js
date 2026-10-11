@@ -13110,59 +13110,67 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         const optAreaH = qH * 0.75;
         const singleOptH = optAreaH / 4;
 
-        // O quadradinho de marcação fica no lado esquerdo da alternativa
-        const boxBaseX = colDef.startX + (colDef.width * 0.008);
-        const boxBaseW = colDef.width * 0.14; // janela do quadradinho
+        // O quadradinho de marcação fica no início da linha da alternativa
+        const boxBaseX = colDef.startX + (colDef.width * 0.006);
+        const squareW = Math.max(6, Math.round(colDef.width * 0.036)); // Largura estrita do quadradinho (SEM pegar a letra A, B, C, D)
+        const squareH = squareW; // O marcador é um quadrado perfeito
+
+        // Amostra estritamente o interior do quadradinho (inset de 22% para ignorar a borda preta impressa)
+        const innerInset = Math.max(1, Math.round(squareW * 0.22));
+        const sampleW = Math.max(3, squareW - (innerInset * 2));
+        const sampleH = Math.max(3, squareH - (innerInset * 2));
 
         const optionScores = [];
 
         for (let optIdx = 0; optIdx < 4; optIdx++) {
           const optY = optAreaY + (optIdx * singleOptH);
           const optH = singleOptH;
+          const boxCenterY = optY + (optH * 0.5);
 
-          // Busca a região de maior concentração de preenchimento na janela do quadradinho
           let bestFillRatio = 0;
           let bestIntegratedDarkness = 0;
           let bestMeanLuma = 255;
 
-          // Janela amostrada do quadradinho (com busca em pequenos deslocamentos para tolerar inclinação)
-          const offsets = [0, -2, 2];
+          // Busca no miolo interno do quadradinho com tolerância fina a pequenos desvios de alinhamento
+          const offsets = [-1, 0, 1];
           for (const dy of offsets) {
-            const bX = Math.max(0, Math.round(boxBaseX));
-            const bY = Math.max(0, Math.round(optY + (optH * 0.10) + dy));
-            const bW = Math.min(cw - bX, Math.round(boxBaseW));
-            const bH = Math.min(ch - bY, Math.round(optH * 0.78));
+            for (const dx of offsets) {
+              const bX = Math.max(0, Math.round(boxBaseX + innerInset + dx));
+              const bY = Math.max(0, Math.round(boxCenterY - (sampleH / 2) + dy));
+              const bW = Math.min(cw - bX, sampleW);
+              const bH = Math.min(ch - bY, sampleH);
 
-            if (bW > 4 && bH > 4) {
-              try {
-                const imgData = ctx.getImageData(bX, bY, bW, bH).data;
-                const totalPixels = imgData.length / 4;
-                let darkCount = 0;
-                let darkSum = 0;
-                let lumaSum = 0;
+              if (bW > 2 && bH > 2) {
+                try {
+                  const imgData = ctx.getImageData(bX, bY, bW, bH).data;
+                  const totalPixels = imgData.length / 4;
+                  let darkCount = 0;
+                  let darkSum = 0;
+                  let lumaSum = 0;
 
-                for (let p = 0; p < imgData.length; p += 4) {
-                  const luma = imgData[p] * 0.299 + imgData[p+1] * 0.587 + imgData[p+2] * 0.114;
-                  lumaSum += luma;
-                  if (luma < darkThreshold) {
-                    darkCount++;
-                    darkSum += (darkThreshold - luma);
+                  for (let p = 0; p < imgData.length; p += 4) {
+                    const luma = imgData[p] * 0.299 + imgData[p+1] * 0.587 + imgData[p+2] * 0.114;
+                    lumaSum += luma;
+                    if (luma < darkThreshold) {
+                      darkCount++;
+                      darkSum += (darkThreshold - luma);
+                    }
                   }
-                }
 
-                const fillRatio = darkCount / totalPixels;
-                const meanLuma = lumaSum / totalPixels;
+                  const fillRatio = darkCount / totalPixels;
+                  const meanLuma = lumaSum / totalPixels;
 
-                if (fillRatio > bestFillRatio) {
-                  bestFillRatio = fillRatio;
-                  bestIntegratedDarkness = darkSum;
-                  bestMeanLuma = meanLuma;
-                }
-              } catch(e) {}
+                  if (fillRatio > bestFillRatio) {
+                    bestFillRatio = fillRatio;
+                    bestIntegratedDarkness = darkSum;
+                    bestMeanLuma = meanLuma;
+                  }
+                } catch(e) {}
+              }
             }
           }
 
-          // Porcentagem de preenchimento / densidade de grafite ou tinta (0% a 100%)
+          // Porcentagem de preenchimento do interior do quadradinho (0% a 100%)
           const densityPct = Math.round(bestFillRatio * 100);
 
           optionScores.push({
@@ -13177,28 +13185,24 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         // Ordena opções da maior para menor densidade
         const sorted = optionScores.slice().sort((a, b) => b.densityPct - a.densityPct);
 
-        // REGRAS ESTRITAS DE DECISÃO (Tolerância a Lápis e Rasuras):
-        // 1. < 35% de pixels escuros -> Não marcado (resíduo leve de borracha ou sujeira)
-        // 2. >= 60% de densidade -> Marcado com certeza
-        // 3. Duas ou mais opções com densidade intermediária/alta (>= 35%) -> "DUVIDOSA / RASURA"
+        // REGRAS ESTRITAS DE DECISÃO (Sem Falsos Positivos em Provas Não Marcadas):
+        // 1. Interior com menos de 45% de pixels escuros -> NÃO MARCADO (quadradinho em branco ou sujeira leve)
+        // 2. Apenas UMA opção >= 45% -> Marcada pelo aluno
+        // 3. Duas ou mais opções >= 40% -> Marcada como DUVIDOSA / RASURA (não chuta resposta)
+        // 4. Se todas estiverem < 45% -> QUESTÃO TOTALMENTE EM BRANCO (null)
         let chosen = null;
-        const candidateOptions = optionScores.filter(o => o.densityPct >= 35);
-        const highMarked = optionScores.filter(o => o.densityPct >= 60);
+        const candidateOptions = optionScores.filter(o => o.densityPct >= 45);
 
         if (candidateOptions.length === 0) {
-          // Nenhuma opção atingiu 35% -> Questão em branco
+          // Nenhum quadradinho pintado nesta questão -> EM BRANCO
           chosen = null;
-        } else if (highMarked.length === 1 && candidateOptions.length === 1) {
-          // Marcação limpa e única >= 60% com outras opções < 35%
-          chosen = highMarked[0].letter;
-        } else if (candidateOptions.length >= 2) {
-          // Duas ou mais alternativas com densidade intermediária ou alta (rasura ou marcação dupla sem apagar direito)
-          ambiguousQuestions.push(qIdx + 1);
-          chosen = sorted[0].letter; // Sugere provisoriamente a mais escura para confirmação do professor
-        } else if (candidateOptions.length === 1 && highMarked.length === 0) {
-          // Apenas uma alternativa com densidade intermediária entre 35% e 59% (lápis fraco ou borracha não apagada totalmente)
-          ambiguousQuestions.push(qIdx + 1);
+        } else if (candidateOptions.length === 1) {
+          // Apenas um quadradinho pintado com convicção
           chosen = candidateOptions[0].letter;
+        } else {
+          // Rasura ou dupla marcação: sinaliza dúvida e não força resposta
+          ambiguousQuestions.push(qIdx + 1);
+          chosen = null;
         }
 
         detectedAnswers.push(chosen);
@@ -13342,9 +13346,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             finalResult.answerKey = json.answerKey;
             detected.answers = json.answerKey;
           }
-          if (Array.isArray(json.detectedAnswers) && json.detectedAnswers.some(a => a !== null)) {
-            finalResult.detectedAnswers = json.detectedAnswers.map((aiAns, i) => {
-              return aiAns || omrResult.detectedAnswers[i];
+          if (Array.isArray(json.detectedAnswers) && json.detectedAnswers.length === 10) {
+            finalResult.detectedAnswers = json.detectedAnswers.map(aiAns => {
+              return (typeof aiAns === 'string' && ['A', 'B', 'C', 'D'].includes(aiAns.trim().toUpperCase()))
+                ? aiAns.trim().toUpperCase()
+                : null;
             });
           }
           if (Array.isArray(json.ambiguousQuestions)) {
