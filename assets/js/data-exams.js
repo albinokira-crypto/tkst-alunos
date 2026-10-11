@@ -832,6 +832,23 @@ window.TKST_EXAM_GENERATOR = {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
 
+    // Garante que a Questão 10 (índice 9) seja sem ilustração para abrigar o QR Code perfeitamente
+    if (questions[9] && (questions[9].image || questions[9].fallbackImage)) {
+      const nonImgIdx = questions.findIndex((q, i) => i < 9 && !q.image && !q.fallbackImage);
+      if (nonImgIdx !== -1) {
+        [questions[9], questions[nonImgIdx]] = [questions[nonImgIdx], questions[9]];
+      }
+    }
+
+    const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
+    const examId = options.examId || (Math.random().toString(36).substring(2, 6).toUpperCase());
+    const qrPayload = (window.TKST_QR && window.TKST_QR.encodeExamPayload)
+      ? window.TKST_QR.encodeExamPayload(kyu, examId, answerLetters)
+      : ('TKST:' + kyu + ':' + examId + ':' + answerLetters.join(','));
+    const qrSvg = (window.TKST_QR && window.TKST_QR.createSvg)
+      ? window.TKST_QR.createSvg(qrPayload, 110, 1)
+      : '';
+
     const renderSingleQuestion = (q, idx) => {
       const qNum = idx + 1;
       const optionsHtml = (q.options || []).map((opt, optIdx) => {
@@ -844,6 +861,30 @@ window.TKST_EXAM_GENERATOR = {
           </div>
         `;
       }).join('');
+
+      // Questão 10: abriga o QR Code oficial no espaço ao lado das opções
+      if (idx === 9) {
+        return `
+          <div class="exam-vertical-q-item exam-landscape-q-card exam-q10-card">
+            <div class="exam-q-title-row">
+              <span class="exam-q-number">${qNum}.</span> ${q.question}
+            </div>
+            <div class="exam-q-side-row">
+              <div class="exam-mcq-options-col">
+                ${optionsHtml}
+              </div>
+              <div class="exam-q10-qr-wrap">
+                <div class="exam-q10-qr-box">
+                  <div class="exam-q10-qr-svg">
+                    ${qrSvg}
+                  </div>
+                  <span class="exam-q10-qr-label">CORREÇÃO #${examId}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
 
       const imgSrc = q.image || q.fallbackImage;
 
@@ -881,15 +922,6 @@ window.TKST_EXAM_GENERATOR = {
     const col1Questions = questions.slice(0, 5).map((q, idx) => renderSingleQuestion(q, idx)).join('');
     const col2Questions = questions.slice(5, 10).map((q, idx) => renderSingleQuestion(q, idx + 5)).join('');
 
-    const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
-    const examId = options.examId || (Math.random().toString(36).substring(2, 6).toUpperCase());
-    const qrPayload = (window.TKST_QR && window.TKST_QR.encodeExamPayload)
-      ? window.TKST_QR.encodeExamPayload(kyu, examId, answerLetters)
-      : ('TKST:' + kyu + ':' + examId + ':' + answerLetters.join(','));
-    const qrSvg = (window.TKST_QR && window.TKST_QR.createSvg)
-      ? window.TKST_QR.createSvg(qrPayload, 110, 1)
-      : '';
-
     return `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1 exam-landscape-sheet">
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
@@ -919,7 +951,7 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-header-quote-card exam-landscape-quote-box">
             <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
             <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
-            <div style="font-size: 6.8pt; color: #1E293B; margin-top: 2px; font-weight: 700; background: #FEF3C7; border: 1px dashed #D97706; padding: 1px 4px; border-radius: 3px; display: inline-block;">
+            <div style="font-size: 7.2pt; color: #1E293B; margin-top: 2px; font-weight: 700; background: #FEF3C7; border: 1px dashed #D97706; padding: 1px 4px; border-radius: 3px; display: inline-block;">
               ✏️ <strong>Atenção:</strong> Marque com <strong>X bem escuro</strong> no quadradinho.
             </div>
           </div>
@@ -933,20 +965,6 @@ window.TKST_EXAM_GENERATOR = {
           <div class="exam-landscape-col">
             ${col2Questions}
           </div>
-        </div>
-
-        <!-- QR CODE NO CANTO INFERIOR ESQUERDO (BEM NA PONTA DA FOLHA) -->
-        <div class="exam-bottom-left-qr-box">
-          <div class="exam-bottom-qr-inner">
-            ${qrSvg}
-          </div>
-          <span class="exam-bottom-qr-label">CORREÇÃO #${examId}</span>
-        </div>
-
-        <!-- RODAPÉ OFICIAL AO LADO DO QR CODE -->
-        <div class="exam-landscape-footer-bar">
-          <div>📷 <strong>Correção Instantânea por Câmera</strong> • Avaliação Teórica Oficial TKST</div>
-          <div>Sensei Diego Albino • Tradicional Karatê-Dō Shotokan Tsuyoi</div>
         </div>
       </div>
     `;
@@ -1422,23 +1440,23 @@ window.TKST_EXAM_GENERATOR = {
         margin-top: 1px;
       }
 
-      /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM */
+      /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM (PREENCHENDO A FOLHA) */
       .exam-landscape-grid-2col {
         position: relative !important;
         z-index: 1 !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 3px 20px !important;
-        margin-bottom: 21mm !important;
+        gap: 4px 24px !important;
+        margin-bottom: 0 !important;
       }
       .exam-landscape-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 2.5px !important;
+        gap: 4px !important;
       }
       .exam-landscape-q-card {
-        border-bottom: 1.2px dashed #CBD5E1 !important;
-        padding-bottom: 2.5px !important;
+        border-bottom: 1.4px dashed #CBD5E1 !important;
+        padding-bottom: 4px !important;
         page-break-inside: avoid !important;
       }
       .exam-landscape-q-card:last-child {
@@ -1446,39 +1464,41 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 9.6pt;
-        line-height: 1.22;
+        font-size: 10.8pt;
+        line-height: 1.25;
         font-weight: 800;
         color: #0F172A;
-        margin-bottom: 1px;
+        margin-bottom: 2px;
       }
       .exam-q-number {
-        font-size: 10.2pt;
+        font-size: 11.4pt;
         font-weight: 900;
         color: #0F172A;
       }
 
-      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS COM QUADRADINHO DE MARCAÇÃO */
+      /* MÚLTIPLA ESCOLHA: ALTERNATIVAS COM QUADRADINHO DE MARCAÇÃO PERFEITO */
       .exam-mcq-options-col {
         display: flex;
         flex-direction: column;
-        gap: 1.5px;
-        flex: 1 1 auto;
+        gap: 2.2px;
+        flex: 0 0 auto;
+        min-width: 175px;
+        max-width: 58%;
       }
       .exam-mcq-option {
         display: flex;
         align-items: center;
-        gap: 4px;
-        font-size: 9.0pt;
-        line-height: 1.2;
+        gap: 5px;
+        font-size: 9.8pt;
+        line-height: 1.24;
         white-space: normal;
       }
       .exam-mcq-square {
-        width: 11px;
-        height: 11px;
-        min-width: 11px;
-        min-height: 11px;
-        border: 1.4px solid #0F172A;
+        width: 12px;
+        height: 12px;
+        min-width: 12px;
+        min-height: 12px;
+        border: 1.5px solid #0F172A;
         border-radius: 2px;
         background: #FFF;
         display: inline-block;
@@ -1487,7 +1507,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-mcq-letter {
         font-weight: 900;
         color: #0F172A;
-        font-size: 9.2pt;
+        font-size: 10pt;
         flex-shrink: 0;
         margin-right: 1px;
       }
@@ -1496,12 +1516,12 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 600;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM EQUILIBRADA (56px) */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES (COLADA ÀS RESPOSTAS) */
       .exam-q-side-row {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+        justify-content: flex-start;
+        gap: 14px;
         margin-top: 1px;
         width: 100%;
       }
@@ -1513,15 +1533,15 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0;
         width: auto;
-        max-width: 130px;
-        height: 56px;
+        max-width: 220px;
+        height: 75px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
       }
       .exam-side-img {
-        max-height: 56px !important;
-        max-width: 125px !important;
+        max-height: 75px !important;
+        max-width: 215px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
@@ -1536,59 +1556,45 @@ window.TKST_EXAM_GENERATOR = {
         gap: 3px;
       }
 
-      /* QR CODE NO CANTO INFERIOR ESQUERDO (BEM NA PONTA DA FOLHA) */
-      .exam-bottom-left-qr-box {
-        position: absolute !important;
-        bottom: 2mm !important;
-        left: 3mm !important;
-        z-index: 10 !important;
-        background: #FFF !important;
-        border: 1.2px solid #0F172A !important;
-        border-radius: 3px !important;
-        padding: 1px !important;
+      /* QR CODE NA QUESTÃO 10 (AO LADO DAS OPÇÕES) */
+      .exam-q10-qr-wrap {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        flex-shrink: 0 !important;
+        margin-left: 6px !important;
+      }
+      .exam-q10-qr-box {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        box-shadow: 1px 1px 0px #0F172A !important;
+        background: #FFF !important;
+        border: 1.3px solid #0F172A !important;
+        border-radius: 3px !important;
+        padding: 1.5px !important;
+        box-shadow: 1.5px 1.5px 0px #0F172A !important;
       }
-      .exam-bottom-qr-inner {
-        width: 18mm !important;
-        height: 18mm !important;
+      .exam-q10-qr-svg {
+        width: 23mm !important;
+        height: 23mm !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
       }
-      .exam-bottom-qr-inner svg {
+      .exam-q10-qr-svg svg {
         width: 100% !important;
         height: 100% !important;
         display: block !important;
       }
-      .exam-bottom-qr-label {
-        font-size: 4.8pt !important;
+      .exam-q10-qr-label {
+        font-size: 5pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
         letter-spacing: 0.3px !important;
         line-height: 1 !important;
         margin-top: 1px !important;
         white-space: nowrap !important;
-      }
-
-      /* RODAPÉ ELEGANTE AO LADO DO QR CODE */
-      .exam-landscape-footer-bar {
-        position: absolute !important;
-        bottom: 2mm !important;
-        left: 24mm !important;
-        right: 3mm !important;
-        height: 19mm !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        padding: 0 10px !important;
-        border-top: 1px dashed #CBD5E1 !important;
-        font-size: 7.2pt !important;
-        color: #64748B !important;
-        z-index: 5 !important;
       }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */
