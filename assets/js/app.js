@@ -2480,7 +2480,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- ÁREA DA PRÉVIA OU INSTRUÇÃO -->
           ${examPreviewGenerated ? `
             <div style="padding: 20px 14px; background: rgba(0,0,0,0.5); overflow-x: auto;">
-              <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto 12px auto; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1040px; margin: 0 auto 12px auto; flex-wrap: wrap; gap: 8px;">
                 <div style="font-size: 0.82rem; color: #94A3B8; display: flex; align-items: center; gap: 6px;">
                   <i class="fas fa-eye" style="color: var(--accent-gold);"></i> <strong>Prova Oficial Diagramada (1 Folha A4 com QR Code):</strong>
                 </div>
@@ -2494,7 +2494,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
               
-              <div class="exam-preview-container" style="background: #FFF; color: #0F172A; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.7); max-width: 800px; margin: 0 auto; padding: 16px; font-size: 0.88rem;">
+              <div class="exam-preview-container" style="background: #FFF; color: #0F172A; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.7); max-width: 1040px; margin: 0 auto; padding: 16px; font-size: 0.88rem; position: relative;">
                 ${examPreviewHtml}
               </div>
             </div>

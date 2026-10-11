@@ -680,16 +680,25 @@ window.TKST_EXAM_GENERATOR = {
     return window.TKST_OFFICIAL_EXAMS[kyu] || window.TKST_OFFICIAL_EXAMS[6];
   },
 
-  // Filtra e elimina questões de contagem de números
+  // Filtra e elimina TERMINANTEMENTE questões de contagem de números em japonês
   isCountingQuestion: function(q) {
     if (!q) return false;
     if (q.type === 'count_grid_2col') return true;
-    const text = (q.question || q.title || '').toLowerCase();
+    const text = ((q.question || q.title || '') + ' ' + (q.explanation || '')).toLowerCase();
     if (text.includes('contagem')) return true;
-    if (text.includes('conte de')) return true;
-    if (text.includes('contar de')) return true;
-    if (/cont(e|ar|agem)\s+(de\s+)?\d+\s*a\s*\d+/i.test(text)) return true;
+    if (text.includes('conte de') || text.includes('contar de') || text.includes('contar em') || text.includes('como se conta')) return true;
+    if (/cont(e|ar|agem)/i.test(text)) return true;
+    if (/\b\d+\s*a\s*\d+\b/.test(text)) return true; // ex: 1 a 10, 11 a 20, 21 a 30...
     if (/n[úu]meros de \d+ a \d+/i.test(text)) return true;
+    if (/n[úu]mero.*japon[êe]s/i.test(text)) return true;
+
+    // Também verifica nas opções para ter certeza absoluta
+    if (Array.isArray(q.options)) {
+      const optsText = q.options.map(o => (typeof o === 'string' ? o : (o.text || ''))).join(' ').toLowerCase();
+      if (optsText.includes('ichi, ni, san') || optsText.includes('ichi, ni') || optsText.includes('ju-ichi') || optsText.includes('yon, go, roku') || optsText.includes('shichi, hachi') || optsText.includes('ni-ju, san-ju')) {
+        return true;
+      }
+    }
     return false;
   },
 
@@ -735,17 +744,19 @@ window.TKST_EXAM_GENERATOR = {
     return map[String(examKey)] !== undefined ? map[String(examKey)] : parseInt(examKey);
   },
 
-  // Obtém 10 questões aleatórias da faixa a partir do banco de questões (garantindo sempre 10)
+  // Obtém 10 questões aleatórias da faixa a partir do banco de questões (garantindo sempre 10 e SEM NENHUMA CONTAGEM)
   getRandomQuizQuestionsForKyu: function(kyu, count = 10) {
-    const all = (window.TKST_AUTH && window.TKST_AUTH.getCustomQuizBank()) || window.TKST_DEFAULT_QUIZ_BANK || [];
+    const rawAll = (window.TKST_AUTH && window.TKST_AUTH.getCustomQuizBank()) || window.TKST_DEFAULT_QUIZ_BANK || [];
+    // Filtra sumariamente qualquer questão de contagem ou questão sem alternativas válidas
+    const all = rawAll.filter(q => q && !this.isCountingQuestion(q) && q.options && q.options.length >= 2);
     const bankKyu = this.getQuizBankKyuForExam(kyu);
 
-    // Filtra questões com alternativas válidas da graduação correspondente
-    let pool = all.filter(q => q.kyuNumber === bankKyu && q.options && q.options.length >= 2);
+    // Filtra questões com alternativas válidas da graduação correspondente (já sem contagem)
+    let pool = all.filter(q => q.kyuNumber === bankKyu);
 
     // Se o banco da faixa tiver menos que 'count' questões, busca no restante do banco para garantir o total
     if (pool.length < count) {
-      const fallback = all.filter(q => q.kyuNumber !== bankKyu && q.options && q.options.length >= 2);
+      const fallback = all.filter(q => q.kyuNumber !== bankKyu);
       for (let i = fallback.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [fallback[i], fallback[j]] = [fallback[j], fallback[i]];
@@ -811,11 +822,11 @@ window.TKST_EXAM_GENERATOR = {
       }
     }
 
-    // 3ª seleção de garantia: se ainda faltar alguma para 10, completa com qualquer questão do banco
+    // 3ª seleção de garantia: se ainda faltar alguma para 10, completa com qualquer questão do banco (já sem contagem)
     if (selected.length < count) {
       const selectedIds = new Set(selected.map(s => s.id));
       for (const q of all) {
-        if (!selectedIds.has(q.id) && q.options && q.options.length >= 2) {
+        if (!selectedIds.has(q.id)) {
           selectedIds.add(q.id);
           const qClone = JSON.parse(JSON.stringify(q));
           selected.push(qClone);
@@ -832,7 +843,7 @@ window.TKST_EXAM_GENERATOR = {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
 
-    // Garante que a Questão 10 (índice 9) seja sem ilustração para abrigar o QR Code perfeitamente
+    // Garante que a Questão 10 (índice 9) seja sem ilustração para deixar o canto inferior direito limpo
     if (questions[9] && (questions[9].image || questions[9].fallbackImage)) {
       const nonImgIdx = questions.findIndex((q, i) => i < 9 && !q.image && !q.fallbackImage);
       if (nonImgIdx !== -1) {
@@ -862,30 +873,6 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }).join('');
 
-      // Questão 10: abriga o QR Code oficial no espaço ao lado das opções
-      if (idx === 9) {
-        return `
-          <div class="exam-vertical-q-item exam-landscape-q-card exam-q10-card">
-            <div class="exam-q-title-row">
-              <span class="exam-q-number">${qNum}.</span> ${q.question}
-            </div>
-            <div class="exam-q-side-row">
-              <div class="exam-mcq-options-col">
-                ${optionsHtml}
-              </div>
-              <div class="exam-q10-qr-wrap">
-                <div class="exam-q10-qr-box">
-                  <div class="exam-q10-qr-svg">
-                    ${qrSvg}
-                  </div>
-                  <span class="exam-q10-qr-label">CORREÇÃO #${examId}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
       const imgSrc = q.image || q.fallbackImage;
 
       if (imgSrc) {
@@ -906,7 +893,7 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }
 
-      // Questão sem imagem
+      // Questão sem imagem (100% da largura da coluna, sem espremer opções)
       return `
         <div class="exam-vertical-q-item exam-landscape-q-card">
           <div class="exam-q-title-row">
@@ -964,6 +951,16 @@ window.TKST_EXAM_GENERATOR = {
           </div>
           <div class="exam-landscape-col">
             ${col2Questions}
+          </div>
+        </div>
+
+        <!-- QR CODE OFICIAL DE CORREÇÃO (CANTO INFERIOR DIREITO, FLUTUANTE FORA DO FLUXO DO TEXTO) -->
+        <div class="exam-corner-qr-wrap">
+          <div class="exam-corner-qr-box">
+            <div class="exam-corner-qr-svg">
+              ${qrSvg}
+            </div>
+            <span class="exam-corner-qr-label">CORREÇÃO #${examId}</span>
           </div>
         </div>
       </div>
@@ -1320,9 +1317,15 @@ window.TKST_EXAM_GENERATOR = {
         break-inside: avoid !important;
       }
       .exam-landscape-sheet {
+        height: 204mm !important;
+        min-height: 204mm !important;
         max-height: 204mm !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        position: relative !important;
       }
       .exam-qr-box svg {
         width: 100% !important;
@@ -1357,11 +1360,12 @@ window.TKST_EXAM_GENERATOR = {
       .exam-landscape-top-bar {
         position: relative !important;
         z-index: 1 !important;
+        flex: 0 0 auto !important;
         display: flex !important;
         align-items: stretch !important;
         gap: 10px !important;
-        margin-bottom: 4px !important;
-        padding-bottom: 2px !important;
+        margin-bottom: 2mm !important;
+        padding-bottom: 2mm !important;
         border-bottom: 1.5px solid #0F172A !important;
       }
       .exam-landscape-header-col {
@@ -1440,90 +1444,100 @@ window.TKST_EXAM_GENERATOR = {
         margin-top: 1px;
       }
 
-      /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM (PREENCHENDO A FOLHA) */
+      /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM (PREENCHENDO A FOLHA TOTALMENTE) */
       .exam-landscape-grid-2col {
         position: relative !important;
         z-index: 1 !important;
+        flex: 1 1 auto !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 4px 24px !important;
+        gap: 6px 28px !important;
+        height: calc(204mm - 38mm) !important;
+        min-height: calc(204mm - 38mm) !important;
         margin-bottom: 0 !important;
       }
       .exam-landscape-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 4px !important;
+        justify-content: space-between !important;
+        height: 100% !important;
       }
       .exam-landscape-q-card {
         border-bottom: 1.4px dashed #CBD5E1 !important;
-        padding-bottom: 4px !important;
+        padding-bottom: 5px !important;
         page-break-inside: avoid !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
       }
       .exam-landscape-q-card:last-child {
         border-bottom: none !important;
+        padding-bottom: 0 !important;
       }
 
       .exam-q-title-row {
-        font-size: 10.8pt;
-        line-height: 1.25;
-        font-weight: 800;
-        color: #0F172A;
-        margin-bottom: 2px;
+        font-size: 11.4pt !important;
+        line-height: 1.28 !important;
+        font-weight: 800 !important;
+        color: #0F172A !important;
+        margin-bottom: 3.5px !important;
       }
       .exam-q-number {
-        font-size: 11.4pt;
-        font-weight: 900;
-        color: #0F172A;
+        font-size: 12pt !important;
+        font-weight: 900 !important;
+        color: #0F172A !important;
       }
 
       /* MÚLTIPLA ESCOLHA: ALTERNATIVAS COM QUADRADINHO DE MARCAÇÃO PERFEITO */
       .exam-mcq-options-col {
-        display: flex;
-        flex-direction: column;
-        gap: 2.2px;
-        flex: 0 0 auto;
-        min-width: 175px;
-        max-width: 58%;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3.2px !important;
+        width: 100% !important;
       }
       .exam-mcq-option {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 9.8pt;
-        line-height: 1.24;
-        white-space: normal;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 10.4pt !important;
+        line-height: 1.28 !important;
+        white-space: normal !important;
       }
       .exam-mcq-square {
-        width: 12px;
-        height: 12px;
-        min-width: 12px;
-        min-height: 12px;
-        border: 1.5px solid #0F172A;
-        border-radius: 2px;
-        background: #FFF;
-        display: inline-block;
-        flex-shrink: 0;
+        width: 13.5px !important;
+        height: 13.5px !important;
+        min-width: 13.5px !important;
+        min-height: 13.5px !important;
+        border: 1.8px solid #0F172A !important;
+        border-radius: 2px !important;
+        background: #FFF !important;
+        display: inline-block !important;
+        flex-shrink: 0 !important;
       }
       .exam-mcq-letter {
-        font-weight: 900;
-        color: #0F172A;
-        font-size: 10pt;
-        flex-shrink: 0;
-        margin-right: 1px;
+        font-weight: 900 !important;
+        color: #0F172A !important;
+        font-size: 10.6pt !important;
+        flex-shrink: 0 !important;
+        margin-right: 1px !important;
       }
       .exam-mcq-opt-text {
-        color: #1E293B;
-        font-weight: 600;
+        color: #1E293B !important;
+        font-weight: 600 !important;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES (COLADA ÀS RESPOSTAS) */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES */
       .exam-q-side-row {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 14px;
-        margin-top: 1px;
-        width: 100%;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 14px !important;
+        margin-top: 1px !important;
+        width: 100% !important;
+      }
+      .exam-q-side-row .exam-mcq-options-col {
+        flex: 1 1 auto !important;
+        width: auto !important;
       }
       .exam-q-img-wrap {
         border: none !important;
@@ -1531,17 +1545,17 @@ window.TKST_EXAM_GENERATOR = {
         padding: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
-        flex-shrink: 0;
-        width: auto;
-        max-width: 220px;
-        height: 75px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
+        flex-shrink: 0 !important;
+        width: auto !important;
+        max-width: 215px !important;
+        height: 72px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
       }
       .exam-side-img {
-        max-height: 75px !important;
-        max-width: 215px !important;
+        max-height: 72px !important;
+        max-width: 210px !important;
         width: auto !important;
         height: auto !important;
         object-fit: contain !important;
@@ -1556,44 +1570,47 @@ window.TKST_EXAM_GENERATOR = {
         gap: 3px;
       }
 
-      /* QR CODE NA QUESTÃO 10 (AO LADO DAS OPÇÕES) */
-      .exam-q10-qr-wrap {
+      /* QR CODE OFICIAL NO CANTO INFERIOR DIREITO DA FOLHA (FORA DO FLUXO DO TEXTO) */
+      .exam-corner-qr-wrap {
+        position: absolute !important;
+        right: 2.5mm !important;
+        bottom: 2mm !important;
+        z-index: 10 !important;
         display: flex !important;
+        flex-direction: column !important;
         align-items: center !important;
-        justify-content: flex-start !important;
-        flex-shrink: 0 !important;
-        margin-left: 6px !important;
+        justify-content: center !important;
       }
-      .exam-q10-qr-box {
+      .exam-corner-qr-box {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
         background: #FFF !important;
-        border: 1.3px solid #0F172A !important;
-        border-radius: 3px !important;
-        padding: 1.5px !important;
-        box-shadow: 1.5px 1.5px 0px #0F172A !important;
+        border: 1.5px solid #0F172A !important;
+        border-radius: 4px !important;
+        padding: 2.5px !important;
+        box-shadow: 2px 2px 0px #0F172A !important;
       }
-      .exam-q10-qr-svg {
-        width: 23mm !important;
-        height: 23mm !important;
+      .exam-corner-qr-svg {
+        width: 25mm !important;
+        height: 25mm !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
       }
-      .exam-q10-qr-svg svg {
+      .exam-corner-qr-svg svg {
         width: 100% !important;
         height: 100% !important;
         display: block !important;
       }
-      .exam-q10-qr-label {
-        font-size: 5pt !important;
+      .exam-corner-qr-label {
+        font-size: 5.6pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
         letter-spacing: 0.3px !important;
         line-height: 1 !important;
-        margin-top: 1px !important;
+        margin-top: 1.5px !important;
         white-space: nowrap !important;
       }
 

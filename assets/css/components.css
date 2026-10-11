@@ -4572,6 +4572,126 @@ body.login-view-active .content-body {
   max-height: none;
 }
 
+.exam-landscape-sheet {
+  max-width: 291mm !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  background: #FFF !important;
+  color: #0F172A !important;
+}
+
+.exam-landscape-top-bar {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  margin-bottom: 8px !important;
+  padding-bottom: 6px !important;
+  border-bottom: 1.5px solid #0F172A !important;
+}
+
+.exam-landscape-header-col {
+  flex: 1.1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 2px !important;
+}
+
+.exam-landscape-logo {
+  height: auto !important;
+  max-height: 40px !important;
+  width: 100% !important;
+  max-width: 290px !important;
+  object-fit: contain !important;
+  display: block !important;
+  margin: 0 auto !important;
+}
+
+.exam-landscape-student-box {
+  flex: 1.35 !important;
+}
+
+.exam-landscape-quote-box {
+  flex: 1.25 !important;
+}
+
+.exam-landscape-grid-2col {
+  position: relative !important;
+  z-index: 1 !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px 28px !important;
+  margin-bottom: 0 !important;
+}
+
+.exam-landscape-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.exam-landscape-q-card {
+  border-bottom: 1.4px dashed #CBD5E1 !important;
+  padding-bottom: 8px !important;
+}
+
+.exam-landscape-q-card:last-child {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+.exam-corner-qr-wrap {
+  position: absolute !important;
+  right: 10px !important;
+  bottom: 8px !important;
+  z-index: 10 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.exam-corner-qr-box {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #FFF !important;
+  border: 1.5px solid #0F172A !important;
+  border-radius: 4px !important;
+  padding: 3px !important;
+  box-shadow: 2px 2px 0px #0F172A !important;
+}
+
+.exam-corner-qr-svg {
+  width: 95px !important;
+  height: 95px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.exam-corner-qr-svg svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+.exam-corner-qr-label {
+  font-size: 7pt !important;
+  font-weight: 900 !important;
+  color: #0F172A !important;
+  letter-spacing: 0.3px !important;
+  line-height: 1 !important;
+  margin-top: 2px !important;
+  white-space: nowrap !important;
+}
+
 /* MARCA D'ÁGUA CENTRAL DA FOLHA (DE UM LADO A OUTRO DA FOLHA) */
 .exam-sheet-watermark {
   position: absolute !important;
