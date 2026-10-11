@@ -12780,6 +12780,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       const detected = examScannerDetectedData || { kyu: (examGeneratorSelectedKyu !== undefined ? examGeneratorSelectedKyu : 6), examId: 'SENSEI' };
       const currentKyu = (detected.kyu !== undefined) ? detected.kyu : 6;
+      const beltName = getBeltNameFromKyu(currentKyu);
 
       const kyuList = [
         { kyu: 6, label: "Branca para Amarela (6º Kyu - Heian Shodan)" },
@@ -12793,63 +12794,151 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         { kyu: -2, label: "Nidan para Sandan (3º Dan - Jion)" }
       ];
 
-      body.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 14px; padding: 6px 2px;">
-          <!-- Banner Informativo e Seleção de Graduação -->
-          <div style="background: rgba(245, 190, 0, 0.08); border: 1.5px solid var(--accent-gold); border-radius: var(--radius-sm); padding: 14px 16px; color: #FFF; display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+      // =========================================================================
+      // 1ª ETAPA: IDENTIFICAR A PROVA (CÓDIGO DE BARRAS OU CÓDIGO AO LADO DA NOTA)
+      // =========================================================================
+      if (examScannerStep === 1) {
+        body.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 14px; padding: 6px 2px;">
+            <!-- Indicador de Progresso: 1ª Etapa de 2 -->
+            <div style="background: rgba(245, 190, 0, 0.1); border: 1.5px solid var(--accent-gold); border-radius: var(--radius-sm); padding: 12px 16px; color: #FFF; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-barcode" style="color: var(--accent-gold); font-size: 1.6rem;"></i>
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: var(--accent-gold); color: #000; font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                  1
+                </div>
                 <div>
-                  <strong style="font-size: 0.96rem;">Correção Automática via Foto da Prova</strong>
-                  <div style="font-size: 0.78rem; color: #E2E8F0; margin-top: 2px;">
-                    Folha Única A4 (Modo Retrato) com Código de Barras no topo.
-                  </div>
+                  <strong style="font-size: 0.98rem; color: #FFF;">1ª Etapa: Identificar a Prova</strong>
+                  <div style="font-size: 0.78rem; color: #CBD5E1;">Aponte para o Código de Barras ou digite o código ao lado da nota.</div>
                 </div>
               </div>
+              <span class="badge" style="background: rgba(245,190,0,0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold); font-size: 0.75rem; font-weight: 800; padding: 4px 8px;">
+                Passo 1 de 2
+              </span>
+            </div>
+
+            <!-- Opção A: Câmera do Celular para Ler o Código de Barras -->
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+              <label class="btn btn-primary" style="width: 100%; max-width: 460px; font-size: 1.05rem; font-weight: 800; padding: 15px 20px; cursor: pointer; background: linear-gradient(135deg, #F5BE00, #D97706); color: #000; border: none; border-radius: 8px; box-shadow: 0 4px 16px rgba(245, 190, 0, 0.4); display: flex; align-items: center; justify-content: center; gap: 12px; text-align: center;">
+                <i class="fas fa-barcode" style="font-size: 1.4rem;"></i>
+                <span>Fotografar Código de Barras (Câmera)</span>
+                <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamBarcodeUpload(this)">
+              </label>
+
+              <label class="btn btn-secondary" style="width: 100%; max-width: 460px; font-size: 0.84rem; font-weight: 700; padding: 10px 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; border-color: rgba(255,255,255,0.2);">
+                <i class="fas fa-images"></i>
+                <span>Foto do Código da Galeria</span>
+                <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamBarcodeUpload(this)">
+              </label>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; margin: 2px 0;">
+              <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.15);"></div>
+              <span style="font-size: 0.78rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;">OU INSERÇÃO DIRETA</span>
+              <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.15);"></div>
+            </div>
+
+            <!-- Opção B: Digitação do Código ao lado da Nota (ex: [#FRWV]) -->
+            <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid var(--border-color); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 0.84rem; color: #E2E8F0; font-weight: 700;">
+                <i class="fas fa-keyboard" style="color: var(--accent-gold); margin-right: 6px;"></i>
+                Digite o Código da Prova (ao lado da Nota, ex: <strong style="color: var(--accent-gold);">FRWV</strong>):
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="examManualCodeInput" placeholder="Ex: FRWV" maxlength="8" style="flex: 1; max-width: 130px; padding: 10px 12px; border-radius: 6px; background: #0B0E14; border: 1.5px solid var(--border-color); color: #FFF; font-size: 1.05rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
+                <button type="button" class="btn btn-primary" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 10px 18px; font-size: 0.88rem; font-weight: 800; background: var(--accent-gold); color: #000; border: none; border-radius: 6px;">
+                  Confirmar e Avançar <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
+                </button>
+              </div>
+              <div style="font-size: 0.74rem; color: #94A3B8;">
+                Localize no cabeçalho da folha: <em>Nota: _____ / 10,0 [#XXXX]</em>
+              </div>
+            </div>
+
+            <!-- Opção C: Seleção Direta da Faixa -->
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 6px;">
-                <label for="examCorrectionKyuSelect" style="font-size: 0.76rem; color: #94A3B8;">Faixa:</label>
-                <select id="examCorrectionKyuSelect" onchange="window.TKST_APP.changeCorrectionKyu(this.value)" style="padding: 5px 8px; border-radius: 4px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.78rem; font-weight: 700;">
+                <label for="examCorrectionKyuSelect" style="font-size: 0.8rem; color: #94A3B8;">Ou selecione a Faixa:</label>
+                <select id="examCorrectionKyuSelect" onchange="window.TKST_APP.changeCorrectionKyu(this.value)" style="padding: 6px 10px; border-radius: 4px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.8rem; font-weight: 700;">
                   ${kyuList.map(item => `
                     <option value="${item.kyu}" ${item.kyu === currentKyu ? 'selected' : ''}>${item.label}</option>
                   `).join('')}
                 </select>
               </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.skipQrWithSelectedBelt()" style="padding: 6px 14px; font-size: 0.8rem; font-weight: 700;">
+                Avançar com esta Faixa <i class="fas fa-arrow-right"></i>
+              </button>
             </div>
-            <div style="font-size: 0.78rem; color: #CBD5E1; line-height: 1.4; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 4px; border: 1px dashed rgba(255,255,255,0.12);">
-              📷 <strong>Instruções de Captura:</strong> Ao tocar no botão abaixo, a câmera nativa do seu celular abrirá automaticamente com foco automático e alta resolução. Enquadre a folha inteira com boa iluminação. O sistema lê o Código de Barras e analisa os quadradinhos preenchidos a lápis ou caneta nas 10 questões.
-            </div>
-          </div>
 
-          <!-- AÇÕES DIRETAS: BOTÃO PRINCIPAL CÂMERA NATIVA DO CELULAR -->
-          <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; padding: 10px 0;">
-            <!-- Botão 1: Câmera Nativa do Celular (Foco PDAF, Flash & Resolução Plena) -->
-            <label class="btn btn-primary" style="width: 100%; max-width: 460px; font-size: 1.05rem; font-weight: 800; padding: 16px 22px; cursor: pointer; background: linear-gradient(135deg, #10B981, #059669); border: none; border-radius: 8px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45); display: flex; align-items: center; justify-content: center; gap: 12px; color: #FFF; text-align: center;">
-              <i class="fas fa-camera" style="font-size: 1.4rem;"></i>
-              <span>Abrir Câmera do Celular (Tirar Foto)</span>
-              <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
-            </label>
-
-            <!-- Botão 2: Galeria de Fotos -->
-            <label class="btn btn-secondary" style="width: 100%; max-width: 460px; font-size: 0.88rem; font-weight: 700; padding: 12px 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; border-color: rgba(255,255,255,0.2);">
-              <i class="fas fa-images"></i>
-              <span>Escolher Foto da Galeria</span>
-              <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
-            </label>
-          </div>
-
-          <!-- Entrada Manual do Código da Prova (Fallback Rápido) -->
-          <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-            <span style="font-size: 0.8rem; color: #94A3B8;">Ou digite o código da prova impresso (ex: FRWV):</span>
-            <div style="display: flex; gap: 6px; align-items: center;">
-              <input type="text" id="examManualCodeInput" placeholder="Ex: FRWV" maxlength="8" style="width: 85px; padding: 6px 8px; border-radius: 4px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.85rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 700;">
-                Corrigir
+            <div style="display: flex; justify-content: flex-end; padding-top: 4px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.closeExamCameraScanner()" style="font-size: 0.82rem; padding: 8px 16px;">
+                Fechar
               </button>
             </div>
           </div>
+        `;
+        return;
+      }
 
-          <div style="display: flex; justify-content: flex-end; padding-top: 4px;">
+      // =========================================================================
+      // 2ª ETAPA: IDENTIFICAR AS RESPOSTAS (ENQUADRAR QUESTÕES, LETRAS E QUADRADINHOS)
+      // =========================================================================
+      body.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 14px; padding: 6px 2px;">
+          <!-- Card de Confirmação da Etapa 1 -->
+          <div style="background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10B981; border-radius: var(--radius-sm); padding: 12px 16px; color: #FFF; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 34px; height: 34px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                <i class="fas fa-check"></i>
+              </div>
+              <div>
+                <strong style="font-size: 0.98rem; color: #34D399;">1ª Etapa Concluída: Prova #${detected.examId || 'EXAM'}</strong>
+                <div style="font-size: 0.8rem; color: #E2E8F0;">
+                  ${beltName} • Gabarito oficial de 10 questões carregado
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.returnToStep1Qr()" style="font-size: 0.76rem; padding: 6px 10px; border-color: rgba(255,255,255,0.25);">
+              <i class="fas fa-undo"></i> Trocar Prova
+            </button>
+          </div>
+
+          <!-- Guia Específico de Enquadramento da 2ª Etapa -->
+          <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid #3B82F6; border-radius: var(--radius-sm); padding: 14px 16px; color: #FFF; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #60A5FA; font-weight: 800; font-size: 0.95rem;">
+              <i class="fas fa-crop-alt" style="font-size: 1.2rem;"></i>
+              <span>2ª Etapa: Fotografar Respostas (10 Questões)</span>
+            </div>
+            <div style="font-size: 0.84rem; color: #E2E8F0; line-height: 1.45;">
+              📐 <strong>Como Enquadrar:</strong> Aproxime a câmera do celular para focar <strong>apenas nas 10 questões</strong>.
+              O que mais importa nesta foto são:
+              <ul style="margin: 6px 0 6px 18px; padding: 0;">
+                <li>Os <strong>números das questões (1 a 10)</strong>;</li>
+                <li>As <strong>letras das alternativas (A, B, C, D)</strong>;</li>
+                <li>Os <strong>quadradinhos pintados a lápis ou caneta</strong>.</li>
+              </ul>
+              <em>(Não é necessário mostrar o cabeçalho nem o código de barras nesta foto).</em>
+            </div>
+          </div>
+
+          <!-- Botão Principal: Fotografar Respostas das 10 Questões -->
+          <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 6px 0;">
+            <label class="btn btn-primary" style="width: 100%; max-width: 460px; font-size: 1.08rem; font-weight: 800; padding: 16px 22px; cursor: pointer; background: linear-gradient(135deg, #10B981, #059669); border: none; border-radius: 8px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45); display: flex; align-items: center; justify-content: center; gap: 12px; color: #FFF; text-align: center;">
+              <i class="fas fa-camera" style="font-size: 1.5rem;"></i>
+              <span>Fotografar Respostas das 10 Questões</span>
+              <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamQuestionsUpload(this)">
+            </label>
+
+            <label class="btn btn-secondary" style="width: 100%; max-width: 460px; font-size: 0.88rem; font-weight: 700; padding: 11px 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; border-color: rgba(255,255,255,0.2);">
+              <i class="fas fa-images"></i>
+              <span>Escolher Foto das Respostas da Galeria</span>
+              <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamQuestionsUpload(this)">
+            </label>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.returnToStep1Qr()" style="font-size: 0.82rem; padding: 8px 16px;">
+              <i class="fas fa-arrow-left"></i> Voltar à Etapa 1
+            </button>
             <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.closeExamCameraScanner()" style="font-size: 0.82rem; padding: 8px 16px;">
               Fechar
             </button>
@@ -13013,46 +13102,151 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       window.TKST_APP.executeGradingPipeline(capturedDataUrl);
     },
 
-    handleExamImageUpload: function(input) {
-      if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const dataUrl = e.target.result;
-          examScannerCapturedImage = dataUrl;
+    handleExamBarcodeUpload: async function(input) {
+      if (!input || !input.files || !input.files[0]) return;
+      const file = input.files[0];
 
-          // Se ainda não detectou o código, tenta decodificar Código de Barras (Code 128)
-          if (!examScannerDetectedData) {
-            try {
-              const testImg = new Image();
-              testImg.src = dataUrl;
-              await new Promise(r => { testImg.onload = r; testImg.onerror = r; });
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target.result;
 
-              if ('BarcodeDetector' in window) {
-                try {
-                  const detector = new BarcodeDetector({ formats: ['code_128', 'code_39', 'qr_code'] });
-                  const bcs = await detector.detect(testImg);
-                  if (bcs && bcs.length > 0) {
-                    for (const b of bcs) {
-                      if (b.rawValue && window.TKST_BARCODE) {
-                        const dec = window.TKST_BARCODE.decodeBarcodePayload(b.rawValue);
-                        if (dec && dec.examId) {
-                          examScannerDetectedData = dec;
-                          break;
-                        }
-                      }
-                    }
+        const body = document.getElementById('examCameraModalBody');
+        if (body) {
+          body.innerHTML = `
+            <div style="padding: 40px 20px; text-align: center; color: #FFF;">
+              <div style="font-size: 2.8rem; color: var(--accent-gold); margin-bottom: 14px;">
+                <i class="fas fa-barcode fa-pulse"></i>
+              </div>
+              <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Identificando Código de Barras...</h3>
+              <p style="font-size: 0.84rem; color: #94A3B8;">Lendo identificador da prova e carregando gabarito oficial.</p>
+            </div>
+          `;
+        }
+
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise(r => { img.onload = r; img.onerror = r; });
+
+        let detected = null;
+
+        // 1. Tenta BarcodeDetector nativo no frame total
+        if ('BarcodeDetector' in window) {
+          try {
+            const detector = new BarcodeDetector({ formats: ['code_128', 'code_39', 'qr_code'] });
+            const barcodes = await detector.detect(img);
+            if (barcodes && barcodes.length > 0) {
+              for (const b of barcodes) {
+                if (b.rawValue && window.TKST_BARCODE) {
+                  const dec = window.TKST_BARCODE.decodeBarcodePayload(b.rawValue);
+                  if (dec && dec.examId) {
+                    detected = dec;
+                    break;
                   }
-                } catch(e) {}
+                }
               }
-            } catch(err) {}
+            }
+          } catch(err) {}
+        }
+
+        // 2. Se não detectou no frame total, tenta no crop superior
+        if (!detected && 'BarcodeDetector' in window) {
+          try {
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = img.naturalWidth || img.width;
+            cropCanvas.height = Math.round((img.naturalHeight || img.height) * 0.50);
+            const cropCtx = cropCanvas.getContext('2d');
+            cropCtx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height, 0, 0, cropCanvas.width, cropCanvas.height);
+            const detector = new BarcodeDetector({ formats: ['code_128', 'code_39'] });
+            const bcs = await detector.detect(cropCanvas);
+            if (bcs && bcs.length > 0 && bcs[0].rawValue && window.TKST_BARCODE) {
+              const dec = window.TKST_BARCODE.decodeBarcodePayload(bcs[0].rawValue);
+              if (dec && dec.examId) detected = dec;
+            }
+          } catch(e) {}
+        }
+
+        // 3. Tenta via API Gemini Vision se disponível
+        if (!detected) {
+          try {
+            const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || '';
+            const resp = await fetch('/api/grade-exam', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                image: dataUrl,
+                step: 1,
+                apiKey: clientApiKey
+              })
+            });
+            const json = await resp.json();
+            if (json && (json.examId || (json.dados_prova && json.dados_prova.exam_id))) {
+              const exId = json.examId || json.dados_prova.exam_id;
+              const kyuVal = json.kyu !== undefined ? json.kyu : 6;
+              const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
+              const saved = examGen && examGen.getSavedExamById ? examGen.getSavedExamById(exId) : null;
+              detected = {
+                kyu: (saved && saved.kyu !== undefined) ? saved.kyu : kyuVal,
+                examId: exId,
+                answers: (saved && Array.isArray(saved.answers)) ? saved.answers : (json.answerKey || null)
+              };
+            }
+          } catch(e) {}
+        }
+
+        if (detected && detected.examId) {
+          // Busca gabarito local se não veio no código
+          if (!detected.answers || detected.answers.length < 10) {
+            const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
+            const saved = examGen && examGen.getSavedExamById ? examGen.getSavedExamById(detected.examId) : null;
+            if (saved && Array.isArray(saved.answers)) {
+              detected.answers = saved.answers;
+              if (saved.kyu !== undefined) detected.kyu = saved.kyu;
+            } else if (examGen && examGen.getRandomQuizQuestionsForKyu) {
+              const questions = examGen.getRandomQuizQuestionsForKyu(detected.kyu, 10);
+              detected.answers = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
+            }
           }
 
-          // Executa a esteira de correção multimodal (OCR em 2 etapas pelo Gemini AI)
-          window.TKST_APP.stopScannerCameraStream();
-          window.TKST_APP.executeGradingPipeline(dataUrl);
-        };
-        reader.readAsDataURL(file);
+          examScannerDetectedData = detected;
+          examScannerStep = 2;
+          window.TKST_APP.playChime();
+          if (navigator.vibrate) {
+            try { navigator.vibrate([40, 80]); } catch(err) {}
+          }
+          if (typeof showToast === 'function') {
+            const bName = getBeltNameFromKyu(detected.kyu);
+            showToast(`✅ 1ª Etapa Concluída: Prova #${detected.examId} (${bName}) identificada!`, 'success');
+          }
+          window.TKST_APP.renderExamCameraModalUI();
+        } else {
+          if (typeof showToast === 'function') {
+            showToast('⚠️ Código de barras não identificado na foto. Digite o código de 4 letras ao lado da nota (ex: FRWV).', 'warning');
+          }
+          examScannerStep = 1;
+          window.TKST_APP.renderExamCameraModalUI();
+        }
+      };
+      reader.readAsDataURL(file);
+    },
+
+    handleExamQuestionsUpload: function(input) {
+      if (!input || !input.files || !input.files[0]) return;
+      const file = input.files[0];
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        examScannerCapturedImage = dataUrl;
+        window.TKST_APP.executeGradingPipeline(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    },
+
+    handleExamImageUpload: function(input) {
+      if (examScannerStep === 1) {
+        return window.TKST_APP.handleExamBarcodeUpload(input);
+      } else {
+        return window.TKST_APP.handleExamQuestionsUpload(input);
       }
     },
 
@@ -13321,6 +13515,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             answerKey: detected.answers,
             kyu: detected.kyu,
             examId: detected.examId,
+            step: examScannerStep || 2,
             apiKey: clientApiKey
           })
         });

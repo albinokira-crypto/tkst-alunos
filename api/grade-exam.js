@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { image, answerKey, kyu, examId, apiKey: clientApiKey } = req.body || {};
+    const { image, answerKey, kyu, examId, step, apiKey: clientApiKey } = req.body || {};
 
     if (!image) {
       return res.status(400).json({ success: false, error: 'Imagem da prova não fornecida.' });
@@ -54,38 +54,75 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    const promptText = `
-Você é um desenvolvedor sênior especialista em aplicações web, visão computacional e sistemas de correção de provas escolares/acadêmicas de karatê.
+    let promptText = '';
+    if (Number(step) === 1) {
+      promptText = `
+Você é um desenvolvedor sênior especialista em visão computacional e leitura de cabeçalhos de provas de karatê.
+Sua tarefa é analisar o topo/cabeçalho desta folha de prova:
+1. Localize e decodifique o Código de Barras (padrão Code 128) ou o código da prova [#XXXX] impresso na folha (ex: [#FRWV]).
+2. Identifique a graduação/faixa indicada (ex: "Faixa Branca para Faixa Amarela", "6º Kyu").
+3. Extraia o nome do aluno escrito à mão no campo "Nome:".
 
-Sua tarefa é analisar a imagem fornecida da folha de prova de karatê (formato A4 retrato, folha única vertical) e realizar a correção automatizada seguindo estritamente estas diretrizes:
-
----
-
-### ETAPA 1: Identificação do Aluno e Leitura do Código de Barras (Code 128)
-1. Extraia o nome do aluno escrito à mão no campo "Nome:".
-2. Localize e decodifique o Código de Barras (padrão Code 128) posicionado no cabeçalho superior da página, acima da linha de identificação do aluno (Nome, Dojô, Data, Nota) e logo abaixo do logotipo e descrição da prova.
-   - O código contém a identificação única da prova (ex: "TKST-FAIXA-AMARELA-06KYU-FRWV" ou "TKST-AMARELA-06KYU-FRWV-...").
-   - Se o código de barras estiver parcialmente ilegível, utilize o texto da graduação no cabeçalho ("Avaliação Teórica: ...") e o ID [#FRWV] como fallback para identificar a graduação e o exame.
-
----
-
-### ETAPA 2: Extração das Respostas Marcadas com Tolerância a Lápis e Rasuras
-Analise as 10 questões de múltipla escolha (1 a 5 na coluna esquerda, 6 a 10 na coluna direita).
-Para cada questão de 1 a 10, examine a porcentagem de preenchimento (densidade) dos quadradinhos das alternativas ((A), (B), (C), (D)) considerando marcas a lápis/grafite e borracha:
-1. REGRA CRÍTICA PARA PROVA EM BRANCO: Se o aluno NÃO pintou nenhum quadradinho em uma questão (todos os quadradinhos da questão estão brancos/vazios), retorne OBRIGATORIAMENTE "EM_BRANCO" para essa questão. NUNCA invente ou presuma letras para questões não respondidas.
-2. Se o quadradinho tiver menos de 40% de preenchimento escuro (resíduo leve de borracha, sombra ou papel em branco), considere NÃO MARCADO.
-3. Se ultrapassar 60% de preenchimento escuro, considere MARCADO com convicção.
-4. Se houver duas ou mais opções com preenchimento (indicando rasura ou marcação dupla sem apagar direito), defina a questão como "DUVIDOSA" e aponte no array de duvidosas.
-
----
-
-### SAÍDA ESPERADA (Formato JSON)
-Retorne estritamente um objeto JSON com a seguinte estrutura, sem explicações adicionais fora do bloco de código:
-
+Retorne estritamente um JSON no seguinte formato:
 {
   "sucesso_leitura_codigo_barras": true,
   "codigo_barras_payload": "TKST-FAIXA-AMARELA-06KYU-FRWV",
+  "examId": "FRWV",
+  "kyu": 6,
   "aluno": "Nome do Aluno (ou string vazia se em branco)",
+  "dados_prova": {
+    "graduacao": "Faixa Branca (7º Kyu) para Faixa Amarela (6º Kyu)",
+    "exam_id": "FRWV"
+  }
+}
+`.trim();
+    } else if (Number(step) === 2) {
+      promptText = `
+Você é um desenvolvedor sênior especialista em visão computacional e correção de gabaritos escolares e de artes marciais.
+Esta imagem mostra especificamente o bloco das 10 questões de múltipla escolha de uma prova de karatê (questões 1 a 5 na coluna esquerda, 6 a 10 na coluna direita).
+Nesta etapa, o foco é exclusivamente na leitura das respostas dos alunos:
+- Números das questões (1 a 10)
+- Letras das alternativas ((A), (B), (C), (D))
+- Quadradinhos pintados a lápis ou caneta
+
+REGRAS ESTRITAS DE PREENCHIMENTO:
+1. REGRA ABSOLUTA PARA PROVAS EM BRANCO: Se o aluno NÃO pintou nenhum quadradinho em uma questão (quadradinhos brancos/vazios), retorne OBRIGATORIAMENTE "EM_BRANCO" para essa questão. NUNCA presuma ou invente letras para questões vazias!
+2. SE O QUADRADINHO ESTIVER PINTADO: Retorne a letra correspondente ("A", "B", "C" ou "D") somente se houver preenchimento evidente a lápis ou caneta.
+3. SE HOUVER RASURA OU MARCAÇÃO DUPLA: Retorne "ANULADA" e aponte no array "questoes_duvidosas_rasura".
+
+Retorne estritamente um JSON no seguinte formato:
+{
+  "respostas_aluno": {
+    "1": "EM_BRANCO",
+    "2": "EM_BRANCO",
+    "3": "EM_BRANCO",
+    "4": "EM_BRANCO",
+    "5": "EM_BRANCO",
+    "6": "EM_BRANCO",
+    "7": "EM_BRANCO",
+    "8": "EM_BRANCO",
+    "9": "EM_BRANCO",
+    "10": "EM_BRANCO"
+  },
+  "questoes_duvidosas_rasura": []
+}
+(Substitua "EM_BRANCO" pela letra A, B, C ou D APENAS quando o quadradinho estiver realmente preenchido pelo aluno).
+`.trim();
+    } else {
+      promptText = `
+Você é um desenvolvedor sênior especialista em visão computacional e sistemas de correção de provas de karatê.
+Sua tarefa é analisar a imagem da folha de prova de karatê:
+1. Identifique o Código de Barras ou código [#ID] e o nome do aluno.
+2. Analise as 10 questões (1 a 5 na esquerda, 6 a 10 na direita).
+Se o quadradinho não foi pintado pelo aluno, retorne "EM_BRANCO".
+Se foi pintado, retorne a letra ("A", "B", "C", "D").
+Se houver rasura/dupla marcação, aponte em questoes_duvidosas_rasura.
+
+Retorne estritamente um JSON:
+{
+  "sucesso_leitura_codigo_barras": true,
+  "codigo_barras_payload": "TKST-FAIXA-AMARELA-06KYU-FRWV",
+  "aluno": "Nome do Aluno",
   "dados_prova": {
     "graduacao": "Faixa Branca (7º Kyu) para Faixa Amarela (6º Kyu)",
     "exam_id": "FRWV"
@@ -104,8 +141,8 @@ Retorne estritamente um objeto JSON com a seguinte estrutura, sem explicações 
   },
   "questoes_duvidosas_rasura": []
 }
-(Substitua "EM_BRANCO" por "A", "B", "C" ou "D" APENAS quando o quadradinho estiver visivelmente preenchido pelo aluno a lápis ou caneta).
 `.trim();
+    }
 
     const requestPayload = JSON.stringify({
       contents: [

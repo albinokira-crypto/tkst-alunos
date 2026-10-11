@@ -4861,19 +4861,24 @@ body.login-view-active .content-body {
 .exam-q-side-row {
   display: flex !important;
   align-items: stretch !important;
-  justify-content: flex-start !important;
+  justify-content: space-between !important;
   gap: 10px !important;
   margin-top: 1.5px !important;
   width: 100% !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
 }
 
 .exam-q-side-row .exam-mcq-options-col {
-  flex: 0 0 auto !important;
+  flex: 0 1 auto !important;
   width: auto !important;
-  max-width: 60% !important;
+  min-width: 40% !important;
+  max-width: 50% !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
+  height: 100% !important;
+  gap: 2.5px !important;
 }
 
 .exam-q-img-wrap {
@@ -4882,25 +4887,30 @@ body.login-view-active .content-body {
   padding: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  flex-shrink: 0 !important;
+  flex: 1 1 auto !important;
   width: auto !important;
-  max-width: 165px !important;
-  height: auto !important;
+  max-width: 60% !important;
+  min-width: 110px !important;
+  height: 100% !important;
+  min-height: 90px !important;
   align-self: stretch !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 .exam-side-img {
+  width: 100% !important;
   height: 100% !important;
-  max-height: 94px !important;
-  width: auto !important;
-  max-width: 160px !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
   object-fit: contain !important;
+  object-position: center right !important;
   display: block !important;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
 }
 
 .exam-q-fields-wrap {

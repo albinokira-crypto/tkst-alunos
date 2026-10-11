@@ -849,6 +849,17 @@ window.TKST_EXAM_GENERATOR = {
     return selected.slice(0, count);
   },
 
+  getSavedExamById: function(examId) {
+    if (!examId) return null;
+    try {
+      const clean = String(examId).replace(/^#/, '').trim().toUpperCase();
+      const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+      return store[clean] || null;
+    } catch(e) {
+      return null;
+    }
+  },
+
   // Gera HTML da Folha 1 (Prova de Múltipla Escolha)
   buildQuizExamSheetHtml: function(kyu, questions, options = {}) {
     const exam = this.getExamData(kyu);
@@ -1558,13 +1569,13 @@ window.TKST_EXAM_GENERATOR = {
       }
       .exam-portrait-q-card {
         border-bottom: 1.2px dashed #CBD5E1 !important;
-        padding-top: 3px !important;
-        padding-bottom: 4px !important;
+        padding-top: 2px !important;
+        padding-bottom: 3px !important;
         page-break-inside: avoid !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-start !important;
-        gap: 2.5px !important;
+        justify-content: space-between !important;
+        gap: 2px !important;
         flex: 1 1 0 !important;
         min-height: 0 !important;
         box-sizing: border-box !important;
@@ -1629,34 +1640,40 @@ window.TKST_EXAM_GENERATOR = {
         font-size: 9.6pt !important;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES COM ALTURA EXATA DA LETRA A A D */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AMPLIADA SEM CARD/MOLDURA, ALTURA TOTAL DA LETRA A A D */
       .exam-q-side-row {
         display: flex !important;
         align-items: stretch !important;
         justify-content: space-between !important;
-        gap: 8px !important;
+        gap: 10px !important;
         margin-top: 2px !important;
         width: 100% !important;
         flex: 1 1 auto !important;
+        min-height: 0 !important;
       }
       .exam-q-side-row .exam-mcq-options-col {
-        flex: 1 1 auto !important;
+        flex: 0 1 auto !important;
         width: auto !important;
-        max-width: 63% !important;
+        min-width: 40% !important;
+        max-width: 50% !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 3px !important;
+        height: 100% !important;
+        gap: 2.5px !important;
       }
       .exam-q-img-wrap {
-        border: 1.2px solid #CBD5E1 !important;
-        border-radius: 4px !important;
-        padding: 3px !important;
-        background: #FFFFFF !important;
-        box-shadow: 1px 1px 0px rgba(15, 23, 42, 0.08) !important;
-        flex: 0 0 35% !important;
-        width: 35% !important;
-        max-width: 125px !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        flex: 1 1 auto !important;
+        width: auto !important;
+        max-width: 60% !important;
+        min-width: 110px !important;
+        height: 100% !important;
+        min-height: 90px !important;
         align-self: stretch !important;
         display: flex !important;
         align-items: center !important;
@@ -1665,14 +1682,15 @@ window.TKST_EXAM_GENERATOR = {
         overflow: hidden !important;
       }
       .exam-side-img {
-        height: 100% !important;
-        max-height: 100% !important;
         width: 100% !important;
+        height: 100% !important;
         max-width: 100% !important;
+        max-height: 100% !important;
         object-fit: contain !important;
+        object-position: center right !important;
         display: block !important;
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: crisp-edges;
+        image-rendering: -webkit-optimize-contrast !important;
+        image-rendering: crisp-edges !important;
       }
       .exam-q-fields-wrap {
         flex: 1;
