@@ -513,11 +513,15 @@
      */
     decodeExamPayload: function(rawString) {
       if (!rawString || typeof rawString !== 'string') return null;
-      var parts = rawString.trim().split(':');
+      var trimmed = rawString.trim();
+      var idx = trimmed.indexOf('TKST:');
+      if (idx < 0) return null;
+      var sub = trimmed.substring(idx).trim();
+      var parts = sub.split(':');
       if (parts.length < 4 || parts[0] !== 'TKST') return null;
       var kyu = Number(parts[1]);
       var examId = parts[2];
-      var answers = parts[3].split(',').map(function(s) { return s.trim().toUpperCase(); });
+      var answers = parts[3].split(',').map(function(s) { return s.trim().toUpperCase(); }).filter(Boolean).slice(0, 10);
       return {
         kyu: kyu,
         examId: examId,
@@ -526,3 +530,4 @@
     }
   };
 })();
+

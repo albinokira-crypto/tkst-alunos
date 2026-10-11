@@ -72,13 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let examCurrentRandomQuestions = null; // 10 questões sorteadas ativas
   let quizModalTempImage = '';
 
-  // Camera Exam Scanner State
+  // Camera Exam Scanner State (Fluxo em 2 Etapas: 1. QR Code com Foco Macro / 2. Foto da Prova em Paisagem)
   let examScannerStream = null;
   let examScannerAnimFrame = null;
   let examScannerDetectedData = null;
   let examScannerCurrentCamera = 'environment';
   let examScannerCapturedImage = null;
   let examGradingPendingResult = null;
+  let examScannerStep = 1; // 1: QR Code, 2: Foto em Paisagem
+  let examScannerTorchActive = false;
+  let examScannerZoomActive = false;
+  let examScannerTorchAvailable = false;
+  let examScannerZoomAvailable = false;
   
   // Quiz State
   let currentQuizIndex = 0;
@@ -12353,7 +12358,9 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
     },
 
     // =========================================================================
-    // EXAM CAMERA SCANNER & GRADING ENGINE (SENSEI LIVE EXAM EVALUATION)
+    // EXAM CAMERA SCANNER & GRADING ENGINE (SENSEI LIVE EXAM EVALUATION - 2 ETAPAS)
+    // Etapa 1: Leitura focada do QR Code da Questão 10 (com autofoco contínuo / macro / lanterna)
+    // Etapa 2: Captura em Alta Resolução em Modo Paisagem da folha inteira para IA Gemini Vision
     // =========================================================================
     openExamCameraScanner: function() {
       if (!window.TKST_AUTH || !window.TKST_AUTH.isAdmin()) {
@@ -12361,88 +12368,18 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         return;
       }
 
+      examScannerStep = 1;
       examScannerDetectedData = null;
       examScannerCapturedImage = null;
       examGradingPendingResult = null;
+      examScannerTorchActive = false;
+      examScannerZoomActive = false;
 
       const modal = document.getElementById('examCameraModal');
-      const body = document.getElementById('examCameraModalBody');
-      if (!modal || !body) return;
+      if (!modal) return;
 
       modal.setAttribute('data-prevent-outside-close', 'true');
-
-      body.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 14px;">
-          <!-- Card de Instrução e Status -->
-          <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-            <div>
-              <i class="fas fa-qrcode" style="color: var(--accent-gold); margin-right: 6px;"></i>
-              <strong>Modo de Leitura Ativo:</strong> Aponte a câmera para o <strong>QR Code no topo da prova</strong>.
-            </div>
-            <div id="examScannerStatusBadge" class="badge badge-gold" style="font-size: 0.72rem; font-weight: 700;">
-              <i class="fas fa-spinner fa-spin"></i> Procurando QR Code...
-            </div>
-          </div>
-
-          <!-- Viewfinder da Câmera com HUD -->
-          <div style="position: relative; width: 100%; height: 380px; max-height: 52vh; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
-            <video id="examScannerVideoEl" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
-            
-            <!-- Miras e Moldura de Enquadramento -->
-            <div style="position: absolute; inset: 20px; border: 2px dashed rgba(255, 183, 3, 0.6); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between;">
-              <div style="display: flex; justify-content: space-between; padding: 4px;">
-                <span style="width: 18px; height: 18px; border-top: 3px solid var(--accent-gold); border-left: 3px solid var(--accent-gold);"></span>
-                <span style="width: 18px; height: 18px; border-top: 3px solid var(--accent-gold); border-right: 3px solid var(--accent-gold);"></span>
-              </div>
-              <div id="examScannerGuidanceText" style="text-align: center; color: #FFF; font-size: 0.84rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.9); background: rgba(0,0,0,0.55); padding: 5px 12px; border-radius: 4px; align-self: center;">
-                Enquadre o cabeçalho com o QR Code
-              </div>
-              <div style="display: flex; justify-content: space-between; padding: 4px;">
-                <span style="width: 18px; height: 18px; border-bottom: 3px solid var(--accent-gold); border-left: 3px solid var(--accent-gold);"></span>
-                <span style="width: 18px; height: 18px; border-bottom: 3px solid var(--accent-gold); border-right: 3px solid var(--accent-gold);"></span>
-              </div>
-            </div>
-
-            <!-- Canvas invisível para decodificação e snapshot -->
-            <canvas id="examScannerCanvasEl" style="display: none;"></canvas>
-          </div>
-
-          <!-- Painel de Detecção do Gabarito -->
-          <div id="examScannerDetectedCard" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: var(--radius-sm); padding: 12px 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-              <div>
-                <div id="examScannerBeltTitle" style="font-size: 0.96rem; font-weight: 800; color: #6EE7B7;">
-                  ✅ Prova Identificada com Sucesso!
-                </div>
-                <div id="examScannerKeySummary" style="font-size: 0.76rem; color: #94A3B8; margin-top: 2px;">
-                  10 Questões carregadas do QR Code
-                </div>
-              </div>
-              <button type="button" class="btn btn-sm btn-primary" onclick="window.TKST_APP.captureAndGradeExam()" style="font-weight: 800; padding: 8px 16px; background: linear-gradient(135deg, #10B981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);">
-                <i class="fas fa-camera"></i> Tirar Foto e Corrigir Agora
-              </button>
-            </div>
-          </div>
-
-          <!-- Ações e Alternativas (Upload / Alternar Câmera) -->
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
-            <div style="display: flex; gap: 8px;">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.switchExamCamera()" style="font-size: 0.78rem; padding: 7px 12px;">
-                <i class="fas fa-sync-alt"></i> Alternar Câmera
-              </button>
-              <label class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 7px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                <i class="fas fa-image"></i> Enviar Foto da Galeria
-                <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
-              </label>
-            </div>
-
-            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.closeExamCameraScanner()" style="font-size: 0.78rem; padding: 7px 14px;">
-              Cancelar
-            </button>
-          </div>
-        </div>
-      `;
-
+      window.TKST_APP.renderExamCameraModalUI();
       modal.classList.add('active');
       window.TKST_APP.startScannerCameraStream();
     },
@@ -12467,11 +12404,269 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         });
         examScannerStream = null;
       }
+      examScannerTorchActive = false;
     },
 
     switchExamCamera: function() {
       examScannerCurrentCamera = (examScannerCurrentCamera === 'environment') ? 'user' : 'environment';
       window.TKST_APP.startScannerCameraStream();
+    },
+
+    toggleExamScannerTorch: async function() {
+      if (!examScannerStream) return;
+      const track = examScannerStream.getVideoTracks()[0];
+      if (track && track.applyConstraints) {
+        try {
+          examScannerTorchActive = !examScannerTorchActive;
+          await track.applyConstraints({
+            advanced: [{ torch: examScannerTorchActive }]
+          });
+          const btn = document.getElementById('examTorchToggleBtn');
+          if (btn) {
+            btn.innerHTML = `<i class="fas fa-bolt"></i> ${examScannerTorchActive ? 'Flash Ligado' : 'Flash / Lanterna'}`;
+            btn.style.background = examScannerTorchActive ? '#F5BE00' : 'rgba(255,255,255,0.08)';
+            btn.style.color = examScannerTorchActive ? '#000' : '#E2E8F0';
+          }
+        } catch(err) {
+          console.warn('Erro ao alternar lanterna:', err);
+        }
+      }
+    },
+
+    toggleExamScannerZoom: async function() {
+      if (!examScannerStream) return;
+      const track = examScannerStream.getVideoTracks()[0];
+      if (track && track.applyConstraints) {
+        try {
+          examScannerZoomActive = !examScannerZoomActive;
+          const targetZoom = examScannerZoomActive ? 1.8 : 1.0;
+          await track.applyConstraints({
+            advanced: [{ zoom: targetZoom }]
+          });
+          const btn = document.getElementById('examZoomToggleBtn');
+          if (btn) {
+            btn.innerHTML = `<i class="fas fa-search-plus"></i> ${examScannerZoomActive ? 'Zoom 2x (Macro)' : 'Zoom 1x'}`;
+            btn.style.background = examScannerZoomActive ? '#F5BE00' : 'rgba(255,255,255,0.08)';
+            btn.style.color = examScannerZoomActive ? '#000' : '#E2E8F0';
+          }
+        } catch(err) {
+          console.warn('Erro ao alternar zoom:', err);
+        }
+      }
+    },
+
+    triggerTapToFocus: async function(event) {
+      if (!examScannerStream) return;
+      const track = examScannerStream.getVideoTracks()[0];
+      if (track && track.applyConstraints) {
+        try {
+          const caps = track.getCapabilities ? track.getCapabilities() : {};
+          const adv = {};
+          if (caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
+            adv.focusMode = 'continuous';
+          }
+          if (Object.keys(adv).length > 0) {
+            await track.applyConstraints({ advanced: [adv] });
+          }
+        } catch(e) {}
+      }
+
+      // Feedback visual do anel de foco no local do toque
+      const container = document.getElementById('examScannerViewportWrap');
+      if (container && event) {
+        const rect = container.getBoundingClientRect();
+        const clientX = (event.touches && event.touches[0]) ? event.touches[0].clientX : event.clientX;
+        const clientY = (event.touches && event.touches[0]) ? event.touches[0].clientY : event.clientY;
+        if (clientX && clientY) {
+          const x = clientX - rect.left;
+          const y = clientY - rect.top;
+          const ring = document.createElement('div');
+          ring.style.position = 'absolute';
+          ring.style.left = (x - 22) + 'px';
+          ring.style.top = (y - 22) + 'px';
+          ring.style.width = '44px';
+          ring.style.height = '44px';
+          ring.style.borderRadius = '50%';
+          ring.style.border = '2px solid #10B981';
+          ring.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.8)';
+          ring.style.pointerEvents = 'none';
+          ring.style.zIndex = '30';
+          container.appendChild(ring);
+          setTimeout(() => { try { container.removeChild(ring); } catch(e) {} }, 700);
+        }
+      }
+    },
+
+    renderExamCameraModalUI: function() {
+      const body = document.getElementById('examCameraModalBody');
+      if (!body) return;
+
+      const isStep1 = (examScannerStep === 1);
+      const detected = examScannerDetectedData;
+
+      body.innerHTML = `
+        <style>
+          @keyframes examLaserScan {
+            0% { top: 6%; opacity: 0.9; }
+            50% { top: 90%; opacity: 0.9; }
+            100% { top: 6%; opacity: 0.9; }
+          }
+          @keyframes examPhoneRotate {
+            0%, 20% { transform: rotate(0deg); }
+            50%, 70% { transform: rotate(-90deg); }
+            100% { transform: rotate(0deg); }
+          }
+        </style>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Barra de Progresso das 2 Etapas (Stepper) -->
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(0,0,0,0.35); padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+            <div id="examStepPill1" style="flex: 1; padding: 7px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 800; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; ${isStep1 ? 'background: rgba(245, 190, 0, 0.18); border: 1.5px solid var(--accent-gold); color: #FFF;' : 'background: rgba(16, 185, 129, 0.18); border: 1.5px solid #10B981; color: #6EE7B7;'}">
+              <span style="background: ${isStep1 ? 'var(--accent-gold)' : '#10B981'}; color: #000; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 900;">
+                ${isStep1 ? '1' : '✓'}
+              </span>
+              <span>1. Scan do QR Code</span>
+            </div>
+
+            <div style="color: #64748B; font-size: 0.8rem; padding: 0 4px;"><i class="fas fa-arrow-right"></i></div>
+
+            <div id="examStepPill2" style="flex: 1; padding: 7px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 800; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; ${!isStep1 ? 'background: rgba(245, 190, 0, 0.18); border: 1.5px solid var(--accent-gold); color: #FFF;' : 'background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); color: #94A3B8;'}">
+              <span style="background: ${!isStep1 ? 'var(--accent-gold)' : 'rgba(255,255,255,0.12)'}; color: ${!isStep1 ? '#000' : '#FFF'}; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 900;">2</span>
+              <span>2. Foto da Prova (Paisagem)</span>
+            </div>
+          </div>
+
+          <!-- Card de Instrução Dinâmico -->
+          ${isStep1 ? `
+            <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.3); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-qrcode" style="color: var(--accent-gold); font-size: 1.1rem;"></i>
+                <div>
+                  <strong>Etapa 1 de 2:</strong> Aponte para o <strong>QR Code na Questão 10</strong>.
+                  <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 2px;">
+                    Mantenha a 15-20cm de distância para foco perfeito. Toque no visor para focar.
+                  </div>
+                </div>
+              </div>
+              <div id="examScannerStatusBadge" class="badge badge-gold" style="font-size: 0.72rem; font-weight: 700;">
+                <i class="fas fa-spinner fa-spin"></i> Aguardando QR Code...
+              </div>
+            </div>
+          ` : `
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #E2E8F0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-mobile-alt" style="color: #6EE7B7; font-size: 1.15rem; animation: examPhoneRotate 2.5s infinite ease-in-out;"></i>
+                <div>
+                  <strong>Etapa 2 de 2: Gire o celular na HORIZONTAL (modo paisagem)</strong>
+                  <div style="font-size: 0.75rem; color: #6EE7B7; margin-top: 2px;">
+                    ✅ Prova: ${getBeltNameFromKyu(detected.kyu)} (#${detected.examId}) identificada. Enquadre a folha inteira.
+                  </div>
+                </div>
+              </div>
+              <div class="badge badge-verde" style="font-size: 0.72rem; font-weight: 800;">
+                <i class="fas fa-check"></i> Gabarito Carregado
+              </div>
+            </div>
+          `}
+
+          <!-- Viewfinder da Câmera com HUD Adaptativo -->
+          <div id="examScannerViewportWrap" onclick="window.TKST_APP.triggerTapToFocus(event)" style="position: relative; width: 100%; height: ${isStep1 ? '380px' : '420px'}; max-height: 52vh; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid ${isStep1 ? 'var(--border-color)' : '#10B981'}; display: flex; align-items: center; justify-content: center; cursor: crosshair;">
+            <video id="examScannerVideoEl" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+
+            ${isStep1 ? `
+              <!-- HUD ETAPA 1: Mira Quadrada Focada para Macro do QR Code -->
+              <div style="position: absolute; width: 230px; height: 230px; border: 2px dashed rgba(245, 190, 0, 0.75); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.45);">
+                <!-- Cantoneiras -->
+                <div style="display: flex; justify-content: space-between; padding: 3px;">
+                  <span style="width: 22px; height: 22px; border-top: 4px solid var(--accent-gold); border-left: 4px solid var(--accent-gold);"></span>
+                  <span style="width: 22px; height: 22px; border-top: 4px solid var(--accent-gold); border-right: 4px solid var(--accent-gold);"></span>
+                </div>
+
+                <!-- Linha Laser de Varredura Animada -->
+                <div style="position: absolute; left: 6px; right: 6px; height: 3px; background: linear-gradient(90deg, transparent, #F5BE00, #FFF, #F5BE00, transparent); box-shadow: 0 0 8px #F5BE00; animation: examLaserScan 2s infinite ease-in-out;"></div>
+
+                <div id="examScannerGuidanceText" style="text-align: center; color: #FFF; font-size: 0.76rem; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.9); background: rgba(0,0,0,0.65); padding: 4px 10px; border-radius: 4px; align-self: center;">
+                  Centralize o QR Code aqui
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding: 3px;">
+                  <span style="width: 22px; height: 22px; border-bottom: 4px solid var(--accent-gold); border-left: 4px solid var(--accent-gold);"></span>
+                  <span style="width: 22px; height: 22px; border-bottom: 4px solid var(--accent-gold); border-right: 4px solid var(--accent-gold);"></span>
+                </div>
+              </div>
+            ` : `
+              <!-- HUD ETAPA 2: Moldura Horizontal em Modo Paisagem para Folha A4 Inteira -->
+              <div style="position: absolute; inset: 16px; border: 2px dashed rgba(16, 185, 129, 0.85); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);">
+                <div style="display: flex; justify-content: space-between; padding: 4px;">
+                  <span style="width: 28px; height: 28px; border-top: 4px solid #10B981; border-left: 4px solid #10B981;"></span>
+                  <div style="background: rgba(0,0,0,0.7); color: #FFF; font-size: 0.78rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.5); display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-arrows-alt-h" style="color: var(--accent-gold);"></i> MODO PAISAGEM (FOLHA A4 HORIZONTAL)
+                  </div>
+                  <span style="width: 28px; height: 28px; border-top: 4px solid #10B981; border-right: 4px solid #10B981;"></span>
+                </div>
+
+                <div style="align-self: center; text-align: center; background: rgba(0,0,0,0.75); padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);">
+                  <div style="color: #6EE7B7; font-weight: 800; font-size: 0.86rem;">
+                    Enquadre as 10 Questões da Prova
+                  </div>
+                  <div style="color: #94A3B8; font-size: 0.74rem;">
+                    (Coluna 1 e Coluna 2 visíveis por inteiro)
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding: 4px;">
+                  <span style="width: 28px; height: 28px; border-bottom: 4px solid #10B981; border-left: 4px solid #10B981;"></span>
+                  <span style="width: 28px; height: 28px; border-bottom: 4px solid #10B981; border-right: 4px solid #10B981;"></span>
+                </div>
+              </div>
+            `}
+
+            <!-- Canvas invisível para decodificação e captura de alta resolução -->
+            <canvas id="examScannerCanvasEl" style="display: none;"></canvas>
+          </div>
+
+          <!-- Barra de Ações Principais e Ajustes da Câmera -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${!isStep1 ? `
+              <!-- Botão Principal de Disparo na Etapa 2 -->
+              <div style="display: flex; gap: 8px; justify-content: center;">
+                <button type="button" class="btn btn-primary" onclick="window.TKST_APP.captureLandscapeExamPhoto()" style="flex: 2; font-size: 0.95rem; font-weight: 900; padding: 13px 20px; background: linear-gradient(135deg, #10B981, #059669); border: none; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45); display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                  <i class="fas fa-camera"></i> Tirar Foto da Prova (Modo Paisagem)
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.returnToStep1Qr()" style="font-size: 0.78rem; padding: 8px 12px;" title="Reescanear outro QR Code">
+                  <i class="fas fa-redo"></i> Voltar ao QR
+                </button>
+              </div>
+            ` : ''}
+
+            <!-- Ferramentas da Câmera: Flash, Zoom Macro, Alternar Câmera e Galeria -->
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-top: 2px;">
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" id="examTorchToggleBtn" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.toggleExamScannerTorch()" style="font-size: 0.78rem; padding: 7px 11px;">
+                  <i class="fas fa-bolt"></i> Flash / Lanterna
+                </button>
+
+                <button type="button" id="examZoomToggleBtn" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.toggleExamScannerZoom()" style="font-size: 0.78rem; padding: 7px 11px;">
+                  <i class="fas fa-search-plus"></i> Zoom Macro
+                </button>
+
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.switchExamCamera()" style="font-size: 0.78rem; padding: 7px 11px;">
+                  <i class="fas fa-sync-alt"></i> Câmera
+                </button>
+
+                <label class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 7px 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-image"></i> ${isStep1 ? 'Foto do QR' : 'Foto da Folha'}
+                  <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
+                </label>
+              </div>
+
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.closeExamCameraScanner()" style="font-size: 0.78rem; padding: 7px 14px;">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
     },
 
     startScannerCameraStream: async function() {
@@ -12483,8 +12678,11 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         const constraints = {
           video: {
             facingMode: { ideal: examScannerCurrentCamera },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
+            width: { min: 1280, ideal: 1920, max: 2560 },
+            height: { min: 720, ideal: 1080, max: 1440 },
+            advanced: [
+              { focusMode: 'continuous' }
+            ]
           },
           audio: false
         };
@@ -12493,13 +12691,32 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         videoEl.srcObject = examScannerStream;
         await videoEl.play();
 
-        // Inicia loop de leitura do QR Code
-        window.TKST_APP.runQrScanLoop();
+        // Aplica autofoco contínuo e macro nas capacidades do hardware
+        const track = examScannerStream.getVideoTracks()[0];
+        if (track) {
+          try {
+            const caps = track.getCapabilities ? track.getCapabilities() : {};
+            const adv = {};
+            if (caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
+              adv.focusMode = 'continuous';
+            }
+            if (Object.keys(adv).length > 0 && track.applyConstraints) {
+              await track.applyConstraints({ advanced: [adv] });
+            }
+          } catch(e) {
+            console.warn('Nota sobre restrições de câmera:', e);
+          }
+        }
+
+        // Se estiver na Etapa 1, inicia varredura automática do QR Code
+        if (examScannerStep === 1) {
+          window.TKST_APP.runQrScanLoop();
+        }
       } catch(err) {
         console.warn('Erro ao acessar câmera:', err);
         const guideText = document.getElementById('examScannerGuidanceText');
         if (guideText) {
-          guideText.innerHTML = '<span style="color: #F87171;">⚠️ Câmera não disponível ou permissão negada. Use o botão abaixo para enviar foto da galeria.</span>';
+          guideText.innerHTML = '<span style="color: #F87171;">⚠️ Câmera não disponível ou permissão negada. Você pode enviar a foto pela galeria abaixo.</span>';
         }
       }
     },
@@ -12510,17 +12727,17 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       if (!videoEl || !canvasEl || !examScannerStream) return;
 
       const scanFrame = async () => {
-        if (!examScannerStream) return;
+        if (!examScannerStream || examScannerStep !== 1 || examScannerDetectedData) return;
 
-        if (videoEl.readyState === videoEl.HAVE_ENOUGH_DATA && !examScannerDetectedData) {
-          // 1. Tenta API Nativa BarcodeDetector se disponível
+        if (videoEl.readyState >= videoEl.HAVE_CURRENT_DATA) {
+          // 1. Tenta API Nativa BarcodeDetector se disponível no navegador
           if ('BarcodeDetector' in window) {
             try {
               const barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
               const barcodes = await barcodeDetector.detect(videoEl);
               if (barcodes && barcodes.length > 0) {
                 const rawValue = barcodes[0].rawValue;
-                if (rawValue && rawValue.startsWith('TKST:')) {
+                if (rawValue && rawValue.includes('TKST:')) {
                   window.TKST_APP.handleQrDetected(rawValue);
                   return;
                 }
@@ -12528,18 +12745,32 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             } catch(e) {}
           }
 
-          // 2. Fallback de varredura via canvas
-          try {
-            canvasEl.width = Math.min(640, videoEl.videoWidth || 640);
-            canvasEl.height = Math.min(480, videoEl.videoHeight || 480);
-            const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
-            if (ctx) {
-              ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-            }
-          } catch(e) {}
+          // 2. Fallback de alta precisão com a biblioteca jsQR pura
+          if (typeof jsQR !== 'undefined') {
+            try {
+              const vw = videoEl.videoWidth || 640;
+              const vh = videoEl.videoHeight || 480;
+              if (vw > 0 && vh > 0) {
+                canvasEl.width = Math.min(640, vw);
+                canvasEl.height = Math.round((canvasEl.width / vw) * vh);
+                const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
+                if (ctx) {
+                  ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+                  const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+                  const code = jsQR(imgData.data, imgData.width, imgData.height, {
+                    inversionAttempts: 'dontInvert'
+                  });
+                  if (code && code.data && code.data.includes('TKST:')) {
+                    window.TKST_APP.handleQrDetected(code.data);
+                    return;
+                  }
+                }
+              }
+            } catch(e) {}
+          }
         }
 
-        if (!examScannerDetectedData) {
+        if (!examScannerDetectedData && examScannerStep === 1) {
           examScannerAnimFrame = requestAnimationFrame(scanFrame);
         }
       };
@@ -12574,34 +12805,83 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       examScannerDetectedData = decoded;
       window.TKST_APP.playChime();
-      if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+      if (navigator.vibrate) navigator.vibrate([70, 40, 70]);
 
-      // Atualiza UI
+      // Atualiza badge de status com confirmação imediata
       const statusBadge = document.getElementById('examScannerStatusBadge');
       if (statusBadge) {
         statusBadge.className = 'badge badge-verde';
-        statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> QR Code Detectado!';
+        statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> QR Code Lido com Sucesso!';
       }
 
-      const detectedCard = document.getElementById('examScannerDetectedCard');
-      const beltTitle = document.getElementById('examScannerBeltTitle');
-      const keySummary = document.getElementById('examScannerKeySummary');
       const guideText = document.getElementById('examScannerGuidanceText');
-
-      const beltName = getBeltNameFromKyu(decoded.kyu) || `Faixa #${decoded.kyu}`;
-
-      if (beltTitle) {
-        beltTitle.innerHTML = `✅ Prova Detectada: <strong>${beltName}</strong> (ID: #${decoded.examId})`;
-      }
-      if (keySummary) {
-        keySummary.innerHTML = `Gabarito Oficial: ${decoded.answers.map((a, i) => `Q${i+1}:${a}`).join(' | ')}`;
-      }
       if (guideText) {
-        guideText.innerHTML = '✨ QR Code lido com sucesso! Agora toque em "Tirar Foto e Corrigir".';
+        guideText.innerHTML = '✨ QR Code lido! Avançando para a foto da prova...';
       }
-      if (detectedCard) {
-        detectedCard.style.display = 'block';
+
+      // Avança automaticamente para a Etapa 2 (Foto em Modo Paisagem)
+      setTimeout(() => {
+        window.TKST_APP.advanceToStep2Landscape();
+      }, 700);
+    },
+
+    advanceToStep2Landscape: function() {
+      if (!examScannerDetectedData) return;
+      examScannerStep = 2;
+
+      // Cancela loop do QR
+      if (examScannerAnimFrame) {
+        cancelAnimationFrame(examScannerAnimFrame);
+        examScannerAnimFrame = null;
       }
+
+      // Re-renderiza a interface para o modo paisagem
+      window.TKST_APP.renderExamCameraModalUI();
+
+      // Reconecta o fluxo da câmera ao elemento de vídeo da nova tela
+      const videoEl = document.getElementById('examScannerVideoEl');
+      if (videoEl && examScannerStream) {
+        videoEl.srcObject = examScannerStream;
+        videoEl.play().catch(() => {});
+      } else {
+        window.TKST_APP.startScannerCameraStream();
+      }
+    },
+
+    returnToStep1Qr: function() {
+      examScannerStep = 1;
+      examScannerDetectedData = null;
+      window.TKST_APP.renderExamCameraModalUI();
+      const videoEl = document.getElementById('examScannerVideoEl');
+      if (videoEl && examScannerStream) {
+        videoEl.srcObject = examScannerStream;
+        videoEl.play().catch(() => {});
+      } else {
+        window.TKST_APP.startScannerCameraStream();
+      }
+      window.TKST_APP.runQrScanLoop();
+    },
+
+    captureLandscapeExamPhoto: function() {
+      const videoEl = document.getElementById('examScannerVideoEl');
+      const canvasEl = document.getElementById('examScannerCanvasEl');
+      if (!videoEl || !canvasEl) return;
+
+      // Captura na resolução máxima do sensor da câmera
+      const vw = videoEl.videoWidth || 1920;
+      const vh = videoEl.videoHeight || 1080;
+      canvasEl.width = vw;
+      canvasEl.height = vh;
+
+      const ctx = canvasEl.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+
+      const capturedDataUrl = canvasEl.toDataURL('image/jpeg', 0.88);
+      examScannerCapturedImage = capturedDataUrl;
+
+      // Para a câmera e avança para análise com IA
+      window.TKST_APP.stopScannerCameraStream();
+      window.TKST_APP.executeGradingPipeline(capturedDataUrl);
     },
 
     handleExamImageUpload: function(input) {
@@ -12610,25 +12890,53 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         const reader = new FileReader();
         reader.onload = async (e) => {
           const dataUrl = e.target.result;
-          examScannerCapturedImage = dataUrl;
 
-          // Se ainda não tiver os dados do QR, tenta ler da imagem
-          if (!examScannerDetectedData) {
+          // Se estiver na Etapa 1, tenta extrair o QR Code da foto enviada
+          if (examScannerStep === 1) {
             const img = new Image();
             img.onload = async () => {
+              let detected = false;
+              // 1. Tenta BarcodeDetector
               if ('BarcodeDetector' in window) {
                 try {
                   const detector = new BarcodeDetector({ formats: ['qr_code'] });
                   const barcodes = await detector.detect(img);
-                  if (barcodes && barcodes.length > 0) {
+                  if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
                     window.TKST_APP.handleQrDetected(barcodes[0].rawValue);
+                    detected = true;
                   }
                 } catch(err) {}
               }
-              window.TKST_APP.executeGradingPipeline(dataUrl);
+              // 2. Tenta jsQR via canvas
+              if (!detected && typeof jsQR !== 'undefined') {
+                try {
+                  const cv = document.createElement('canvas');
+                  cv.width = img.naturalWidth || img.width;
+                  cv.height = img.naturalHeight || img.height;
+                  const ctx = cv.getContext('2d');
+                  ctx.drawImage(img, 0, 0);
+                  const imgData = ctx.getImageData(0, 0, cv.width, cv.height);
+                  const code = jsQR(imgData.data, imgData.width, imgData.height);
+                  if (code && code.data && code.data.includes('TKST:')) {
+                    window.TKST_APP.handleQrDetected(code.data);
+                    detected = true;
+                  }
+                } catch(err) {}
+              }
+
+              if (!detected) {
+                if (typeof showToast === 'function') {
+                  showToast('QR Code não encontrado nesta imagem. Certifique-se de que a Questão 10 esteja nítida.', 'warning');
+                } else {
+                  alert('QR Code não encontrado nesta imagem. Certifique-se de que a Questão 10 esteja nítida.');
+                }
+              }
             };
             img.src = dataUrl;
           } else {
+            // Se estiver na Etapa 2, usa a foto da folha diretamente para a IA
+            examScannerCapturedImage = dataUrl;
+            window.TKST_APP.stopScannerCameraStream();
             window.TKST_APP.executeGradingPipeline(dataUrl);
           }
         };
@@ -12636,22 +12944,6 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       }
     },
 
-    captureAndGradeExam: function() {
-      const videoEl = document.getElementById('examScannerVideoEl');
-      const canvasEl = document.getElementById('examScannerCanvasEl');
-      if (!videoEl || !canvasEl) return;
-
-      canvasEl.width = videoEl.videoWidth || 1280;
-      canvasEl.height = videoEl.videoHeight || 720;
-      const ctx = canvasEl.getContext('2d');
-      ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-
-      const capturedDataUrl = canvasEl.toDataURL('image/jpeg', 0.85);
-      examScannerCapturedImage = capturedDataUrl;
-
-      window.TKST_APP.stopScannerCameraStream();
-      window.TKST_APP.executeGradingPipeline(capturedDataUrl);
-    },
 
     executeGradingPipeline: async function(imageDataUrl) {
       const body = document.getElementById('examCameraModalBody');
