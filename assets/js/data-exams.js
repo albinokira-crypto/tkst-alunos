@@ -900,7 +900,7 @@ window.TKST_EXAM_GENERATOR = {
 
       if (imgSrc) {
         return `
-          <div class="exam-vertical-q-item exam-landscape-q-card">
+          <div class="exam-vertical-q-item exam-portrait-q-card exam-landscape-q-card">
             <div class="exam-q-title-row">
               <span class="exam-q-number">${qNum}.</span> ${q.question}
             </div>
@@ -917,7 +917,7 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       // Questão sem imagem (100% da largura da coluna)
-      const cardClass = "exam-vertical-q-item exam-landscape-q-card";
+      const cardClass = "exam-vertical-q-item exam-portrait-q-card exam-landscape-q-card";
 
       return `
         <div class="${cardClass}">
@@ -935,53 +935,50 @@ window.TKST_EXAM_GENERATOR = {
     const col2Questions = questions.slice(5, 10).map((q, idx) => renderSingleQuestion(q, idx + 5)).join('');
 
     return `
-      <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1 exam-landscape-sheet">
+      <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1 exam-portrait-sheet">
         <!-- MARCA D'ÁGUA CENTRAL DA FOLHA -->
         <img src="assets/images/logo-tkst.png" alt="" class="exam-sheet-watermark">
 
-        <!-- HEADER HORIZONTAL COMPLETO (LOGO + DADOS DO ALUNO + CITAÇÃO) -->
-        <div class="exam-landscape-top-bar">
-          <!-- LOGO SEM CNPJ AMPLIADA + GRADUAÇÃO REFERENTE À PROVA -->
-          <div class="exam-landscape-header-col">
-            <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-landscape-logo">
-            <div class="exam-clean-subtitle">${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}</div>
-          </div>
-
-          <!-- QUADRO DE DADOS DO ALUNO -->
-          <div class="exam-print-student-box exam-landscape-student-box">
-            <div class="exam-print-row">
-              <div style="flex: 2.2;"><strong>Aluno(a):</strong> ___________________________________</div>
-              <div style="flex: 1.1;"><strong>Dojô:</strong> ________________</div>
-            </div>
-            <div class="exam-print-row" style="margin-top: 3px;">
-              <div style="flex: 1.2;"><strong>Data:</strong> ${dateStr}</div>
-              <div style="flex: 1.1; text-align: right;"><strong>Nota:</strong> _____ / 10,0 &nbsp; <span style="font-size: 7.2pt; color: #475569; font-weight: 800;">[#${examId}]</span></div>
+        <!-- CABEÇALHO OFICIAL EM MODO RETRATO (FOLHA ÚNICA A4) -->
+        <div class="exam-portrait-header">
+          <!-- 1. LOGO DO DOJÔ + DESCRIÇÃO DA PROVA EM PRETO LOGO ABAIXO -->
+          <div class="exam-portrait-brand">
+            <img src="assets/images/logo-header-tkst.png" alt="TRADICIONAL KARATE-DO SHOTOKAN TSUYOI" class="exam-portrait-logo">
+            <div class="exam-portrait-desc">
+              Avaliação Teórica: ${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}
             </div>
           </div>
 
-          <!-- CABEÇALHO SUPERIOR DIREITO: CÓDIGO DE BARRAS CODE 128 + CAIXA DE INSTRUÇÕES -->
-          <div class="exam-landscape-header-right">
-            <!-- CÓDIGO DE BARRAS CODE 128 OFICIAL -->
-            <div class="exam-barcode-box">
-              ${barcodeSvg}
-            </div>
+          <!-- 2. CÓDIGO DE BARRAS CODE 128 (AMPLO E DESTACADO ACIMA DA IDENTIFICAÇÃO DO ALUNO) -->
+          <div class="exam-portrait-barcode-box">
+            ${barcodeSvg}
+          </div>
 
-            <!-- CITAÇÃO FUNAKOSHI + AVISO AO ALUNO (PINTE O QUADRADINHO) -->
-            <div class="exam-header-quote-card">
-              <div class="exam-instruction-badge">
-                ✏️ <strong>Atenção:</strong> <strong>Pinte totalmente</strong> o quadradinho da resposta correta a lápis ou caneta.
-              </div>
-              <div class="exam-quote-body">“O objetivo final do Karatê está na perfeição do caráter de seus participantes.” — Mestre Funakoshi</div>
+          <!-- 3. IDENTIFICAÇÃO DO ALUNO EM UMA LINHA SÓ -->
+          <div class="exam-portrait-student-line">
+            <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name"></span></div>
+            <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo"></span></div>
+            <div class="exam-field-date"><strong>Data:</strong> <span class="exam-field-val">${dateStr}</span></div>
+            <div class="exam-field-grade"><strong>Nota:</strong> <span class="exam-field-val">_____ / 10,0</span> &nbsp;<span class="exam-id-tag">[#${examId}]</span></div>
+          </div>
+
+          <!-- 4. QUADRADO DE CITAÇÃO DE FUNAKOSHI E INSTRUÇÕES (SEM ATRAPALHAR QUESTÕES) -->
+          <div class="exam-portrait-banner-box">
+            <div class="exam-funakoshi-quote">
+              “O objetivo final do Karatê está na perfeição do caráter de seus participantes.” — Mestre Gichin Funakoshi
+            </div>
+            <div class="exam-instruction-pill">
+              ✏️ <strong>Atenção:</strong> <strong>Pinte totalmente o quadradinho</strong> da alternativa correta a lápis ou caneta. Caso apague para corrigir, limpe bem com a borracha.
             </div>
           </div>
         </div>
 
-        <!-- 10 QUESTÕES EM 2 COLUNAS (5 À ESQUERDA, 5 À DIREITA) -->
-        <div class="exam-landscape-grid-2col">
-          <div class="exam-landscape-col">
+        <!-- 10 QUESTÕES EM 2 COLUNAS (MODO RETRATO - ESPAÇO AMPLO TOTAL, SEM CORTES) -->
+        <div class="exam-portrait-grid-2col">
+          <div class="exam-portrait-col">
             ${col1Questions}
           </div>
-          <div class="exam-landscape-col">
+          <div class="exam-portrait-col">
             ${col2Questions}
           </div>
         </div>
@@ -1296,12 +1293,12 @@ window.TKST_EXAM_GENERATOR = {
     }).join('');
   },
 
-  // CSS de Impressão Direta A4 / Carta (Modo Paisagem / 2 Colunas)
+  // CSS de Impressão Direta A4 / Carta (Modo Retrato / 2 Colunas / Folha Única)
   getPrintStyles: function() {
     return `
       @page {
-        size: A4 landscape;
-        margin: 2mm 3.5mm 2mm 3.5mm;
+        size: A4 portrait;
+        margin: 3.5mm 4.5mm 3.5mm 4.5mm;
       }
       * {
         box-sizing: border-box;
@@ -1316,14 +1313,14 @@ window.TKST_EXAM_GENERATOR = {
         color: #0F172A;
         background: #FFF;
         font-size: 8.5pt;
-        line-height: 1.2;
+        line-height: 1.25;
       }
       .exam-sheet-a4 {
         position: relative !important;
         width: 100% !important;
-        max-width: 290mm !important;
+        max-width: 202mm !important;
         margin: 0 auto !important;
-        padding: 0.5mm 1.5mm !important;
+        padding: 1mm 1.5mm !important;
         box-sizing: border-box !important;
         background: #FFF !important;
       }
@@ -1347,10 +1344,10 @@ window.TKST_EXAM_GENERATOR = {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
-      .exam-landscape-sheet {
-        height: 204mm !important;
-        min-height: 202mm !important;
-        max-height: 205mm !important;
+      .exam-portrait-sheet {
+        height: 288mm !important;
+        min-height: 285mm !important;
+        max-height: 289mm !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
         display: flex !important;
@@ -1361,11 +1358,6 @@ window.TKST_EXAM_GENERATOR = {
         page-break-inside: avoid !important;
         break-after: avoid !important;
         break-inside: avoid !important;
-      }
-      .exam-qr-box svg {
-        width: 100% !important;
-        height: 100% !important;
-        display: block !important;
       }
       .exam-page-break-wrapper {
         page-break-after: always;
@@ -1378,10 +1370,10 @@ window.TKST_EXAM_GENERATOR = {
       /* MARCA D'ÁGUA CENTRAL DA FOLHA */
       .exam-sheet-watermark {
         position: absolute !important;
-        top: 52% !important;
+        top: 55% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        width: 155mm !important;
+        width: 140mm !important;
         max-width: 80% !important;
         height: auto !important;
         opacity: 0.05 !important;
@@ -1391,84 +1383,56 @@ window.TKST_EXAM_GENERATOR = {
         display: block !important;
       }
 
-      /* HEADER HORIZONTAL EM LINHA (MODO PAISAGEM) */
-      .exam-landscape-top-bar {
+      /* CABEÇALHO OFICIAL EM MODO RETRATO (A4) */
+      .exam-portrait-header {
         position: relative !important;
         z-index: 1 !important;
         flex: 0 0 auto !important;
         display: flex !important;
-        align-items: stretch !important;
-        gap: 8px !important;
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-        margin-bottom: 1.5mm !important;
-        padding-bottom: 1mm !important;
+        flex-direction: column !important;
+        gap: 1.5mm !important;
+        margin-bottom: 2mm !important;
+        padding-bottom: 1.5mm !important;
         border-bottom: 1.5px solid #0F172A !important;
       }
-      .exam-landscape-header-col {
-        flex: 1.05 !important;
+      .exam-portrait-brand {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        gap: 1.5px !important;
+        gap: 1px !important;
       }
-      .exam-landscape-logo {
+      .exam-portrait-logo {
         height: auto !important;
-        max-height: 28px !important;
+        max-height: 32px !important;
         width: 100% !important;
-        max-width: 240px !important;
+        max-width: 270px !important;
         object-fit: contain !important;
         display: block !important;
         margin: 0 auto !important;
       }
-      .exam-clean-subtitle {
-        font-size: 8.4pt !important;
-        font-weight: 800 !important;
-        color: #B45309 !important;
-        line-height: 1.15 !important;
+      .exam-portrait-desc {
+        font-size: 9pt !important;
+        font-weight: 900 !important;
+        color: #000000 !important;
+        line-height: 1.2 !important;
         text-align: center !important;
-        width: 100% !important;
+        letter-spacing: 0.15px !important;
+        margin-top: 1px !important;
       }
 
-      /* QUADRO DE ALUNO E CITAÇÃO NO TOPO */
-      .exam-print-student-box {
-        border: 1.5px solid #0F172A !important;
-        border-radius: 4px !important;
-        padding: 2px 6px !important;
-        font-size: 8pt !important;
-        background: #F8FAFC !important;
-        box-shadow: 1px 1px 0px #0F172A !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        gap: 2px;
-        margin-top: 0 !important;
-        box-sizing: border-box !important;
-      }
-      .exam-landscape-student-box {
-        flex: 1.4 !important;
-      }
-      .exam-print-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .exam-landscape-header-right {
-        flex: 1.35 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        gap: 2px !important;
-      }
-      .exam-barcode-box {
+      /* CÓDIGO DE BARRAS CODE 128 (AMPLO E DESTACADO ACIMA DOS DADOS DO ALUNO) */
+      .exam-portrait-barcode-box {
         background: #FFF !important;
         border: 1.2px solid #0F172A !important;
         border-radius: 4px !important;
-        padding: 1px 3px !important;
-        height: 10.5mm !important;
-        max-height: 11mm !important;
+        padding: 1.5px 8px !important;
+        height: 14mm !important;
+        max-height: 14.5mm !important;
+        width: 100% !important;
+        max-width: 135mm !important;
+        margin: 0 auto !important;
         box-sizing: border-box !important;
         display: flex !important;
         align-items: center !important;
@@ -1476,70 +1440,125 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: 1px 1px 0px #0F172A !important;
         overflow: hidden !important;
       }
-      .exam-barcode-box svg {
+      .exam-portrait-barcode-box svg {
         width: 100% !important;
         height: 100% !important;
+        max-height: 13.5mm !important;
         display: block !important;
-        max-height: 10mm !important;
       }
-      .exam-header-quote-card {
+
+      /* IDENTIFICAÇÃO DO ALUNO EM UMA LINHA SÓ COM LINHAS DE PREENCHIMENTO */
+      .exam-portrait-student-line {
+        border: 1.5px solid #0F172A !important;
+        border-radius: 4px !important;
+        background: #F8FAFC !important;
+        box-shadow: 1px 1px 0px #0F172A !important;
+        padding: 3.5px 8px !important;
+        font-size: 8pt !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        box-sizing: border-box !important;
+        white-space: nowrap !important;
+      }
+      .exam-field-name {
+        flex: 2.8 !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+      }
+      .exam-field-line-name {
+        flex: 1 !important;
+        min-width: 55mm !important;
+        border-bottom: 1.2px solid #0F172A !important;
+        height: 12px !important;
+      }
+      .exam-field-dojo {
+        flex: 1.2 !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+      }
+      .exam-field-line-dojo {
+        flex: 1 !important;
+        min-width: 22mm !important;
+        border-bottom: 1.2px solid #0F172A !important;
+        height: 12px !important;
+      }
+      .exam-field-date {
+        flex: 0.8 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+      }
+      .exam-field-grade {
+        flex: 1.0 !important;
+        text-align: right !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+      }
+      .exam-id-tag {
+        font-size: 7.2pt !important;
+        color: #475569 !important;
+        font-weight: 800 !important;
+      }
+
+      /* QUADRADO DE CITAÇÃO DE FUNAKOSHI E INSTRUÇÕES (SEM ATRAPALHAR QUESTÕES) */
+      .exam-portrait-banner-box {
         border: 1.2px solid #0F172A !important;
         border-radius: 4px !important;
         background: #FFF !important;
         box-shadow: 1px 1px 0px #0F172A !important;
+        padding: 2.5px 8px !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: center !important;
-        padding: 1.5px 4px !important;
+        gap: 2px !important;
         text-align: center !important;
         box-sizing: border-box !important;
       }
-      .exam-instruction-badge {
-        font-size: 6.2pt !important;
+      .exam-funakoshi-quote {
+        font-size: 7.2pt !important;
+        font-weight: 700 !important;
+        font-style: italic !important;
+        color: #0F172A !important;
+        line-height: 1.2 !important;
+      }
+      .exam-instruction-pill {
+        font-size: 7.0pt !important;
         color: #1E293B !important;
         font-weight: 800 !important;
         background: #FEF3C7 !important;
         border: 1px dashed #D97706 !important;
-        padding: 1px 3px !important;
+        padding: 1.5px 6px !important;
         border-radius: 3px !important;
-        margin-bottom: 1px !important;
-        line-height: 1.15 !important;
-      }
-      .exam-quote-body {
-        font-size: 6.2pt !important;
-        font-weight: 700 !important;
-        font-style: italic !important;
-        color: #0F172A !important;
-        line-height: 1.15 !important;
+        line-height: 1.2 !important;
       }
 
-      /* 2 COLUNAS DE QUESTÕES EM MODO PAISAGEM (PREENCHENDO A FOLHA TOTALMENTE SEM CORTES) */
-      .exam-landscape-grid-2col {
+      /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 297mm DE ALTURA TOTAL) */
+      .exam-portrait-grid-2col {
         position: relative !important;
         z-index: 1 !important;
         flex: 1 1 auto !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 2px 20px !important;
-        height: calc(204mm - 21.5mm) !important;
-        min-height: calc(204mm - 21.5mm) !important;
-        max-height: calc(204mm - 21.5mm) !important;
+        gap: 4px 14px !important;
+        height: calc(288mm - 60mm) !important;
+        min-height: calc(288mm - 60mm) !important;
+        max-height: calc(288mm - 60mm) !important;
         margin-bottom: 0 !important;
-        padding-left: 1mm !important;
-        padding-right: 1mm !important;
         box-sizing: border-box !important;
       }
-      .exam-landscape-col {
+      .exam-portrait-col {
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
         height: 100% !important;
-        gap: 1px !important;
+        gap: 3px !important;
       }
-      .exam-landscape-q-card {
+      .exam-portrait-q-card {
         border-bottom: 1.2px dashed #CBD5E1 !important;
-        padding-bottom: 2px !important;
-        margin-bottom: 1px !important;
+        padding-bottom: 4px !important;
         page-break-inside: avoid !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1547,21 +1566,20 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1 1 0 !important;
         min-height: 0 !important;
       }
-      .exam-landscape-q-card:last-child {
+      .exam-portrait-q-card:last-child {
         border-bottom: none !important;
         padding-bottom: 0 !important;
-        margin-bottom: 0 !important;
       }
 
       .exam-q-title-row {
-        font-size: 9.4pt !important;
-        line-height: 1.2 !important;
+        font-size: 9.2pt !important;
+        line-height: 1.25 !important;
         font-weight: 800 !important;
         color: #0F172A !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 2.5px !important;
       }
       .exam-q-number {
-        font-size: 9.8pt !important;
+        font-size: 9.6pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
       }
@@ -1570,22 +1588,22 @@ window.TKST_EXAM_GENERATOR = {
       .exam-mcq-options-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 1.5px !important;
+        gap: 2.2px !important;
         width: 100% !important;
       }
       .exam-mcq-option {
         display: flex !important;
         align-items: center !important;
         gap: 5px !important;
-        font-size: 8.6pt !important;
+        font-size: 8.4pt !important;
         line-height: 1.2 !important;
         white-space: normal !important;
       }
       .exam-mcq-square {
-        width: 12px !important;
-        height: 12px !important;
-        min-width: 12px !important;
-        min-height: 12px !important;
+        width: 12.5px !important;
+        height: 12.5px !important;
+        min-width: 12.5px !important;
+        min-height: 12.5px !important;
         border: 1.6px solid #0F172A !important;
         border-radius: 2px !important;
         background: #FFF !important;
@@ -1595,7 +1613,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-mcq-letter {
         font-weight: 900 !important;
         color: #0F172A !important;
-        font-size: 8.8pt !important;
+        font-size: 8.6pt !important;
         flex-shrink: 0 !important;
         margin-right: 1px !important;
       }
@@ -1604,13 +1622,13 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 600 !important;
       }
 
-      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES COM ALTURA EXATA DA LETRA A ATÉ A LETRA D */
+      /* ILUSTRAÇÃO TÉCNICA: IMAGEM AO LADO DAS OPÇÕES COM ALTURA PERFEITA */
       .exam-q-side-row {
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        gap: 8px !important;
-        margin-top: 1px !important;
+        gap: 6px !important;
+        margin-top: 1.5px !important;
         width: 100% !important;
       }
       .exam-q-side-row .exam-mcq-options-col {
@@ -1629,7 +1647,7 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: none !important;
         flex-shrink: 0 !important;
         width: auto !important;
-        max-width: 130px !important;
+        max-width: 110px !important;
         height: auto !important;
         align-self: center !important;
         display: flex !important;
@@ -1638,9 +1656,9 @@ window.TKST_EXAM_GENERATOR = {
       }
       .exam-side-img {
         height: auto !important;
-        max-height: 56px !important;
+        max-height: 60px !important;
         width: auto !important;
-        max-width: 125px !important;
+        max-width: 105px !important;
         object-fit: contain !important;
         display: block !important;
         image-rendering: -webkit-optimize-contrast;
@@ -1804,7 +1822,7 @@ window.TKST_EXAM_GENERATOR = {
             }
             .exam-print-bundle {
               width: 100%;
-              max-width: 290mm;
+              max-width: 210mm;
               display: flex;
               flex-direction: column;
               gap: 20px;
@@ -1817,7 +1835,7 @@ window.TKST_EXAM_GENERATOR = {
             }
             .no-print-bar {
               width: 100%;
-              max-width: 290mm;
+              max-width: 210mm;
               background: #1E293B;
               border: 1px solid #334155;
               padding: 10px 16px;
@@ -1847,8 +1865,8 @@ window.TKST_EXAM_GENERATOR = {
           }
           @media print {
             @page {
-              size: A4 landscape;
-              margin: 2mm 3.5mm 2mm 3.5mm;
+              size: A4 portrait;
+              margin: 3.5mm 4.5mm 3.5mm 4.5mm;
             }
             html, body {
               margin: 0 !important;

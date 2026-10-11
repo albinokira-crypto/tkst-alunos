@@ -12394,14 +12394,12 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       modal.setAttribute('data-prevent-outside-close', 'true');
       window.TKST_APP.renderExamCameraModalUI();
       modal.classList.add('active');
-      window.TKST_APP.startScannerCameraStream();
     },
 
     returnToStep1Qr: function() {
       examScannerStep = 1;
       examScannerDetectedData = null;
       window.TKST_APP.renderExamCameraModalUI();
-      window.TKST_APP.startScannerCameraStream();
     },
 
     closeExamCameraScanner: function() {
@@ -12780,10 +12778,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const body = document.getElementById('examCameraModalBody');
       if (!body) return;
 
-      const isStep1 = (examScannerStep === 1);
       const detected = examScannerDetectedData || { kyu: (examGeneratorSelectedKyu !== undefined ? examGeneratorSelectedKyu : 6), examId: 'SENSEI' };
       const currentKyu = (detected.kyu !== undefined) ? detected.kyu : 6;
-      const beltName = getBeltNameFromKyu(currentKyu);
 
       const kyuList = [
         { kyu: 6, label: "Branca para Amarela (6º Kyu - Heian Shodan)" },
@@ -12798,124 +12794,65 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       ];
 
       body.innerHTML = `
-        <style>
-          @keyframes examPhoneRotate {
-            0%, 20% { transform: rotate(0deg); }
-            50%, 70% { transform: rotate(-90deg); }
-            100% { transform: rotate(0deg); }
-          }
-        </style>
-
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <!-- Banner Informativo -->
-          <div style="background: rgba(245, 190, 0, 0.1); border: 1.5px solid var(--accent-gold); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: #FFF; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <i class="fas fa-barcode" style="color: var(--accent-gold); font-size: 1.4rem;"></i>
-              <div>
-                <strong>Correção Inteligente de Provas por Foto (Folha Única A4)</strong>
-                <div style="font-size: 0.75rem; color: #E2E8F0; margin-top: 2px;">
-                  Enquadre a folha inteira na horizontal. O app lê o Código de Barras no topo direito e avalia as 10 questões a lápis/caneta.
+        <div style="display: flex; flex-direction: column; gap: 14px; padding: 6px 2px;">
+          <!-- Banner Informativo e Seleção de Graduação -->
+          <div style="background: rgba(245, 190, 0, 0.08); border: 1.5px solid var(--accent-gold); border-radius: var(--radius-sm); padding: 14px 16px; color: #FFF; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-barcode" style="color: var(--accent-gold); font-size: 1.6rem;"></i>
+                <div>
+                  <strong style="font-size: 0.96rem;">Correção Automática via Foto da Prova</strong>
+                  <div style="font-size: 0.78rem; color: #E2E8F0; margin-top: 2px;">
+                    Folha Única A4 (Modo Retrato) com Código de Barras no topo.
+                  </div>
                 </div>
               </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="examCorrectionKyuSelect" style="font-size: 0.76rem; color: #94A3B8;">Faixa:</label>
+                <select id="examCorrectionKyuSelect" onchange="window.TKST_APP.changeCorrectionKyu(this.value)" style="padding: 5px 8px; border-radius: 4px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.78rem; font-weight: 700;">
+                  ${kyuList.map(item => `
+                    <option value="${item.kyu}" ${item.kyu === currentKyu ? 'selected' : ''}>${item.label}</option>
+                  `).join('')}
+                </select>
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <label for="examCorrectionKyuSelect" style="font-size: 0.74rem; color: #94A3B8;">Faixa:</label>
-              <select id="examCorrectionKyuSelect" onchange="window.TKST_APP.changeCorrectionKyu(this.value)" style="padding: 4px 8px; border-radius: 4px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.76rem; font-weight: 700;">
-                ${kyuList.map(item => `
-                  <option value="${item.kyu}" ${item.kyu === currentKyu ? 'selected' : ''}>${item.label}</option>
-                `).join('')}
-              </select>
+            <div style="font-size: 0.78rem; color: #CBD5E1; line-height: 1.4; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 4px; border: 1px dashed rgba(255,255,255,0.12);">
+              📷 <strong>Instruções de Captura:</strong> Ao tocar no botão abaixo, a câmera nativa do seu celular abrirá automaticamente com foco automático e alta resolução. Enquadre a folha inteira com boa iluminação. O sistema lê o Código de Barras e analisa os quadradinhos preenchidos a lápis ou caneta nas 10 questões.
             </div>
           </div>
 
-          <!-- Viewfinder da Câmera Adaptativo (Modo Paisagem) -->
-          <div id="examScannerViewportWrap" onclick="window.TKST_APP.triggerTapToFocus(event)" style="position: relative; width: 100%; height: 390px; max-height: 48vh; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid var(--accent-gold); display: flex; align-items: center; justify-content: center; cursor: crosshair; transition: box-shadow 0.3s ease;">
-            <video id="examScannerVideoEl" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+          <!-- AÇÕES DIRETAS: BOTÃO PRINCIPAL CÂMERA NATIVA DO CELULAR -->
+          <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; padding: 10px 0;">
+            <!-- Botão 1: Câmera Nativa do Celular (Foco PDAF, Flash & Resolução Plena) -->
+            <label class="btn btn-primary" style="width: 100%; max-width: 460px; font-size: 1.05rem; font-weight: 800; padding: 16px 22px; cursor: pointer; background: linear-gradient(135deg, #10B981, #059669); border: none; border-radius: 8px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45); display: flex; align-items: center; justify-content: center; gap: 12px; color: #FFF; text-align: center;">
+              <i class="fas fa-camera" style="font-size: 1.4rem;"></i>
+              <span>Abrir Câmera do Celular (Tirar Foto)</span>
+              <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
+            </label>
 
-            <!-- Moldura HUD Horizontal para Folha A4 Inteira -->
-            <div style="position: absolute; inset: 12px; border: 2px dashed rgba(245, 190, 0, 0.85); border-radius: 8px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);">
-              <div style="display: flex; justify-content: space-between; padding: 4px;">
-                <span style="width: 28px; height: 28px; border-top: 4px solid var(--accent-gold); border-left: 4px solid var(--accent-gold);"></span>
-                <div style="background: rgba(0,0,0,0.8); color: #FFF; font-size: 0.76rem; font-weight: 800; padding: 3px 12px; border-radius: 20px; border: 1px solid rgba(245, 190, 0, 0.5); display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-barcode" style="color: var(--accent-gold);"></i> CÓDIGO DE BARRAS NO TOPO DIREITO
-                </div>
-                <span style="width: 28px; height: 28px; border-top: 4px solid var(--accent-gold); border-right: 4px solid var(--accent-gold);"></span>
-              </div>
-
-              <div style="align-self: center; text-align: center; background: rgba(0,0,0,0.8); padding: 7px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);">
-                <div style="color: #FDE68A; font-weight: 800; font-size: 0.84rem;">
-                  Enquadre as 10 Questões da Prova na Horizontal
-                </div>
-                <div style="color: #94A3B8; font-size: 0.73rem;">
-                  Coluna 1 (Questões 1 a 5) • Coluna 2 (Questões 6 a 10)
-                </div>
-              </div>
-
-              <div style="display: flex; justify-content: space-between; padding: 4px;">
-                <span style="width: 28px; height: 28px; border-bottom: 4px solid var(--accent-gold); border-left: 4px solid var(--accent-gold);"></span>
-                <span style="width: 28px; height: 28px; border-bottom: 4px solid var(--accent-gold); border-right: 4px solid var(--accent-gold);"></span>
-              </div>
-            </div>
-
-            <!-- Canvas invisível para captura e processamento -->
-            <canvas id="examScannerCanvasEl" style="display: none;"></canvas>
+            <!-- Botão 2: Galeria de Fotos -->
+            <label class="btn btn-secondary" style="width: 100%; max-width: 460px; font-size: 0.88rem; font-weight: 700; padding: 12px 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; border-color: rgba(255,255,255,0.2);">
+              <i class="fas fa-images"></i>
+              <span>Escolher Foto da Galeria</span>
+              <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
+            </label>
           </div>
 
-          <!-- AÇÕES DIRETAS DE CAPTURA -->
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-              <!-- Botão 1: Câmera Nativa do Celular (com Hardware Flash e Foco Laser Garantidos) -->
-              <label class="btn btn-primary" style="flex: 1.2; min-width: 190px; font-size: 0.88rem; font-weight: 800; padding: 12px 16px; cursor: pointer; background: linear-gradient(135deg, #10B981, #059669); border: none; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45); display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #FFF;">
-                <i class="fas fa-camera"></i> Câmera do Celular (Flash & Foco Nativo)
-                <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
-              </label>
-
-              <!-- Botão 2: Tirar Foto Direta pelo Navegador -->
-              <button type="button" class="btn" onclick="window.TKST_APP.captureLandscapeExamPhoto()" style="flex: 1; min-width: 150px; font-size: 0.88rem; font-weight: 800; padding: 12px 16px; background: linear-gradient(135deg, #F5BE00, #D97706); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fas fa-bullseye"></i> Fotografar Prova na Tela
+          <!-- Entrada Manual do Código da Prova (Fallback Rápido) -->
+          <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <span style="font-size: 0.8rem; color: #94A3B8;">Ou digite o código da prova impresso (ex: FRWV):</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <input type="text" id="examManualCodeInput" placeholder="Ex: FRWV" maxlength="8" style="width: 85px; padding: 6px 8px; border-radius: 4px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.85rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 700;">
+                Corrigir
               </button>
             </div>
+          </div>
 
-            <!-- Entrada Manual do Código da Prova (Fallback Rápido) -->
-            <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid var(--border-color); border-radius: 6px; padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-              <span style="font-size: 0.78rem; color: #94A3B8;">Código da Prova:</span>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <input type="text" id="examManualCodeInput" placeholder="Ex: FRWV" maxlength="8" style="width: 85px; padding: 4px 8px; border-radius: 4px; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.84rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 700;">
-                  Usar
-                </button>
-              </div>
-            </div>
-
-            <!-- Ferramentas da Câmera: Flash / Lanterna, Focar, Zoom Macro, Alternar Câmera e Galeria -->
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-top: 2px;">
-              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <button type="button" id="examTorchToggleBtn" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.toggleExamScannerTorch()" style="font-size: 0.78rem; padding: 7px 11px;">
-                  <i class="fas fa-bolt"></i> Flash / Lanterna
-                </button>
-
-                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.triggerTapToFocus()" style="font-size: 0.78rem; padding: 7px 11px;" title="Forçar foco da lente">
-                  <i class="fas fa-crosshairs"></i> Focar
-                </button>
-
-                <button type="button" id="examZoomToggleBtn" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.toggleExamScannerZoom()" style="font-size: 0.78rem; padding: 7px 11px;">
-                  <i class="fas fa-search-plus"></i> Zoom Macro
-                </button>
-
-                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.switchExamCamera()" style="font-size: 0.78rem; padding: 7px 11px;">
-                  <i class="fas fa-sync-alt"></i> Câmera
-                </button>
-
-                <label class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 7px 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-image"></i> Galeria
-                  <input type="file" accept="image/*" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
-                </label>
-              </div>
-
-              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.closeExamCameraScanner()" style="font-size: 0.78rem; padding: 7px 14px;">
-                Fechar
-              </button>
-            </div>
+          <div style="display: flex; justify-content: flex-end; padding-top: 4px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.closeExamCameraScanner()" style="font-size: 0.82rem; padding: 8px 16px;">
+              Fechar
+            </button>
           </div>
         </div>
       `;
@@ -13131,19 +13068,19 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
       const detectedAnswers = [];
       const ambiguousQuestions = [];
 
-      // Prova em Modo Paisagem A4:
-      // Cabeçalho: topo 0% a 11%
-      // Questões: 11% a 98% da altura total
-      // Coluna 1 (Q1-Q5): X de 3.5% a 48%
-      // Coluna 2 (Q6-Q10): X de 52% a 96.5%
-      const qTopPct = 0.11;
+      // Prova em Modo Retrato A4 (Folha Única Vertical):
+      // Cabeçalho: topo 0% a 21%
+      // Questões: 21% a 98% da altura total
+      // Coluna 1 (Q1-Q5): X de 3.5% a 48.5%
+      // Coluna 2 (Q6-Q10): X de 51.5% a 96.5%
+      const qTopPct = 0.21;
       const qBottomPct = 0.98;
       const totalQHeight = (qBottomPct - qTopPct) * ch;
       const rowHeight = totalQHeight / 5;
 
       const cols = [
-        { startX: 0.038 * cw, width: 0.442 * cw }, // Q1 - Q5
-        { startX: 0.520 * cw, width: 0.442 * cw }  // Q6 - Q10
+        { startX: 0.035 * cw, width: 0.450 * cw }, // Q1 - Q5
+        { startX: 0.515 * cw, width: 0.450 * cw }  // Q6 - Q10
       ];
 
       // Amostra luminosidade média do papel branco em região sem impressão
@@ -13326,16 +13263,16 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         } catch(e) {}
       }
 
-      // Se não detectou no frame inteiro, tenta na região recortada do topo direito
+      // Se não detectou no frame inteiro, tenta na região recortada do topo da folha (cabeçalho completo)
       if (!examScannerDetectedData && 'BarcodeDetector' in window) {
         try {
           const topCropCanvas = document.createElement('canvas');
-          topCropCanvas.width = Math.round(offCanvas.width * 0.50);
+          topCropCanvas.width = offCanvas.width;
           topCropCanvas.height = Math.round(offCanvas.height * 0.22);
           const topCropCtx = topCropCanvas.getContext('2d');
           topCropCtx.drawImage(
             offCanvas, 
-            Math.round(offCanvas.width * 0.50), 0, topCropCanvas.width, topCropCanvas.height,
+            0, 0, topCropCanvas.width, topCropCanvas.height,
             0, 0, topCropCanvas.width, topCropCanvas.height
           );
           const topDetector = new BarcodeDetector({ formats: ['code_128', 'code_39'] });

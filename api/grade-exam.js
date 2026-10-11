@@ -57,15 +57,15 @@ module.exports = async function handler(req, res) {
     const promptText = `
 Você é um desenvolvedor sênior especialista em aplicações web, visão computacional e sistemas de correção de provas escolares/acadêmicas de karatê.
 
-Sua tarefa é analisar a imagem fornecida da folha de prova de karatê (formato A4 paisagem, folha única) e realizar a correção automatizada seguindo estritamente estas diretrizes:
+Sua tarefa é analisar a imagem fornecida da folha de prova de karatê (formato A4 retrato, folha única vertical) e realizar a correção automatizada seguindo estritamente estas diretrizes:
 
 ---
 
 ### ETAPA 1: Identificação do Aluno e Leitura do Código de Barras (Code 128)
-1. Extraia o nome do aluno escrito à mão no campo "Aluno(a)".
-2. Localize e decodifique o Código de Barras (padrão Code 128) posicionado no cabeçalho superior direito da página (ao lado dos dados do aluno e acima da caixa de instruções).
-   - O código contém a identificação única da prova (ex: "TKST-FAIXA-AMARELA-06KYU-FRWV").
-   - Se o código de barras estiver parcialmente ilegível, utilize o texto da graduação no cabeçalho ("Faixa Branca para Faixa Amarela") e o ID [#FRWV] como fallback para identificar a graduação e o exame.
+1. Extraia o nome do aluno escrito à mão no campo "Nome:".
+2. Localize e decodifique o Código de Barras (padrão Code 128) posicionado no cabeçalho superior da página, acima da linha de identificação do aluno (Nome, Dojô, Data, Nota) e logo abaixo do logotipo e descrição da prova.
+   - O código contém a identificação única da prova (ex: "TKST-FAIXA-AMARELA-06KYU-FRWV" ou "TKST-AMARELA-06KYU-FRWV-...").
+   - Se o código de barras estiver parcialmente ilegível, utilize o texto da graduação no cabeçalho ("Avaliação Teórica: ...") e o ID [#FRWV] como fallback para identificar a graduação e o exame.
 
 ---
 
