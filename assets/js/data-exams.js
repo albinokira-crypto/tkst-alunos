@@ -854,13 +854,7 @@ window.TKST_EXAM_GENERATOR = {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
 
-    // Garante que a Questão 10 (índice 9) seja sem ilustração para deixar o canto inferior direito limpo
-    if (questions[9] && (questions[9].image || questions[9].fallbackImage)) {
-      const nonImgIdx = questions.findIndex((q, i) => i < 9 && !q.image && !q.fallbackImage);
-      if (nonImgIdx !== -1) {
-        [questions[9], questions[nonImgIdx]] = [questions[nonImgIdx], questions[9]];
-      }
-    }
+
 
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const examId = options.examId || (Math.random().toString(36).substring(2, 6).toUpperCase());
@@ -882,11 +876,11 @@ window.TKST_EXAM_GENERATOR = {
       localStorage.setItem('tkst_generated_exams', JSON.stringify(store));
     } catch(e) {}
 
-    const qrPayload = (window.TKST_QR && window.TKST_QR.encodeExamPayload)
-      ? window.TKST_QR.encodeExamPayload(kyu, examId, answerLetters)
-      : ('TKST:' + kyu + ':' + examId + ':' + answerLetters.join(''));
-    const qrSvg = (window.TKST_QR && window.TKST_QR.createSvg)
-      ? window.TKST_QR.createSvg(qrPayload, 120, 4)
+    const barcodeText = (window.TKST_BARCODE && window.TKST_BARCODE.encodeExamText)
+      ? window.TKST_BARCODE.encodeExamText(kyu, examId, answerLetters)
+      : ('TKST-FAIXA-AMARELA-06KYU-' + examId);
+    const barcodeSvg = (window.TKST_BARCODE && window.TKST_BARCODE.createBarcodeSvg)
+      ? window.TKST_BARCODE.createBarcodeSvg(barcodeText)
       : '';
 
     const renderSingleQuestion = (q, idx) => {
@@ -922,11 +916,8 @@ window.TKST_EXAM_GENERATOR = {
         `;
       }
 
-      // Questão sem imagem (100% da largura da coluna, com reserva de canto na Questão 10 para o QR Code)
-      const isQ10 = (qNum === 10);
-      const cardClass = isQ10
-        ? "exam-vertical-q-item exam-landscape-q-card exam-q10-card"
-        : "exam-vertical-q-item exam-landscape-q-card";
+      // Questão sem imagem (100% da largura da coluna)
+      const cardClass = "exam-vertical-q-item exam-landscape-q-card";
 
       return `
         <div class="${cardClass}">
@@ -968,12 +959,19 @@ window.TKST_EXAM_GENERATOR = {
             </div>
           </div>
 
-          <!-- CITAÇÃO FUNAKOSHI + AVISO AO ALUNO (PINTE O QUADRADINHO) -->
-          <div class="exam-header-quote-card exam-landscape-quote-box">
-            <div class="exam-quote-body">“O objetivo final do Karatê não está na vitória ou na derrota, mas na perfeição do caráter de seus participantes.”</div>
-            <div class="exam-quote-author">— Mestre Gichin Funakoshi</div>
-            <div style="font-size: 7.2pt; color: #1E293B; margin-top: 2px; font-weight: 700; background: #FEF3C7; border: 1px dashed #D97706; padding: 1px 4px; border-radius: 3px; display: inline-block;">
-              ✏️ <strong>Atenção:</strong> <strong>Pinte totalmente</strong> o quadradinho da resposta correta a lápis ou caneta.
+          <!-- CABEÇALHO SUPERIOR DIREITO: CÓDIGO DE BARRAS CODE 128 + CAIXA DE INSTRUÇÕES -->
+          <div class="exam-landscape-header-right">
+            <!-- CÓDIGO DE BARRAS CODE 128 OFICIAL -->
+            <div class="exam-barcode-box">
+              ${barcodeSvg}
+            </div>
+
+            <!-- CITAÇÃO FUNAKOSHI + AVISO AO ALUNO (PINTE O QUADRADINHO) -->
+            <div class="exam-header-quote-card">
+              <div class="exam-instruction-badge">
+                ✏️ <strong>Atenção:</strong> <strong>Pinte totalmente</strong> o quadradinho da resposta correta a lápis ou caneta.
+              </div>
+              <div class="exam-quote-body">“O objetivo final do Karatê está na perfeição do caráter de seus participantes.” — Mestre Funakoshi</div>
             </div>
           </div>
         </div>
@@ -985,16 +983,6 @@ window.TKST_EXAM_GENERATOR = {
           </div>
           <div class="exam-landscape-col">
             ${col2Questions}
-          </div>
-        </div>
-
-        <!-- QR CODE OFICIAL DE CORREÇÃO (CANTO INFERIOR DIREITO, FLUTUANTE FORA DO FLUXO DO TEXTO) -->
-        <div class="exam-corner-qr-wrap">
-          <div class="exam-corner-qr-box">
-            <div class="exam-corner-qr-svg">
-              ${qrSvg}
-            </div>
-            <span class="exam-corner-qr-label">CORREÇÃO #${examId}</span>
           </div>
         </div>
       </div>
@@ -1076,7 +1064,7 @@ window.TKST_EXAM_GENERATOR = {
 
     return `
       <div class="exam-print-bundle">
-        <div class="exam-page-break-wrapper">
+        <div class="exam-page-break-wrapper single-page-wrapper" style="page-break-after: avoid !important; break-after: avoid !important; page-break-inside: avoid !important;">
           ${page1Html}
         </div>
       </div>
@@ -1312,8 +1300,8 @@ window.TKST_EXAM_GENERATOR = {
   getPrintStyles: function() {
     return `
       @page {
-        size: A4 landscape;
-        margin: 3.5mm 5mm 3.5mm 5mm;
+        size: 297mm 210mm landscape;
+        margin: 3mm 4mm 3mm 4mm;
       }
       * {
         box-sizing: border-box;
@@ -1333,7 +1321,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-sheet-a4 {
         position: relative !important;
         width: 100%;
-        max-width: 287mm;
+        max-width: 289mm;
         margin: 0 auto;
         padding: 1.5mm 2.5mm !important;
         box-sizing: border-box !important;
@@ -1341,26 +1329,38 @@ window.TKST_EXAM_GENERATOR = {
       }
       .single-page-a4 {
         position: relative !important;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+        page-break-inside: avoid !important;
+        break-after: avoid !important;
+        break-before: avoid !important;
+        break-inside: avoid !important;
       }
       .exam-sheet-page1 {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
       }
       .exam-sheet-page2 {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
       .exam-landscape-sheet {
-        height: 198mm !important;
-        min-height: 198mm !important;
-        max-height: 198mm !important;
+        height: 195mm !important;
+        min-height: 195mm !important;
+        max-height: 195mm !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
         position: relative !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-after: avoid !important;
+        break-inside: avoid !important;
       }
       .exam-qr-box svg {
         width: 100% !important;
@@ -1455,34 +1455,62 @@ window.TKST_EXAM_GENERATOR = {
         align-items: center;
         gap: 8px;
       }
+      .exam-landscape-header-right {
+        flex: 1.35 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 2.5px !important;
+      }
+      .exam-barcode-box {
+        background: #FFF !important;
+        border: 1.2px solid #0F172A !important;
+        border-radius: 4px !important;
+        padding: 1px 4px !important;
+        height: 14mm !important;
+        max-height: 14.5mm !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 1px 1px 0px #0F172A !important;
+        overflow: hidden !important;
+      }
+      .exam-barcode-box svg {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+        max-height: 13.5mm !important;
+      }
       .exam-header-quote-card {
-        border: 1.5px solid #0F172A !important;
+        border: 1.2px solid #0F172A !important;
         border-radius: 4px !important;
         background: #FFF !important;
-        box-shadow: 1.5px 1.5px 0px #0F172A !important;
+        box-shadow: 1px 1px 0px #0F172A !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        padding: 3px 6px !important;
+        padding: 2px 5px !important;
         text-align: center !important;
-        margin-top: 0.5mm !important;
         box-sizing: border-box !important;
       }
-      .exam-landscape-quote-box {
-        flex: 1.25 !important;
+      .exam-instruction-badge {
+        font-size: 6.8pt !important;
+        color: #1E293B !important;
+        font-weight: 800 !important;
+        background: #FEF3C7 !important;
+        border: 1px dashed #D97706 !important;
+        padding: 1px 4px !important;
+        border-radius: 3px !important;
+        margin-bottom: 1.5px !important;
+        line-height: 1.15 !important;
       }
       .exam-quote-body {
-        font-size: 7.6pt;
-        font-weight: 700;
-        font-style: italic;
-        color: #0F172A;
-        line-height: 1.2;
-      }
-      .exam-quote-author {
-        font-size: 7.0pt;
-        font-weight: 800;
-        color: #B45309;
-        margin-top: 1px;
+        font-size: 6.8pt !important;
+        font-weight: 700 !important;
+        font-style: italic !important;
+        color: #0F172A !important;
+        line-height: 1.15 !important;
       }
 
 
@@ -1494,12 +1522,13 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1 1 auto !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 6px 26px !important;
-        height: calc(198mm - 38mm) !important;
-        min-height: calc(198mm - 38mm) !important;
+        gap: 5px 24px !important;
+        height: calc(195mm - 37mm) !important;
+        min-height: calc(195mm - 37mm) !important;
+        max-height: calc(195mm - 37mm) !important;
         margin-bottom: 0 !important;
-        padding-left: 3.5mm !important;
-        padding-right: 3.5mm !important;
+        padding-left: 2mm !important;
+        padding-right: 2mm !important;
         box-sizing: border-box !important;
       }
       .exam-landscape-col {
@@ -1621,72 +1650,7 @@ window.TKST_EXAM_GENERATOR = {
         gap: 3px;
       }
 
-      /* QUESTÃO 10: QR CODE EMBUTIDO AO LADO DAS OPÇÕES (SEM SOBREPOSIÇÃO) */
-      .exam-q10-side-row {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        width: 100% !important;
-        margin-top: 1px !important;
-      }
-      .exam-q10-options-col {
-        flex: 1 1 auto !important;
-        max-width: 68% !important;
-      }
-      .exam-q10-qr-wrap {
-        flex: 0 0 auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-end !important;
-      /* QUESTÃO 10: RESERVA DE ESPAÇO NO CANTO PARA O QR CODE (SEM SOBREPOSIÇÃO) */
-      .exam-q10-card {
-        padding-right: 32mm !important;
-        position: relative !important;
-      }
 
-      /* QR CODE OFICIAL NO CANTO INFERIOR DIREITO DA FOLHA (FORA DO FLUXO DO TEXTO) */
-      .exam-corner-qr-wrap {
-        position: absolute !important;
-        right: 3mm !important;
-        bottom: 2.5mm !important;
-        z-index: 10 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-      }
-      .exam-corner-qr-box {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: #FFF !important;
-        border: 1.5px solid #0F172A !important;
-        border-radius: 4px !important;
-        padding: 2.5px !important;
-        box-shadow: 2px 2px 0px #0F172A !important;
-      }
-      .exam-corner-qr-svg {
-        width: 25mm !important;
-        height: 25mm !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-      }
-      .exam-corner-qr-svg svg {
-        width: 100% !important;
-        height: 100% !important;
-        display: block !important;
-      }
-      .exam-corner-qr-label {
-        font-size: 5.6pt !important;
-        font-weight: 900 !important;
-        color: #0F172A !important;
-        letter-spacing: 0.3px !important;
-        line-height: 1 !important;
-        margin-top: 1.5px !important;
-        white-space: nowrap !important;
-      }
 
       /* LINHAS DE RESPOSTA DISSERTATIVA */
       .exam-print-lines-box {
@@ -1879,11 +1843,27 @@ window.TKST_EXAM_GENERATOR = {
             }
           }
           @media print {
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #FFF !important;
+              height: 100% !important;
+              max-height: 210mm !important;
+              overflow: hidden !important;
+            }
             .no-print-bar {
               display: none !important;
             }
             .exam-print-bundle {
               display: block !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            .single-page-a4,
+            .single-page-wrapper,
+            .exam-page-break-wrapper:last-child {
+              page-break-after: avoid !important;
+              break-after: avoid !important;
             }
           }
         </style>
@@ -1892,7 +1872,7 @@ window.TKST_EXAM_GENERATOR = {
         <div class="no-print-bar">
           <div>
             <strong style="font-size: 0.95rem;">📄 ${title}</strong>
-            <div style="font-size: 0.75rem; color: #94A3B8;">Folha Única A4 (Com QR Code de Correção Rápida pelo App)</div>
+            <div style="font-size: 0.75rem; color: #94A3B8;">Folha Única A4 (Com Código de Barras Code 128 e Correção Rápida)</div>
           </div>
           <div style="display: flex; gap: 8px;">
             <button class="print-btn-action" onclick="window.print()">
