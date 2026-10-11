@@ -44,15 +44,17 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Limpa prefixo data:image/...;base64, se houver
+    // Limpa prefixo data:image/...;base64, se houver com suporte a quebras de linha
     let base64Data = image;
     let mimeType = 'image/jpeg';
-    if (image.startsWith('data:')) {
-      const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-      if (match) {
-        mimeType = match[1];
-        base64Data = match[2];
+    if (typeof image === 'string' && image.includes(';base64,')) {
+      const parts = image.split(';base64,');
+      if (parts[0].startsWith('data:')) {
+        mimeType = parts[0].replace('data:', '').trim() || 'image/jpeg';
       }
+      base64Data = parts[1].replace(/[\r\n\s]/g, '');
+    } else if (typeof image === 'string') {
+      base64Data = image.replace(/[\r\n\s]/g, '');
     }
 
 function decodeCompactExamCode(codeStr) {
@@ -226,8 +228,8 @@ Retorne estritamente um JSON:
       }
     });
 
-    // Chamada à API Gemini Multimodal com suporte a gemini-2.5-flash, 2.0-flash e 1.5-flash
-    const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    // Chamada à API Gemini Multimodal com modelos ativos da chave
+    const candidateModels = ['gemini-3.5-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
     let geminiResult = null;
 
     for (const modelName of candidateModels) {

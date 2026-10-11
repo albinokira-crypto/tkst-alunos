@@ -13822,12 +13822,10 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             }
           }
           if (Array.isArray(json.detectedAnswers) && json.detectedAnswers.length === 10) {
-            finalResult.detectedAnswers = json.detectedAnswers.map((aiAns, idx) => {
-              const clean = (typeof aiAns === 'string' && ['A', 'B', 'C', 'D'].includes(aiAns.trim().toUpperCase()))
+            finalResult.detectedAnswers = json.detectedAnswers.map((aiAns) => {
+              return (typeof aiAns === 'string' && ['A', 'B', 'C', 'D'].includes(aiAns.trim().toUpperCase()))
                 ? aiAns.trim().toUpperCase()
                 : null;
-              // Fusão inteligente: se a IA não identificou, aproveita a leitura do OMR
-              return clean || (omrResult.detectedAnswers && omrResult.detectedAnswers[idx]) || null;
             });
           }
           if (Array.isArray(json.ambiguousQuestions)) {
