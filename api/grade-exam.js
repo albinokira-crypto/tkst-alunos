@@ -225,40 +225,55 @@ Retorne estritamente um JSON:
       }
     });
 
-    // Chamada à API Gemini Multimodal (v1beta)
-    const geminiResult = await new Promise((resolve, reject) => {
-      const options = {
-        hostname: 'generativelanguage.googleapis.com',
-        path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(requestPayload)
-        }
-      };
+    // Chamada à API Gemini Multimodal com suporte a gemini-2.5-flash, 2.0-flash e 1.5-flash
+    const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    let geminiResult = null;
 
-      const request = https.request(options, (response) => {
-        let data = '';
-        response.setEncoding('utf8');
-        response.on('data', chunk => { data += chunk; });
-        response.on('end', () => {
-          try {
-            resolve({ statusCode: response.statusCode, body: JSON.parse(data) });
-          } catch(err) {
-            resolve({ statusCode: response.statusCode, raw: data });
-          }
+    for (const modelName of candidateModels) {
+      try {
+        const result = await new Promise((resolve, reject) => {
+          const options = {
+            hostname: 'generativelanguage.googleapis.com',
+            path: `/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': Buffer.byteLength(requestPayload)
+            }
+          };
+
+          const request = https.request(options, (response) => {
+            let data = '';
+            response.setEncoding('utf8');
+            response.on('data', chunk => { data += chunk; });
+            response.on('end', () => {
+              try {
+                resolve({ statusCode: response.statusCode, body: JSON.parse(data) });
+              } catch(err) {
+                resolve({ statusCode: response.statusCode, raw: data });
+              }
+            });
+          });
+
+          request.on('error', reject);
+          request.setTimeout(18000, () => {
+            request.destroy(new Error('Timeout ao conectar com Gemini API'));
+          });
+          request.write(requestPayload);
+          request.end();
         });
-      });
 
-      request.on('error', reject);
-      request.setTimeout(18000, () => {
-        request.destroy(new Error('Timeout ao conectar com Gemini API'));
-      });
-      request.write(requestPayload);
-      request.end();
-    });
+        if (result && result.statusCode === 200) {
+          geminiResult = result;
+          break;
+        } else if (result && result.statusCode !== 404) {
+          geminiResult = result;
+        }
+      } catch(e) {}
+    }
 
-    if (geminiResult.statusCode !== 200) {
+    if (!geminiResult || geminiResult.statusCode !== 200) {
+      console.warn('Gemini API Error:', geminiResult ? (geminiResult.body || geminiResult.raw) : 'Sem resposta');
       console.warn('Gemini API Error:', geminiResult.body || geminiResult.raw);
       return res.status(200).json({
         success: true,
@@ -313,13 +328,16 @@ Retorne estritamente um JSON:
     const detectedAnswers = [];
     const ambiguousQuestions = [];
 
-    if (parsedAi.respostas_aluno && typeof parsedAi.respostas_aluno === 'object') {
+    const respostasMap = parsedAi.respostas_aluno || parsedAi.respostas || parsedAi;
+    if (respostasMap && typeof respostasMap === 'object') {
       for (let i = 1; i <= 10; i++) {
-        const val = parsedAi.respostas_aluno[String(i)] || parsedAi.respostas_aluno[i];
+        const key2d = String(i).padStart(2, '0');
+        const key1d = String(i);
+        const val = respostasMap[key2d] !== undefined ? respostasMap[key2d] : (respostasMap[key1d] !== undefined ? respostasMap[key1d] : respostasMap[i]);
         const cleanVal = typeof val === 'string' ? val.trim().toUpperCase() : '';
-        if (!val || cleanVal === 'EM_BRANCO' || cleanVal === 'BRANCO' || cleanVal === 'VAZIO' || cleanVal === 'VAZIA' || cleanVal === 'NULL') {
+        if (!val || cleanVal === 'EM_BRANCO' || cleanVal === 'BRANCO' || cleanVal === 'VAZIO' || cleanVal === 'VAZIA' || cleanVal === 'NULL' || cleanVal === 'NULO') {
           detectedAnswers.push(null);
-        } else if (cleanVal === 'ANULADA' || cleanVal === 'DUVIDOSA' || cleanVal === 'RASURA') {
+        } else if (cleanVal === 'ANULADA' || cleanVal === 'DUVIDOSA' || cleanVal === 'DUVIDA' || cleanVal === 'DÚVIDA' || cleanVal === 'RASURA') {
           ambiguousQuestions.push(i);
           detectedAnswers.push(null);
         } else if (['A', 'B', 'C', 'D'].includes(cleanVal)) {

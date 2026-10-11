@@ -2485,7 +2485,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="font-size: 0.82rem; color: #94A3B8; display: flex; align-items: center; gap: 6px;">
                   <i class="fas fa-eye" style="color: var(--accent-gold);"></i> <strong>Prova Oficial Diagramada (1 Folha A4 com QR Code):</strong>
                 </div>
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button class="btn btn-sm btn-outline" onclick="window.TKST_APP.rerollExamQuestions()" style="font-size: 0.78rem; padding: 6px 12px; font-weight: 700; color: var(--accent-gold); border: 1px solid var(--accent-gold); background: rgba(245,190,0,0.1);">
+                    <i class="fas fa-dice"></i> Sortear Novas Questões
+                  </button>
                   <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.printCurrentExam()" style="font-size: 0.78rem; padding: 6px 14px; font-weight: 800;">
                     <i class="fas fa-print"></i> Imprimir Esta Folha A4
                   </button>
@@ -9087,6 +9090,15 @@ document.addEventListener('DOMContentLoaded', () => {
       examPreviewGenerated = mode;
       renderAdminMaster();
     },
+    rerollExamQuestions: () => {
+      if (window.TKST_EXAM_GENERATOR) {
+        examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+        if (typeof showToast === 'function') {
+          showToast('🎲 10 novas questões sorteadas com sucesso!', 'success');
+        }
+      }
+      renderAdminMaster();
+    },
     closeExamPreview: () => {
       examPreviewGenerated = false;
       renderAdminMaster();
@@ -9099,6 +9111,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
       const html = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
       window.TKST_EXAM_GENERATOR.printHtml(`Prova Oficial - ${exam.targetBelt}`, html);
+      // Reseta para que a próxima impressão gere novo sorteio dinâmico
+      examCurrentRandomQuestions = null;
     },
     printCurrentAnswerKey: () => {
       if (!window.TKST_EXAM_GENERATOR) return;
@@ -13138,7 +13152,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const dataUrl = e.target.result;
+        const rawDataUrl = e.target.result;
 
         const body = document.getElementById('examCameraModalBody');
         if (body) {
@@ -13148,9 +13162,50 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 <i class="fas fa-camera-retro fa-pulse"></i>
               </div>
               <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Lendo Código da Prova...</h3>
-              <p style="font-size: 0.84rem; color: #94A3B8;">Analisando foto de perto do badge de identificação.</p>
+              <p style="font-size: 0.84rem; color: #94A3B8;">Otimizando imagem e analisando o badge de identificação.</p>
             </div>
           `;
+        }
+
+        // Comprime a foto para max 1280px e qualidade 0.85 (evita estouro do payload de 4.5MB da Vercel)
+        let dataUrl = rawDataUrl;
+        let processedImg = null;
+        try {
+          const compResult = await new Promise((resolve) => {
+            const tempImg = new Image();
+            tempImg.onload = () => {
+              const maxDim = 1280;
+              let w = tempImg.naturalWidth || tempImg.width;
+              let h = tempImg.naturalHeight || tempImg.height;
+              if (w > maxDim || h > maxDim) {
+                if (w > h) {
+                  h = Math.round((h * maxDim) / w);
+                  w = maxDim;
+                } else {
+                  w = Math.round((w * maxDim) / h);
+                  h = maxDim;
+                }
+              }
+              const cv = document.createElement('canvas');
+              cv.width = w;
+              cv.height = h;
+              const ctx = cv.getContext('2d');
+              ctx.drawImage(tempImg, 0, 0, w, h);
+              resolve({
+                dataUrl: cv.toDataURL('image/jpeg', 0.85),
+                canvas: cv,
+                img: tempImg
+              });
+            };
+            tempImg.onerror = () => resolve({ dataUrl: rawDataUrl, canvas: null, img: null });
+            tempImg.src = rawDataUrl;
+          });
+          if (compResult && compResult.dataUrl) {
+            dataUrl = compResult.dataUrl;
+            processedImg = compResult.canvas || compResult.img;
+          }
+        } catch(compErr) {
+          dataUrl = rawDataUrl;
         }
 
         let detectedCode = null;
@@ -13158,11 +13213,13 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         // 1. Tenta BarcodeDetector nativo caso haja código de barras na foto de perto
         if ('BarcodeDetector' in window) {
           try {
-            const img = new Image();
-            img.src = dataUrl;
-            await new Promise(r => { img.onload = r; img.onerror = r; });
+            const targetEl = processedImg || new Image();
+            if (!processedImg) {
+              targetEl.src = dataUrl;
+              await new Promise(r => { targetEl.onload = r; targetEl.onerror = r; });
+            }
             const detector = new BarcodeDetector({ formats: ['code_128', 'code_39', 'qr_code'] });
-            const barcodes = await detector.detect(img);
+            const barcodes = await detector.detect(targetEl);
             if (barcodes && barcodes.length > 0) {
               for (const b of barcodes) {
                 if (b.rawValue && window.TKST_BARCODE) {
@@ -13177,7 +13234,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           } catch(err) {}
         }
 
-        // 2. Chama API Gemini OCR para extrair os 5 caracteres alfanuméricos
+        // 2. Chama API Gemini OCR para extrair os caracteres alfanuméricos com imagem leve
         if (!detectedCode) {
           try {
             const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || '';
@@ -13222,7 +13279,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const dataUrl = e.target.result;
+        const rawDataUrl = e.target.result;
 
         const body = document.getElementById('examCameraModalBody');
         if (body) {
@@ -13237,6 +13294,46 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           `;
         }
 
+        // Comprime a foto da folha/cartão para max 1280px e 0.85 jpeg
+        let dataUrl = rawDataUrl;
+        let processedCanvas = null;
+        try {
+          const compResult = await new Promise((resolve) => {
+            const tempImg = new Image();
+            tempImg.onload = () => {
+              const maxDim = 1280;
+              let w = tempImg.naturalWidth || tempImg.width;
+              let h = tempImg.naturalHeight || tempImg.height;
+              if (w > maxDim || h > maxDim) {
+                if (w > h) {
+                  h = Math.round((h * maxDim) / w);
+                  w = maxDim;
+                } else {
+                  w = Math.round((w * maxDim) / h);
+                  h = maxDim;
+                }
+              }
+              const cv = document.createElement('canvas');
+              cv.width = w;
+              cv.height = h;
+              const ctx = cv.getContext('2d');
+              ctx.drawImage(tempImg, 0, 0, w, h);
+              resolve({
+                dataUrl: cv.toDataURL('image/jpeg', 0.85),
+                canvas: cv
+              });
+            };
+            tempImg.onerror = () => resolve({ dataUrl: rawDataUrl, canvas: null });
+            tempImg.src = rawDataUrl;
+          });
+          if (compResult && compResult.dataUrl) {
+            dataUrl = compResult.dataUrl;
+            processedCanvas = compResult.canvas;
+          }
+        } catch(compErr) {
+          dataUrl = rawDataUrl;
+        }
+
         const img = new Image();
         img.src = dataUrl;
         await new Promise(r => { img.onload = r; img.onerror = r; });
@@ -13247,7 +13344,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
         if ('BarcodeDetector' in window) {
           try {
             const detector = new BarcodeDetector({ formats: ['code_128', 'code_39', 'qr_code'] });
-            const barcodes = await detector.detect(img);
+            const barcodes = await detector.detect(processedCanvas || img);
             if (barcodes && barcodes.length > 0) {
               for (const b of barcodes) {
                 if (b.rawValue && window.TKST_BARCODE) {
@@ -13279,7 +13376,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           } catch(e) {}
         }
 
-        // 3. Tenta via API Gemini Vision se disponível
+        // 3. Tenta via API Gemini Vision com a imagem leve otimizada
         if (!detected) {
           try {
             const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || '';

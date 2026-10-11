@@ -817,14 +817,31 @@ window.TKST_EXAM_GENERATOR = {
     const rawAll = (window.TKST_AUTH && window.TKST_AUTH.getCustomQuizBank()) || window.TKST_DEFAULT_QUIZ_BANK || [];
     // Filtra sumariamente qualquer questão de contagem ou questão sem alternativas válidas
     const all = rawAll.filter(q => q && !this.isCountingQuestion(q) && q.options && q.options.length >= 2);
-    const bankKyu = this.getQuizBankKyuForExam(kyu);
+    const kyuNum = Number(kyu);
+    const originKyu = this.getQuizBankKyuForExam(kyu);
 
-    // Filtra questões com alternativas válidas da graduação correspondente (já sem contagem)
-    let pool = all.filter(q => q.kyuNumber === bankKyu);
+    // Conjunto de Kyus e termos aceitáveis para o exame da faixa (abrange origem e destino)
+    const targetKyus = new Set([originKyu, kyuNum]);
+
+    // Filtra questões da graduação correspondente (ex: para 6º Kyu Amarela aceita 7º e 6º Kyu)
+    let pool = all.filter(q => {
+      if (targetKyus.has(Number(q.kyuNumber))) return true;
+      const bName = String(q.beltName || '').toLowerCase();
+      if (kyuNum === 6 && (bName.includes('branca') || bName.includes('amarela'))) return true;
+      if (kyuNum === 5 && (bName.includes('amarela') || bName.includes('vermelha'))) return true;
+      if (kyuNum === 4 && (bName.includes('vermelha') || bName.includes('laranja'))) return true;
+      if (kyuNum === 3 && (bName.includes('laranja') || bName.includes('verde'))) return true;
+      if (kyuNum === 2 && (bName.includes('verde') || bName.includes('roxa'))) return true;
+      if (kyuNum === 1 && (bName.includes('roxa') || bName.includes('marrom'))) return true;
+      if (kyuNum === 0 && (bName.includes('marrom') || bName.includes('preta') || bName.includes('shodan'))) return true;
+      if (kyuNum === -1 && (bName.includes('nidan') || bName.includes('shodan'))) return true;
+      if (kyuNum === -2 && (bName.includes('sandan') || bName.includes('nidan'))) return true;
+      return false;
+    });
 
     // Se o banco da faixa tiver menos que 'count' questões, busca no restante do banco para garantir o total
     if (pool.length < count) {
-      const fallback = all.filter(q => q.kyuNumber !== bankKyu);
+      const fallback = all.filter(q => !targetKyus.has(Number(q.kyuNumber)));
       for (let i = fallback.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [fallback[i], fallback[j]] = [fallback[j], fallback[i]];
@@ -832,65 +849,44 @@ window.TKST_EXAM_GENERATOR = {
       pool = pool.concat(fallback.slice(0, count - pool.length));
     }
 
-    // Embaralha a pool principal (Fisher-Yates)
-    const shuffled = [...pool];
+    // Deduplica a pool por ID e texto da pergunta única (sem descartar por palavra-chave conceitual)
+    const uniquePool = [];
+    const seenQuestionKeys = new Set();
+    for (const q of pool) {
+      const qKey = (q.id ? String(q.id).trim() : '') + '::' + String(q.question || '').toLowerCase().trim();
+      if (!seenQuestionKeys.has(qKey)) {
+        seenQuestionKeys.add(qKey);
+        uniquePool.push(q);
+      }
+    }
+
+    // Embaralha a pool principal de forma 100% aleatória (Fisher-Yates) a cada sorteio
+    const shuffled = [...uniquePool];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
+    // Sorteia as primeiras 'count' questões da pool embaralhada
     const selected = [];
-    const seenSignatures = new Set();
-
-    // 1ª seleção: prioriza conceitos e respostas distintas
     for (const q of shuffled) {
-      const correctText = (q.options && q.options[q.correctIndex] != null)
-        ? q.options[q.correctIndex]
-        : (q.id || '');
-      const sig = this.getAnswerSignature(correctText);
+      const qClone = JSON.parse(JSON.stringify(q));
 
-      if (!seenSignatures.has(sig)) {
-        seenSignatures.add(sig);
-        const qClone = JSON.parse(JSON.stringify(q));
-
-        if (qClone.options && qClone.options.length > 1) {
-          const correctStr = qClone.options[qClone.correctIndex || 0];
-          for (let i = qClone.options.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [qClone.options[i], qClone.options[j]] = [qClone.options[j], qClone.options[i]];
-          }
-          qClone.correctIndex = qClone.options.indexOf(correctStr);
+      // Embaralha as alternativas [A, B, C, D] a cada geração de prova para garantir dinamismo total
+      if (qClone.options && qClone.options.length > 1) {
+        const correctStr = qClone.options[qClone.correctIndex || 0];
+        for (let i = qClone.options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [qClone.options[i], qClone.options[j]] = [qClone.options[j], qClone.options[i]];
         }
-
-        selected.push(qClone);
+        qClone.correctIndex = qClone.options.indexOf(correctStr);
       }
+
+      selected.push(qClone);
       if (selected.length >= count) break;
     }
 
-    // 2ª seleção: preenche até 10 com as questões restantes da pool
-    if (selected.length < count) {
-      const selectedIds = new Set(selected.map(s => s.id));
-      for (const q of shuffled) {
-        if (!selectedIds.has(q.id)) {
-          selectedIds.add(q.id);
-          const qClone = JSON.parse(JSON.stringify(q));
-
-          if (qClone.options && qClone.options.length > 1) {
-            const correctStr = qClone.options[qClone.correctIndex || 0];
-            for (let i = qClone.options.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [qClone.options[i], qClone.options[j]] = [qClone.options[j], qClone.options[i]];
-            }
-            qClone.correctIndex = qClone.options.indexOf(correctStr);
-          }
-
-          selected.push(qClone);
-        }
-        if (selected.length >= count) break;
-      }
-    }
-
-    // 3ª seleção de garantia: se ainda faltar alguma para 10, completa com qualquer questão do banco (já sem contagem)
+    // Garantia absoluta: se ainda faltar alguma para 10, completa com qualquer outra questão do banco
     if (selected.length < count) {
       const selectedIds = new Set(selected.map(s => s.id));
       for (const q of all) {
@@ -914,6 +910,13 @@ window.TKST_EXAM_GENERATOR = {
     const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const compactCode = this.encodeCompactExamCode(kyu, answerLetters);
     const examId = compactCode;
+
+    // Mini Código de Barras Code 128 vetorial SVG embutido no badge para reconhecimento óptico imediato
+    const miniBarcodeSvg = (typeof TKST_BARCODE !== 'undefined' && TKST_BARCODE.createBarcodeSvg)
+      ? TKST_BARCODE.createBarcodeSvg('TKST-' + compactCode, { showText: false })
+      : ((typeof window !== 'undefined' && window.TKST_BARCODE && window.TKST_BARCODE.createBarcodeSvg)
+          ? window.TKST_BARCODE.createBarcodeSvg('TKST-' + compactCode, { showText: false })
+          : '');
 
     // Registra a prova gerada no armazenamento persistente do Sensei para conferência imediata e offline
     try {
@@ -1028,11 +1031,12 @@ window.TKST_EXAM_GENERATOR = {
               <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo"></span></div>
             </div>
 
-            <!-- CÓDIGO DA PROVA DESTACADO + INSTRUÇÃO -->
+            <!-- CÓDIGO DA PROVA DESTACADO (FONTE +50%, CONTRASTE MÁXIMO E MINI BARCODE CODE 128) -->
             <div class="exam-header-code-row">
               <div class="exam-code-badge">
                 <span class="exam-code-lbl">CÓDIGO:</span>
                 <span class="exam-code-val">${compactCode}</span>
+                ${miniBarcodeSvg ? `<div class="exam-code-mini-barcode" title="Leitura óptica Code 128: TKST-${compactCode}">${miniBarcodeSvg}</div>` : ''}
               </div>
               <div class="exam-instruction-tag">
                 ✏️ <strong>Atenção Aluno:</strong> Transfira suas respostas marcando totalmente o quadradinho no <strong>Cartão Oficial ao lado</strong>.
@@ -1596,27 +1600,44 @@ window.TKST_EXAM_GENERATOR = {
         gap: 6px !important;
       }
       .exam-code-badge {
-        background: #0F172A !important;
-        color: #FFF !important;
-        padding: 2px 7px !important;
-        border-radius: 3px !important;
+        background: #000000 !important;
+        color: #FFFFFF !important;
+        padding: 3px 8px !important;
+        border-radius: 4px !important;
         display: inline-flex !important;
         align-items: center !important;
-        gap: 5px !important;
+        gap: 8px !important;
         flex-shrink: 0 !important;
+        border: 1.5px solid #000000 !important;
+        box-shadow: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .exam-code-lbl {
-        font-size: 7pt !important;
-        font-weight: 800 !important;
-        color: #94A3B8 !important;
-        letter-spacing: 0.5px !important;
-      }
-      .exam-code-val {
-        font-size: 10.5pt !important;
+        font-size: 8pt !important;
         font-weight: 900 !important;
         color: #F5BE00 !important;
-        letter-spacing: 2px !important;
-        font-family: monospace, Courier, sans-serif !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
+        line-height: 1 !important;
+      }
+      .exam-code-val {
+        font-size: 16.5pt !important;
+        font-weight: 900 !important;
+        color: #FFFFFF !important;
+        letter-spacing: 2.5px !important;
+        font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
+        line-height: 1 !important;
+        display: inline-block !important;
+      }
+      .exam-code-mini-barcode {
+        display: inline-block !important;
+        width: 75px !important;
+        height: 18px !important;
+        background: #FFFFFF !important;
+        padding: 1px 2px !important;
+        border-radius: 2px !important;
+        vertical-align: middle !important;
       }
       .exam-instruction-tag {
         font-size: 6.8pt !important;

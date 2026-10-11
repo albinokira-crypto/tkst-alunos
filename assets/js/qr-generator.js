@@ -142,13 +142,20 @@
       else if (str.includes('MARROM') || str.includes('01KYU') || str.includes('1KYU')) kyu = 1;
       else if (str.includes('PRETA') || str.includes('SHODAN') || str.includes('00KYU')) kyu = 0;
 
-      // Extrai ID da prova (ex: FRWV)
-      var idMatch = str.match(/(?:KYU-|TKST:.*?:)([A-Z0-9]{4})(?:-|$|:)/i);
+      // Extrai ID da prova (ex: 0IZ96 ou FRWV)
+      var idMatch = str.match(/(?:KYU-|TKST:.*?:|TKST-)([A-Z0-9]{4,6})(?:-|$|:)/i);
       if (idMatch && idMatch[1]) {
         examId = idMatch[1].toUpperCase();
       } else {
-        var anyId = str.match(/[A-Z0-9]{4}/g);
-        if (anyId && anyId.length > 0) examId = anyId[anyId.length - 1];
+        var anyId = str.match(/[A-Z0-9]{4,6}/g);
+        if (anyId && anyId.length > 0) {
+          // Filtra palavras-chave conhecidas
+          var filtered = anyId.filter(function(w) {
+            return !['TKST', 'KYU', 'DAN', 'PROVA', 'EXAM'].includes(w);
+          });
+          if (filtered.length > 0) examId = filtered[filtered.length - 1];
+          else examId = anyId[anyId.length - 1];
+        }
       }
 
       // Procura gabarito de 10 letras no final (ex: -ABCDABCDAB)
