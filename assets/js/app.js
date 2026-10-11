@@ -12953,6 +12953,14 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                   </button>
                 </div>
               </div>
+
+              <!-- OPÇÃO DIRETA 2: FOTOGRAFAR A FOLHA INTEIRA COM IA MULTIMODAL (SEM PRECISAR DE QR CODE) -->
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                <label class="btn btn-primary" style="flex: 1; min-width: 220px; font-size: 0.88rem; font-weight: 800; padding: 11px 16px; cursor: pointer; background: linear-gradient(135deg, #10B981, #059669); border: none; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45); display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #FFF;">
+                  <i class="fas fa-camera"></i> Fotografar Folha Inteira (IA Automática)
+                  <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamImageUpload(this)">
+                </label>
+              </div>
             ` : `
               <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
                 <!-- Botão 1: Câmera Nativa do Celular (com Hardware Flash e Foco Laser Garantidos) -->
@@ -13235,16 +13243,15 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
           const dataUrl = e.target.result;
           examScannerCapturedImage = dataUrl;
 
-          // Se estiver na Etapa 1, tenta extrair o QR Code da imagem enviada
+          // Se estiver na Etapa 1, tenta decodificar QR Code localmente como bônus (se legível)
           if (examScannerStep === 1 && !examScannerDetectedData) {
             try {
               const testImg = new Image();
               testImg.src = dataUrl;
               await new Promise(r => { testImg.onload = r; testImg.onerror = r; });
-              
+
               let foundCode = null;
 
-              // Tenta BarcodeDetector nativo
               if ('BarcodeDetector' in window) {
                 try {
                   const detector = new BarcodeDetector({ formats: ['qr_code'] });
@@ -13260,7 +13267,6 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 } catch(e) {}
               }
 
-              // Tenta jsQR com canvas
               if (!foundCode && window.jsQR) {
                 const testCanvas = document.createElement('canvas');
                 testCanvas.width = testImg.naturalWidth || testImg.width || 800;
@@ -13274,18 +13280,14 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
                 }
               }
 
-              if (foundCode) {
-                window.TKST_APP.handleQrDetected(foundCode);
-                return;
-              } else {
-                if (typeof showToast === 'function') {
-                  showToast('QR Code não lido na foto. Digite o código #FRWV na caixa abaixo!', 'warning');
-                }
+              if (foundCode && window.TKST_QR) {
+                const dec = window.TKST_QR.decodeExamPayload(foundCode);
+                if (dec) examScannerDetectedData = dec;
               }
             } catch(err) {}
           }
 
-          // Na Etapa 2 (ou fallback direto), processa a correção da prova
+          // Executa a esteira de correção multimodal (OCR em 2 etapas pelo Gemini AI)
           window.TKST_APP.stopScannerCameraStream();
           window.TKST_APP.executeGradingPipeline(dataUrl);
         };
@@ -13512,6 +13514,7 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
 
       // 5. Tenta complementar via API Gemini (se configurada no servidor Vercel)
       try {
+        const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || '';
         const response = await fetch('/api/grade-exam', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -13519,19 +13522,43 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
             image: imageDataUrl,
             answerKey: detected.answers,
             kyu: detected.kyu,
-            examId: detected.examId
+            examId: detected.examId,
+            apiKey: clientApiKey
           })
         });
 
         const json = await response.json();
-        if (json && json.aiAvailable && Array.isArray(json.detectedAnswers) && json.detectedAnswers.some(a => a !== null)) {
+        if (json && json.aiAvailable) {
           finalResult.aiAvailable = true;
-          finalResult.studentName = json.studentName || '';
-          finalResult.dojo = json.dojo || '';
-          finalResult.detectedAnswers = json.detectedAnswers.map((aiAns, i) => {
-            return aiAns || omrResult.detectedAnswers[i];
-          });
-          finalResult.ambiguousQuestions = Array.from(new Set([...(json.ambiguousQuestions || []), ...omrResult.ambiguousQuestions]));
+          if (json.aluno || json.studentName) {
+            finalResult.studentName = json.aluno || json.studentName;
+          }
+          if (json.dojo) {
+            finalResult.dojo = json.dojo;
+          }
+          if (json.kyu !== undefined && json.kyu !== null) {
+            finalResult.kyu = json.kyu;
+            detected.kyu = json.kyu;
+          }
+          if (json.examId) {
+            finalResult.examId = json.examId;
+            detected.examId = json.examId;
+          }
+          if (Array.isArray(json.answerKey) && json.answerKey.length === 10) {
+            finalResult.answerKey = json.answerKey;
+            detected.answers = json.answerKey;
+          }
+          if (Array.isArray(json.detectedAnswers) && json.detectedAnswers.some(a => a !== null)) {
+            finalResult.detectedAnswers = json.detectedAnswers.map((aiAns, i) => {
+              return aiAns || omrResult.detectedAnswers[i];
+            });
+          }
+          if (Array.isArray(json.ambiguousQuestions)) {
+            finalResult.ambiguousQuestions = Array.from(new Set([...(json.ambiguousQuestions || []), ...omrResult.ambiguousQuestions]));
+          }
+          if (typeof showToast === 'function') {
+            showToast(`🤖 IA Gemini: Folha analisada! Aluno: ${finalResult.studentName || 'Identificado'}`, 'success');
+          }
         }
       } catch(apiErr) {
         console.warn('API grade-exam indisponível, usando OMR puro:', apiErr);
