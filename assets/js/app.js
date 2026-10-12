@@ -13878,9 +13878,8 @@ https://tkst-alunos.vercel.app/?cadastro=1</div>
               detected.dojoName = saved.dojoName;
             }
           } else if (examGen && examGen.getRandomQuizQuestionsForKyu) {
-              const questions = examGen.getRandomQuizQuestionsForKyu(detected.kyu, 10);
-              detected.answers = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
-            }
+            const questions = examGen.getRandomQuizQuestionsForKyu(detected.kyu, 10);
+            detected.answers = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
           }
 
           examScannerDetectedData = detected;
