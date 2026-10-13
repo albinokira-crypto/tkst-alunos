@@ -2063,7 +2063,7 @@
           localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
           user.lastActive = now;
           localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
-          pushToCloud();
+          // lastActive atualizado localmente - pushToCloud() desativado aqui para evitar loop de tráfego a cada 30s
         }
       }
     },
