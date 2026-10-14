@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tkst-alunos-v253';
+const CACHE_NAME = 'tkst-alunos-v255';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

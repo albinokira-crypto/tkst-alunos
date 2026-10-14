@@ -239,8 +239,8 @@ Retorne estritamente um JSON:
       }
     });
 
-    // Chamada à API Gemini Multimodal priorizando modelos de altíssima disponibilidade sem 503
-    const candidateModels = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.7-flash', 'gemini-3.5-flash'];
+    // Chamada à API Gemini Multimodal com modelos oficiais de alta disponibilidade
+    const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b'];
     let geminiResult = null;
 
     for (const modelName of candidateModels) {
