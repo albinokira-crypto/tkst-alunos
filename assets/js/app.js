@@ -6941,6 +6941,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Retorna álbuns padrão mesclados com álbuns customizados do admin
   function getAlbumsList() {
+    const deletedAlbumIds = (window.TKST_AUTH && window.TKST_AUTH.getDeletedAlbumIds) 
+      ? window.TKST_AUTH.getDeletedAlbumIds() 
+      : (JSON.parse(localStorage.getItem('tkst_deleted_album_ids')) || []);
+    const deletedSet = new Set(deletedAlbumIds);
+
     const defaultAlbums = [
       { id: 'exames', title: 'Exame de Faixa', icon: 'fas fa-graduation-cap', badge: 'Graduações', description: 'Registros organizados de cada exame de graduação.', cover: 'assets/images/exames/branca_img4.jpeg', hasSubAlbums: true, _default: true },
       { id: 'competicoes', title: 'Competições', icon: 'fas fa-trophy', badge: 'Campeonatos', description: 'Torneios, pódios e medalhas dos atletas da TKST.', cover: 'assets/images/exames/vermelha_img4.jpeg', hasSubAlbums: false, _default: true },
@@ -6953,10 +6958,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return custom ? { ...def, ...custom, _default: true } : def;
     });
     const defaultIds = new Set(defaultAlbums.map(a => a.id));
-    return [
+    const all = [
       ...mergedDefaults,
       ...customAlbums.filter(a => !defaultIds.has(a.id))
     ];
+    return all.filter(a => !deletedSet.has(a.id));
   }
 
   function renderMedia() {
@@ -7032,11 +7038,9 @@ document.addEventListener('DOMContentLoaded', () => {
                       <button type="button" class="album-edit-btn" onclick="event.stopPropagation(); window.TKST_APP.openEditAlbumModal('${alb.id}')" title="Editar álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(255,183,3,0.85); border: none; color: #000; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
                         <i class="fas fa-pencil-alt"></i>
                       </button>
-                      ${isCustom ? `
-                        <button type="button" class="album-delete-btn" onclick="event.stopPropagation(); window.TKST_APP.deleteCustomAlbum('${alb.id}', '${escapeHtml(alb.title)}')" title="Excluir álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(230,57,70,0.85); border: none; color: #fff; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-                          <i class="fas fa-trash-alt"></i>
-                        </button>
-                      ` : ''}
+                      <button type="button" class="album-delete-btn" onclick="event.stopPropagation(); window.TKST_APP.deleteCustomAlbum('${alb.id}', '${escapeHtml(alb.title)}')" title="Excluir álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(230,57,70,0.85); border: none; color: #fff; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
                     </div>
                   ` : ''}
                 </div>
@@ -7070,12 +7074,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (hasSubAlbums && !currentSubAlbumName) {
       // Agrupar subálbuns (subálbuns explicitamente salvos + subálbuns inferidos das mídias existentes)
       const subAlbumMap = new Map();
+      const deletedSubs = JSON.parse(localStorage.getItem('tkst_deleted_subalbums')) || [];
+      const deletedSubSet = new Set(deletedSubs.map(s => String(s).toLowerCase().trim()));
 
       // 1. Carrega subálbuns salvos no banco local/nuvem
       const savedSubs = (window.TKST_AUTH && window.TKST_AUTH.getCustomSubAlbums) ? window.TKST_AUTH.getCustomSubAlbums(currentAlbumId) : [];
       savedSubs.forEach(sub => {
         if (sub && sub.name && sub.name.trim()) {
           const subKey = sub.name.trim();
+          const checkKey1 = `${currentAlbumId}::${subKey.toLowerCase()}`;
+          const checkKey2 = subKey.toLowerCase();
+          if (deletedSubSet.has(checkKey1) || deletedSubSet.has(checkKey2)) return;
           subAlbumMap.set(subKey, {
             name: subKey,
             items: [],
@@ -7091,6 +7100,10 @@ document.addEventListener('DOMContentLoaded', () => {
       albumMedia.forEach(m => {
         const subName = (m.subAlbum && m.subAlbum.trim()) || (currentAlbumId === 'exames' ? 'Exame de Faixa Geral' : null);
         if (!subName) return;
+        const checkKey1 = `${currentAlbumId}::${subName.toLowerCase()}`;
+        const checkKey2 = subName.toLowerCase();
+        if (deletedSubSet.has(checkKey1) || deletedSubSet.has(checkKey2)) return;
+
         if (!subAlbumMap.has(subName)) {
           subAlbumMap.set(subName, {
             name: subName,
@@ -7642,9 +7655,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function deleteCustomAlbum(albumId, albumTitle) {
-    if (!confirm(`🗑️ Excluir o álbum "${albumTitle}"?\n\nAs mídias deste álbum NÃO serão excluídas, apenas o álbum será removido.`)) return;
+    if (!confirm(`🗑️ Excluir o álbum "${albumTitle}"?\n\nO álbum será removido da galeria.`)) return;
     if (window.TKST_AUTH && window.TKST_AUTH.deleteAlbum) {
       window.TKST_AUTH.deleteAlbum(albumId);
+    }
+    const deleted = JSON.parse(localStorage.getItem('tkst_deleted_album_ids')) || [];
+    if (!deleted.includes(albumId)) {
+      deleted.push(albumId);
+      localStorage.setItem('tkst_deleted_album_ids', JSON.stringify(deleted));
     }
     updateMediaAlbumSelect();
     renderMedia();

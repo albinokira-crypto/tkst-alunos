@@ -3275,6 +3275,14 @@
       }
     },
 
+    getDeletedAlbumIds: function() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_ALBUMS)) || [];
+      } catch(e) {
+        return [];
+      }
+    },
+
     saveCustomAlbums: function(albums) {
       safeLocalStorageSet(STORAGE_KEY_ALBUMS, JSON.stringify(albums || []));
       pushToCloud();
