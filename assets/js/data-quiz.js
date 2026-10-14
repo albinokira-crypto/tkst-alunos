@@ -2252,6 +2252,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     ],
     "correctIndex": 1
   },
+  // ==TKST_CUSTOM_QUESTIONS_START==
   {
     "id": "q_custom_6_1787068908101",
     "kyuNumber": 6,
@@ -2294,6 +2295,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
     ],
     "correctIndex": 0
   }
+  // ==TKST_CUSTOM_QUESTIONS_END==
 ];
 
 // Carregamento dinâmico e fallback
