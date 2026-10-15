@@ -182,6 +182,11 @@
 
   async function pullQuizBankFromCloud() {
     try {
+      const QUIZ_STAMP = 'tkst_quiz_stamp_vercel_v258';
+      if (localStorage.getItem('tkst_quiz_official_stamp') !== QUIZ_STAMP) {
+        localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(window.TKST_DEFAULT_QUIZ_BANK || []));
+        localStorage.setItem('tkst_quiz_official_stamp', QUIZ_STAMP);
+      }
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
       const localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];

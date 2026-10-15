@@ -266,6 +266,19 @@ window.TKST_DEFAULT_QUIZ_BANK = [
 // Initialize Bank taking into account custom edits and deleted question tombstones
 (function() {
   try {
+    const QUIZ_STAMP = 'tkst_quiz_stamp_vercel_v258';
+    const savedStamp = localStorage.getItem('tkst_quiz_official_stamp');
+
+    // Se o stamp do navegador for diferente, limpa o cache poluído anterior e hidrata com a base oficial da Vercel
+    if (savedStamp !== QUIZ_STAMP) {
+      localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(window.TKST_DEFAULT_QUIZ_BANK || []));
+      localStorage.setItem('tkst_quiz_official_stamp', QUIZ_STAMP);
+      window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK || [];
+      window.TKST_DEFAULT_QUIZ_BANK = window.TKST_QUIZ_BANK;
+      window.TKST_QUIZ = window.TKST_QUIZ_BANK;
+      return;
+    }
+
     const deletedIds = JSON.parse(localStorage.getItem('tkst_deleted_quiz_ids')) || [];
     const customBank = JSON.parse(localStorage.getItem('tkst_custom_quiz_bank'));
     

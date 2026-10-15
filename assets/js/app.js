@@ -109,14 +109,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-1.91';
+  const APP_DISPLAY_VERSION = 'V-2.58';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-1.90. Toque para atualizar o app.';
+    appVersionBadgeEl.title = 'Versão atual V-2.58. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo para garantir que você está na versão mais recente (V-1.90)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.58)?')) {
+        try {
+          localStorage.removeItem('tkst_quiz_official_stamp');
+          localStorage.removeItem('tkst_custom_quiz_bank');
+        } catch(e) {}
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(r => r.unregister());
+          });
+        }
         if ('caches' in window) {
           caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))).then(() => {
             window.location.reload(true);
@@ -710,12 +719,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUserDisplay();
     setupGlobalEvents();
 
-    // Register Service Worker passively for PWA desktop/mobile installation (no auto-reloads)
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch((err) => {
-        console.log('SW registration note:', err);
-      });
-    }
+    // O registro do Service Worker com auto-update imediato é gerenciado no index.html (sw.js?v=258)
 
     // Auto-sincronização inicial com a nuvem (alunos e simulados)
     if (window.TKST_AUTH) {
