@@ -5,8 +5,8 @@
  * 2. Competições (fotos e vídeos de campeonatos e pódios)
  * 3. Vídeos Didáticos (aulas em vídeo de Katas e técnicas)
  *
- * NOTA: As fotos adicionadas pelos alunos e pelo Sensei são enviadas diretamente para a nuvem
- * externa (Cloudinary) via uploadToCloudinary no app.js, sem acumular peso local no app.
+ * NOTA: As fotos e vídeos adicionados pelo Sensei e alunos são hospedados diretamente
+ * no Cloudinary via uploadToCloudinary no app.js, sem acumular peso local no app.
  */
 
 window.TKST_ALBUMS = [
@@ -16,7 +16,7 @@ window.TKST_ALBUMS = [
     icon: 'fas fa-graduation-cap',
     badge: 'Graduações',
     description: 'Registros fotográficos e vídeos separados por cada exame de graduação.',
-    cover: 'assets/images/exames/branca_img4.jpeg',
+    cover: 'assets/images/logo-tkst-alunos.png',
     hasSubAlbums: true
   },
   {
@@ -25,7 +25,7 @@ window.TKST_ALBUMS = [
     icon: 'fas fa-trophy',
     badge: 'Campeonatos',
     description: 'Torneios, pódios e conquistas dos atletas e instrutores da TKST.',
-    cover: 'assets/images/exames/vermelha_img4.jpeg',
+    cover: 'assets/images/tigre.png',
     hasSubAlbums: false
   },
   {
@@ -39,93 +39,10 @@ window.TKST_ALBUMS = [
   }
 ];
 
+// Mídias oficiais base (apenas vídeos didáticos reais; fotos de exame e campeonatos vêm 100% do Cloudinary)
 window.TKST_DEFAULT_MEDIA = [
   {
-    id: 'media_01',
-    title: 'Exame de Faixa 2026 - Dojô Central',
-    album: 'exames',
-    category: 'exames',
-    subAlbum: 'Exame de Faixa 2026 - Dojô Central',
-    type: 'image',
-    url: 'assets/images/exames/branca_img4.jpeg',
-    thumbUrl: 'assets/images/exames/branca_img4.jpeg',
-    date: '2026-03-01',
-    author: 'Sensei Diego',
-    dojo: 'TKST Matriz',
-    description: 'Registro oficial do exame de graduação de faixas coloridas na TKST.'
-  },
-  {
-    id: 'media_03',
-    title: 'Cerimônia de Graduação & Entrega de Faixas',
-    album: 'exames',
-    category: 'exames',
-    subAlbum: 'Exame de Faixa 2026 - Dojô Central',
-    type: 'image',
-    url: 'assets/images/exames/amarela_img4.jpeg',
-    thumbUrl: 'assets/images/exames/amarela_img4.jpeg',
-    date: '2026-02-15',
-    author: 'Sensei Diego',
-    dojo: 'TKST Matriz',
-    description: 'Momento solene da entrega de faixas e certificados aos alunos aprovados.'
-  },
-  {
-    id: 'media_02',
-    title: 'Avaliação de Kihon e Postura',
-    album: 'exames',
-    category: 'exames',
-    subAlbum: 'Exame de Graduação Dezembro 2025',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=1000&auto=format&fit=crop&q=80',
-    thumbUrl: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=500&auto=format&fit=crop&q=70',
-    date: '2025-12-18',
-    author: 'Sensei Diego',
-    dojo: 'TKST Central',
-    description: 'Aperfeiçoamento de postura, kime e foco durante banca examinadora.'
-  },
-  {
-    id: 'media_05',
-    title: 'Campeonato Regional - Pódio & Conquistas',
-    album: 'competicoes',
-    category: 'competicoes',
-    subAlbum: 'Campeonato Regional 2026',
-    type: 'image',
-    url: 'assets/images/exames/vermelha_img4.jpeg',
-    thumbUrl: 'assets/images/exames/vermelha_img4.jpeg',
-    date: '2026-01-28',
-    author: 'Equipe TKST',
-    dojo: 'TKST Geral',
-    description: 'Participação dos atletas da Associação TKST no torneio de Karatê-Dô Shotokan.'
-  },
-  {
-    id: 'media_04',
-    title: 'Disputa de Kumite no Torneio Aberto',
-    album: 'competicoes',
-    category: 'competicoes',
-    subAlbum: 'Torneio Aberto de Karatê',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1000&auto=format&fit=crop&q=80',
-    thumbUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&auto=format&fit=crop&q=70',
-    date: '2026-01-22',
-    author: 'Instrutores TKST',
-    dojo: 'TKST Polo Sul',
-    description: 'Combate de atletas da TKST demonstrando técnica e respeito marcial.'
-  },
-  {
-    id: 'media_06',
-    title: 'Delegação TKST - Cerimônia de Premiação',
-    album: 'competicoes',
-    category: 'competicoes',
-    subAlbum: 'Campeonato Regional 2026',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1000&auto=format&fit=crop&q=80',
-    thumbUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop&q=70',
-    date: '2026-01-20',
-    author: 'Sensei Diego',
-    dojo: 'TKST Matriz',
-    description: 'Atletas e comissão técnica celebrando o excelente desempenho na competição.'
-  },
-  {
-    id: 'media_07',
+    id: 'media_didatico_01',
     title: 'Vídeo Didático: Heian Shodan Completo',
     album: 'didaticos',
     category: 'didaticos',
@@ -139,7 +56,7 @@ window.TKST_DEFAULT_MEDIA = [
     description: 'Execução técnica detalhada do primeiro Kata Heian para estudo e aperfeiçoamento dos alunos.'
   },
   {
-    id: 'media_08',
+    id: 'media_didatico_02',
     title: 'Vídeo Técnico: Bunkai & Defesas',
     album: 'didaticos',
     category: 'didaticos',

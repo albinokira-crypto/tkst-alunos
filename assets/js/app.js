@@ -109,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.58';
+  const APP_DISPLAY_VERSION = 'V-2.59';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.58. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.59. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.58)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.59)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
           localStorage.removeItem('tkst_custom_quiz_bank');
@@ -6951,8 +6951,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const deletedSet = new Set(deletedAlbumIds);
 
     const defaultAlbums = [
-      { id: 'exames', title: 'Exame de Faixa', icon: 'fas fa-graduation-cap', badge: 'Graduações', description: 'Registros organizados de cada exame de graduação.', cover: 'assets/images/exames/branca_img4.jpeg', hasSubAlbums: true, _default: true },
-      { id: 'competicoes', title: 'Competições', icon: 'fas fa-trophy', badge: 'Campeonatos', description: 'Torneios, pódios e medalhas dos atletas da TKST.', cover: 'assets/images/exames/vermelha_img4.jpeg', hasSubAlbums: false, _default: true },
+      { id: 'exames', title: 'Exame de Faixa', icon: 'fas fa-graduation-cap', badge: 'Graduações', description: 'Registros organizados de cada exame de graduação.', cover: 'assets/images/logo-tkst-alunos.png', hasSubAlbums: true, _default: true },
+      { id: 'competicoes', title: 'Competições', icon: 'fas fa-trophy', badge: 'Campeonatos', description: 'Torneios, pódios e medalhas dos atletas da TKST.', cover: 'assets/images/tigre.png', hasSubAlbums: false, _default: true },
       { id: 'didaticos', title: 'Vídeos Didáticos', icon: 'fas fa-video', badge: 'Estudo Técnico', description: 'Vídeos didáticos de Katas, Kihon e aplicações práticas.', cover: 'https://img.youtube.com/vi/FqS_tPZ-3kM/hqdefault.jpg', hasSubAlbums: false, _default: true }
     ];
     const customAlbums = (window.TKST_AUTH && window.TKST_AUTH.getCustomAlbums) ? window.TKST_AUTH.getCustomAlbums() : [];
@@ -7093,7 +7093,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: subKey,
             items: [],
             dojo: sub.dojo || 'TKST',
-            cover: sub.cover || currentAlbum.cover || 'assets/images/exames/branca_img4.jpeg',
+            cover: sub.cover || currentAlbum.cover || 'assets/images/logo-tkst-alunos.png',
             createdAt: sub.createdAt || 0,
             isCustom: true
           });
@@ -7113,7 +7113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: subName,
             items: [],
             dojo: m.dojo || 'TKST',
-            cover: m.thumbUrl || m.url || currentAlbum.cover || 'assets/images/exames/branca_img4.jpeg',
+            cover: m.thumbUrl || m.url || currentAlbum.cover || 'assets/images/logo-tkst-alunos.png',
             createdAt: 0,
             isCustom: false
           });
@@ -7126,7 +7126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortedItems = [...subData.items].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
         const latestDate = sortedItems[0]?.date || '';
         const dojo = sortedItems[0]?.dojo || subData.dojo || 'TKST';
-        const cover = sortedItems[0]?.thumbUrl || sortedItems[0]?.url || subData.cover || 'assets/images/exames/branca_img4.jpeg';
+        const cover = sortedItems[0]?.thumbUrl || sortedItems[0]?.url || subData.cover || 'assets/images/logo-tkst-alunos.png';
         return {
           name: subData.name,
           items: sortedItems,
