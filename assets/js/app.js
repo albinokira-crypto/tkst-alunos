@@ -109,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.59';
+  const APP_DISPLAY_VERSION = 'V-2.60';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.59. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.60. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.59)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.60)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
           localStorage.removeItem('tkst_custom_quiz_bank');
@@ -1113,17 +1113,26 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!shouldSkipRerender() && currentTab === 'media') {
         renderMedia();
       }
+      if (typeof initHomePhotoSlide === 'function') {
+        initHomePhotoSlide();
+      }
     });
 
     window.addEventListener('tkst_albums_updated', () => {
       if (!shouldSkipRerender() && currentTab === 'media') {
         renderMedia();
       }
+      if (typeof initHomePhotoSlide === 'function') {
+        initHomePhotoSlide();
+      }
     });
 
     window.addEventListener('tkst_subalbums_updated', () => {
       if (!shouldSkipRerender() && currentTab === 'media') {
         renderMedia();
+      }
+      if (typeof initHomePhotoSlide === 'function') {
+        initHomePhotoSlide();
       }
     });
   }
@@ -3092,6 +3101,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const photos = allMedia.filter(m => (m.type === 'image' || !m.type) && m.url);
 
     if (photos.length === 0) {
+      clearHomeSlideInterval();
+      homeRandomPhotos = [];
+      homeCurrentSlideIndex = 0;
+      homeSlideIsPaused = true;
       container.innerHTML = `
         <div class="home-slide-empty">
           <i class="fas fa-images"></i>
@@ -6142,6 +6155,11 @@ document.addEventListener('DOMContentLoaded', () => {
       questionCount = 10;
     }
 
+    if (!pool || pool.length === 0) {
+      alert('ℹ️ Nenhuma questão cadastrada no simulado no momento. Acesse a área de administração para cadastrar novas questões.');
+      return;
+    }
+
     // Ensure all questions have smart contextual options without any placeholder text
     pool = pool.map(q => ensureSmartQuestionOptions(q));
 
@@ -6931,16 +6949,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Normalização de mídias para compatibilidade total
   function getNormalizedMediaList() {
+    const albums = getAlbumsList();
+    if (!albums || albums.length === 0) return [];
+    const validAlbumIds = new Set(albums.map(a => a.id));
+    const deletedSubAlbums = (window.TKST_AUTH && window.TKST_AUTH.getDeletedSubAlbumKeys) 
+      ? window.TKST_AUTH.getDeletedSubAlbumKeys() 
+      : (JSON.parse(localStorage.getItem('tkst_deleted_subalbums')) || []);
+
     const rawList = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
-    return rawList.map(m => {
-      let album = m.album || m.category || 'exames';
-      if (album === 'campeonatos' || album === 'treinos') album = 'competicoes';
-      let subAlbum = m.subAlbum || '';
-      if (album === 'exames' && !subAlbum) {
-        subAlbum = m.title || 'Exame de Faixa 2026 - Dojô Central';
-      }
-      return { ...m, album, category: album, subAlbum };
-    });
+    return rawList
+      .filter(m => {
+        if (!m || !m.url) return false;
+        let album = m.album || m.category;
+        if (!album || !validAlbumIds.has(album)) return false;
+        let subAlbum = m.subAlbum || '';
+        if (subAlbum) {
+          const key = album + '::' + subAlbum.trim().toLowerCase();
+          if (deletedSubAlbums.includes(key)) return false;
+        }
+        return true;
+      })
+      .map(m => {
+        let album = m.album || m.category;
+        let subAlbum = m.subAlbum || '';
+        return { ...m, album, category: album, subAlbum };
+      });
   }
 
   // Retorna álbuns padrão mesclados com álbuns customizados do admin
@@ -6950,11 +6983,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : (JSON.parse(localStorage.getItem('tkst_deleted_album_ids')) || []);
     const deletedSet = new Set(deletedAlbumIds);
 
-    const defaultAlbums = [
-      { id: 'exames', title: 'Exame de Faixa', icon: 'fas fa-graduation-cap', badge: 'Graduações', description: 'Registros organizados de cada exame de graduação.', cover: 'assets/images/logo-tkst-alunos.png', hasSubAlbums: true, _default: true },
-      { id: 'competicoes', title: 'Competições', icon: 'fas fa-trophy', badge: 'Campeonatos', description: 'Torneios, pódios e medalhas dos atletas da TKST.', cover: 'assets/images/tigre.png', hasSubAlbums: false, _default: true },
-      { id: 'didaticos', title: 'Vídeos Didáticos', icon: 'fas fa-video', badge: 'Estudo Técnico', description: 'Vídeos didáticos de Katas, Kihon e aplicações práticas.', cover: 'https://img.youtube.com/vi/FqS_tPZ-3kM/hqdefault.jpg', hasSubAlbums: false, _default: true }
-    ];
+    const defaultAlbums = window.TKST_ALBUMS || [];
     const customAlbums = (window.TKST_AUTH && window.TKST_AUTH.getCustomAlbums) ? window.TKST_AUTH.getCustomAlbums() : [];
     // Mescla eventuais customizações feitas pelo admin nos álbuns padrão
     const mergedDefaults = defaultAlbums.map(def => {
@@ -6978,7 +7007,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let html = '';
 
     // =========================================================================
-    // NÍVEL 0: VISÃO GERAL DOS 3 ÁLBUNS PRINCIPAIS
+    // NÍVEL 0: VISÃO GERAL DOS ÁLBUNS
     // =========================================================================
     if (!currentAlbumId) {
       html = `
@@ -7008,69 +7037,90 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <div class="albums-grid">
-          ${albums.map(alb => {
-            const albMedia = allMedia.filter(m => m.album === alb.id);
-            const count = albMedia.length;
-            let subCountText = '';
-            if (alb.hasSubAlbums) {
-              const savedSubsForAlb = (window.TKST_AUTH && window.TKST_AUTH.getCustomSubAlbums) ? window.TKST_AUTH.getCustomSubAlbums(alb.id) : [];
-              const uniqueSubs = new Set([
-                ...albMedia.map(m => m.subAlbum).filter(Boolean),
-                ...savedSubsForAlb.map(s => s.name).filter(Boolean)
-              ]);
-              const subWord = alb.id === 'exames' ? 'exame' : 'subálbum';
-              const subWordPlural = alb.id === 'exames' ? 'exames' : 'subálbuns';
-              subCountText = `${uniqueSubs.size} ${uniqueSubs.size === 1 ? subWord : subWordPlural} • `;
-            }
-            const coverImg = (albMedia.length > 0 && albMedia[0].thumbUrl) ? albMedia[0].thumbUrl : alb.cover;
-            const isCustom = alb._custom;
+        ${albums.length === 0 ? `
+          <div style="text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-lg); margin-top: 16px;">
+            <i class="fas fa-images" style="font-size: 2.5rem; color: var(--accent-gold); opacity: 0.6; margin-bottom: 12px; display: block;"></i>
+            <h3 style="color: #fff; font-size: 1.1rem; margin-bottom: 6px;">Nenhum álbum na galeria</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; max-width: 420px; margin: 0 auto 16px;">
+              A galeria está vazia no momento. Quando quiser, toque no botão abaixo para criar seu álbum e enviar fotos para a nuvem.
+            </p>
+            ${isAdmin ? `
+              <button type="button" class="btn btn-gold btn-sm" onclick="window.TKST_APP.openCreateAlbumModal()" style="font-weight: 700; padding: 8px 16px;">
+                <i class="fas fa-folder-plus"></i> Criar Primeiro Álbum
+              </button>
+            ` : ''}
+          </div>
+        ` : `
+          <div class="albums-grid">
+            ${albums.map(alb => {
+              const albMedia = allMedia.filter(m => m.album === alb.id);
+              const count = albMedia.length;
+              let subCountText = '';
+              if (alb.hasSubAlbums) {
+                const savedSubsForAlb = (window.TKST_AUTH && window.TKST_AUTH.getCustomSubAlbums) ? window.TKST_AUTH.getCustomSubAlbums(alb.id) : [];
+                const uniqueSubs = new Set([
+                  ...albMedia.map(m => m.subAlbum).filter(Boolean),
+                  ...savedSubsForAlb.map(s => s.name).filter(Boolean)
+                ]);
+                const subWord = alb.id === 'exames' ? 'exame' : 'subálbum';
+                const subWordPlural = alb.id === 'exames' ? 'exames' : 'subálbuns';
+                subCountText = `${uniqueSubs.size} ${uniqueSubs.size === 1 ? subWord : subWordPlural} • `;
+              }
+              const coverImg = (albMedia.length > 0 && albMedia[0].thumbUrl) ? albMedia[0].thumbUrl : (alb.cover || 'assets/images/logo-tkst-alunos.png');
+              const isCustom = alb._custom;
 
-            return `
-              <div class="album-card" title="Toque para abrir o álbum ${alb.title}">
-                <div class="album-card-cover-wrap" onclick="window.TKST_APP.openAlbum('${alb.id}')">
-                  <img src="${coverImg}" alt="${alb.title}" class="album-card-cover" onerror="this.src='assets/images/logo-tkst-2.jpg'">
-                  <div class="album-card-gradient"></div>
-                  <span class="album-badge-top">
-                    <i class="${alb.icon}"></i> ${alb.badge}
-                  </span>
-                  <span class="album-count-top">
-                    ${subCountText}${count} ${count === 1 ? 'mídia' : 'mídias'}
-                  </span>
-                  ${isAdmin ? `
-                    <div style="position: absolute; top: 8px; right: 8px; display: flex; gap: 6px;">
-                      <button type="button" class="album-edit-btn" onclick="event.stopPropagation(); window.TKST_APP.openEditAlbumModal('${alb.id}')" title="Editar álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(255,183,3,0.85); border: none; color: #000; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-                        <i class="fas fa-pencil-alt"></i>
-                      </button>
-                      <button type="button" class="album-delete-btn" onclick="event.stopPropagation(); window.TKST_APP.deleteCustomAlbum('${alb.id}', '${escapeHtml(alb.title)}')" title="Excluir álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(230,57,70,0.85); border: none; color: #fff; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-                        <i class="fas fa-trash-alt"></i>
-                      </button>
+              return `
+                <div class="album-card" title="Toque para abrir o álbum ${alb.title}">
+                  <div class="album-card-cover-wrap" onclick="window.TKST_APP.openAlbum('${alb.id}')">
+                    <img src="${coverImg}" alt="${alb.title}" class="album-card-cover" onerror="this.src='assets/images/logo-tkst-2.jpg'">
+                    <div class="album-card-gradient"></div>
+                    <span class="album-badge-top">
+                      <i class="${alb.icon || 'fas fa-folder'}"></i> ${alb.badge || alb.title}
+                    </span>
+                    <span class="album-count-top">
+                      ${subCountText}${count} ${count === 1 ? 'mídia' : 'mídias'}
+                    </span>
+                    ${isAdmin ? `
+                      <div style="position: absolute; top: 8px; right: 8px; display: flex; gap: 6px;">
+                        <button type="button" class="album-edit-btn" onclick="event.stopPropagation(); window.TKST_APP.openEditAlbumModal('${alb.id}')" title="Editar álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(255,183,3,0.85); border: none; color: #000; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                          <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button type="button" class="album-delete-btn" onclick="event.stopPropagation(); window.TKST_APP.deleteCustomAlbum('${alb.id}', '${escapeHtml(alb.title)}')" title="Excluir álbum" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(230,57,70,0.85); border: none; color: #fff; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </div>
+                    ` : ''}
+                  </div>
+                  <div class="album-card-body" onclick="window.TKST_APP.openAlbum('${alb.id}')">
+                    <h3 class="album-card-title">
+                      <span>${alb.title}</span>
+                    </h3>
+                    <p class="album-card-desc">${alb.description || ''}</p>
+                    <div class="album-card-footer">
+                      <span>${alb.hasSubAlbums ? 'Ver Subálbuns' : 'Acessar Galeria'}</span>
+                      <i class="fas fa-arrow-right"></i>
                     </div>
-                  ` : ''}
-                </div>
-                <div class="album-card-body" onclick="window.TKST_APP.openAlbum('${alb.id}')">
-                  <h3 class="album-card-title">
-                    <span>${alb.title}</span>
-                  </h3>
-                  <p class="album-card-desc">${alb.description}</p>
-                  <div class="album-card-footer">
-                    <span>${alb.hasSubAlbums ? 'Ver Subálbuns' : 'Acessar Galeria'}</span>
-                    <i class="fas fa-arrow-right"></i>
                   </div>
                 </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
+              `;
+            }).join('')}
+          </div>
+        `}
       `;
       mainContent.innerHTML = html;
       return;
     }
 
     // =========================================================================
-    // NÍVEL 1: SUBÁLBUNS DO ÁLBUM "EXAME DE FAIXA"
+    // NÍVEL 1: SUBÁLBUNS DO ÁLBUM
     // =========================================================================
-    const currentAlbum = albums.find(a => a.id === currentAlbumId) || albums[0];
+    const currentAlbum = albums.find(a => a.id === currentAlbumId);
+    if (!currentAlbum) {
+      currentAlbumId = null;
+      currentSubAlbumName = null;
+      renderMedia();
+      return;
+    }
     const albumMedia = allMedia.filter(m => m.album === currentAlbumId);
 
     const hasSubAlbums = (currentAlbumId === 'exames') || (currentAlbum && currentAlbum.hasSubAlbums);
@@ -7589,6 +7639,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     populateSubAlbumDatalist();
     renderMedia();
+    if (typeof initHomePhotoSlide === 'function') initHomePhotoSlide();
     alert(`✅ Subálbum "${subName}" excluído com sucesso!`);
   }
 
@@ -7670,6 +7721,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateMediaAlbumSelect();
     renderMedia();
+    if (typeof initHomePhotoSlide === 'function') initHomePhotoSlide();
   }
 
   // Atualiza dinamicamente as opções do select de álbum no modal de mídia
@@ -7746,6 +7798,7 @@ document.addEventListener('DOMContentLoaded', () => {
       selectedMediaIds.clear();
       mediaSelectionMode = false;
       renderMedia();
+      if (typeof initHomePhotoSlide === 'function') initHomePhotoSlide();
       alert(`✅ ${count} mídia(s) excluída(s) com sucesso!`);
     }
   }
@@ -7760,6 +7813,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeMediaLightbox();
       }
       renderMedia();
+      if (typeof initHomePhotoSlide === 'function') initHomePhotoSlide();
     }
   }
 
@@ -7773,6 +7827,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       window.TKST_AUTH.deleteMediaItem(idToDelete);
       renderMedia();
+      if (typeof initHomePhotoSlide === 'function') initHomePhotoSlide();
     }
   }
 
