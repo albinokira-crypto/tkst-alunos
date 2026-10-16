@@ -100,27 +100,16 @@ function injectCustomBlock(currentContent, customQuestions, deletedIds = []) {
     return before + newBlock + after;
   }
 
-  // Caso 2: Marcadores não existem — procura o fechamento do array principal
-  const patterns = [
-    /\n\];\s*\n\/\/ Initialize/,
-    /\n\];\s*\r?\n\/\/ Initialize/,
-    /\n\];\s*\n\n\/\/ Initialize/
-  ];
+  // Caso 2: Marcadores não existem — cria-os antes da função auto-executável ou no final
+  const customBlock = cleanCustom.length > 0
+    ? `\n// ==TKST_CUSTOM_QUESTIONS_START==\n${questionsJson},\n// ==TKST_CUSTOM_QUESTIONS_END==\n`
+    : `\n// ==TKST_CUSTOM_QUESTIONS_START==\n// ==TKST_CUSTOM_QUESTIONS_END==\n`;
 
-  for (const pattern of patterns) {
-    const match = pattern.exec(currentContent);
-    if (match) {
-      const insertAt = match.index;
-      const customBlock = cleanCustom.length > 0
-        ? `\n  // Questões customizadas pelo Sensei (auto-salvo)\n  ${MARKER_START}\n${questionsJson},\n  ${MARKER_END}`
-        : `\n  // Questões customizadas pelo Sensei (auto-salvo)\n  ${MARKER_START}\n  ${MARKER_END}`;
-
-      return currentContent.slice(0, insertAt) + customBlock + currentContent.slice(insertAt);
-    }
+  const iifeIdx = currentContent.indexOf('(function()');
+  if (iifeIdx !== -1) {
+    return currentContent.slice(0, iifeIdx) + customBlock + currentContent.slice(iifeIdx);
   }
-
-  console.error('quiz-commit: não encontrou ponto de injeção no arquivo. Nenhuma alteração feita.');
-  return null;
+  return currentContent + '\n' + customBlock;
 }
 
 module.exports = async (req, res) => {

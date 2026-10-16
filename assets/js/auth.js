@@ -76,10 +76,29 @@
     }
   }
 
-  // Load custom quiz bank on initialization if present
+  // Load custom quiz bank on initialization if present (com cofre permanente e histórico de proteção)
   try {
     const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
-    const savedBank = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+    let savedBank = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+
+    // Auto-recupera do cofre permanente se savedBank estiver vazio
+    if (!Array.isArray(savedBank) || savedBank.length === 0) {
+      try {
+        const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent')) || [];
+        if (Array.isArray(vault) && vault.length > 0) {
+          savedBank = vault;
+          localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(vault));
+        } else {
+          const history = JSON.parse(localStorage.getItem('tkst_quiz_backup_history') || '[]');
+          if (Array.isArray(history) && history.length > 0 && Array.isArray(history[0].bank) && history[0].bank.length > 0) {
+            savedBank = history[0].bank;
+            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(savedBank));
+            localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(savedBank));
+          }
+        }
+      } catch(e) {}
+    }
+
     const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
     if (Array.isArray(savedBank) && savedBank.length > 0) {
       const bankMap = new Map();
@@ -182,14 +201,25 @@
 
   async function pullQuizBankFromCloud() {
     try {
-      const QUIZ_STAMP = 'tkst_quiz_stamp_vercel_v258';
+      const QUIZ_STAMP = 'tkst_quiz_stamp_v261_protected';
       if (localStorage.getItem('tkst_quiz_official_stamp') !== QUIZ_STAMP) {
-        localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(window.TKST_DEFAULT_QUIZ_BANK || []));
         localStorage.setItem('tkst_quiz_official_stamp', QUIZ_STAMP);
       }
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
-      const localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
+      let localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
+
+      // Auto-recupera do cofre permanente se localSaved estiver vazio
+      if (!Array.isArray(localSaved) || localSaved.length === 0) {
+        try {
+          const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent')) || [];
+          if (Array.isArray(vault) && vault.length > 0) {
+            localSaved = vault;
+            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(vault));
+          }
+        } catch(e) {}
+      }
+
       const bankMap = new Map();
 
       // 1. Base default questions
@@ -215,6 +245,19 @@
       // 4. 2ª tentativa (fallback): lê direto do GitHub se /api/quiz-bank veio vazio
       if (cloudQuestions.length === 0) {
         cloudQuestions = await pullQuizBankFromGitHub();
+      }
+
+      // 5. 3ª tentativa (fallback estático): lê assets/data/quiz-questions.json
+      if (cloudQuestions.length === 0) {
+        try {
+          const jsonRes = await fetch('./assets/data/quiz-questions.json?_=' + Date.now(), { cache: 'no-store' });
+          if (jsonRes.ok) {
+            const staticQ = await jsonRes.json();
+            if (Array.isArray(staticQ) && staticQ.length > 0) {
+              cloudQuestions = staticQ;
+            }
+          }
+        } catch(e) {}
       }
 
       if (cloudQuestions.length > 0) {
@@ -2889,6 +2932,23 @@
 
       try {
         let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+
+        // Auto-recupera do cofre se estiver vazio
+        if (!Array.isArray(saved) || saved.length === 0) {
+          const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent') || '[]');
+          if (Array.isArray(vault) && vault.length > 0) {
+            saved = vault;
+            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(vault));
+          } else {
+            const history = JSON.parse(localStorage.getItem('tkst_quiz_backup_history') || '[]');
+            if (Array.isArray(history) && history.length > 0 && Array.isArray(history[0].bank) && history[0].bank.length > 0) {
+              saved = history[0].bank;
+              localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(saved));
+              localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(saved));
+            }
+          }
+        }
+
         if (Array.isArray(saved) && saved.length > 0) {
           saved.forEach(q => {
             if (q && q.id && !del.includes(q.id)) {
@@ -2917,19 +2977,31 @@
       });
       const cleanBank = Array.from(bankMap.values());
 
-      // 1. Salva localmente com proteção contra estouro de cota (QuotaExceededError)
+      // 1. Salva localmente com redundância no Cofre Permanente e Histórico
       try {
         localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(cleanBank));
+        localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(cleanBank));
+
+        // Mantém histórico rotativo de snapshots (até 20 versões)
+        let history = [];
+        try {
+          history = JSON.parse(localStorage.getItem('tkst_quiz_backup_history') || '[]');
+        } catch(e) { history = []; }
+        history.unshift({ timestamp: Date.now(), count: cleanBank.length, bank: cleanBank });
+        if (history.length > 20) history = history.slice(0, 20);
+        localStorage.setItem('tkst_quiz_backup_history', JSON.stringify(history));
       } catch (storageErr) {
         console.warn('LocalStorage QuotaExceeded ao salvar Quiz Bank. Salvando apenas itens customizados...', storageErr);
         try {
           const minimalBank = cleanBank.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
           localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(minimalBank));
+          localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(minimalBank));
         } catch (innerErr) {
           console.warn('Não foi possível gravar no localStorage, mantendo em memória e nuvem:', innerErr);
         }
       }
       window.TKST_QUIZ_BANK = cleanBank;
+      window.TKST_QUIZ = cleanBank;
 
       // 2. Envia ao endpoint DEDICADO /api/quiz-bank (persistência garantida)
       pushQuizBankToCloud(cleanBank, deletedIds);
@@ -2953,6 +3025,9 @@
       let current = this.getCustomQuizBank();
       let bank = current.filter(item => item.id !== qId);
       localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(bank));
+      try {
+        localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(bank));
+      } catch(e) {}
       window.TKST_QUIZ_BANK = bank;
 
       // Sincroniza deleção no endpoint dedicado
