@@ -242,87 +242,249 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   const KARATE_KNOWLEDGE_POOLS = {
     socos: [
-      "Gyaku Tsuki", "Oi Tsuki", "Kizami Tsuki", "Tate Tsuki", "Kage Tsuki",
-      "Yama Tsuki", "Morote Tsuki", "Mawashi Tsuki", "Uraken Uchi", "Tettsui Uchi",
-      "Shuto Uchi", "Haishu Uchi", "Haito Uchi", "Nukite", "Empi Uchi", "Teisho Uchi",
-      "Ura Tsuki", "Awase Zuki", "Kage Zuki"
+      "Gyaku Tsuki", "Oi Tsuki", "Kizami Tsuki", "Tate Tsuki", "Ura Tsuki",
+      "Kage Tsuki", "Yama Tsuki", "Morote Tsuki", "Mawashi Tsuki", "Heiko Tsuki",
+      "Hasami Tsuki", "Uraken Uchi", "Tettsui Uchi", "Shuto Uchi", "Haito Uchi",
+      "Haishu Uchi", "Empi Uchi", "Teisho Uchi", "Shihon Nukite", "Nukite",
+      "Ippon Ken", "Nakadaka Ken", "Washide", "Kumade", "Awase Zuki"
     ],
     chutes: [
-      "Mae Geri Keage", "Mae Geri Kekomi", "Mawashi Geri", "Yoko Geri Keage",
-      "Yoko Geri Kekomi", "Ushiro Geri", "Ura Mawashi Geri", "Mikazuki Geri",
-      "Fumikomi", "Tobi Geri", "Hiza Geri", "Nidan Geri", "Kakato Geri"
+      "Mae Geri", "Mae Geri Keage", "Mae Geri Kekomi", "Mawashi Geri", "Yoko Geri Keage",
+      "Yoko Geri Kekomi", "Ushiro Geri", "Ura Mawashi Geri", "Ushiro Mawashi Geri", "Mikazuki Geri",
+      "Uchi Mikazuki Geri", "Fumikomi", "Tobi Geri", "Tobi Mae Geri", "Hiza Geri",
+      "Nidan Geri", "Kakato Geri", "Ashi Barai", "Kizami Geri", "Fumikiri"
     ],
     defesas: [
-      "Gedan Barai", "Age Uke", "Soto Uke (Soto Ude Uke)", "Uchi Uke (Uchi Ude Uke)",
-      "Shuto Uke", "Morote Uke", "Juji Uke", "Manji Uke", "Haishu Uke",
-      "Kakiwake Uke", "Osae Uke", "Nagashi Uke", "Sukui Uke", "Teisho Uke", "Empi Uke"
+      "Gedan Barai", "Age Uke", "Soto Uke", "Uchi Uke", "Shuto Uke",
+      "Morote Uke", "Juji Uke", "Manji Uke", "Haishu Uke", "Kakiwake Uke",
+      "Osae Uke", "Nagashi Uke", "Sukui Uke", "Teisho Uke", "Empi Uke",
+      "Tate Shuto Uke", "Gedan Kake Uke", "Haiwan Uke", "Sokutei Osae Uke", "Kosa Uke"
     ],
     bases: [
-      "Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi (Sochin Dachi)",
-      "Neko Ashi Dachi", "Sanchin Dachi", "Hangetsu Dachi", "Musubi Dachi",
-      "Heisoku Dachi", "Shiko Dachi", "Kosa Dachi", "Renoji Dachi", "Heiko Dachi", "Tsuruashi Dachi"
+      "Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi", "Sochin Dachi",
+      "Neko Ashi Dachi", "Sanchin Dachi", "Hangetsu Dachi", "Musubi Dachi", "Heisoku Dachi",
+      "Heiko Dachi", "Hachiji Dachi", "Shiko Dachi", "Kosa Dachi", "Renoji Dachi",
+      "Teiji Dachi", "Tsuruashi Dachi", "Moroashi Dachi"
     ],
     katas: [
       "Heian Shodan", "Heian Nidan", "Heian Sandan", "Heian Yondan", "Heian Godan",
-      "Tekki Shodan", "Tekki Nidan", "Bassai Dai", "Bassai Sho", "Kanku Dai",
-      "Kanku Sho", "Jion", "Jitte", "Ji'in", "Enpi (Empi)", "Hangetsu", "Gankaku",
-      "Sochin", "Meikyo", "Nijushiho", "Gojushiho Dai", "Gojushiho Sho", "Chinte", "Unsu", "Wankan"
+      "Tekki Shodan", "Tekki Nidan", "Tekki Sandan", "Bassai Dai", "Bassai Sho",
+      "Kanku Dai", "Kanku Sho", "Jion", "Jitte", "Ji'in", "Enpi (Empi)", "Hangetsu",
+      "Gankaku", "Sochin", "Meikyo", "Nijushiho", "Gojushiho Dai", "Gojushiho Sho",
+      "Chinte", "Unsu", "Wankan", "Taikyoku Shodan"
     ],
     kumite: [
-      "Gohon Kumite (5 Passos)", "Sanbon Kumite (3 Passos)", "Kihon Ippon Kumite",
-      "Jiyu Ippon Kumite", "Jiyu Kumite (Combate Livre)", "Kihon Ippon no Kata", "Yakusoku Kumite"
+      "Gohon Kumite", "Sanbon Kumite", "Kihon Ippon Kumite", "Jiyu Ippon Kumite",
+      "Jiyu Kumite", "Okuri Jiyu Ippon Kumite", "Kaeshi Ippon Kumite", "Shiai Kumite",
+      "Yakusoku Kumite", "Kihon Ippon no Kata"
     ],
     alturas: [
-      "Jodan (Alto / Cabeça e Rosto)", "Chudan (Médio / Tronco e Peito)",
-      "Gedan (Baixo / Abaixo da Cintura)", "Suigetsu (Plexo Solar)", "Hizasel"
+      "Jodan (Alto / Cabeça)", "Chudan (Médio / Tronco)", "Gedan (Baixo / Cintura)",
+      "Jodan (Nível da cabeça)", "Chudan (Nível do tórax)", "Gedan (Nível inferior)",
+      "Suigetsu (Plexo solar)", "Tentei", "Myojo"
     ],
     comandos: [
-      "Rei (Saudação)", "Yoi (Atenção / Prontidão)", "Hajime (Começar)",
-      "Yame (Parar)", "Mokuso (Meditação)", "Kiai (Grito de Energia)",
-      "Zanshin (Estado de Alerta)", "Kime (Foco / Decisão)", "Ippon (Ponto Completo)",
-      "Waza-ari (Meio Ponto)", "Hikawake (Empate)"
+      "Rei (Saudação)", "Yoi (Prontidão)", "Hajime (Começar)", "Yame (Parar)",
+      "Mokuso (Meditação)", "Kiai (Grito de Energia)", "Zanshin (Alerta Contínuo)",
+      "Kime (Foco e Decisão)", "Sensei ni Rei", "Otagai ni Rei", "Shomen ni Rei",
+      "Seiza", "Kiritsu", "Mawate", "Naore", "Ippon", "Waza-ari", "Hikawake"
     ],
     armas: [
       "Seiken (Punho frontal)", "Uraken (Dorso do punho)", "Tettsui (Punho martelo)",
-      "Shuto (Faca da mão)", "Haito (Borda interna da mão)", "Teisho (Base da palma)",
-      "Nukite (Ponta dos dedos)", "Koshi / Chusoku (Bola do pé)", "Kakato (Calcanhar)",
-      "Sokuto (Faca externa do pé)", "Haisoku (Peito do pé)", "Empi / Hiji (Cotovelo)", "Hiza (Joelho)"
+      "Shuto (Faca da mão)", "Haito (Borda interna)", "Teisho (Base da palma)",
+      "Nukite (Ponta dos dedos)", "Koshi (Bola do pé)", "Kakato (Calcanhar)",
+      "Sokuto (Faca do pé)", "Haisoku (Peito do pé)", "Empi (Cotovelo)", "Hiza (Joelho)"
+    ],
+    frases: [
+      // Curtas (~18 a 30 caracteres)
+      "Respeito acima de tudo",
+      "Criar o intuito do esforço",
+      "Buscar a perfeição do caráter",
+      "Conter o espírito de agressão",
+      "Caminho das mãos vazias",
+      "Defesa pessoal tradicional",
+      "Manter o centro de gravidade",
+      "Ataque com velocidade máxima",
+      "Ataque com rotação do quadril",
+      "Defesa rápida no contra-ataque",
+      "Fidelidade ao verdadeiro caminho",
+      "Espírito de vigilância contínua",
+      "Concentração total no alvo",
+      "Equilíbrio firme e postura ereta",
+
+      // Médias (~31 a 50 caracteres)
+      "O karatê começa e termina com respeito mútuo",
+      "Não existe primeiro ataque no karatê tradicional",
+      "Manter a mente tranquila como água serena e calma",
+      "Desenvolver harmonia perfeita entre corpo e mente",
+      "Praticar com dedicação rigorosa e disciplina diária",
+      "Pés paralelos alinhados com a largura dos ombros",
+      "Calcanhares alinhados na mesma linha imaginária",
+      "Pés afastados duas vezes a largura dos próprios ombros",
+      "Manter a coluna reta e o abdômen contraído firmemente",
+      "Golpe lateral penetrante com a faca externa do pé",
+      "Ataque frontal em linha reta com rotação do punho",
+      "Chute frontal com elevação rápida do joelho e extensão",
+      "Bloqueio reforçado com o antebraço em apoio lateral",
+      "Defesa com a faca da mão com cotovelo junto ao tronco",
+
+      // Longas (~51 a 75 caracteres)
+      "60% do peso na perna da frente e 40% na perna de trás",
+      "70% do peso na perna de trás e 30% na perna da frente",
+      "50% do peso distribuído igualmente em ambas as pernas",
+      "80% do peso na perna de trás e 20% na perna da frente",
+      "90% do peso na perna de trás e 10% na perna da frente",
+      "Pé da frente apontado para frente e pé de trás aberto a 45 graus",
+      "Pé de trás perpendicular ao pé da frente formando ângulo reto de 90°",
+      "Joelhos flexionados para fora mantendo o centro de gravidade bem baixo",
+      "Executado de fora para dentro na altura do tronco em nível Chudan",
+      "Executado de dentro para fora na altura do tronco em nível Chudan",
+      "Executado de baixo para cima na altura da cabeça em nível Jodan",
+      "Executado em movimento descendente na altura baixa em nível Gedan",
+      "Golpe desferido com o punho oposto à perna que avança na base",
+      "Golpe desferido com o mesmo punho da perna que avança na base",
+      "Impacto desferido com os dois nós frontais do punho fechado (Seiken)",
+      "Movimento defensivo em cruz com ambos os punhos fechados firmemente",
+      "Giro de quadril com transferência dinâmica de todo o peso corporal à frente"
     ]
   };
 
+  function generateSemanticPhraseMutations(phrase) {
+    const text = (phrase || '').trim();
+    if (!text) return [];
+    const mutations = [];
+
+    // Swap frente <-> trás
+    if (/\b(frente|tr[aá]s)\b/i.test(text)) {
+      const swapped = text
+        .replace(/\bfrente\b/gi, '___BACK___')
+        .replace(/\btr[aá]s\b/gi, 'frente')
+        .replace(/___BACK___/g, 'trás');
+      if (swapped !== text) mutations.push(swapped);
+    }
+
+    // Swap dentro <-> fora
+    if (/\b(dentro|fora)\b/i.test(text)) {
+      const swapped = text
+        .replace(/\bdentro\b/gi, '___OUT___')
+        .replace(/\bfora\b/gi, 'dentro')
+        .replace(/___OUT___/g, 'fora');
+      if (swapped !== text) mutations.push(swapped);
+    }
+
+    // Swap cima <-> baixo
+    if (/\b(cima|baixo)\b/i.test(text)) {
+      const swapped = text
+        .replace(/\bcima\b/gi, '___DOWN___')
+        .replace(/\bbaixo\b/gi, 'cima')
+        .replace(/___DOWN___/g, 'baixo');
+      if (swapped !== text) mutations.push(swapped);
+    }
+
+    // Swap esquerda <-> direita
+    if (/\b(esquerda|direita)\b/i.test(text)) {
+      const swapped = text
+        .replace(/\besquerda\b/gi, '___RIGHT___')
+        .replace(/\bdireita\b/gi, 'esquerda')
+        .replace(/___RIGHT___/g, 'direita');
+      if (swapped !== text) mutations.push(swapped);
+    }
+
+    // Swap mesmo punho <-> punho oposto
+    if (/mesmo punho/i.test(text)) {
+      mutations.push(text.replace(/mesmo punho/gi, 'punho oposto'));
+    } else if (/punho oposto/i.test(text)) {
+      mutations.push(text.replace(/punho oposto/gi, 'mesmo punho'));
+    }
+
+    // Swap porcentagens de peso (ex: 70% / 30% -> 60% / 40%, 50% / 50%)
+    const percentMatch = text.match(/(\d+)%.*?(\d+)%/);
+    if (percentMatch) {
+      const p1 = parseInt(percentMatch[1]);
+      const p2 = parseInt(percentMatch[2]);
+      const pairs = [[60, 40], [70, 30], [50, 50], [80, 20], [90, 10]].filter(([a, b]) => a !== p1 || b !== p2);
+      pairs.forEach(([a, b]) => {
+        let mut = text.replace(`${p1}%`, `${a}%`);
+        mut = mut.replace(`${p2}%`, `${b}%`);
+        if (mut !== text) mutations.push(mut);
+      });
+    }
+
+    // Swap níveis de altura se presentes na frase
+    if (/\b(jodan|chudan|gedan)\b/i.test(text)) {
+      const lower = text.toLowerCase();
+      if (lower.includes('jodan')) {
+        mutations.push(text.replace(/jodan/gi, 'Chudan'));
+        mutations.push(text.replace(/jodan/gi, 'Gedan'));
+      } else if (lower.includes('chudan')) {
+        mutations.push(text.replace(/chudan/gi, 'Jodan'));
+        mutations.push(text.replace(/chudan/gi, 'Gedan'));
+      } else if (lower.includes('gedan')) {
+        mutations.push(text.replace(/gedan/gi, 'Chudan'));
+        mutations.push(text.replace(/gedan/gi, 'Jodan'));
+      }
+    }
+
+    return [...new Set(mutations)].filter(m => m !== text);
+  }
+
   function detectKarateCategory(questionText, correctAnswer) {
-    const combined = ((questionText || '') + ' ' + (correctAnswer || '')).toLowerCase();
-    
-    if (/soco|tsuki|zuki|punho|golpe de mão|seiken|uraken|socar/i.test(combined)) return 'socos';
-    if (/chute|geri|keri|chutar|perna|pé|pontapé/i.test(combined)) return 'chutes';
-    if (/defes|bloquei|uke|bloquear|defender/i.test(combined)) return 'defesas';
-    if (/base|postura|dachi|posição das pernas/i.test(combined)) return 'bases';
-    if (/kata|forma|heian|tekki|bassai|kanku|jion|jitte|jiin|empi|hangetsu|sochin/i.test(combined)) return 'katas';
-    if (/kumite|luta|combate|gohon|sanbon|ippon/i.test(combined)) return 'kumite';
-    if (/altura|nível|jodan|chudan|gedan|suigetsu/i.test(combined)) return 'alturas';
-    if (/comando|saudação|rei|yoi|hajime|yame|mokuso|kiai|dojo kun/i.test(combined)) return 'comandos';
-    if (/arma|parte do corpo|mão|cotovelo|joelho|calcanhar|dedo/i.test(combined)) return 'armas';
-    
+    const cleanCorrect = (correctAnswer || '').trim();
+    const cleanQuestion = (questionText || '').trim();
+    const target = cleanCorrect.toLowerCase();
+    const qTarget = cleanQuestion.toLowerCase();
+
+    // 1. Detecta frase explicativa / conceitual na resposta correta
+    const words = cleanCorrect ? cleanCorrect.split(/\s+/).filter(Boolean) : [];
+    const hasPhraseMarkers = /\b(peso|perna|braço|cotovelo|ombros|graus|executado|movimento|linha|altura|frente|trás|dentro|fora|cima|baixo|paralelos|respeito|caráter|espírito|caminho|da razão|do esforço|de agressão|das mãos|por cento|%)\b/i.test(cleanCorrect);
+
+    if (words.length >= 4 || (words.length >= 3 && (cleanCorrect.length >= 22 || hasPhraseMarkers))) {
+      return 'frases';
+    }
+
+    // 2. Classificação técnica priorizando estritamente a resposta correta
+    if (/\b(dachi|tachi)\b|base|postura/i.test(target)) return 'bases';
+    if (/\b(geri|keri)\b|chute|pontap[eé]/i.test(target)) return 'chutes';
+    if (/\b(barai|uke)\b|defes|bloque/i.test(target)) return 'defesas';
+    if (/\b(tsuki|zuki|uchi|nukite)\b|soco|punch|golpe/i.test(target)) return 'socos';
+    if (/\b(kata|heian|tekki|bassai|kanku|jion|jitte|ji'?in|empi|enpi|hangetsu|gankaku|sochin|meikyo|nijushiho|gojushiho|chinte|unsu|wankan|taikyoku)\b/i.test(target)) return 'katas';
+    if (/\b(kumite|gohon|sanbon|ippon\s*kumite|jiyu|shiai)\b/i.test(target)) return 'kumite';
+    if (/\b(jodan|chudan|gedan|suigetsu|hizasel|tentei)\b/i.test(target) && !/\b(uke|barai|geri|tsuki)\b/i.test(target)) return 'alturas';
+    if (/\b(seiken|uraken|tettsui|shuto|haito|haishu|teisho|koshi|chusoku|kakato|sokuto|haisoku|hiji|hiza|washide|kumade)\b/i.test(target) && !/\b(uke|barai|geri|tsuki|dachi)\b/i.test(target)) return 'armas';
+    if (/\b(rei|yoi|hajime|yame|mokuso|kiai|zanshin|kime|seiza|kiritsu|mawate|naore|yasume|waza-ari|hikawake)\b/i.test(target)) return 'comandos';
+
+    // 3. Fallback: se a resposta não revelou a categoria, analisa a pergunta
+    if (/\b(dachi|tachi)\b|base|postura|posição das pernas/i.test(qTarget)) return 'bases';
+    if (/\b(geri|keri)\b|chute|chutar|pontap[eé]|perna/i.test(qTarget)) return 'chutes';
+    if (/\b(barai|uke)\b|defes|bloque|defender|bloquear/i.test(qTarget)) return 'defesas';
+    if (/\b(tsuki|zuki|uchi|nukite)\b|soco|socar|ataque de mão|golpe de punho|punho/i.test(qTarget)) return 'socos';
+    if (/\b(kata|forma|heian|tekki|bassai|kanku|jion|jitte|jiin|empi|hangetsu|sochin)\b/i.test(qTarget)) return 'katas';
+    if (/\b(kumite|luta|combate|gohon|sanbon|ippon)\b/i.test(qTarget)) return 'kumite';
+    if (/altura|nível|jodan|chudan|gedan|suigetsu/i.test(qTarget)) return 'alturas';
+    if (/comando|saudação|rei|yoi|hajime|yame|mokuso|kiai|ordem/i.test(qTarget)) return 'comandos';
+    if (/arma|parte do corpo|mão|cotovelo|joelho|calcanhar|dedo|região/i.test(qTarget)) return 'armas';
+    if (words.length >= 3 || cleanCorrect.length >= 20 || /significado|frase|filosofia|conceito|dojo kun/i.test(qTarget)) return 'frases';
+
     return null;
   }
 
   function generateSmartOptions(questionText, correctAnswer) {
     const cleanCorrect = (correctAnswer || '').trim();
 
-    // Special handler: Number of movements / steps (e.g. "26 movimentos", "21 passos")
+    // 1. Tratador especial de números / contagens (ex: "26 movimentos", "21 passos")
     const matchNum = cleanCorrect.match(/^(\d+)\s*(.*)$/);
-    const isMovementOrNumber = /movimento|passo|quantos|técnicas/i.test(questionText) || /movimento|passo/i.test(cleanCorrect);
+    const isMovementOrNumber = /movimento|passo|quantos|técnicas/i.test(questionText) || /movimento|passo|vez|vezes/i.test(cleanCorrect);
 
     if (matchNum && (isMovementOrNumber || matchNum[2])) {
       const num = parseInt(matchNum[1]);
       const suffix = matchNum[2] ? matchNum[2].trim() : 'movimentos';
       const cleanSuffix = suffix ? ' ' + suffix : ' movimentos';
 
-      const offsets = [-5, -2, 2, 4, -3, 3, 5, -4];
+      const offsets = [-2, 2, -4, 4, -3, 3, -5, 5, -1, 1];
       const distractors = [];
       for (const off of offsets) {
         const candidateNum = num + off;
-        if (candidateNum > 5 && candidateNum !== num) {
+        if (candidateNum > 0 && candidateNum !== num) {
           const optStr = `${candidateNum}${cleanSuffix}`;
           if (!distractors.includes(optStr) && optStr !== cleanCorrect) {
             distractors.push(optStr);
@@ -338,40 +500,87 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
+    // 2. Detecção precisa de categoria
     const category = detectKarateCategory(questionText, cleanCorrect);
-    
-    let pool = [];
-    if (category && KARATE_KNOWLEDGE_POOLS[category]) {
-      pool = [...KARATE_KNOWLEDGE_POOLS[category]];
-    }
-
-    // Fallback: collect existing answers from default bank
-    if (pool.length < 4) {
-      const defaultAnswers = (window.TKST_DEFAULT_QUIZ_BANK || []).map(q => q.options ? q.options[q.correctIndex] : null).filter(Boolean);
-      pool = [...pool, ...defaultAnswers];
-    }
-
-    const normalize = str => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normalize = str => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanNorm = normalize(cleanCorrect);
+    const targetLen = cleanCorrect.length;
+    const hasParentheses = /\(.*\)/.test(cleanCorrect);
 
-    const filteredPool = pool.filter(item => {
+    let candidatePool = [];
+
+    // Se for frase, tenta mutações semânticas primeiro para obter tamanho idêntico
+    if (category === 'frases') {
+      const mutations = generateSemanticPhraseMutations(cleanCorrect);
+      candidatePool.push(...mutations);
+      if (KARATE_KNOWLEDGE_POOLS.frases) {
+        candidatePool.push(...KARATE_KNOWLEDGE_POOLS.frases);
+      }
+    } else if (category && KARATE_KNOWLEDGE_POOLS[category]) {
+      candidatePool = [...KARATE_KNOWLEDGE_POOLS[category]];
+    }
+
+    // Normaliza parênteses: se a resposta correta não tem parênteses, limpa os candidatos
+    if (!hasParentheses && category !== 'frases') {
+      candidatePool = candidatePool.map(item => item.replace(/\s*\([^)]*\)/g, '').trim());
+    }
+
+    // Fallback: se o pool for pequeno, puxa respostas do banco oficial que correspondam à categoria
+    if (candidatePool.length < 5) {
+      const defaultAnswers = (window.TKST_DEFAULT_QUIZ_BANK || [])
+        .map(q => q.options ? q.options[q.correctIndex] : null)
+        .filter(Boolean);
+      candidatePool.push(...defaultAnswers);
+    }
+
+    // Filtra duplicatas e itens idênticos à resposta correta
+    const filteredPool = candidatePool.filter(item => {
       if (!item) return false;
       const iNorm = normalize(item);
-      return iNorm !== cleanNorm && !iNorm.includes(cleanNorm) && !cleanNorm.includes(iNorm);
+      return iNorm && iNorm !== cleanNorm && !iNorm.includes(cleanNorm) && !cleanNorm.includes(iNorm);
     });
 
-    const shuffledDistractors = [...new Set(filteredPool)].sort(() => 0.5 - Math.random());
-    const distractors = shuffledDistractors.slice(0, 3);
+    const uniqueCandidates = [...new Set(filteredPool)];
 
-    const genericFallbacks = ["Gyaku Tsuki", "Mae Geri", "Gedan Barai", "Zenkutsu Dachi", "Age Uke", "Oi Tsuki", "Mawashi Geri", "Kokutsu Dachi"];
-    while (distractors.length < 3) {
-      const candidate = genericFallbacks[Math.floor(Math.random() * genericFallbacks.length)];
-      if (normalize(candidate) !== cleanNorm && !distractors.includes(candidate)) {
-        distractors.push(candidate);
+    // 3. Ordenação rigorosa por PROXIMIDADE DE TAMANHO (evita pista visual de resposta mais longa/curta)
+    uniqueCandidates.sort((a, b) => {
+      const diffA = Math.abs(a.length - targetLen);
+      const diffB = Math.abs(b.length - targetLen);
+      return diffA - diffB;
+    });
+
+    // Pega os candidatos mais próximos em tamanho e mistura levemente para variedade
+    const bestCandidates = uniqueCandidates.slice(0, 8).sort(() => 0.5 - Math.random());
+    const distractors = bestCandidates.slice(0, 3);
+
+    // Fallback de emergência caso a categoria não tenha tido candidatos suficientes
+    const emergencyPool = category === 'defesas'
+      ? ["Age Uke", "Soto Uke", "Uchi Uke", "Gedan Barai", "Shuto Uke"]
+      : category === 'chutes'
+      ? ["Mae Geri", "Mawashi Geri", "Yoko Geri", "Ushiro Geri", "Hiza Geri"]
+      : category === 'bases'
+      ? ["Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi", "Sanchin Dachi"]
+      : category === 'socos'
+      ? ["Gyaku Tsuki", "Oi Tsuki", "Tate Tsuki", "Kizami Tsuki", "Uraken Uchi"]
+      : category === 'frases'
+      ? [
+          "Desenvolver harmonia perfeita entre corpo e mente",
+          "Manter a coluna reta e o abdômen contraído firmemente",
+          "Golpe desferido com o punho oposto à perna que avança",
+          "60% do peso na perna da frente e 40% na perna de trás"
+        ]
+      : ["Gyaku Tsuki", "Mae Geri", "Gedan Barai", "Zenkutsu Dachi"];
+
+    emergencyPool.sort((a, b) => Math.abs(a.length - targetLen) - Math.abs(b.length - targetLen));
+
+    for (const em of emergencyPool) {
+      if (distractors.length >= 3) break;
+      if (normalize(em) !== cleanNorm && !distractors.includes(em)) {
+        distractors.push(em);
       }
     }
 
-    const allOptions = [cleanCorrect, ...distractors].sort(() => 0.5 - Math.random());
+    const allOptions = [cleanCorrect, ...distractors.slice(0, 3)].sort(() => 0.5 - Math.random());
     const correctIndex = allOptions.indexOf(cleanCorrect);
 
     return {
@@ -9824,18 +10033,37 @@ document.addEventListener('DOMContentLoaded', () => {
       const w2 = document.getElementById(mode === 'edit' ? 'editQuizWrong2Input' : 'newQuizWrong2Input');
       const w3 = document.getElementById(mode === 'edit' ? 'editQuizWrong3Input' : 'newQuizWrong3Input');
 
-      if (!qInput || !cInput) return;
-      const qText = qInput.value.trim();
+      if (!cInput) return;
+      const qText = qInput ? qInput.value.trim() : '';
       const cText = cInput.value.trim();
-      if (!qText || !cText) {
-        alert('Digite a pergunta e a resposta correta primeiro.');
+      if (!cText) {
+        showToast('⚠️ Digite a resposta correta primeiro para auto-sugerir alternativas do mesmo tipo!', 'warning', 3500);
+        cInput.focus();
         return;
       }
+
       const smart = generateSmartOptions(qText, cText);
       const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== cText.toLowerCase());
+
       if (w1 && fallback[0]) w1.value = fallback[0];
       if (w2 && fallback[1]) w2.value = fallback[1];
       if (w3 && fallback[2]) w3.value = fallback[2];
+
+      const category = detectKarateCategory(qText, cText);
+      const catLabels = {
+        defesas: 'Defesas',
+        socos: 'Socos e Ataques',
+        chutes: 'Chutes',
+        bases: 'Bases',
+        katas: 'Katas',
+        kumite: 'Kumite',
+        alturas: 'Alturas/Níveis',
+        armas: 'Armas Corporais',
+        comandos: 'Comandos do Dojô',
+        frases: 'Frases de tamanho similar'
+      };
+      const label = (category && catLabels[category]) || 'Itens equivalentes';
+      showToast(`✨ 3 alternativas erradas geradas para a categoria: ${label}!`, 'success', 3500);
     },
 
     generateUniqueQuestionSuggestion: (kyu) => {
