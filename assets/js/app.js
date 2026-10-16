@@ -2347,9 +2347,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 Selecione a graduação abaixo para visualizar em ordem, criar ou corrigir as perguntas e a resposta correta de cada questão.
               </div>
             </div>
-            <button class="btn btn-primary" onclick="window.TKST_APP.openAddQuizQuestionModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;">
-              <i class="fas fa-plus"></i> Nova Questão para esta Faixa
-            </button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <button class="btn btn-secondary" onclick="window.TKST_APP.openAddQuizQuestionWithSuggestion(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; background: rgba(255,183,3,0.12); border: 1px solid var(--accent-gold); color: var(--accent-gold);" title="Abrir criação com pergunta sugerida">
+                <i class="fas fa-lightbulb"></i> Sugerir Pergunta
+              </button>
+              <button class="btn btn-primary" onclick="window.TKST_APP.openAddQuizQuestionModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;">
+                <i class="fas fa-plus"></i> Nova Questão para esta Faixa
+              </button>
+            </div>
           </div>
 
           <!-- Graduation Filter Buttons - 2 linhas (5 botões por linha) com cor da faixa de fundo -->
@@ -9661,10 +9666,18 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div class="form-group">
-            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
-            </label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 6px;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0;">
+                <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
+              </label>
+              <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.suggestQuizQuestion(${q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu || 7)}, 'editQuizQuestionInput')" style="font-size: 0.74rem; padding: 3px 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border-radius: 4px;" title="Sugerir outra pergunta inédita">
+                <i class="fas fa-lightbulb"></i> Sugerir Pergunta
+              </button>
+            </div>
             <textarea id="editQuizQuestionInput" class="form-input" rows="3" required style="resize: vertical; font-size: 0.88rem;">${q.question}</textarea>
+            <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px;">
+              <i class="fas fa-keyboard"></i> Você pode editar o texto livremente ou clicar em <strong>Sugerir Pergunta</strong> para receber outra ideia.
+            </div>
           </div>
 
           <div class="form-group">
@@ -9826,7 +9839,278 @@ document.addEventListener('DOMContentLoaded', () => {
       if (w3 && fallback[2]) w3.value = fallback[2];
     },
 
-    openAddQuizQuestionModal: (kyu) => {
+    generateUniqueQuestionSuggestion: (kyu) => {
+      function normalizeQuestionKey(text) {
+        if (!text) return '';
+        return String(text)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/gi, '')
+          .trim();
+      }
+
+      const existingSet = new Set();
+      const bank = (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function')
+        ? window.TKST_AUTH.getCustomQuizBank()
+        : (window.TKST_QUIZ_BANK || window.TKST_DEFAULT_QUIZ_BANK || []);
+
+      if (Array.isArray(bank)) {
+        bank.forEach(item => {
+          if (item && item.question) {
+            existingSet.add(normalizeQuestionKey(item.question));
+          }
+        });
+      }
+
+      if (!window._tkstSuggestedHistory) {
+        try {
+          const raw = sessionStorage.getItem('tkst_suggested_history');
+          window._tkstSuggestedHistory = raw ? JSON.parse(raw) : [];
+        } catch (e) {
+          window._tkstSuggestedHistory = [];
+        }
+      }
+      (window._tkstSuggestedHistory || []).forEach(norm => existingSet.add(norm));
+
+      const QUESTIONS_BY_KYU = {
+        7: [
+          "O que significa a palavra KARATÊ-DO em sua tradução literal?",
+          "Quais são as três alturas fundamentais de golpe no Karatê (Alto, Médio e Baixo)?",
+          "Qual é o nome da base frontal com 60% do peso na perna da frente e 40% atrás?",
+          "Qual é o nome da defesa baixa com antebraço mais ensinada aos iniciantes?",
+          "Qual é o nome do chute frontal executado atingindo com a bola do pé (Koshi)?",
+          "Qual é o significado marcial do cumprimento 'REI' e da postura 'MOKUSO' no início da aula?",
+          "Qual é o objetivo do primeiro lema do Dojô Kun: 'Hitotsu! Jinkaku kansei ni tsutomuru koto'?",
+          "Qual é o nome do soco direto desferido com o mesmo braço da perna que avança?",
+          "Qual é o nome da defesa alta com o antebraço utilizada para proteger o rosto contra ataques Jodan?",
+          "Como se chama a postura de pés paralelos na largura dos ombros em posição de espera (Yoi)?",
+          "Quem é considerado o pai do Karatê Moderno e fundador do estilo Shotokan?",
+          "O que expressa a liberação do 'KIAI' no momento de impacto de uma técnica?",
+          "Qual é o nome da saudação realizada em pé no início e no final do treino (Ritsurei)?",
+          "Como se chama a vestimenta tradicional utilizada no treinamento de Karatê-Do?",
+          "Qual é o termo utilizado para designar o local sagrado onde se pratica o Karatê?",
+          "Qual o nome do nó correto da faixa (Obi) e o cuidado com as pontas alinhadas?",
+          "Qual é o papel do respeito mútuo entre Senpai (veterano) e Kohai (iniciante)?"
+        ],
+        6: [
+          "Qual é o primeiro Kata fundamental ensinado no currículo do Karatê Shotokan?",
+          "Quantos movimentos oficiais compõem o Kata Heian Shodan?",
+          "Em quais movimentos do Kata Heian Shodan ocorrem os Kiais oficiais?",
+          "Qual é o nome da base recuada em L com 70% do peso na perna de trás (Kokutsu Dachi)?",
+          "Qual é a diferença de trajetória entre a defesa Soto Uke e a defesa Uchi Uke?",
+          "Como se chama o soco contrário à perna que se encontra à frente na base (Gyaku Tsuki)?",
+          "Qual o significado da palavra 'HEIAN' que nomeia a série de 5 katas fundamentais?",
+          "Qual defesa com a faca da mão aberta (Shuto Uke) é introduzida para a faixa amarela?",
+          "O que preceitua o lema do Dojô Kun: 'Hitotsu! Makoto no michi o mamoru koto'?",
+          "Qual o nome do soco rápido desferido com o braço da frente sem trocar a base (Kizami Tsuki)?",
+          "Qual é o significado do comando 'YAME' pronunciado pelo Sensei durante o treino?",
+          "Qual parte da mão é utilizada para golpear no soco frontal tradicional (Seiken)?",
+          "Qual o nome da defesa de antebraço de fora para dentro em nível médio (Soto Ude Uke)?",
+          "Qual o nome da defesa de antebraço de dentro para fora em nível médio (Uchi Ude Uke)?",
+          "Qual a posição do calcanhar do pé traseiro na base Zenkutsu Dachi?",
+          "Qual a postura correta do tronco no avanço em Zenkutsu Dachi?",
+          "Quantas defesas Gedan Barai são executadas no Kata Heian Shodan?"
+        ],
+        5: [
+          "Qual é o Kata oficial exigido para o exame de graduação para a Faixa Vermelha (5º Kyu)?",
+          "Quantos movimentos oficiais possui o Kata Heian Nidan?",
+          "Qual golpe simultâneo de soco e chute lateral com o dorso do punho é executado no Heian Nidan?",
+          "Qual técnica de ataque com a ponta dos quatro dedos estendidos (Nukite) aparece no Heian Nidan?",
+          "Qual é a função e o significado da defesa reforçada com os dois braços (Morote Uke)?",
+          "Qual é a diferença biomecânica entre Yoko Geri Keage (ascendente) e Yoko Geri Kekomi (penetrante)?",
+          "O que preceitua o lema do Dojô Kun: 'Hitotsu! Doryoku no seishin o yashinau koto'?",
+          "Como se distribui a proporção de peso entre as pernas na base Kokutsu Dachi?",
+          "Qual é o principal objetivo pedagógico do treinamento de Kihon Ippon Kumite?",
+          "Qual é o papel do 'Hikite' (braço recolhido à cintura) na geração de torque e potência no soco?",
+          "Qual região do pé deve ser utilizada para conectar o golpe no chute lateral Yoko Geri Kekomi?",
+          "Quais bases compõem as passagens de transição dos movimentos iniciais do Kata Heian Nidan?",
+          "Em quais contagens ocorrem os dois Kiais do Kata Heian Nidan?",
+          "Qual a importância de manter os dois calcanhares assentados no chão durante a execução do Heian Nidan?"
+        ],
+        4: [
+          "Qual é o Kata oficial exigido para a graduação de 4º Kyu (Faixa Laranja)?",
+          "Quantos movimentos oficiais compõem o Kata Heian Sandan?",
+          "Qual é a postura do cavaleiro (Kiba Dachi) com peso igualmente distribuído (50/50)?",
+          "Qual técnica de cotovelada (Empi Uchi) é praticada na faixa laranja e no Heian Sandan?",
+          "O que significa o termo 'BUNKAI' no estudo dos Katas de Karatê?",
+          "O que preceitua o lema do Dojô Kun: 'Hitotsu! Reigi o omonnzuru koto'?",
+          "Qual é o nome do golpe aplicado com o dorso dos nós dos dedos (Uraken Uchi)?",
+          "Como se chama a técnica de pisão descendente com o calcanhar (Fumikomi)?",
+          "Qual é o papel da contração rápida do abdômen (Tanden) no momento de fixar o Kime?",
+          "Qual a diferença tática entre a aplicação de Shuto Uke e Morote Uke na autodefesa?",
+          "Qual técnica de bloqueio duplo cruzando os braços no peito aparece no Heian Sandan?",
+          "Quais são os dois movimentos de Kiai do Kata Heian Sandan?",
+          "Como deve ser alinhada a bacia e os joelhos para fora na base Kiba Dachi?"
+        ],
+        3: [
+          "Qual é o Kata oficial exigido para a graduação de 3º Kyu (Faixa Verde)?",
+          "Quantos movimentos oficiais compõem o Kata Heian Yondan?",
+          "Qual chute circular atinge o oponente com o peito do pé ou a bola do pé (Mawashi Geri)?",
+          "O que significa manter o estado de alerta e foco mental (ZANSHIN) após um golpe?",
+          "O que preceitua o lema do Dojô Kun: 'Hitotsu! Kekki no yu o imashimuru koto'?",
+          "Qual é a defesa em cruz com os punhos fechados ou abertos (Juji Uke)?",
+          "Qual técnica de bloqueio com abertura simultânea dos braços (Kakiwake Uke) está no Heian Yondan?",
+          "Como se define o conceito de MA-AI (distância espacial e temporal de combate) no Kumite?",
+          "Qual chute retilíneo para trás é desferido com o calcanhar na direção do adversário (Ushiro Geri)?",
+          "Como a rotação do quadril (Koshi no Kaiten) multiplica a força de impacto no Karatê?",
+          "Qual técnica com a base da palma da mão (Teisho Uchi) é treinada no nível intermediário?",
+          "Em quais movimentos do Heian Yondan são executados os Kiais?",
+          "Qual a postura das pernas ao desferir a joelhada (Hiza Geri) no final do Heian Yondan?"
+        ],
+        2: [
+          "Qual é o Kata oficial exigido para a graduação de 2º Kyu (Faixa Roxa)?",
+          "Quantos movimentos oficiais compõem o Kata Heian Godan?",
+          "Qual é o nome da defesa dupla em níveis opostos (um braço alto e outro baixo) conhecida como Manji Uke?",
+          "Qual é o momento e a técnica do salto aéreo característico do Kata Heian Godan?",
+          "Como se chama a base com pernas cruzadas adotada logo após a aterrissagem do salto no Heian Godan?",
+          "Quais são as diferenças de dinâmica entre o Jiyu Ippon Kumite e o Jiyu Kumite livre?",
+          "O que caracteriza a aplicação máxima de foco, velocidade e energia corporal no KIME?",
+          "Qual é o significado filosófico da máxima 'Karate ni sente nashi' (No Karatê não há primeiro ataque)?",
+          "Qual técnica de chave articular ou projeção rápida é revelada no Bunkai do Heian Godan?",
+          "Como a alternância de ritmos (Waza no Kankyu) influencia a pontuação e expressão do Kata?",
+          "Em quais tempos ocorrem os dois Kiais do Kata Heian Godan?",
+          "Qual o papel do equilíbrio mental e estabilidade pós-salto no Heian Godan?"
+        ],
+        1: [
+          "Quais são os Katas avançados tradicionalmente cobrados no exame para Faixa Marrom 1º Kyu?",
+          "Quantos movimentos compõem o Kata Bassai Dai ('Romper a Fortaleza')?",
+          "Qual postura linear é mantida ao longo de todo o trajeto do Kata Tekki Shodan?",
+          "Qual é a diferença entre as três iniciativas táticas de combate: Sen no Sen, Go no Sen e Sen Sen no Sen?",
+          "Como o conceito de Tai Sabaki (esquiva e reposicionamento corporal) anula a força do ataque inimigo?",
+          "O que representa filosoficamente a graduação de Faixa Marrom na transição para a Faixa Preta?",
+          "Qual a vantagem biomecânica da base Fudo Dachi (Sochin Dachi) em combate pesado?",
+          "Como a terceira lei de Newton (Ação e Reação através do solo) opera na aceleração do Karatê?",
+          "Quais mestres históricos foram fundamentais para a criação dos katas Shotokan (Itosu, Matsumura, Azato)?",
+          "Qual a importância de dominar o Bunkai Oyo (aplicação livre com variações) para a faixa marrom?",
+          "Em quais passagens ocorrem os dois Kiais marcantes do Kata Bassai Dai?",
+          "Qual é a importância da flexibilidade dos tornozelos e quadris na base Kiba Dachi do Tekki Shodan?"
+        ],
+        0: [
+          "Qual é o significado original do termo 'SHODAN' e por que ele simboliza o início dos estudos?",
+          "Quais Katas superiores compõem os Sentei Katas do estilo Shotokan (Kanku Dai, Jion, Enpi, Hangetsu)?",
+          "Como se define a harmonia da tríade SHIN-GI-TAI (Coração/Mente, Técnica e Condição Física)?",
+          "Quais são os critérios exigidos pelas regras da WKF para a validação de um IPPON no Kumite?",
+          "Qual o significado do primeiro preceito do Niju Kun: 'O Karatê começa com cortesia e termina com cortesia'?",
+          "O que significa alcançar a atitude mental de MUSHIN (mente limpa, sem apego ou hesitação) no combate?",
+          "Como o estudo dos pontos vitais (Kyusho Waza) fundamenta a eficácia da defesa pessoal no Karatê?",
+          "Qual é a responsabilidade moral e o exemplo de conduta de um Yudansha (faixa preta) perante os alunos?",
+          "Qual a diferença estrutural entre a respiração diafragmática marcial (Ibuki) e a respiração natural no combate?",
+          "Quais os princípios biomecânicos envolvidos na transição rápida de bases em Katas superiores?",
+          "Quantos movimentos oficiais compõem o Kata Kanku Dai ('Olhar para o Céu')?",
+          "Qual a interpretação marcial da abertura com as mãos triangulares em direção ao sol no Kanku Dai?"
+        ],
+        "-1": [
+          "Qual é o papel e a maturidade técnica exigida de um Nidan no ensino e preservação do Shotokan?",
+          "Quais Katas superiores como Jitte, Gankaku e Sochin compõem o aprofundamento do 2º Dan?",
+          "Como o instrutor Nidan deve conduzir a correção postural e a pedagogia motora de novos faixas pretas?",
+          "Qual é a postura de apoio em uma só perna (Tsuruashi Dachi) destacada no Kata Gankaku?",
+          "Como se articula o conceito de 'Hito Empi, Hito Ken' no combate de curta distância no Dojô?",
+          "Qual é a interpretação do preceito 'Pense no Karatê como um espelho da sua vida diária' de Gichin Funakoshi?",
+          "Como estruturar um treinamento seguro que previna lesões em alunos de diferentes faixas etárias?",
+          "Qual a dinâmica de alavancas e tempo no emprego de Ashi Barai (rasteiras com o pé)?",
+          "Quais são os pontos chaves de interpretação do Kata Jitte ('Dez Mãos')?",
+          "Qual o objetivo da base Fudo Dachi na execução potente do Kata Sochin?"
+        ],
+        "-2": [
+          "Qual a responsabilidade de liderança do Sensei Sandan na formação de novos instrutores e atletas?",
+          "Quais Katas mestres de alto grau como Nijushiho, Meikyo, Chinte e Gojushiho são estudados no nível Sandan?",
+          "O que preceitua a filosofia Budo a respeito da 'Vitória sobre o próprio ego' (Katsu Hayabi)?",
+          "Como sincronizar o controle de energia interna (Ki), respiração sonora e explosão articular em técnicas avançadas?",
+          "Quais critérios técnicos objetivos e éticos devem guiar um examinador em bancas de graduação?",
+          "Como o princípio ancestral do 'Shuhari' (Obediência, Ruptura e Transcendência) descreve a evolução marcial?",
+          "Qual a visão madura do conceito histórico de 'Ikken Hissatsu' dentro da ética do Karatê contemporâneo?",
+          "Como o Sensei sênior cultiva a resiliência mental e o respeito mútuo em toda a comunidade do Dojô?",
+          "Quais as peculiaridades do Kata Unsu ('Nuvens Dispersas') e seus saltos técnicos complexos?",
+          "Qual a relação entre longevidade marcial e prática suave (Ju) combinada com rigidez (Go)?"
+        ]
+      };
+
+      const kyuKey = parseInt(kyu);
+      const candidates = QUESTIONS_BY_KYU[kyuKey] || QUESTIONS_BY_KYU[7] || [];
+      
+      const shuffled = [...candidates].sort(() => 0.5 - Math.random());
+      for (const q of shuffled) {
+        const norm = normalizeQuestionKey(q);
+        if (!existingSet.has(norm)) {
+          existingSet.add(norm);
+          window._tkstSuggestedHistory.push(norm);
+          try {
+            sessionStorage.setItem('tkst_suggested_history', JSON.stringify(window._tkstSuggestedHistory.slice(-300)));
+          } catch(e) {}
+          return q;
+        }
+      }
+
+      const socos = ["Gyaku Tsuki", "Oi Tsuki", "Kizami Tsuki", "Tate Tsuki", "Uraken Uchi", "Shuto Uchi", "Empi Uchi", "Teisho Uchi"];
+      const defesas = ["Gedan Barai", "Age Uke", "Soto Uke", "Uchi Uke", "Shuto Uke", "Morote Uke", "Juji Uke", "Manji Uke", "Kakiwake Uke"];
+      const chutes = ["Mae Geri", "Mawashi Geri", "Yoko Geri Keage", "Yoko Geri Kekomi", "Ushiro Geri", "Mikazuki Geri", "Hiza Geri"];
+      const bases = ["Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi", "Neko Ashi Dachi", "Sanchin Dachi", "Musubi Dachi"];
+      const katas = ["Heian Shodan", "Heian Nidan", "Heian Sandan", "Heian Yondan", "Heian Godan", "Tekki Shodan", "Bassai Dai", "Kanku Dai", "Jion", "Enpi"];
+      const alturas = ["Jodan (nível alto)", "Chudan (nível médio)", "Gedan (nível baixo)"];
+
+      const randPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+      const dynamicTemplates = [
+        () => `Qual a postura correta e o posicionamento do centro de gravidade na base ${randPick(bases)} ao executar o ${randPick(socos)}?`,
+        () => `Como deve ser realizado o movimento de rotação do quadril e recuo ao aplicar a defesa ${randPick(defesas)}?`,
+        () => `Qual região de impacto do pé deve ser utilizada para conectar com precisão a técnica ${randPick(chutes)}?`,
+        () => `Qual a aplicação marcial prática em autodefesa (Bunkai) recomendada para o golpe ${randPick(socos)} a partir da base ${randPick(bases)}?`,
+        () => `Qual a diferença de trajetória e tempo de reação entre a defesa ${randPick(defesas)} e outra defesa de antebraço?`,
+        () => `Em qual situação de combate real ou simulado o chute ${randPick(chutes)} deve ser combinado com o golpe ${randPick(socos)}?`,
+        () => `Qual o foco de concentração de energia (Kime) ao finalizar o ataque de ${randPick(socos)} em ${randPick(alturas)}?`,
+        () => `Como a respiração correta (Ibuki / Nogare) auxilia na velocidade e no impacto do golpe ${randPick(socos)}?`,
+        () => `Qual o significado e função marcial do Kata ${randPick(katas)} dentro da evolução no estilo Shotokan?`,
+        () => `Como se posiciona o pé de apoio e a articulação do joelho durante a elevação do golpe ${randPick(chutes)}?`,
+        () => `Qual a principal finalidade da base ${randPick(bases)} no equilíbrio entre estabilidade firme e mobilidade ágil?`,
+        () => `Como evitar vulnerabilidades na guarda corporal ao desferir o golpe ${randPick(socos)} em altura ${randPick(alturas)}?`
+      ];
+
+      for (let attempt = 0; attempt < 50; attempt++) {
+        const genFn = dynamicTemplates[Math.floor(Math.random() * dynamicTemplates.length)];
+        const genQ = genFn();
+        const norm = normalizeQuestionKey(genQ);
+        if (!existingSet.has(norm)) {
+          existingSet.add(norm);
+          window._tkstSuggestedHistory.push(norm);
+          try {
+            sessionStorage.setItem('tkst_suggested_history', JSON.stringify(window._tkstSuggestedHistory.slice(-300)));
+          } catch(e) {}
+          return genQ;
+        }
+      }
+
+      return "Descreva a execução correta e os pontos de atenção da técnica principal exigida nesta graduação:";
+    },
+
+    suggestQuizQuestion: (kyu, targetInputId = 'newQuizQuestionInput') => {
+      const inputEl = document.getElementById(targetInputId);
+      if (!inputEl) return;
+      const suggested = window.TKST_APP.generateUniqueQuestionSuggestion(kyu);
+      if (!suggested) {
+        if (typeof showToast === 'function') {
+          showToast('⚠️ Nenhuma sugestão disponível no momento.', 'warning');
+        } else {
+          alert('Nenhuma sugestão disponível no momento.');
+        }
+        return;
+      }
+      inputEl.value = suggested;
+      inputEl.focus();
+      if (typeof showToast === 'function') {
+        showToast('💡 Pergunta sugerida! Você pode editá-la e preencher a resposta.', 'success');
+      }
+    },
+
+    openAddQuizQuestionWithSuggestion: (kyu) => {
+      const suggested = window.TKST_APP.generateUniqueQuestionSuggestion(kyu);
+      window.TKST_APP.openAddQuizQuestionModal(kyu, suggested);
+      if (typeof showToast === 'function') {
+        showToast('💡 Pergunta inédita sugerida! Você pode editar o texto livremente.', 'info');
+      }
+    },
+
+    openAddQuizQuestionModal: (kyu, initialQuestion = '') => {
       quizModalTempImage = '';
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
@@ -9841,10 +10125,18 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div class="form-group">
-            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
-            </label>
-            <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="ex: Qual o nome do soco mostrado na ilustração?" style="resize: vertical; font-size: 0.88rem;"></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 6px;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0;">
+                <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
+              </label>
+              <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.suggestQuizQuestion(${kyu}, 'newQuizQuestionInput')" style="font-size: 0.74rem; padding: 3px 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border-radius: 4px;" title="Sugerir pergunta inédita para esta faixa">
+                <i class="fas fa-lightbulb"></i> Sugerir Pergunta
+              </button>
+            </div>
+            <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite sua pergunta aqui ou clique em 'Sugerir Pergunta' acima..." style="resize: vertical; font-size: 0.88rem;">${initialQuestion || ''}</textarea>
+            <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px;">
+              <i class="fas fa-keyboard"></i> Você pode digitar livremente sua própria pergunta ou clicar em <strong>Sugerir Pergunta</strong> e alterá-la como quiser.
+            </div>
           </div>
 
           <div class="form-group">
