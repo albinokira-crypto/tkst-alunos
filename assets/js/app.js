@@ -109,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.60';
+  const APP_DISPLAY_VERSION = 'V-2.61';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.60. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.61. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.60)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.61)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
         } catch(e) {}
@@ -2352,9 +2352,6 @@ document.addEventListener('DOMContentLoaded', () => {
               </button>
               <button class="btn btn-primary" onclick="window.TKST_APP.openAddQuizQuestionModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;">
                 <i class="fas fa-plus"></i> Nova Questão para esta Faixa
-              </button>
-              <button class="btn btn-secondary" onclick="window.TKST_APP.restoreOfficialQuizBank()" style="font-size: 0.78rem; padding: 8px 12px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.4); color: #93C5FD; font-weight: 600;" title="Restaurar o banco oficial de 156 questões de todas as faixas">
-                <i class="fas fa-cloud-download-alt"></i> Restaurar Banco Oficial (156 Q)
               </button>
             </div>
           </div>
@@ -10109,39 +10106,6 @@ document.addEventListener('DOMContentLoaded', () => {
       window.TKST_APP.openAddQuizQuestionModal(kyu, suggested);
       if (typeof showToast === 'function') {
         showToast('💡 Pergunta inédita sugerida! Você pode editar o texto livremente.', 'info');
-      }
-    },
-
-    restoreOfficialQuizBank: async () => {
-      if (!confirm('Deseja restaurar as 156 questões oficiais completas de todas as faixas? Quaisquer questões já cadastradas serão preservadas e mescladas no cofre permanente.')) {
-        return;
-      }
-      try {
-        let officialList = [];
-        try {
-          const res = await fetch('./assets/data/quiz-questions.json?_=' + Date.now(), { cache: 'no-store' });
-          if (res.ok) officialList = await res.json();
-        } catch(e) {}
-
-        if (!Array.isArray(officialList) || officialList.length === 0) {
-          alert('Não foi possível carregar o arquivo das questões oficiais.');
-          return;
-        }
-
-        const currentBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : [];
-        const bankMap = new Map();
-        officialList.forEach(q => { if (q && q.id) bankMap.set(q.id, q); });
-        currentBank.forEach(q => { if (q && q.id) bankMap.set(q.id, q); });
-
-        const merged = Array.from(bankMap.values());
-        window.TKST_AUTH.saveCustomQuizBank(merged);
-        if (typeof showToast === 'function') {
-          showToast(`✅ ${merged.length} questões carregadas com sucesso e protegidas no cofre permanente!`, 'success');
-        }
-        renderAdminMaster();
-      } catch(err) {
-        console.error('Erro ao restaurar banco oficial:', err);
-        alert('Erro ao restaurar banco oficial.');
       }
     },
 

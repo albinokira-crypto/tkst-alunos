@@ -201,7 +201,7 @@
 
   async function pullQuizBankFromCloud() {
     try {
-      const QUIZ_STAMP = 'tkst_quiz_stamp_v261_protected';
+      const QUIZ_STAMP = 'tkst_quiz_stamp_v262_permanent';
       if (localStorage.getItem('tkst_quiz_official_stamp') !== QUIZ_STAMP) {
         localStorage.setItem('tkst_quiz_official_stamp', QUIZ_STAMP);
       }
@@ -209,20 +209,25 @@
       const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
       let localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
 
+      // Filtra questões genéricas antigas que não sejam do Sensei (mantém com imagem ou customizadas)
+      if (Array.isArray(localSaved) && localSaved.length > 0) {
+        localSaved = localSaved.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
+      }
+
       // Auto-recupera do cofre permanente se localSaved estiver vazio
       if (!Array.isArray(localSaved) || localSaved.length === 0) {
         try {
           const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent')) || [];
           if (Array.isArray(vault) && vault.length > 0) {
-            localSaved = vault;
-            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(vault));
+            localSaved = vault.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
+            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(localSaved));
           }
         } catch(e) {}
       }
 
       const bankMap = new Map();
 
-      // 1. Base default questions
+      // 1. Base default questions (questões oficiais com imagens do Sensei)
       defaultList.forEach(q => bankMap.set(q.id, { ...q }));
 
       // 2. Overlay current local questions (never overwrite what was edited locally)
@@ -262,7 +267,8 @@
 
       if (cloudQuestions.length > 0) {
         cloudQuestions.forEach(q => {
-          if (!deletedIds.includes(q.id) && q && q.id) {
+          const isSenseiQ = (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_'));
+          if (isSenseiQ && !deletedIds.includes(q.id) && q && q.id) {
             const localQ = bankMap.get(q.id);
             if (!localQ || !localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt) || !localQ._edited) {
               bankMap.set(q.id, q);
@@ -276,6 +282,7 @@
       const newStr = JSON.stringify(merged);
       if (localStr !== newStr) {
         localStorage.setItem(STORAGE_KEY_QUIZ_BANK, newStr);
+        localStorage.setItem('tkst_quiz_vault_permanent', newStr);
         window.TKST_QUIZ_BANK = merged;
         window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length } }));
       }
@@ -2932,17 +2939,20 @@
 
       try {
         let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+        if (Array.isArray(saved) && saved.length > 0) {
+          saved = saved.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
+        }
 
         // Auto-recupera do cofre se estiver vazio
         if (!Array.isArray(saved) || saved.length === 0) {
           const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent') || '[]');
           if (Array.isArray(vault) && vault.length > 0) {
-            saved = vault;
-            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(vault));
+            saved = vault.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
+            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(saved));
           } else {
             const history = JSON.parse(localStorage.getItem('tkst_quiz_backup_history') || '[]');
             if (Array.isArray(history) && history.length > 0 && Array.isArray(history[0].bank) && history[0].bank.length > 0) {
-              saved = history[0].bank;
+              saved = history[0].bank.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
               localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(saved));
               localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(saved));
             }
@@ -2960,6 +2970,7 @@
 
       const mergedBank = Array.from(bankMap.values());
       localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(mergedBank));
+      localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(mergedBank));
       window.TKST_QUIZ_BANK = mergedBank;
       return mergedBank;
     },
