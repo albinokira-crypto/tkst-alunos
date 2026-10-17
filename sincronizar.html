@@ -246,14 +246,21 @@
       <h3 style="font-size: 0.95rem; color: #86EFAC; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
         <i class="fas fa-desktop"></i> Se você está no PC:
       </h3>
-      <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
-        Se você copiou o código no celular, cole no campo abaixo e clique em Importar:
-      </p>
+
+      <div style="background: rgba(34, 197, 94, 0.08); border: 1.5px dashed rgba(34, 197, 94, 0.45); border-radius: 8px; padding: 14px; text-align: center; margin-bottom: 14px;">
+        <input type="file" id="jsonFileInput" accept=".json,application/json" style="display:none;" onchange="importarArquivo(event)">
+        <button class="btn btn-green" onclick="document.getElementById('jsonFileInput').click()" style="margin-bottom: 6px;">
+          <i class="fas fa-folder-open"></i> 1. Escolher Arquivo .json do Celular
+        </button>
+        <div style="font-size: 0.74rem; color: #86EFAC;">Se você baixou o arquivo de backup no celular e passou para o PC (WhatsApp, Drive ou cabo), selecione-o aqui!</div>
+      </div>
+
+      <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px; text-align: center;">— OU cole o texto JSON abaixo —</div>
 
       <textarea id="importInput" placeholder="Cole o código JSON das questões aqui..."></textarea>
       
-      <button class="btn btn-green" onclick="importarJson()">
-        <i class="fas fa-file-import"></i> Salvar e Aplicar Questões no PC
+      <button class="btn btn-secondary" onclick="importarJson()">
+        <i class="fas fa-file-import"></i> 2. Salvar e Aplicar Questões Coladas
       </button>
 
       <div style="margin-top: 12px;">
@@ -269,7 +276,7 @@
     </div>
   </div>
 
-  <script src="assets/js/data-quiz.js?v=271"></script>
+  <script src="assets/js/data-quiz.js?v=273"></script>
   <script>
     const SYNC_TOPIC = 'tkst_karate_sync_v3_live';
     const NTFY_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
@@ -391,7 +398,7 @@
       log(`Download iniciado: tkst_questoes_${bank.length}.json`);
     }
 
-    // Enviar para o PC via Nuvem (NTFY + API)
+    // Enviar para o PC via Nuvem (NTFY em chunks + API)
     async function enviarParaPC() {
       const bank = getLocalBank();
       if (bank.length === 0) {
@@ -413,33 +420,111 @@
         log('Nota /api/quiz-bank: ' + e.message);
       }
 
-      // 2. Enviar via NTFY em pacotes seguros
+      // 2. Enviar via NTFY em lotes seguros (< 3.5KB por lote)
       try {
-        log('Transmitindo via NTFY live stream...');
-        const payload = JSON.stringify({ type: 'quiz_sync_broadcast', count: bank.length, bank: bank, timestamp: Date.now() });
-        
-        const res = await fetch(NTFY_URL, {
-          method: 'POST',
-          headers: {
-            'Title': 'TKST_QUIZ_SYNC',
-            'Content-Type': 'text/plain; charset=utf-8'
-          },
-          body: payload
-        });
-        if (res.ok) {
-          log(`✅ Transmissão NTFY concluída com sucesso (${bank.length} questões)!`);
-          alert(`✅ SUCESSO! As ${bank.length} questões foram transmitidas. O PC receberá em instantes.`);
+        log('Transmitindo via NTFY em lotes seguros (< 3.5KB)...');
+        const CHUNK_SIZE = 5;
+        const totalChunks = Math.ceil(bank.length / CHUNK_SIZE);
+        const broadcastId = 'quiz_sync_' + Date.now();
+        let sentCount = 0;
+
+        for (let i = 0; i < totalChunks; i++) {
+          const slice = bank.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+          const chunkMsg = {
+            type: 'tkst_quiz_chunk',
+            broadcastId,
+            chunkIndex: i,
+            totalChunks,
+            count: bank.length,
+            questions: slice,
+            timestamp: Date.now()
+          };
+          const res = await fetch(NTFY_URL, {
+            method: 'POST',
+            headers: {
+              'Title': `TKST_QUIZ_CHUNK_${i+1}_OF_${totalChunks}`,
+              'Content-Type': 'text/plain; charset=utf-8'
+            },
+            body: JSON.stringify(chunkMsg)
+          });
+          if (res.ok) sentCount++;
+          if (totalChunks > 1) await new Promise(r => setTimeout(r, 60));
+        }
+
+        if (sentCount > 0) {
+          log(`✅ Transmissão concluída com sucesso (${sentCount}/${totalChunks} lotes)!`);
+          alert(`✅ SUCESSO! As ${bank.length} questões foram transmitidas em tempo real para o seu PC!`);
         } else {
-          log(`Resposta NTFY: ${res.status}`);
-          alert(`Enviado via API! Se o PC não atualizar em 10 segundos, use o botão "Copiar Código".`);
+          alert(`Enviado via API! Se o PC não atualizar em 10 segundos, use o botão "Baixar Arquivo" ou "Copiar Código".`);
         }
       } catch(e) {
         log('Erro NTFY: ' + e.message);
-        alert(`Erro na rede. Use a opção "Copiar Código das Questões" para transferir sem internet!`);
+        alert(`Erro na rede. Use a opção "Baixar Arquivo" para transferir sem depender de conexão!`);
       }
     }
 
-    // Importar JSON no PC
+    // Importar arquivo JSON selecionado no PC
+    function importarArquivo(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      log(`Lendo arquivo: ${file.name}...`);
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const text = evt.target.result;
+          let parsed = JSON.parse(text);
+
+          let questions = [];
+          if (Array.isArray(parsed)) {
+            questions = parsed;
+          } else if (Array.isArray(parsed.custom_quiz_bank)) {
+            questions = parsed.custom_quiz_bank;
+          } else if (Array.isArray(parsed.bank)) {
+            questions = parsed.bank;
+          } else if (Array.isArray(parsed.questions)) {
+            questions = parsed.questions;
+          }
+
+          if (questions.length === 0) {
+            alert('Não foram encontradas questões dentro deste arquivo JSON.\nCertifique-se de selecionar o arquivo baixado do celular.');
+            log('Erro: Nenhuma questão encontrada no JSON.');
+            return;
+          }
+
+          const current = getLocalBank();
+          const map = new Map();
+          current.forEach(q => map.set(q.id, q));
+          questions.forEach(q => {
+            if (q && q.id && q.question) map.set(q.id, q);
+          });
+
+          const merged = Array.from(map.values());
+          localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(merged));
+          localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(merged));
+          window.TKST_QUIZ_BANK = merged;
+          window.TKST_QUIZ = merged;
+
+          // Se o backup tiver alunos, restaura também
+          if (Array.isArray(parsed.students) && parsed.students.length > 0) {
+            let localStudents = JSON.parse(localStorage.getItem('tkst_students') || '[]');
+            const sMap = new Map();
+            localStudents.forEach(s => sMap.set(s.id, s));
+            parsed.students.forEach(s => sMap.set(s.id, s));
+            localStorage.setItem('tkst_students', JSON.stringify(Array.from(sMap.values())));
+          }
+
+          log(`✅ Sucesso! Arquivo importado: ${merged.length} questões agora no PC.`);
+          renderUI();
+          alert(`🎉 SUCESSO TOTAL!\n\nForam aplicadas ${merged.length} questões com sucesso no seu PC!`);
+        } catch(err) {
+          log('Erro ao processar arquivo: ' + err.message);
+          alert('Erro ao abrir arquivo: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Importar JSON colado no PC
     function importarJson() {
       const val = document.getElementById('importInput').value.trim();
       if (!val) {
@@ -448,8 +533,12 @@
       }
       try {
         let parsed = JSON.parse(val);
-        if (!Array.isArray(parsed) && parsed.bank && Array.isArray(parsed.bank)) {
+        if (!Array.isArray(parsed) && parsed.custom_quiz_bank && Array.isArray(parsed.custom_quiz_bank)) {
+          parsed = parsed.custom_quiz_bank;
+        } else if (!Array.isArray(parsed) && parsed.bank && Array.isArray(parsed.bank)) {
           parsed = parsed.bank;
+        } else if (!Array.isArray(parsed) && parsed.questions && Array.isArray(parsed.questions)) {
+          parsed = parsed.questions;
         }
         if (!Array.isArray(parsed) || parsed.length === 0) {
           alert('O conteúdo colado não é uma lista válida de questões.');
@@ -487,12 +576,19 @@
               const data = JSON.parse(e.data);
               if (data && data.message) {
                 const parsed = JSON.parse(data.message);
-                if (parsed && parsed.type === 'quiz_sync_broadcast' && Array.isArray(parsed.bank)) {
-                  log(`Recebidas ${parsed.bank.length} questões via NTFY! Aplicando...`);
+                let incomingQuestions = null;
+                if (parsed && parsed.type === 'tkst_quiz_chunk' && Array.isArray(parsed.questions)) {
+                  incomingQuestions = parsed.questions;
+                  log(`Recebido lote de questões (${parsed.chunkIndex + 1}/${parsed.totalChunks}) via NTFY!`);
+                } else if (parsed && parsed.type === 'quiz_sync_broadcast' && Array.isArray(parsed.bank)) {
+                  incomingQuestions = parsed.bank;
+                  log(`Recebidas ${parsed.bank.length} questões via NTFY!`);
+                }
+                if (incomingQuestions && incomingQuestions.length > 0) {
                   const current = getLocalBank();
                   const map = new Map();
                   current.forEach(q => map.set(q.id, q));
-                  parsed.bank.forEach(q => {
+                  incomingQuestions.forEach(q => {
                     if (q && q.id && q.question) map.set(q.id, q);
                   });
                   const merged = Array.from(map.values());

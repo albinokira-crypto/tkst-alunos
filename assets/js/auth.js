@@ -233,8 +233,98 @@
 
       // 2. Commit automático no GitHub via endpoint server-side seguro
       pushQuizBankToServer(customOnly, deleted).catch(() => {});
+
+      // 3. Transmissão imediata via NTFY em lotes seguros (< 3.5KB) para sincronizar com o PC/celular em tempo real
+      if (customOnly.length > 0) {
+        broadcastQuizBankChunks(customOnly);
+      }
     } catch(err) {
       console.warn('Quiz bank push notice:', err);
+    }
+  }
+
+  // Transmite questões em lotes leves (chunks de até 5 questões) para garantir que
+  // nunca ultrapassem o limite de 4KB do pubsub ntfy.sh
+  async function broadcastQuizBankChunks(bank) {
+    if (!Array.isArray(bank) || bank.length === 0) return;
+    try {
+      const customOnly = stripDefaultImages(bank.filter(q => q && q.id && q.question));
+      const CHUNK_SIZE = 5;
+      const totalChunks = Math.ceil(customOnly.length / CHUNK_SIZE);
+      const broadcastId = 'quiz_sync_' + Date.now();
+
+      for (let i = 0; i < totalChunks; i++) {
+        const slice = customOnly.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+        const chunkMsg = {
+          type: 'tkst_quiz_chunk',
+          broadcastId,
+          chunkIndex: i,
+          totalChunks,
+          count: customOnly.length,
+          questions: slice,
+          timestamp: Date.now()
+        };
+        try {
+          await fetch(SYNC_URL, {
+            method: 'POST',
+            headers: {
+              'Title': `TKST_QUIZ_CHUNK_${i+1}_OF_${totalChunks}`,
+              'Content-Type': 'text/plain; charset=utf-8'
+            },
+            body: JSON.stringify(chunkMsg)
+          });
+          if (totalChunks > 1) await new Promise(r => setTimeout(r, 60));
+        } catch(e) {}
+      }
+    } catch(err) {
+      console.warn('Quiz chunk broadcast notice:', err);
+    }
+  }
+
+  // Recebe e mescla lotes de questões transmitidos via nuvem NTFY
+  function handleIncomingQuizChunk(data) {
+    if (!data || (!Array.isArray(data.questions) && !Array.isArray(data.bank))) return;
+    const incoming = Array.isArray(data.questions) ? data.questions : data.bank;
+    if (incoming.length === 0) return;
+    try {
+      const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
+      let localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
+      if (!Array.isArray(localSaved) || localSaved.length === 0) {
+        try {
+          localSaved = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent')) || [];
+        } catch(e) {}
+      }
+      const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+      const bankMap = new Map();
+      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
+      if (Array.isArray(localSaved)) {
+        restoreDefaultImages(localSaved).forEach(q => {
+          if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+        });
+      }
+
+      let anyNew = false;
+      const restored = restoreDefaultImages(incoming);
+      restored.forEach(q => {
+        if (q && q.id && q.question && !deletedIds.includes(q.id)) {
+          const existing = bankMap.get(q.id);
+          if (!existing || !existing.updatedAt || (q.updatedAt && q.updatedAt >= existing.updatedAt)) {
+            bankMap.set(q.id, q);
+            anyNew = true;
+          }
+        }
+      });
+
+      const merged = Array.from(bankMap.values());
+      safeSaveQuizBank(merged);
+      window.TKST_QUIZ_BANK = merged;
+      window.TKST_QUIZ = merged;
+
+      if (anyNew) {
+        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length } }));
+      }
+    } catch(err) {
+      console.warn('Incoming quiz chunk notice:', err);
     }
   }
 
@@ -1117,6 +1207,10 @@
             },
             body: JSON.stringify({ type: 'sync_notification', timestamp: Date.now() })
           });
+          // Garante transmissão das questões em lotes seguros (< 3.5KB) para o PC/celular em tempo real
+          if (custom_quiz_bank && custom_quiz_bank.length > 0) {
+            broadcastQuizBankChunks(custom_quiz_bank);
+          }
         }
       } catch(ntfyErr) {
         console.warn('ntfy.sh stream notice:', ntfyErr);
@@ -1633,6 +1727,14 @@
               const item = JSON.parse(lines[i]);
               const cloudData = await parseNtfyItem(item);
               if (cloudData) {
+                if (cloudData.type === 'tkst_quiz_chunk') {
+                  handleIncomingQuizChunk(cloudData);
+                  continue;
+                }
+                if (cloudData.type === 'quiz_sync_broadcast' && Array.isArray(cloudData.bank)) {
+                  handleIncomingQuizChunk({ questions: cloudData.bank });
+                  continue;
+                }
                 if (cloudData.type === 'sync_notification') {
                   pullFromCloud();
                   break;
@@ -1659,7 +1761,11 @@
             if (parsed) {
               const cloudData = await parseNtfyItem(parsed);
               if (cloudData) {
-                if (cloudData.type === 'sync_notification') {
+                if (cloudData.type === 'tkst_quiz_chunk') {
+                  handleIncomingQuizChunk(cloudData);
+                } else if (cloudData.type === 'quiz_sync_broadcast' && Array.isArray(cloudData.bank)) {
+                  handleIncomingQuizChunk({ questions: cloudData.bank });
+                } else if (cloudData.type === 'sync_notification') {
                   pullFromCloud();
                 } else {
                   applyCloudData(cloudData);
@@ -3937,7 +4043,9 @@
       return null;
     },
 
-    deduplicateQuizSubmissions: deduplicateQuizSubmissions
+    deduplicateQuizSubmissions: deduplicateQuizSubmissions,
+    broadcastQuizBank: broadcastQuizBankChunks,
+    pullQuizBankFromCloud: pullQuizBankFromCloud
   };
 
   // Background Heartbeat Engine (Keeps presence updated while using app)

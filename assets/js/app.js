@@ -214,7 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`💚 ${e.detail.count} questões salvas permanentemente no GitHub!`, 'success', 5000);
   });
   window.addEventListener('tkst_quiz_bank_updated', (e) => {
-    showToast(`📥 Banco atualizado da nuvem: ${e.detail.count} questões carregadas.`, 'info', 3000);
+    const count = (e.detail && e.detail.count) || (Array.isArray(window.TKST_QUIZ_BANK) ? window.TKST_QUIZ_BANK.length : 0);
+    showToast(`📥 Banco sincronizado: ${count} questões disponíveis!`, 'info', 3000);
+    if (activeTab === 'admin' && typeof renderAdminView === 'function') {
+      renderAdminView();
+    }
   });
 
 
@@ -1707,8 +1711,11 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fas fa-user-plus"></i> Novo Aluno Manual
             </button>
           ` : ''}
-          <button class="btn btn-secondary" onclick="window.TKST_APP.exportFullBackup()" style="font-size: 0.82rem; padding: 8px 14px;">
+          <button class="btn btn-secondary" onclick="window.TKST_APP.exportFullBackup()" style="font-size: 0.82rem; padding: 8px 14px;" title="Baixar arquivo JSON completo com questões, alunos e simulados">
             <i class="fas fa-download"></i> Exportar Backup JSON
+          </button>
+          <button class="btn btn-secondary" onclick="window.TKST_APP.importFullBackup()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(34, 197, 94, 0.4); color: #86EFAC;" title="Carregar arquivo JSON de backup do celular ou computador">
+            <i class="fas fa-file-import"></i> Importar Backup JSON
           </button>
         </div>
       </div>
@@ -2600,6 +2607,24 @@ document.addEventListener('DOMContentLoaded', () => {
               <button class="btn btn-primary" onclick="window.TKST_APP.openAddQuizQuestionModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;">
                 <i class="fas fa-plus"></i> Nova Questão
               </button>
+              <button class="btn btn-secondary" onclick="window.TKST_APP.exportQuizQuestionsJson()" style="font-size: 0.82rem; padding: 8px 14px;" title="Baixar arquivo JSON com todas as questões do sistema">
+                <i class="fas fa-download"></i> Exportar Questões (JSON)
+              </button>
+              <button class="btn btn-secondary" onclick="window.TKST_APP.importQuizQuestionsFile()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(34, 197, 94, 0.4); color: #86EFAC;" title="Carregar arquivo JSON de questões do celular ou PC">
+                <i class="fas fa-file-import"></i> Importar Questões (Arquivo)
+              </button>
+              <button class="btn btn-secondary" onclick="window.TKST_APP.syncQuizQuestionsNow()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(59, 130, 246, 0.4); color: #93C5FD;" title="Forçar envio de todas as questões em tempo real para os outros aparelhos">
+                <i class="fas fa-sync-alt"></i> Sincronizar com Outro Aparelho
+              </button>
+            </div>
+          </div>
+          <div style="background: rgba(255, 183, 3, 0.08); border-bottom: 1px solid rgba(255, 183, 3, 0.2); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 0.82rem;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #E2E8F0;">
+              <i class="fas fa-database" style="color: var(--accent-gold);"></i>
+              <span>Total Cadastrado no Banco: <strong style="color: var(--accent-gold); font-size: 0.95rem;">${(window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || [])).length}</strong> questões</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; color: #94A3B8; font-size: 0.76rem;">
+              <i class="fas fa-mobile-alt" style="color: #60A5FA;"></i> Celular ⇄ <i class="fas fa-desktop" style="color: #60A5FA;"></i> PC conectados via Nuvem em Tempo Real
             </div>
           </div>
 
@@ -13490,6 +13515,15 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       const progress = window.TKST_AUTH.getProgress();
       const customVideos = getCustomKataVideos();
       const dojos = window.TKST_AUTH.getDojos();
+      const custom_quiz_bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      const quiz_submissions = window.TKST_AUTH ? window.TKST_AUTH.getQuizSubmissions() : [];
+      const custom_glossary = window.TKST_AUTH ? window.TKST_AUTH.getCustomGlossary() : {};
+      const custom_curriculum = window.TKST_AUTH ? window.TKST_AUTH.getCurriculum() : {};
+      let generated_exams = {};
+      try {
+        generated_exams = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+      } catch(e) {}
+
       const backupData = {
         exportDate: new Date().toISOString(),
         organization: 'Tradicional Karate-Do Shotokan Tsuyoi',
@@ -13497,16 +13531,211 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         dojos,
         students,
         progress,
-        customKataVideos: customVideos
+        customKataVideos: customVideos,
+        custom_quiz_bank,
+        quiz_submissions,
+        custom_glossary,
+        custom_curriculum,
+        generated_exams
       };
 
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `tkst_backup_${new Date().toISOString().split('T')[0]}.json`);
+      downloadAnchor.setAttribute("download", `tkst_backup_completo_${new Date().toISOString().split('T')[0]}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
+    },
+
+    importFullBackup: () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,application/json';
+      input.onchange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const content = evt.target.result;
+            const data = JSON.parse(content);
+            window.TKST_APP.applyBackupData(data);
+          } catch(err) {
+            alert('Erro ao processar o arquivo de backup: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    },
+
+    applyBackupData: (data) => {
+      if (!data || typeof data !== 'object') {
+        alert('Arquivo inválido: JSON não reconhecido.');
+        return;
+      }
+      let summary = [];
+
+      // 1. Questões do Simulado
+      let incomingQuestions = [];
+      if (Array.isArray(data)) {
+        incomingQuestions = data;
+      } else if (Array.isArray(data.custom_quiz_bank)) {
+        incomingQuestions = data.custom_quiz_bank;
+      } else if (Array.isArray(data.bank)) {
+        incomingQuestions = data.bank;
+      } else if (Array.isArray(data.questions)) {
+        incomingQuestions = data.questions;
+      }
+
+      if (incomingQuestions.length > 0) {
+        const currentBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+        const map = new Map();
+        currentBank.forEach(q => { if (q && q.id) map.set(q.id, q); });
+        incomingQuestions.forEach(q => { if (q && q.id && q.question) map.set(q.id, q); });
+        const mergedQuestions = Array.from(map.values());
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.saveCustomQuizBank === 'function') {
+          window.TKST_AUTH.saveCustomQuizBank(mergedQuestions);
+        } else {
+          localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(mergedQuestions));
+          localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(mergedQuestions));
+          window.TKST_QUIZ_BANK = mergedQuestions;
+          window.TKST_QUIZ = mergedQuestions;
+        }
+        summary.push(`${mergedQuestions.length} questões`);
+      }
+
+      // 2. Alunos
+      if (Array.isArray(data.students) && data.students.length > 0) {
+        let localStudents = window.TKST_AUTH.getAllStudents();
+        const sMap = new Map();
+        localStudents.forEach(s => { if (s && s.id) sMap.set(s.id, s); });
+        data.students.forEach(s => { if (s && s.id) sMap.set(s.id, s); });
+        const mergedStudents = Array.from(sMap.values());
+        localStorage.setItem('tkst_students', JSON.stringify(mergedStudents));
+        summary.push(`${mergedStudents.length} alunos`);
+      }
+
+      // 3. Dojos
+      if (Array.isArray(data.dojos) && data.dojos.length > 0) {
+        let localDojos = window.TKST_AUTH.getDojos();
+        const mergedDojos = Array.from(new Set([...localDojos, ...data.dojos])).filter(Boolean);
+        localStorage.setItem('tkst_dojos', JSON.stringify(mergedDojos));
+      }
+
+      // 4. Vídeos
+      if (data.customKataVideos && typeof data.customKataVideos === 'object') {
+        let localVideos = getCustomKataVideos();
+        const mergedVideos = { ...localVideos, ...data.customKataVideos };
+        localStorage.setItem('tkst_custom_videos', JSON.stringify(mergedVideos));
+      }
+
+      // 5. Progresso
+      if (data.progress && typeof data.progress === 'object') {
+        let localProgress = window.TKST_AUTH.getProgress();
+        const mergedProgress = { ...localProgress, ...data.progress };
+        localStorage.setItem('tkst_progress', JSON.stringify(mergedProgress));
+      }
+
+      // 6. Provas / Simulados
+      if (Array.isArray(data.quiz_submissions) && data.quiz_submissions.length > 0) {
+        const localSubs = JSON.parse(localStorage.getItem('tkst_quiz_submissions') || '[]');
+        const subMap = new Map();
+        localSubs.forEach(s => { if (s && s.id) subMap.set(s.id, s); });
+        data.quiz_submissions.forEach(s => { if (s && s.id) subMap.set(s.id, s); });
+        localStorage.setItem('tkst_quiz_submissions', JSON.stringify(Array.from(subMap.values())));
+      }
+
+      // Dispara sincronização em nuvem para que o outro aparelho receba imediatamente
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.pushToCloud === 'function') {
+        window.TKST_AUTH.pushToCloud();
+      }
+
+      alert(`✅ Dados importados com sucesso!\n\n${summary.join(' | ')}\n\nO sistema foi atualizado e sincronizado com os outros aparelhos.`);
+      window.location.reload();
+    },
+
+    exportQuizQuestionsJson: () => {
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      if (!bank || bank.length === 0) {
+        alert('Nenhuma questão encontrada para exportar.');
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bank, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", `tkst_questoes_${bank.length}_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    },
+
+    importQuizQuestionsFile: () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,application/json';
+      input.onchange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            let parsed = JSON.parse(evt.target.result);
+            if (!Array.isArray(parsed) && parsed.custom_quiz_bank && Array.isArray(parsed.custom_quiz_bank)) {
+              parsed = parsed.custom_quiz_bank;
+            } else if (!Array.isArray(parsed) && parsed.bank && Array.isArray(parsed.bank)) {
+              parsed = parsed.bank;
+            }
+            if (!Array.isArray(parsed) || parsed.length === 0) {
+              alert('O arquivo selecionado não contém uma lista válida de questões.');
+              return;
+            }
+            const currentBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+            const map = new Map();
+            currentBank.forEach(q => { if (q && q.id) map.set(q.id, q); });
+            parsed.forEach(q => { if (q && q.id && q.question) map.set(q.id, q); });
+            const merged = Array.from(map.values());
+            if (window.TKST_AUTH && typeof window.TKST_AUTH.saveCustomQuizBank === 'function') {
+              window.TKST_AUTH.saveCustomQuizBank(merged);
+            } else {
+              localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(merged));
+              localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(merged));
+              window.TKST_QUIZ_BANK = merged;
+              window.TKST_QUIZ = merged;
+            }
+            if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastQuizBank === 'function') {
+              window.TKST_AUTH.broadcastQuizBank(merged);
+            }
+            alert(`🎉 Sucesso! Banco atualizado com ${merged.length} questões e sincronizado.`);
+            if (typeof renderAdminView === 'function') renderAdminView();
+          } catch(err) {
+            alert('Erro ao importar arquivo de questões: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    },
+
+    syncQuizQuestionsNow: async () => {
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      if (!bank || bank.length === 0) {
+        alert('Nenhuma questão para sincronizar.');
+        return;
+      }
+      showToast(`🔄 Transmitindo ${bank.length} questões para todos os aparelhos...`, 'sync', 4000);
+      try {
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastQuizBank === 'function') {
+          await window.TKST_AUTH.broadcastQuizBank(bank);
+        }
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.pushToCloud === 'function') {
+          await window.TKST_AUTH.pushToCloud();
+        }
+        showToast(`✅ ${bank.length} questões transmitidas com sucesso!`, 'success', 4000);
+      } catch(e) {
+        showToast('Erro ao transmitir questões: ' + e.message, 'danger', 4000);
+      }
     },
 
     openInviteModal: () => {
