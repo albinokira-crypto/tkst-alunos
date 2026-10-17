@@ -193,6 +193,7 @@ window.TKST_DEFAULT_QUIZ_BANK = [
 window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK;
 window.TKST_QUIZ = window.TKST_DEFAULT_QUIZ_BANK;
 
+window.TKST_CUSTOM_VAULT_QUESTIONS = [
 // ==TKST_CUSTOM_QUESTIONS_START==
 {
   "id": "q_custom_7_1786956226774",
@@ -379,6 +380,7 @@ window.TKST_QUIZ = window.TKST_DEFAULT_QUIZ_BANK;
   "correctIndex": 0
 }
 // ==TKST_CUSTOM_QUESTIONS_END==
+];
 
 // Carregamento resiliente com proteção permanente: NUNCA zera questões salvas
 (function() {
@@ -424,6 +426,13 @@ window.TKST_QUIZ = window.TKST_DEFAULT_QUIZ_BANK;
         bankMap.set(q.id, { ...q });
       }
     });
+    if (Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS)) {
+      window.TKST_CUSTOM_VAULT_QUESTIONS.forEach(q => {
+        if (q && q.id && !deletedIds.includes(q.id)) {
+          bankMap.set(q.id, q);
+        }
+      });
+    }
     if (Array.isArray(customBank)) {
       customBank.forEach(q => {
         if (q && q.id && !deletedIds.includes(q.id)) {

@@ -223,17 +223,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getBeltNameFromKyu(kyu) {
     switch (parseInt(kyu)) {
-      case 7: return "Faixa Branca 7º Kyu";
-      case 6: return "Faixa Amarela 6º Kyu";
-      case 5: return "Faixa Vermelha 5º Kyu";
-      case 4: return "Faixa Laranja 4º Kyu";
-      case 3: return "Faixa Verde 3º Kyu";
-      case 2: return "Faixa Roxa 2º Kyu";
-      case 1: return "Faixa Marrom 1º Kyu";
-      case 0: return "Faixa Preta Shodan (1º Dan)";
-      case -1: return "Faixa Preta Nidan (2º Dan)";
-      case -2: return "Faixa Preta Sandan (3º Dan)";
-      default: return "Faixa Branca 7º Kyu";
+      case 7:
+      case 6: return "6º Kyu (Branca para Amarela)";
+      case 5: return "5º Kyu (Amarela para Vermelha)";
+      case 4: return "4º Kyu (Vermelha para Laranja)";
+      case 3: return "3º Kyu (Laranja para Verde)";
+      case 2: return "2º Kyu (Verde para Roxa)";
+      case 1: return "1º Kyu (Roxa para Marrom)";
+      case 0: return "1º Dan (Shodan)";
+      case -1: return "2º Dan (Nidan)";
+      case -2: return "3º Dan (Sandan)";
+      default: return "6º Kyu (Branca para Amarela)";
     }
   }
 
@@ -2568,19 +2568,18 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
 
-          <!-- Graduation Filter Buttons - 2 linhas (5 botões por linha) com cor da faixa de fundo -->
-          <div style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; background: rgba(0,0,0,0.25);">
+          <!-- Graduation Filter Buttons - Organizados rigorosamente pela ordem do Plano de Estudos (6º ao 1º Kyu e Dans) -->
+          <div style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; background: rgba(0,0,0,0.25);">
             ${[
-              { kyu: 7, label: "7ºKyu", bg: "#FFFFFF", color: "#0A0D14" },
-              { kyu: 6, label: "6ºKyu", bg: "#F5BE00", color: "#0A0D14" },
-              { kyu: 5, label: "5ºKyu", bg: "#E63946", color: "#FFFFFF" },
-              { kyu: 4, label: "4ºKyu", bg: "#FF7700", color: "#FFFFFF" },
-              { kyu: 3, label: "3ºKyu", bg: "#10B981", color: "#FFFFFF" },
-              { kyu: 2, label: "2ºKyu", bg: "#8B5CF6", color: "#FFFFFF" },
-              { kyu: 1, label: "1ºKyu", bg: "#78350F", color: "#FFFFFF" },
-              { kyu: 0, label: "1ºDan", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
-              { kyu: -1, label: "2ºDan", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
-              { kyu: -2, label: "3ºDan", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" }
+              { kyu: 6, label: "6ºKyu (Branca p/ Amarela)", bg: "#F5BE00", color: "#0A0D14" },
+              { kyu: 5, label: "5ºKyu (Amarela p/ Vermelha)", bg: "#E63946", color: "#FFFFFF" },
+              { kyu: 4, label: "4ºKyu (Vermelha p/ Laranja)", bg: "#FF7700", color: "#FFFFFF" },
+              { kyu: 3, label: "3ºKyu (Laranja p/ Verde)", bg: "#10B981", color: "#FFFFFF" },
+              { kyu: 2, label: "2ºKyu (Verde p/ Roxa)", bg: "#8B5CF6", color: "#FFFFFF" },
+              { kyu: 1, label: "1ºKyu (Roxa p/ Marrom)", bg: "#78350F", color: "#FFFFFF" },
+              { kyu: 0, label: "1ºDan (Shodan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
+              { kyu: -1, label: "2ºDan (Nidan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
+              { kyu: -2, label: "3ºDan (Sandan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" }
             ].map(b => `
               <button 
                 onclick="window.TKST_APP.setAdminQuizSelectedKyu(${b.kyu})"
@@ -2588,15 +2587,15 @@ document.addEventListener('DOMContentLoaded', () => {
                   background: ${b.bg};
                   color: ${b.color};
                   border: ${adminQuizSelectedKyu === b.kyu ? '2px solid #FFB703' : (b.border || '1px solid rgba(255,255,255,0.15)')};
-                  ${adminQuizSelectedKyu === b.kyu ? 'box-shadow: 0 0 10px rgba(255, 183, 3, 0.8); transform: scale(1.04); font-weight: 900;' : 'opacity: 0.85; font-weight: 700;'}
+                  ${adminQuizSelectedKyu === b.kyu ? 'box-shadow: 0 0 10px rgba(255, 183, 3, 0.8); transform: scale(1.03); font-weight: 900;' : 'opacity: 0.85; font-weight: 700;'}
                   border-radius: 6px;
-                  padding: 8px 2px;
-                  font-size: 0.76rem;
+                  padding: 8px 6px;
+                  font-size: 0.74rem;
                   cursor: pointer;
                   text-align: center;
                   transition: all 0.15s ease;
-                  line-height: 1;
-                  white-space: nowrap;
+                  line-height: 1.2;
+                  white-space: normal;
                 "
                 title="Filtrar por ${b.label}"
               >
@@ -2609,7 +2608,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px;">
             ${(() => {
               const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
-              const currentKyuQuestions = allBank.map(q => ensureSmartQuestionOptions(q)).filter(q => q.kyuNumber === adminQuizSelectedKyu);
+              const currentKyuQuestions = allBank.map(q => ensureSmartQuestionOptions(q)).filter(q => (adminQuizSelectedKyu === 6) ? (q.kyuNumber === 6 || q.kyuNumber === 7) : (q.kyuNumber === adminQuizSelectedKyu));
               if (currentKyuQuestions.length === 0) {
                 return `
                   <div style="padding: 30px; text-align: center; color: #64748B;">
@@ -10392,7 +10391,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       (window._tkstSuggestedHistory || []).forEach(norm => existingSet.add(norm));
 
-      const kyuKey = parseInt(kyu);
+      const kyuKey = (parseInt(kyu) === 7) ? 6 : parseInt(kyu);
       const allCurriculums = (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomCurriculum === 'function')
         ? window.TKST_AUTH.getCustomCurriculum()
         : (window.TKST_CURRICULUM || window.TKST_DEFAULT_CURRICULUM || []);
@@ -10563,56 +10562,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // 6. QUESTÕES ESPECÍFICAS CURADAS POR KYU (com gabarito e alternativas coerentes)
+      // 6. QUESTÕES ESPECÍFICAS CURADAS POR KYU (ordem oficial do Plano de Estudos: 6º ao 1º Kyu e Dan)
       const CURATED_BY_KYU = {
+        6: [
+          { q: "Qual é o primeiro Kata fundamental ensinado no exame de Faixa Branca para Faixa Amarela (6º Kyu)?", c: "Heian Shodan", w: ["Heian Nidan", "Tekki Shodan", "Bassai Dai"], t: "Kata" },
+          { q: "Quantos movimentos oficiais compõem o Kata Heian Shodan?", c: "21 movimentos", w: ["26 movimentos", "20 movimentos", "18 movimentos"], t: "Kata" },
+          { q: "Em quais movimentos do Kata Heian Shodan ocorrem os Kiais oficiais?", c: "No 9º e no 17º movimentos", w: ["No 1º e no 21º movimentos", "No 5º e no 10º movimentos", "No 12º e no 19º movimentos"], t: "Kata" },
+          { q: "Qual é o nome do Kumite de 5 passos praticado no exame de Faixa Amarela (6º Kyu)?", c: "Gohon Kumite", w: ["Sanbon Kumite", "Jiyu Kumite", "Jiyu Ippon Kumite"], t: "Kumite" },
+          { q: "O que significa a palavra KARATÊ-DO em sua tradução literal?", c: "Caminho das Mãos Vazias", w: ["Caminho da Espada Rápida", "Arte dos Pés de Ferro", "Caminho da Lança Dourada"], t: "Filosofia" },
+          { q: "Quais são as três alturas fundamentais de golpe no Karatê (Jodan, Chudan e Gedan)?", c: "Jodan (Alto), Chudan (Médio) e Gedan (Baixo)", w: ["Mae, Sagate e Mawate", "Ichi, Ni e San", "Rei, Mokuso e Yame"], t: "Fundamentos" },
+          { q: "Qual é o nome da base frontal com 60% do peso na perna da frente e 40% atrás?", c: "Zenkutsu Dachi", w: ["Kokutsu Dachi", "Kiba Dachi", "Heisoku Dachi"], t: "Bases" },
+          { q: "Qual é o nome da base recuada em L com 70% do peso na perna de trás?", c: "Kokutsu Dachi", w: ["Zenkutsu Dachi", "Kiba Dachi", "Fudo Dachi"], t: "Bases" },
+          { q: "Qual é o nome da defesa baixa com antebraço mais ensinada aos iniciantes?", c: "Gedan Barai", w: ["Age Uke", "Soto Uke", "Shuto Uke"], t: "Defesas" },
+          { q: "Como se chama o soco contrário à perna que se encontra à frente na base?", c: "Gyaku Tsuki", w: ["Oi Tsuki", "Kizami Tsuki", "Tate Tsuki"], t: "Socos" },
+          { q: "Qual é o nome do chute frontal executado atingindo com a bola do pé (Koshi)?", c: "Mae Geri", w: ["Mawashi Geri", "Yoko Geri", "Ushiro Geri"], t: "Chutes" }
+        ],
         7: [
+          { q: "Qual é o primeiro Kata fundamental ensinado no exame de Faixa Branca para Faixa Amarela (6º Kyu)?", c: "Heian Shodan", w: ["Heian Nidan", "Tekki Shodan", "Bassai Dai"], t: "Kata" },
+          { q: "Quantos movimentos oficiais compõem o Kata Heian Shodan?", c: "21 movimentos", w: ["26 movimentos", "20 movimentos", "18 movimentos"], t: "Kata" },
           { q: "O que significa a palavra KARATÊ-DO em sua tradução literal?", c: "Caminho das Mãos Vazias", w: ["Caminho da Espada Rápida", "Arte dos Pés de Ferro", "Caminho da Lança Dourada"], t: "Filosofia" },
           { q: "Quais são as três alturas fundamentais de golpe no Karatê (Jodan, Chudan e Gedan)?", c: "Jodan (Alto), Chudan (Médio) e Gedan (Baixo)", w: ["Mae, Sagate e Mawate", "Ichi, Ni e San", "Rei, Mokuso e Yame"], t: "Fundamentos" },
           { q: "Qual é o nome da base frontal com 60% do peso na perna da frente e 40% atrás?", c: "Zenkutsu Dachi", w: ["Kokutsu Dachi", "Kiba Dachi", "Heisoku Dachi"], t: "Bases" },
           { q: "Qual é o nome da defesa baixa com antebraço mais ensinada aos iniciantes?", c: "Gedan Barai", w: ["Age Uke", "Soto Uke", "Shuto Uke"], t: "Defesas" },
           { q: "Qual é o nome do chute frontal executado atingindo com a bola do pé (Koshi)?", c: "Mae Geri", w: ["Mawashi Geri", "Yoko Geri", "Ushiro Geri"], t: "Chutes" }
         ],
-        6: [
-          { q: "Qual é o primeiro Kata fundamental ensinado no currículo do Karatê Shotokan?", c: "Heian Shodan", w: ["Heian Nidan", "Tekki Shodan", "Bassai Dai"], t: "Kata" },
-          { q: "Quantos movimentos oficiais compõem o Kata Heian Shodan?", c: "21 movimentos", w: ["26 movimentos", "20 movimentos", "18 movimentos"], t: "Kata" },
-          { q: "Em quais movimentos do Kata Heian Shodan ocorrem os Kiais oficiais?", c: "No 9º e no 17º movimentos", w: ["No 1º e no 21º movimentos", "No 5º e no 10º movimentos", "No 12º e no 19º movimentos"], t: "Kata" },
-          { q: "Qual é o nome da base recuada em L com 70% do peso na perna de trás?", c: "Kokutsu Dachi", w: ["Zenkutsu Dachi", "Kiba Dachi", "Fudo Dachi"], t: "Bases" },
-          { q: "Como se chama o soco contrário à perna que se encontra à frente na base?", c: "Gyaku Tsuki", w: ["Oi Tsuki", "Kizami Tsuki", "Tate Tsuki"], t: "Socos" }
-        ],
         5: [
-          { q: "Qual é o Kata oficial exigido para o exame de graduação para a Faixa Vermelha (5º Kyu)?", c: "Heian Nidan", w: ["Heian Shodan", "Heian Sandan", "Tekki Shodan"], t: "Kata" },
+          { q: "Qual é o Kata oficial exigido para o exame de graduação de Faixa Amarela para Faixa Vermelha (5º Kyu)?", c: "Heian Nidan", w: ["Heian Shodan", "Heian Sandan", "Tekki Shodan"], t: "Kata" },
           { q: "Quantos movimentos oficiais possui o Kata Heian Nidan?", c: "26 movimentos", w: ["21 movimentos", "20 movimentos", "24 movimentos"], t: "Kata" },
+          { q: "Qual forma de Kumite de 3 passos é exigida no exame de Faixa Vermelha (5º Kyu)?", c: "Sanbon Kumite (1ª e 2ª Forma)", w: ["Gohon Kumite", "Jiyu Kumite", "Jiyu Ippon Kumite"], t: "Kumite" },
           { q: "Qual técnica de ataque com a ponta dos quatro dedos estendidos (Nukite) aparece no Heian Nidan?", c: "Chudan Nukite", w: ["Seiken Tsuki", "Empi Uchi", "Uraken Uchi"], t: "Técnicas" },
           { q: "Qual é a função e o significado da defesa reforçada com os dois braços (Morote Uke)?", c: "Defesa com suporte do braço oposto para resistir a impactos pesados", w: ["Defesa de pernas cruzadas no solo", "Ataque duplo de ponta de dedos aos olhos", "Bloqueio com esquiva lateral de corpo"], t: "Defesas" },
           { q: "Qual é a diferença biomecânica entre Yoko Geri Keage e Yoko Geri Kekomi?", c: "Keage é ascendente/percussivo e Kekomi é linear/penetrante", w: ["Keage é circular para trás e Kekomi é frontal", "Keage atinge com a coxa e Kekomi com os dedos", "Não há diferença, são o mesmo chute"], t: "Chutes" }
         ],
         4: [
-          { q: "Qual é o Kata oficial exigido para a graduação de 4º Kyu (Faixa Laranja)?", c: "Heian Sandan", w: ["Heian Nidan", "Heian Yondan", "Bassai Dai"], t: "Kata" },
+          { q: "Qual é o Kata oficial exigido para a graduação de Faixa Vermelha para Faixa Laranja (4º Kyu)?", c: "Heian Sandan", w: ["Heian Nidan", "Heian Yondan", "Bassai Dai"], t: "Kata" },
           { q: "Quantos movimentos oficiais compõem o Kata Heian Sandan?", c: "20 movimentos", w: ["26 movimentos", "21 movimentos", "23 movimentos"], t: "Kata" },
+          { q: "Quais formas de Sanbon Kumite são cobradas no exame para Faixa Laranja (4º Kyu)?", c: "Sanbon Kumite (3ª, 4ª e 5ª Forma)", w: ["1ª e 2ª Forma", "Apenas Gohon Kumite", "Jiyu Kumite"], t: "Kumite" },
           { q: "Qual é a postura do cavaleiro (Kiba Dachi) com peso igualmente distribuído?", c: "50% na perna esquerda e 50% na direita", w: ["70% atrás e 30% na frente", "60% na frente e 40% atrás", "90% na perna de apoio"], t: "Bases" },
           { q: "Qual técnica de cotovelada (Empi Uchi) é praticada na faixa laranja e no Heian Sandan?", c: "Mawashi Empi Uchi (ou Mae Empi Uchi)", w: ["Yoko Geri", "Shuto Uke", "Gedan Barai"], t: "Golpes" },
           { q: "O que significa o termo 'BUNKAI' no estudo dos Katas de Karatê?", c: "Análise e aplicação prática das técnicas de combate do Kata", w: ["Contagem numérica em japonês", "Saudação cerimonial de início de treino", "Uniforme tradicional e faixa"], t: "Conceitos" }
         ],
         3: [
-          { q: "Qual é o Kata oficial exigido para a graduação de 3º Kyu (Faixa Verde)?", c: "Heian Yondan", w: ["Heian Sandan", "Heian Godan", "Tekki Shodan"], t: "Kata" },
+          { q: "Qual é o Kata oficial exigido para a graduação de Faixa Laranja para Faixa Verde (3º Kyu)?", c: "Heian Yondan", w: ["Heian Sandan", "Heian Godan", "Tekki Shodan"], t: "Kata" },
           { q: "Quantos movimentos oficiais compõem o Kata Heian Yondan?", c: "27 movimentos", w: ["20 movimentos", "26 movimentos", "21 movimentos"], t: "Kata" },
+          { q: "Qual modalidade de Kumite de um passo semi-livre é cobrada no 3º Kyu (Faixa Verde)?", c: "Kihon Ippon Kumite", w: ["Gohon Kumite", "Sanbon Kumite", "Shiai Kumite"], t: "Kumite" },
           { q: "Qual chute circular atinge o oponente com o peito do pé ou a bola do pé?", c: "Mawashi Geri", w: ["Mae Geri", "Ushiro Geri", "Yoko Geri"], t: "Chutes" },
           { q: "O que significa manter o estado de alerta e foco mental (ZANSHIN) após um golpe?", c: "Postura e atenção contínua mantida antes, durante e após a técnica", w: ["Comemorar imediatamente o ponto obtido", "Relaxar totalmente os músculos e baixar a guarda", "Gritar Kiai repetidamente sem recuar"], t: "Filosofia" },
           { q: "Qual é a defesa em cruz com os punhos fechados ou abertos apresentada no Heian Yondan?", c: "Juji Uke", w: ["Manji Uke", "Age Uke", "Gedan Barai"], t: "Defesas" }
         ],
         2: [
-          { q: "Qual é o Kata oficial exigido para a graduação de 2º Kyu (Faixa Roxa)?", c: "Heian Godan", w: ["Heian Yondan", "Tekki Shodan", "Bassai Dai"], t: "Kata" },
-          { q: "Quantos movimentos oficiais compõem o Kata Heian Godan?", c: "23 movimentos", w: ["27 movimentos", "21 movimentos", "26 movimentos"], t: "Kata" },
-          { q: "Qual é a defesa dupla em níveis opostos (um braço alto e outro baixo) do Heian Godan?", c: "Manji Uke", w: ["Juji Uke", "Kakiwake Uke", "Morote Uke"], t: "Defesas" },
-          { q: "Como se chama a base com pernas cruzadas adotada logo após o salto do Heian Godan?", c: "Kosa Dachi", w: ["Zenkutsu Dachi", "Kiba Dachi", "Kokutsu Dachi"], t: "Bases" },
+          { q: "Quais Katas são exigidos no exame de Faixa Verde para Faixa Roxa (2º Kyu)?", c: "2 Heians da banca examinadora, Tekki Shodan e Katas Superiores", w: ["Apenas Heian Shodan", "Apenas Taikyoku Shodan", "Nenhum Kata"], t: "Kata" },
+          { q: "Qual modalidade de Kumite de um passo livre é introduzida no exame para Faixa Roxa (2º Kyu)?", c: "Jiyu Ippon Kumite", w: ["Gohon Kumite", "Sanbon Kumite", "Yakusoku Kumite"], t: "Kumite" },
+          { q: "Qual requisito de combate livre múltiplo é avaliado no exame de 2º Kyu (Faixa Roxa)?", c: "Jiyu Kumite contra 1 e contra 2 oponentes", w: ["Luta contra 10 oponentes", "Apenas luta contra o Sensei", "Não há combate"], t: "Kumite" },
+          { q: "Qual exigência prática de Defesa Pessoal é cobrada no exame para Faixa Roxa (2º Kyu)?", c: "Defesa Pessoal com queda/projeção e imobilização no solo", w: ["Apenas esquiva sem contato", "Apenas combate esportivo", "Desarme com bastão"], t: "Defesa Pessoal" },
+          { q: "Qual tarefa pedagógica de elaboração própria é exigida do aluno no exame para 2º Kyu?", c: "Elaboração própria de um Kihon de 3 passos para um graduado", w: ["Compor uma canção marcial", "Construir um makiwara", "Escrever um livro"], t: "Kihon" },
           { q: "O que caracteriza a aplicação máxima de foco, velocidade e contração no KIME?", c: "Concentração máxima de força e energia no instante do impacto", w: ["Relaxamento muscular total sem impacto", "Apenas respiração suave sem foco", "Esquiva sem desferir contra-ataque"], t: "Conceitos" }
         ],
         1: [
-          { q: "Quais Katas são tradicionalmente cobrados no exame para Faixa Marrom (1º Kyu)?", c: "Tekki Shodan e Bassai Dai", w: ["Heian Shodan e Heian Nidan", "Gankaku e Unsu", "Jion e Sochin"], t: "Kata" },
-          { q: "Quantos movimentos compõem o Kata Bassai Dai ('Romper a Fortaleza')?", c: "42 movimentos", w: ["23 movimentos", "27 movimentos", "54 movimentos"], t: "Kata" },
-          { q: "Qual postura linear e lateral é mantida ao longo de todo o Kata Tekki Shodan?", c: "Kiba Dachi", w: ["Zenkutsu Dachi", "Kokutsu Dachi", "Fudo Dachi"], t: "Bases" },
-          { q: "Qual a diferença entre as três iniciativas: Sen no Sen, Go no Sen e Sen Sen no Sen?", c: "São tempos de antecipação: contra-ataque simultâneo, defensivo e antecipado", w: ["São categorias de peso de torneio infantil", "São alturas de chutes no ar", "São saudações formais da WKF"], t: "Estratégia" },
-          { q: "Como o conceito de Tai Sabaki (esquiva corporal) opera no combate?", c: "Deslocamento e rotação do corpo para sair da linha de ataque e contra-atacar", w: ["Bloqueio estático resistindo com a força bruta", "Recuo linear de 10 passos sem defesa", "Ficar imóvel esperando o golpe adversário"], t: "Tática" }
+          { q: "Quais Katas são cobrados no exame de graduação de Faixa Roxa para Faixa Marrom (1º Kyu)?", c: "Tekki Shodan com Bunkai dos Heian Katas e Katas Superiores (Bassai Dai)", w: ["Heian Shodan e Heian Nidan", "Gankaku e Unsu", "Jion e Sochin"], t: "Kata" },
+          { q: "Quantos movimentos compõem o Kata superior Bassai Dai ('Romper a Fortaleza') cobrado no 1º Kyu?", c: "42 movimentos", w: ["23 movimentos", "27 movimentos", "54 movimentos"], t: "Kata" },
+          { q: "Como é estruturado o exame de Kihon Go Kai para a Faixa Marrom (1º Kyu)?", c: "5 técnicas em modo Execução e 5 técnicas em modo Aplicação prática", w: ["Apenas 2 técnicas estáticas", "Kihon apenas para crianças", "10 socos idênticos"], t: "Kihon" },
+          { q: "Qual formato de combate livre múltiplo avançado é testado na Faixa Marrom (1º Kyu)?", c: "Jiyu Kumite contra 1, 2 e 4 oponentes", w: ["Apenas luta com regras de ponto único", "Combate individual de 1 minuto", "Não há luta"], t: "Kumite" },
+          { q: "Quais formas de Jiyu Ippon Kumite devem ser dominadas no exame de 1º Kyu?", c: "1ª à 4ª Forma com tempo de reação e contra-ataque decisivo", w: ["Apenas a 1ª forma de ataque", "Apenas defesa sem contra-golpe", "Gohon Kumite básico"], t: "Kumite" },
+          { q: "Qual postura linear e lateral é mantida ao longo de todo o Kata Tekki Shodan?", c: "Kiba Dachi", w: ["Zenkutsu Dachi", "Kokutsu Dachi", "Fudo Dachi"], t: "Bases" }
         ],
         0: [
           { q: "Qual é o significado original do termo 'SHODAN' na faixa preta?", c: "Primeiro degrau / O verdadeiro início do aprendizado", w: ["Grau supremo e término de todo estudo", "Mestre absoluto invencível", "Instrutor de elite aposentado"], t: "Filosofia" },
