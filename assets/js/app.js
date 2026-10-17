@@ -10796,13 +10796,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="checkbox" id="batchCheck_${idx}" checked onchange="window.TKST_APP.updateBatchSelectedCount()" style="width: 16px; height: 16px; accent-color: var(--accent-gold); cursor: pointer;">
                     <strong style="color: #FFF; font-size: 0.86rem;">Questão #${idx + 1}</strong>
                   </label>
-                  <span class="badge" style="background: rgba(255,183,3,0.14); border: 1px solid rgba(255,183,3,0.35); color: var(--accent-gold); font-size: 0.68rem; font-weight: 700;">
+                  <span id="batchTopic_${idx}" class="badge" style="background: rgba(255,183,3,0.14); border: 1px solid rgba(255,183,3,0.35); color: var(--accent-gold); font-size: 0.68rem; font-weight: 700;">
                     ${q.topic || 'Plano de Estudos'}
                   </span>
                 </div>
 
                 <!-- Enunciado -->
                 <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 6px;">
+                    <label style="font-size: 0.74rem; font-weight: 700; color: #CBD5E1; display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
+                      <i class="fas fa-question-circle" style="color: var(--accent-gold);"></i> Pergunta / Enunciado:
+                    </label>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.suggestBatchSingleQuestion(${idx}, ${kyu})" style="font-size: 0.70rem; padding: 2px 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; border-radius: 4px; background: rgba(255, 183, 3, 0.15); border: 1px solid rgba(255, 183, 3, 0.4); color: var(--accent-gold);" title="Sugerir outra pergunta e alternativas do Plano de Estudos para esta questão">
+                      <i class="fas fa-lightbulb"></i> Auto-sugerir Pergunta
+                    </button>
+                  </div>
                   <textarea id="batchQ_${idx}" class="form-input" rows="2" style="font-size: 0.86rem; font-weight: 600; width: 100%; resize: vertical;" required>${escapeHtml(q.question)}</textarea>
                 </div>
 
@@ -10853,6 +10861,48 @@ document.addEventListener('DOMContentLoaded', () => {
     regenerateBatchSuggestions: (kyu) => {
       window.TKST_APP.openBatchSuggestQuestionsModal(kyu);
       showToast('🔄 Novo lote de 5 questões pesquisado no Plano de Estudos!', 'info', 2500);
+    },
+
+    suggestBatchSingleQuestion: (idx, kyu) => {
+      const qInput = document.getElementById(`batchQ_${idx}`);
+      const cInput = document.getElementById(`batchCorrect_${idx}`);
+      const w1 = document.getElementById(`batchWrong1_${idx}`);
+      const w2 = document.getElementById(`batchWrong2_${idx}`);
+      const w3 = document.getElementById(`batchWrong3_${idx}`);
+      const topicEl = document.getElementById(`batchTopic_${idx}`);
+
+      const suggested = window.TKST_APP.generateUniqueQuestionSuggestion(kyu);
+      if (!suggested) {
+        showToast('⚠️ Nenhuma sugestão disponível no momento.', 'warning');
+        return;
+      }
+
+      const qText = typeof suggested === 'object' ? suggested.question : suggested;
+      const cText = typeof suggested === 'object' ? (suggested.correctAnswer || '') : '';
+      const wAnswers = (typeof suggested === 'object' && Array.isArray(suggested.wrongAnswers)) ? suggested.wrongAnswers : [];
+      const topic = (typeof suggested === 'object' && suggested.topic) ? suggested.topic : 'Plano de Estudos';
+
+      if (qInput) qInput.value = qText;
+      if (cInput && cText) cInput.value = cText;
+      if (w1 && wAnswers[0]) w1.value = wAnswers[0];
+      if (w2 && wAnswers[1]) w2.value = wAnswers[1];
+      if (w3 && wAnswers[2]) w3.value = wAnswers[2];
+      if (topicEl) topicEl.textContent = topic;
+
+      [qInput, cInput, w1, w2, w3].forEach(el => {
+        if (el) {
+          el.style.transition = 'all 0.3s ease';
+          const origBg = el.style.background;
+          el.style.background = 'rgba(255, 183, 3, 0.22)';
+          el.style.borderColor = 'rgba(255, 183, 3, 0.7)';
+          setTimeout(() => {
+            el.style.background = origBg || '';
+            el.style.borderColor = '';
+          }, 700);
+        }
+      });
+
+      showToast(`💡 Pergunta e alternativas da Questão #${idx + 1} pesquisadas no Plano de Estudos!`, 'success', 3000);
     },
 
     autoFillBatchWrongOptions: (idx) => {
