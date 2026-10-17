@@ -65,7 +65,17 @@ document.addEventListener('DOMContentLoaded', () => {
   let glossarySearchQuery = '';
   let authMode = 'student-login';
   let adminSubTab = 'students'; // 'students', 'pending', 'dojos', 'kata-videos', 'quizzes', 'files', 'questions', 'exam-generator'
+  try {
+    const savedSubTab = sessionStorage.getItem('tkst_admin_subtab');
+    if (savedSubTab) adminSubTab = savedSubTab;
+  } catch(e) {}
   let adminQuizSelectedKyu = 6;
+  try {
+    const savedKyu = sessionStorage.getItem('tkst_admin_quiz_kyu');
+    if (savedKyu !== null && savedKyu !== undefined && !isNaN(parseInt(savedKyu, 10))) {
+      adminQuizSelectedKyu = parseInt(savedKyu, 10);
+    }
+  } catch(e) {}
   let examGeneratorSelectedKyu = 6;
   let examGeneratorFormat = 'quiz'; // Modelo oficial de múltipla escolha
   let examPreviewGenerated = false; // false, 'exam', 'key'
@@ -980,10 +990,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 350);
       }
     } else {
-      if (!window.location.hash) {
-        history.replaceState({ tab: 'dashboard' }, '', '#dashboard');
+      // Preservar aba ativa (via hash da URL ou sessionStorage)
+      let targetTab = 'dashboard';
+      const validTabs = ['dashboard', 'admin', 'my-exam', 'katas', 'kumite', 'glossary', 'media', 'quiz', 'philosophy'];
+      const rawHash = (window.location.hash || '').replace(/^#/, '').trim();
+      let savedTab = null;
+      try { savedTab = sessionStorage.getItem('tkst_active_tab'); } catch(e) {}
+
+      if (rawHash && validTabs.includes(rawHash)) {
+        targetTab = rawHash;
+      } else if (savedTab && validTabs.includes(savedTab)) {
+        targetTab = savedTab;
       }
-      switchTab('dashboard');
+
+      if (!window.location.hash || window.location.hash !== '#' + targetTab) {
+        history.replaceState({ tab: targetTab }, '', '#' + targetTab);
+      }
+      switchTab(targetTab);
     }
 
     updateInstallPromptsVisibility();
@@ -1072,6 +1095,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     currentTab = tabName;
+    try { sessionStorage.setItem('tkst_active_tab', tabName); } catch(e) {}
     navLinks.forEach(l => {
       if (l.getAttribute('data-tab') === tabName) {
         l.classList.add('active');
@@ -1162,6 +1186,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function openAdminPanel(subTab) {
     if (subTab) {
       adminSubTab = subTab;
+      try { sessionStorage.setItem('tkst_admin_subtab', subTab); } catch(e) {}
+    } else {
+      try {
+        const savedSubTab = sessionStorage.getItem('tkst_admin_subtab');
+        if (savedSubTab) adminSubTab = savedSubTab;
+      } catch(e) {}
     }
     switchTab('admin');
   }
@@ -2558,12 +2588,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
               <button class="btn btn-gold" onclick="window.TKST_APP.openShotokanStudyModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 800; color: #000; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); background: linear-gradient(135deg, #FFD166 0%, #F5BE00 100%); border: none;" title="Estudo Técnico Aprofundado de Karatê Shotokan (JKA/WKF) & Gerador Especialista de Questões com Gabarito">
                 <i class="fas fa-brain"></i> 🥋 Estudo Shotokan (Gerador IA)
-              </button>
-              <button class="btn btn-secondary" onclick="window.TKST_APP.openBatchSuggestQuestionsModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; color: #E2E8F0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2);" title="Sugerir 5 questões completas em lote com gabarito baseadas no Plano de Estudos">
-                <i class="fas fa-layer-group"></i> 5 do Plano de Estudos
-              </button>
-              <button class="btn btn-secondary" onclick="window.TKST_APP.openAddQuizQuestionWithSuggestion(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; background: rgba(255,183,3,0.12); border: 1px solid var(--accent-gold); color: var(--accent-gold);" title="Abrir criação individual com pergunta sugerida">
-                <i class="fas fa-lightbulb"></i> Sugerir 1
               </button>
               <button class="btn btn-primary" onclick="window.TKST_APP.openAddQuizQuestionModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;">
                 <i class="fas fa-plus"></i> Nova Questão
@@ -9080,6 +9104,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         adminSubTab = subTab;
       }
+      try { sessionStorage.setItem('tkst_admin_subtab', adminSubTab || ''); } catch(e) {}
       renderAdminMaster();
       if (adminSubTab) {
         setTimeout(() => {
@@ -9770,6 +9795,7 @@ document.addEventListener('DOMContentLoaded', () => {
     exitQuiz,
     setAdminQuizSelectedKyu: (kyu) => {
       adminQuizSelectedKyu = parseInt(kyu);
+      try { sessionStorage.setItem('tkst_admin_quiz_kyu', adminQuizSelectedKyu); } catch(e) {}
       renderAdminMaster();
     },
 
@@ -11139,7 +11165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;">
           <span style="display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-brain" style="color: var(--accent-gold); font-size: 1.15rem;"></i>
-            <strong>Estudo Shotokan & Gerador IA (${beltName})</strong>
+            <strong>Plano de Estudos & Estudo Shotokan (${beltName})</strong>
           </span>
           <span class="badge badge-gold" style="font-size: 0.70rem; font-weight: 800; white-space: nowrap;">
             <i class="fas fa-user-shield"></i> Exclusivo Sensei / Admin
@@ -11153,8 +11179,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="background: linear-gradient(135deg, rgba(245, 190, 0, 0.12) 0%, rgba(20, 25, 38, 0.95) 100%); border: 1px solid rgba(245, 190, 0, 0.35); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
               <div style="font-size: 0.84rem; color: #F8FAFC;">
-                <i class="fas fa-bolt" style="color: var(--accent-gold); margin-right: 6px;"></i>
-                <strong>Critério de Simulado Rápido:</strong> O algoritmo formula perguntas e alternativas <strong>curtas e objetivas</strong> (1 a 5 palavras), sem termos técnicos excessivos nem descrições longas, permitindo que o aluno responda com agilidade no tempo cronometrado.
+                <i class="fas fa-book-reader" style="color: var(--accent-gold); margin-right: 6px;"></i>
+                <strong>Graduação Reconhecida (${beltName}):</strong> O gerador pesquisa diretamente o <strong>Plano de Estudos Oficial</strong> da graduação (Katas exigidos, Kumite, Kihon e bases) combinado ao <strong>Estudo Geral Shotokan</strong>. As perguntas e respostas são <strong>curtas e objetivas</strong> (1 a 5 palavras) sem repetições no simulado.
               </div>
             </div>
 
