@@ -395,9 +395,9 @@ window.TKST_CUSTOM_VAULT_QUESTIONS = [
       customBank = JSON.parse(localStorage.getItem('tkst_custom_quiz_bank')) || [];
     } catch(e) { customBank = []; }
 
-    // Remove quaisquer questões genéricas antigas que não sejam do Sensei
+    // Remove quaisquer questões genéricas antigas que não sejam do Sensei ou do Gerador Shotokan
     if (Array.isArray(customBank) && customBank.length > 0) {
-      customBank = customBank.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
+      customBank = customBank.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))));
     }
 
     // Se estiver vazio, tenta recuperar do Cofre Permanente (Permanent Vault)
@@ -405,7 +405,7 @@ window.TKST_CUSTOM_VAULT_QUESTIONS = [
       try {
         const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent') || '[]');
         if (Array.isArray(vault) && vault.length > 0) {
-          customBank = vault.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
+          customBank = vault.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))));
         }
       } catch(e) {}
     }
@@ -415,7 +415,7 @@ window.TKST_CUSTOM_VAULT_QUESTIONS = [
       try {
         const history = JSON.parse(localStorage.getItem('tkst_quiz_backup_history') || '[]');
         if (Array.isArray(history) && history.length > 0 && Array.isArray(history[0].bank)) {
-          customBank = history[0].bank.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
+          customBank = history[0].bank.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))));
         }
       } catch(e) {}
     }
@@ -452,7 +452,7 @@ window.TKST_CUSTOM_VAULT_QUESTIONS = [
     } catch(quotaErr) {
       try {
         localStorage.removeItem('tkst_quiz_backup_history');
-        const customOnly = finalBank.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+        const customOnly = finalBank.filter(q => q && (q._edited || (q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_')))));
         localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(customOnly));
         localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(customOnly));
       } catch(innerErr) {}

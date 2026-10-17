@@ -158,7 +158,7 @@ module.exports = async (req, res) => {
     // Isso garante que ao editar uma questão já salva no GitHub, ela apenas se atualize no mesmo lugar
     const customMap = new Map();
     incomingQuestions.forEach(q => {
-      if (q && q.id && !deletedSet.has(q.id) && (q._edited || q.id.startsWith('q_custom_'))) {
+      if (q && q.id && !deletedSet.has(q.id) && (q._edited || q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))) {
         customMap.set(q.id, q);
       }
     });

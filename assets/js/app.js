@@ -11404,15 +11404,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const numKyu = parseInt(kyu, 10);
+        // Embaralha as alternativas para que a resposta correta não fique fixada sempre na opção A (índice 0)
+        const rawOpts = [correctAnswer, wrong1, wrong2, wrong3];
+        const shuffledOpts = [...rawOpts].sort(() => 0.5 - Math.random());
+        const correctIndex = shuffledOpts.indexOf(correctAnswer);
+
         itemsToSave.push({
-          id: `q_shotokan_${numKyu}_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          id: `q_custom_shotokan_${numKyu}_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
           kyuNumber: numKyu,
           kyu: numKyu,
           beltName: beltName,
           question: questionText,
           image: '',
-          options: [correctAnswer, wrong1, wrong2, wrong3],
-          correctIndex: 0,
+          options: shuffledOpts,
+          correctIndex: correctIndex >= 0 ? correctIndex : 0,
           source: "Estudo Especialista de Karatê Shotokan (JKA/WKF)",
           _edited: true,
           updatedAt: Date.now()
