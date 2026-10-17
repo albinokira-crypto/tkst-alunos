@@ -11308,9 +11308,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const catSelect = document.getElementById('shotokanCategorySelect');
       const category = catSelect ? catSelect.value : 'todos';
 
+      // Coletar respostas das outras perguntas abertas no modal para evitar repetições
+      const excludeAnswers = [];
+      document.querySelectorAll('[id^="shotokanCorrect_"]').forEach(el => {
+        if (el.id !== `shotokanCorrect_${idx}` && el.value && el.value.trim()) {
+          excludeAnswers.push(el.value.trim());
+        }
+      });
+
       let singleQ = null;
       if (window.TKST_SHOTOKAN_ENGINE && typeof window.TKST_SHOTOKAN_ENGINE.formulateQuestions === 'function') {
-        const pool = window.TKST_SHOTOKAN_ENGINE.formulateQuestions(kyu, { count: 1, category });
+        const pool = window.TKST_SHOTOKAN_ENGINE.formulateQuestions(kyu, { count: 1, category, excludeAnswers });
         if (pool && pool[0]) singleQ = pool[0];
       }
       if (!singleQ) return;

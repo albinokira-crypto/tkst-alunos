@@ -86,6 +86,50 @@
       .trim();
   }
 
+  // Extrai assinaturas normalizadas de uma resposta para identificar repetições mesmo com imagens ou variações de texto
+  function getAnswerSignatures(str) {
+    if (!str) return [];
+    const clean = String(str)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+    const rawAlphanum = clean.replace(/[^a-z0-9]/gi, '');
+    if (!rawAlphanum) return [];
+
+    const sigs = new Set();
+    sigs.add(rawAlphanum);
+
+    // 1. Remove prefixos e sufixos de altura (jodan, chudan, gedan)
+    // Ex: "Jodan Age Uke" -> "ageuke", "Age Uke" -> "ageuke" (colisão perfeita)
+    const noHeight = clean
+      .replace(/\b(jodan|chudan|gedan)\b/gi, '')
+      .replace(/[^a-z0-9]/gi, '')
+      .trim();
+    if (noHeight && noHeight.length >= 3) {
+      sigs.add(noHeight);
+    }
+
+    // 2. Extrai termos fora e dentro de parênteses
+    // Ex: "Fudo Dachi (Sochin Dachi)" -> "fudodachi" e "sochindachi"
+    const parenMatch = clean.match(/^([^(]+)\(([^)]+)\)/);
+    if (parenMatch) {
+      const p1 = parenMatch[1].replace(/[^a-z0-9]/gi, '').trim();
+      const p2 = parenMatch[2].replace(/[^a-z0-9]/gi, '').trim();
+      if (p1 && p1.length >= 3) sigs.add(p1);
+      if (p2 && p2.length >= 3) sigs.add(p2);
+    }
+
+    // 3. Normalização de porcentagens numéricas
+    const nums = clean.replace(/[^0-9]/g, '');
+    if (nums && nums.length >= 2) {
+      sigs.add(`pct_${nums}`);
+    }
+
+    return Array.from(sigs);
+  }
+
   // Embaralhar array (Fisher-Yates)
   function shuffle(arr) {
     const copy = [...arr];
@@ -1000,32 +1044,71 @@
       const avoidExisting = options.avoidExisting !== false;
       const profile = GRADUATION_PROFILES[targetKyu] || GRADUATION_PROFILES[6];
 
-      // 1. Obter banco de perguntas curtas
+      // 1. Obter acervo de perguntas curtas e objetivas do Shotokan
       const allShortQuestions = getShortQuestionsDatabase();
 
-      // 2. Coletar IDs / textos já existentes para não duplicar
-      const existingKeySet = new Set();
+      // 2. Pesquisa prévia na graduação selecionada (Kyu) no banco do app para nunca repetir respostas
+      const existingQuestionKeys = new Set();
+      const existingAnswerSigsInGraduation = new Set();
+
       if (avoidExisting) {
         try {
           const bank = (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function')
             ? window.TKST_AUTH.getCustomQuizBank()
             : (window.TKST_QUIZ_BANK || window.TKST_DEFAULT_QUIZ_BANK || []);
+
           if (Array.isArray(bank)) {
             bank.forEach(q => {
-              if (q && q.question) existingKeySet.add(normalizeKey(q.question));
+              if (!q) return;
+
+              // Identificar se a questão existente pertence a esta graduação
+              const qKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6));
+              const isTargetGraduation = (targetKyu === 6) ? (qKyu === 6 || qKyu === 7) : (qKyu === targetKyu);
+
+              // Evitar duplicar enunciado idêntico
+              if (q.question) {
+                existingQuestionKeys.add(normalizeKey(q.question));
+              }
+
+              // Se pertence à graduação que está sendo gerada, extrair a resposta correta
+              // (compatível com questões com imagens onde a resposta vem de options[correctIndex] e questões de texto)
+              if (isTargetGraduation) {
+                let ans = '';
+                if (typeof q.correctAnswer === 'string' && q.correctAnswer.trim()) {
+                  ans = q.correctAnswer.trim();
+                } else if (Array.isArray(q.options) && typeof q.correctIndex === 'number' && q.options[q.correctIndex]) {
+                  ans = String(q.options[q.correctIndex]).trim();
+                } else if (Array.isArray(q.options) && q.options.length > 0) {
+                  ans = String(q.options[0]).trim();
+                }
+
+                if (ans) {
+                  const sigs = getAnswerSignatures(ans);
+                  sigs.forEach(sig => existingAnswerSigsInGraduation.add(sig));
+                }
+              }
             });
           }
-        } catch (e) {}
+        } catch (e) {
+          console.warn('[ShotokanEngine] Erro na pesquisa prévia da graduação:', e);
+        }
       }
 
-      // 3. Filtrar pelo nível de Kyu compatível (a questão deve ser acessível para o nível)
-      // Se for Kyu 6, usa minKyu === 6; para faixas mais avançadas, aceita questões da própria faixa e revisões das anteriores
+      // Se opções passarem respostas a excluir (ex: troca de card único no modal sem repetir os outros cards)
+      if (Array.isArray(options.excludeAnswers)) {
+        options.excludeAnswers.forEach(ans => {
+          if (ans) {
+            const sigs = getAnswerSignatures(ans);
+            sigs.forEach(sig => existingAnswerSigsInGraduation.add(sig));
+          }
+        });
+      }
+
+      // 3. Filtrar pelo nível de Kyu compatível (acessível para a faixa)
       let candidates = allShortQuestions.filter(q => {
         if (targetKyu >= 0) {
-          // Kyus 6 a 0: aceita questões com minKyu maior ou igual ao Kyu alvo (lembrando que 6 é branca e 1 é marrom)
           return q.minKyu >= targetKyu;
         } else {
-          // Dans (-1 e -2): aceita todas as questões do acervo
           return true;
         }
       });
@@ -1038,16 +1121,73 @@
         }
       }
 
-      // 5. Filtrar não-duplicadas
-      let uniqueCandidates = candidates.filter(q => !existingKeySet.has(normalizeKey(q.question)));
-      if (uniqueCandidates.length < count) {
+      // 5. Função de teste de colisão de resposta
+      function answerCollidesWith(answerStr, sigSet) {
+        if (!answerStr) return false;
+        const candidateSigs = getAnswerSignatures(answerStr);
+        for (const sig of candidateSigs) {
+          if (sigSet.has(sig)) return true;
+        }
+        return false;
+      }
+
+      // 6. Filtrar candidatos estritamente inéditos na graduação (nem pergunta nem resposta repetida)
+      let uniqueCandidates = candidates.filter(item => {
+        if (existingQuestionKeys.has(normalizeKey(item.question))) return false;
+        if (answerCollidesWith(item.correctAnswer, existingAnswerSigsInGraduation)) return false;
+        return true;
+      });
+
+      // Se houver menos candidatos novos do que o requisitado e o filtro de categoria foi muito estreito,
+      // busca nas demais categorias da mesma faixa que não tenham resposta repetida
+      if (uniqueCandidates.length < count && categoryFilter !== 'todos') {
+        const fallbackCandidates = allShortQuestions.filter(item => {
+          const kyuOk = (targetKyu >= 0) ? (item.minKyu >= targetKyu) : true;
+          if (!kyuOk) return false;
+          if (existingQuestionKeys.has(normalizeKey(item.question))) return false;
+          if (answerCollidesWith(item.correctAnswer, existingAnswerSigsInGraduation)) return false;
+          return true;
+        });
+        if (fallbackCandidates.length > uniqueCandidates.length) {
+          uniqueCandidates = fallbackCandidates;
+        }
+      }
+
+      // Se ainda for menor que count, usa candidatos sem pergunta duplicada
+      if (uniqueCandidates.length === 0) {
+        uniqueCandidates = candidates.filter(item => !existingQuestionKeys.has(normalizeKey(item.question)));
+      }
+      if (uniqueCandidates.length === 0) {
         uniqueCandidates = candidates;
       }
 
-      // 6. Embaralhar e selecionar
-      const selected = shuffle(uniqueCandidates).slice(0, count);
+      // 7. Embaralhar e selecionar com garantia de respostas 100% únicas no lote gerado
+      const shuffledPool = shuffle(uniqueCandidates);
+      const selected = [];
+      const batchSigs = new Set(existingAnswerSigsInGraduation);
 
-      // 7. Montar as 4 alternativas curtas e calcular correctIndex
+      for (const item of shuffledPool) {
+        if (selected.length >= count) break;
+        if (!answerCollidesWith(item.correctAnswer, batchSigs)) {
+          selected.push(item);
+          const itemSigs = getAnswerSignatures(item.correctAnswer);
+          itemSigs.forEach(sig => batchSigs.add(sig));
+        }
+      }
+
+      // Se faltar algum item para fechar a quantidade e o banco de respostas inéditas se esgotou,
+      // completa com perguntas distintas
+      if (selected.length < count) {
+        for (const item of shuffledPool) {
+          if (selected.length >= count) break;
+          const alreadyInSelected = selected.some(s => normalizeKey(s.question) === normalizeKey(item.question));
+          if (!alreadyInSelected) {
+            selected.push(item);
+          }
+        }
+      }
+
+      // 8. Montar as 4 alternativas curtas e calcular correctIndex
       const now = Date.now();
       return selected.map((item, idx) => {
         // Distratores garantidos curtos (máximo 3)
