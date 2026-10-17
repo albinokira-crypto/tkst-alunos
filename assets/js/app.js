@@ -1252,8 +1252,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setupGlobalEvents() {
     function shouldSkipRerender() {
-      // NEVER interrupt if user is actively taking a quiz or if a modal is open
-      if (currentTab === 'quiz' && quizActive) return true;
+      // NEVER interrupt if user is actively taking a quiz or reviewing quiz results
+      if (currentTab === 'quiz' && (quizActive || (currentQuizQuestions && currentQuizQuestions.length > 0 && currentQuizIndex >= currentQuizQuestions.length))) return true;
       const detailModal = document.getElementById('detailModal');
       if (detailModal && detailModal.classList.contains('active')) return true;
       const videoModal = document.getElementById('videoModal');
@@ -6521,7 +6521,90 @@ document.addEventListener('DOMContentLoaded', () => {
     const quizScores = (userProgress && userProgress.quizScores) || [];
     const hasPerfectInOwnBelt = quizScores.some(s => (s.score === 10 || s.percentage === 100) && (s.beltKyu === userKyu || s.beltLevel === (user ? user.currentBelt : '')));
 
-    // 1. LEVEL SELECTOR SCREEN
+    // 1. DETAILED RESULTS SCREEN (Exibe e mantém na tela até que o aluno feche ou refaça)
+    if (currentQuizQuestions.length > 0 && currentQuizIndex >= currentQuizQuestions.length) {
+      TKST_AUDIO.stopInterstellarTrack();
+      const finalPercent = Math.round((quizScore / currentQuizQuestions.length) * 100);
+      const isPassed = finalPercent >= 70;
+      const isPerfect = quizScore === currentQuizQuestions.length;
+
+      let resultHtml = `
+        <div class="section-header" style="justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div class="section-title-group">
+            <h3><i class="fas fa-trophy" style="color: var(--accent-gold);"></i> Resultado do Simulado • ${currentQuizBelt}</h3>
+          </div>
+          <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="font-size: 0.80rem; padding: 7px 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fas fa-times-circle"></i> Fechar / Voltar aos Simulados
+          </button>
+        </div>
+
+        <div class="quiz-card" style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 3.5rem; margin-bottom: 12px;">${isPerfect ? '🥇🏆' : (isPassed ? '🥋✨' : '📚🥋')}</div>
+          <h2 style="font-family: var(--font-heading); color: #FFF; font-size: 1.8rem; margin-bottom: 8px;">
+            ${isPerfect ? 'Perfeito! 100% de Acertos (Gabaritou)!' : (isPassed ? 'Parabéns! Exame Teórico Aprovado!' : 'Continue Treinando e Estudando!')}
+          </h2>
+          <p style="color: #94A3B8; margin-bottom: 20px; font-size: 1.05rem;">
+            Você acertou <strong style="color: ${isPassed ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; font-size: 1.2rem;">${quizScore} de ${currentQuizQuestions.length} questões</strong> (${finalPercent}% de aproveitamento).
+          </p>
+
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; font-size: 0.86rem; color: #6EE7B7; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fas fa-check-double"></i> Prova gravada com sucesso no sistema.
+          </div>
+
+          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('${currentQuizKyu}', '${currentQuizBelt}')" style="padding: 10px 20px; font-weight: 700;">
+              <i class="fas fa-redo"></i> Refazer Este Simulado (Novas Perguntas)
+            </button>
+            <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="padding: 10px 20px;">
+              <i class="fas fa-list"></i> Fechar e Escolher Outro Nível
+            </button>
+          </div>
+        </div>
+
+        <!-- Detailed Breakdown of the Questions -->
+        <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 24px;">
+          <h4 style="color: #FFF; font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-list-check" style="color: var(--accent-gold);"></i> Gabarito Detalhado da sua Prova
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            ${quizSubmissionDetails.map((det, idx) => `
+              <div style="background: rgba(255,255,255,0.02); border-left: 4px solid ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; border-radius: var(--radius-sm); padding: 14px 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <strong style="color: #FFF; font-size: 0.92rem;">Questão ${idx + 1}: ${det.question}</strong>
+                  <span class="badge ${det.isCorrect ? 'badge-verde' : 'badge-vermelha'}" style="font-size: 0.72rem;">
+                    ${det.isCorrect ? '✓ Acertou' : '✗ Errou'}
+                  </span>
+                </div>
+                ${det.image ? `
+                  <div style="margin: 6px 0 10px 0;">
+                    <img src="${det.image}" alt="Ilustração" style="max-height: 120px; max-width: 100%; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${det.image}')" title="Clique para ampliar">
+                  </div>
+                ` : ''}
+                <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">
+                  Sua resposta: <strong style="color: ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">${det.selectedText}</strong>
+                </div>
+                ${!det.isCorrect ? `
+                  <div style="font-size: 0.84rem; color: #6EE7B7;">
+                    Resposta correta: <strong>${det.correctText}</strong>
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+
+          <div style="display: flex; justify-content: center; margin-top: 24px;">
+            <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="padding: 10px 24px; font-weight: 700;">
+              <i class="fas fa-check"></i> Fechar Gabarito / Concluir
+            </button>
+          </div>
+        </div>
+      `;
+      mainContent.innerHTML = resultHtml;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // 2. LEVEL SELECTOR SCREEN
     if (!quizActive) {
       const quizLevels = [
         { kyu: 7, name: "Faixa Branca", kyuLabel: "7º Kyu", color: "#FFFFFF" },
@@ -6633,99 +6716,26 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 2. DETAILED RESULTS SCREEN
-    if (currentQuizIndex >= currentQuizQuestions.length) {
-      TKST_AUDIO.stopInterstellarTrack();
-      const finalPercent = Math.round((quizScore / currentQuizQuestions.length) * 100);
-      const isPassed = finalPercent >= 70;
-      const isPerfect = quizScore === currentQuizQuestions.length;
-
-      let resultHtml = `
-        <div class="section-header" style="justify-content: center; text-align: center; margin-bottom: 20px;">
-          <div class="section-title-group">
-            <h3><i class="fas fa-trophy" style="color: var(--accent-gold);"></i> Resultado do Simulado • ${currentQuizBelt}</h3>
-          </div>
-        </div>
-
-        <div class="quiz-card" style="text-align: center; margin-bottom: 24px;">
-          <div style="font-size: 3.5rem; margin-bottom: 12px;">${isPerfect ? '🥇🏆' : (isPassed ? '🥋✨' : '📚🥋')}</div>
-          <h2 style="font-family: var(--font-heading); color: #FFF; font-size: 1.8rem; margin-bottom: 8px;">
-            ${isPerfect ? 'Perfeito! 100% de Acertos (Gabaritou)!' : (isPassed ? 'Parabéns! Exame Teórico Aprovado!' : 'Continue Treinando e Estudando!')}
-          </h2>
-          <p style="color: #94A3B8; margin-bottom: 20px; font-size: 1.05rem;">
-            Você acertou <strong style="color: ${isPassed ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; font-size: 1.2rem;">${quizScore} de ${currentQuizQuestions.length} questões</strong> (${finalPercent}% de aproveitamento).
-          </p>
-
-          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; font-size: 0.86rem; color: #6EE7B7; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <i class="fas fa-check-double"></i> Prova gravada com sucesso no sistema.
-          </div>
-
-          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="window.TKST_APP.startQuizLevel('${currentQuizKyu}', '${currentQuizBelt}')" style="padding: 10px 20px; font-weight: 700;">
-              <i class="fas fa-redo"></i> Refazer Este Simulado (Novas Perguntas)
-            </button>
-            <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="padding: 10px 20px;">
-              <i class="fas fa-list"></i> Escolher Outro Nível
-            </button>
-          </div>
-        </div>
-
-        <!-- Detailed Breakdown of the Questions -->
-        <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 24px;">
-          <h4 style="color: #FFF; font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-list-check" style="color: var(--accent-gold);"></i> Gabarito Detalhado da sua Prova
-          </h4>
-          <div style="display: flex; flex-direction: column; gap: 14px;">
-            ${quizSubmissionDetails.map((det, idx) => `
-              <div style="background: rgba(255,255,255,0.02); border-left: 4px solid ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; border-radius: var(--radius-sm); padding: 14px 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <strong style="color: #FFF; font-size: 0.92rem;">Questão ${idx + 1}: ${det.question}</strong>
-                  <span class="badge ${det.isCorrect ? 'badge-verde' : 'badge-vermelha'}" style="font-size: 0.72rem;">
-                    ${det.isCorrect ? '✓ Acertou' : '✗ Errou'}
-                  </span>
-                </div>
-                ${det.image ? `
-                  <div style="margin: 6px 0 10px 0;">
-                    <img src="${det.image}" alt="Ilustração" style="max-height: 120px; max-width: 100%; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${det.image}')" title="Clique para ampliar">
-                  </div>
-                ` : ''}
-                <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">
-                  Sua resposta: <strong style="color: ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">${det.selectedText}</strong>
-                </div>
-                ${!det.isCorrect ? `
-                  <div style="font-size: 0.84rem; color: #6EE7B7;">
-                    Resposta correta: <strong>${det.correctText}</strong>
-                  </div>
-                ` : ''}
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      mainContent.innerHTML = resultHtml;
-      return;
-    }
-
-    // 3. ACTIVE QUIZ QUESTION SCREEN
+    // 3. ACTIVE QUIZ QUESTION SCREEN (Otimizado para caber 100% na tela sem rolagem)
     const q = currentQuizQuestions[currentQuizIndex];
 
     let html = `
-      <div class="section-header" style="justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+      <div class="section-header" style="justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
         <div class="section-title-group">
-          <h3><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulado • ${currentQuizBelt}</h3>
+          <h3 style="font-size: 1.02rem; margin: 0;"><i class="fas fa-brain" style="color: var(--accent-gold);"></i> Simulado • ${currentQuizBelt}</h3>
         </div>
-        <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="font-size: 0.78rem; padding: 6px 12px;">
+        <button class="btn btn-secondary" onclick="window.TKST_APP.exitQuiz()" style="font-size: 0.72rem; padding: 4px 10px;">
           <i class="fas fa-times"></i> Cancelar / Trocar Nível
         </button>
       </div>
 
-      <div class="quiz-card">
-        <!-- Temporizador Visual de 15 Segundos por Questão com Controle de Som -->
+      <div class="quiz-card active-quiz">
+        <!-- Temporizador Visual de 20 Segundos por Questão com Controle de Som -->
         <div class="quiz-timer-container">
           <div class="quiz-timer-header">
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
               <span><i class="fas fa-stopwatch" style="color: var(--accent-gold); margin-right: 4px;"></i> Tempo:</span>
-              <span id="quizTimerBadge" class="quiz-timer-badge">15s</span>
+              <span id="quizTimerBadge" class="quiz-timer-badge">20s</span>
             </div>
             <button id="quizSoundToggleBtn" class="quiz-sound-toggle ${TKST_AUDIO.isMuted ? 'muted' : ''}" onclick="window.TKST_APP.toggleQuizSound()" title="${TKST_AUDIO.isMuted ? 'Ativar Som do Simulado' : 'Silenciar Som do Simulado'}">
               <i class="fas ${TKST_AUDIO.isMuted ? 'fa-volume-mute' : 'fa-volume-up'}"></i>
@@ -6736,34 +6746,37 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <div class="quiz-question-header">
-          <span class="badge badge-amarela">${currentQuizBelt}</span>
-          <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">Questão ${currentQuizIndex + 1} de ${currentQuizQuestions.length}</span>
+        <div class="quiz-question-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="badge badge-amarela" style="font-size: 0.68rem; padding: 2px 7px;">${currentQuizBelt}</span>
+          <span style="font-size: 0.80rem; color: #94A3B8; font-weight: 600;">Questão ${currentQuizIndex + 1} de ${currentQuizQuestions.length}</span>
         </div>
 
         <div class="quiz-question-text">${q.question}</div>
 
         ${q.image ? `
-          <div style="text-align: center; margin: 14px 0 18px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 10px;">
-            <img src="${q.image}" alt="Ilustração da Questão" style="max-height: 250px; max-width: 100%; object-fit: contain; border-radius: var(--radius-sm); box-shadow: 0 4px 14px rgba(0,0,0,0.4); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${q.image}')" title="Clique para ampliar imagem">
+          <div class="quiz-image-box" style="text-align: center; margin: 4px 0 6px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px; display: flex; align-items: center; justify-content: center; position: relative;">
+            <img src="${q.image}" alt="Ilustração da Questão" style="max-height: 95px; max-width: 100%; object-fit: contain; border-radius: 3px; cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${q.image}')" title="Clique para ampliar">
+            <span style="position: absolute; right: 6px; bottom: 4px; font-size: 0.62rem; color: #94A3B8; background: rgba(0,0,0,0.65); padding: 1px 5px; border-radius: 3px; pointer-events: none;">
+              <i class="fas fa-search-plus"></i> Ampliar
+            </span>
           </div>
         ` : ''}
 
         <div class="quiz-options-list">
           ${q.options.map((opt, idx) => `
             <button class="quiz-option-btn" id="quizOpt_${idx}" onclick="window.TKST_APP.answerQuiz(${idx})">
-              <span style="width: 28px; height: 28px; border-radius: var(--radius-full); background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; flex-shrink: 0;">
+              <span style="width: 24px; height: 24px; border-radius: var(--radius-full); background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.76rem; flex-shrink: 0;">
                 ${['A', 'B', 'C', 'D'][idx]}
               </span>
-              <span>${opt}</span>
+              <span style="line-height: 1.3;">${opt}</span>
             </button>
           `).join('')}
         </div>
 
         <div id="quizFeedbackArea"></div>
 
-        <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
-          <button id="quizNextBtn" class="btn btn-primary" style="display: none;" onclick="window.TKST_APP.nextQuizQuestion()">
+        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+          <button id="quizNextBtn" class="btn btn-primary" style="display: none; padding: 6px 14px; font-size: 0.82rem;" onclick="window.TKST_APP.nextQuizQuestion()">
             ${currentQuizIndex + 1 === currentQuizQuestions.length ? 'Finalizar Prova <i class="fas fa-check-circle"></i>' : 'Próxima Questão <i class="fas fa-arrow-right"></i>'}
           </button>
         </div>
@@ -6772,7 +6785,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     mainContent.innerHTML = html;
 
-    // Inicia o temporizador oficial de 15 segundos da questão
+    // Inicia o temporizador oficial de 20 segundos da questão
     startQuizTimer();
   }
 
@@ -6781,12 +6794,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (quizAutoAdvanceTimeout) clearTimeout(quizAutoAdvanceTimeout);
 
     const timerStartTime = Date.now();
-    const totalDuration = 15000; // 15 segundos
+    const totalDuration = 20000; // 20 segundos
 
     const timerBadge = document.getElementById('quizTimerBadge');
     const timerBar = document.getElementById('quizTimerBar');
 
-    // Dispara a trilha oficial de 15 segundos de Hans Zimmer (Tick-Tock) a partir de 2:08
+    // Dispara a trilha oficial de 20 segundos de Hans Zimmer (Tick-Tock) a partir de 2:08
     TKST_AUDIO.playInterstellarTrack();
 
     let lastTickSec = -1;
@@ -6806,15 +6819,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (remainingSec !== lastTickSec && remainingSec > 0) {
         lastTickSec = remainingSec;
         if (!TKST_AUDIO.interstellarAudio || TKST_AUDIO.interstellarAudio.paused) {
-          TKST_AUDIO.playInterstellarTick(remainingSec <= 4);
+          TKST_AUDIO.playInterstellarTick(remainingSec <= 5);
         }
       }
 
       if (timerBadge) {
         timerBadge.textContent = `${remainingSec}s`;
-        if (remainingSec <= 4) {
+        if (remainingSec <= 5) {
           timerBadge.className = 'quiz-timer-badge critical';
-        } else if (remainingSec <= 8) {
+        } else if (remainingSec <= 10) {
           timerBadge.className = 'quiz-timer-badge warning';
         } else {
           timerBadge.className = 'quiz-timer-badge';
@@ -6842,7 +6855,7 @@ document.addEventListener('DOMContentLoaded', () => {
       image: q.image || '',
       options: q.options,
       selectedIndex: -1,
-      selectedText: 'Tempo Esgotado (15s)',
+      selectedText: 'Tempo Esgotado (20s)',
       correctIndex: q.correctIndex,
       correctText: q.options[q.correctIndex],
       isCorrect: false
@@ -6868,7 +6881,7 @@ document.addEventListener('DOMContentLoaded', () => {
       feedbackArea.innerHTML = `
         <div class="quiz-feedback-box" style="border-left: 4px solid var(--accent-crimson);">
           <div style="font-weight: 600; color: #FF808A; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
-            <i class="fas fa-hourglass-end"></i> Tempo Esgotado (15s) — Resposta não computada a tempo.
+            <i class="fas fa-hourglass-end"></i> Tempo Esgotado (20s) — Resposta não computada a tempo.
           </div>
           <div style="color: #94A3B8; font-size: 0.78rem; margin-top: 4px;">
             <i class="fas fa-forward"></i> Avançando para a próxima questão...
