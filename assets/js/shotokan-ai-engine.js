@@ -130,6 +130,114 @@
     return Array.from(sigs);
   }
 
+  // Extrai chave conceitual semântica para impedir perguntas que perguntem a mesma coisa com frases diferentes
+  function getQuestionConceptKey(qText, ansText) {
+    if (!qText && !ansText) return '';
+    const qClean = String(qText || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    
+    const aClean = String(ansText || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+    // 1. Identificar o Kata em questão
+    let kata = '';
+    if (qClean.includes('heian shodan') || aClean.includes('heian shodan')) kata = 'heianshodan';
+    else if (qClean.includes('heian nidan') || aClean.includes('heian nidan')) kata = 'heiannidan';
+    else if (qClean.includes('heian sandan') || aClean.includes('heian sandan')) kata = 'heiansandan';
+    else if (qClean.includes('heian yondan') || aClean.includes('heian yondan')) kata = 'heianyondan';
+    else if (qClean.includes('heian godan') || aClean.includes('heian godan')) kata = 'heiangodan';
+    else if (qClean.includes('tekki shodan') || aClean.includes('tekki shodan')) kata = 'tekkishodan';
+    else if (qClean.includes('bassai dai') || aClean.includes('bassaidai')) kata = 'bassaidai';
+    else if (qClean.includes('kanku dai') || aClean.includes('kankudai')) kata = 'kankudai';
+    else if (qClean.includes('empi')) kata = 'empi';
+    else if (qClean.includes('jion')) kata = 'jion';
+    else if (qClean.includes('hangetsu')) kata = 'hangetsu';
+    else if (qClean.includes('gankaku')) kata = 'gankaku';
+    else if (qClean.includes('sochin')) kata = 'sochin';
+    else if (qClean.includes('heian')) kata = 'heian';
+
+    // 2. Se for sobre um Kata, determinar o conceito específico
+    if (kata) {
+      if (qClean.includes('movimento') || qClean.includes('passo') || aClean.includes('movimento')) {
+        if (qClean.includes('quantos') || qClean.includes('total') || qClean.includes('numero') || qClean.includes('compoem') || qClean.includes('tem o kata') || (aClean.includes('movimento') && /\d+/.test(aClean))) {
+          return `kata_moves_${kata}`;
+        }
+      }
+      if (qClean.includes('kiai') || qClean.includes('kiais') || aClean.includes('passos 8') || aClean.includes('passos 10') || aClean.includes('passos 12') || aClean.includes('passos 13') || aClean.includes('passos 15') || aClean.includes('passos 19')) {
+        return `kata_kiai_${kata}`;
+      }
+      if (qClean.includes('significado') || qClean.includes('traducao') || qClean.includes('quer dizer') || qClean.includes('palavra') || aClean.includes('mente em paz') || aClean.includes('romper a fortaleza') || aClean.includes('olhar para o ceu') || aClean.includes('cavaleiro de ferro') || aClean.includes('voo da andorinha')) {
+        return `kata_meaning_${kata}`;
+      }
+      if (qClean.includes('primeiro movimento') || qClean.includes('abre e finaliza') || qClean.includes('movimento inicial') || qClean.includes('abertura') || qClean.includes('defesa inicial') || qClean.includes('inicia o kata') || qClean.includes('se inicia')) {
+        return `kata_opening_${kata}`;
+      }
+      if (qClean.includes('finaliza') || qClean.includes('ultimo movimento') || qClean.includes('movimento final') || qClean.includes('encerra')) {
+        return `kata_final_${kata}`;
+      }
+      if (qClean.includes('embusen') || qClean.includes('tracado') || qClean.includes('formato')) {
+        return `kata_embusen_${kata}`;
+      }
+      if (qClean.includes('criador') || qClean.includes('mestre') || qClean.includes('itotsu') || qClean.includes('itosu') || qClean.includes('funakoshi')) {
+        return `kata_master_${kata}`;
+      }
+      if (qClean.includes('base') || qClean.includes('postura')) {
+        return `kata_stance_${kata}_${aClean.replace(/[^a-z0-9]/g, '')}`;
+      }
+    }
+
+    // 3. Kata ou kumite oficial exigido para o exame de determinada faixa / Kyu
+    const kyuMatch = qClean.match(/([1-7])(?:º|o)?\s*kyu/);
+    if (kyuMatch && (qClean.includes('kata oficial') || qClean.includes('qual e o kata') || qClean.includes('qual kata'))) {
+      return `exam_kata_kyu${kyuMatch[1]}`;
+    }
+    if (kyuMatch && (qClean.includes('kumite') || qClean.includes('combate'))) {
+      return `exam_kumite_kyu${kyuMatch[1]}`;
+    }
+
+    // 4. Conceitos de Bases (distribuição de peso / postura)
+    const stances = ['zenkutsu dachi', 'kokutsu dachi', 'kiba dachi', 'fudo dachi', 'neko ashi dachi', 'sanchin dachi', 'kosa dachi', 'hangetsu dachi', 'tsuruashi dachi', 'heisoku dachi', 'musubi dachi', 'hachiji dachi', 'heiko dachi'];
+    for (const st of stances) {
+      if (qClean.includes(st) || aClean.includes(st)) {
+        const stKey = st.replace(/\s+/g, '');
+        if (qClean.includes('distribuicao de peso') || qClean.includes('peso') || aClean.includes('%')) {
+          return `stance_weight_${stKey}`;
+        }
+        if (qClean.includes('qual e a base') || qClean.includes('qual base') || qClean.includes('nome da base')) {
+          return `stance_identity_${stKey}`;
+        }
+      }
+    }
+
+    // 5. Conceitos de Kumite (passos / definição)
+    if (qClean.includes('gohon kumite') || aClean.includes('gohon kumite')) {
+      if (qClean.includes('quantos passos') || aClean.includes('5 passos')) return 'kumite_steps_gohon';
+      return 'kumite_gohon';
+    }
+    if (qClean.includes('sanbon kumite') || aClean.includes('sanbon kumite')) {
+      if (qClean.includes('quantos passos') || aClean.includes('3 passos')) return 'kumite_steps_sanbon';
+      return 'kumite_sanbon';
+    }
+    if (qClean.includes('kihon ippon') || aClean.includes('kihon ippon')) {
+      if (qClean.includes('quantos passos') || aClean.includes('1 passo')) return 'kumite_steps_kihonippon';
+      return 'kumite_kihonippon';
+    }
+    if (qClean.includes('jiyu ippon') || aClean.includes('jiyu ippon')) return 'kumite_jiyuippon';
+    if (qClean.includes('jiyu kumite') || aClean.includes('jiyu kumite')) return 'kumite_jiyukumite';
+
+    // 6. Resposta limpa como conceito de colisão (ex: "Jodan Age Uke", "Awase Tsuki")
+    const ansKey = aClean.replace(/[^a-z0-9]/g, '');
+    if (ansKey && ansKey.length >= 4) {
+      return `ans_${ansKey}`;
+    }
+
+    return '';
+  }
+
   // Embaralhar array (Fisher-Yates)
   function shuffle(arr) {
     const copy = [...arr];
@@ -555,169 +663,95 @@
       },
 
       // ---------------------------------------------------------------------
-      // KATAS DO SHOTOKAN - RESPOSTAS CURTAS (COM GRADUAÇÃO EXATA)
+      // KATAS DO SHOTOKAN - CONCEITOS E HISTÓRIA (RESPOSTAS CURTAS)
       // ---------------------------------------------------------------------
       {
-        topic: "Kata Heian Shodan",
+        topic: "Fundamentos de Kata",
         category: "katas",
-        exactKyu: 6,
         minKyu: 6,
-        question: "Quantos movimentos tem o Kata Heian Shodan?",
-        correctAnswer: "21 movimentos",
-        distractors: ["26 movimentos", "20 movimentos", "27 movimentos"]
+        question: "Qual é a tradução literal da palavra japonesa 'Kata'?",
+        correctAnswer: "Forma ou modelo",
+        distractors: ["Luta livre", "Chute e soco", "Graduação marcial"]
       },
       {
-        topic: "Kata Heian Shodan",
+        topic: "Fundamentos de Kata",
         category: "katas",
-        exactKyu: 6,
         minKyu: 6,
-        question: "Em quais movimentos ocorrem os Kiais no Heian Shodan?",
-        correctAnswer: "Passos 8 e 16",
-        distractors: ["Passos 10 e 20", "Passos 8 e 26", "Passos 12 e 19"]
+        question: "O que significa o termo marcial 'Bunkai' associado aos Katas?",
+        correctAnswer: "Aplicação prática das técnicas",
+        distractors: ["Aquecimento prévio", "Saudação ao mestre", "Sequência rápida"]
       },
       {
-        topic: "Kata Heian Nidan",
+        topic: "Fundamentos de Kata",
         category: "katas",
-        exactKyu: 5,
-        minKyu: 5,
-        question: "Quantos movimentos tem o Kata Heian Nidan?",
-        correctAnswer: "26 movimentos",
-        distractors: ["21 movimentos", "20 movimentos", "27 movimentos"]
+        minKyu: 6,
+        question: "O que define a palavra 'Embusen' no estudo dos Katas?",
+        correctAnswer: "Linha de atuação no solo",
+        distractors: ["Grito com energia", "Base do cavalo", "Roupa de treino"]
       },
       {
-        topic: "Kata Heian Nidan",
+        topic: "História do Karatê",
         category: "katas",
-        exactKyu: 5,
-        minKyu: 5,
-        question: "Em quais movimentos ocorrem os Kiais no Heian Nidan?",
-        correctAnswer: "Passos 8 e 26",
-        distractors: ["Passos 8 e 16", "Passos 10 e 20", "Passos 13 e 25"]
+        minKyu: 6,
+        question: "Qual grande mestre é reverenciado como o fundador do Karatê Shotokan moderno?",
+        correctAnswer: "Mestre Gichin Funakoshi",
+        distractors: ["Mestre Mas Oyama", "Mestre Morihei Ueshiba", "Mestre Jigoro Kano"]
       },
       {
-        topic: "Kata Heian Sandan",
+        topic: "História dos Katas",
         category: "katas",
-        exactKyu: 4,
-        minKyu: 4,
-        question: "Quantos movimentos tem o Kata Heian Sandan?",
-        correctAnswer: "20 movimentos",
-        distractors: ["21 movimentos", "26 movimentos", "27 movimentos"]
+        minKyu: 6,
+        question: "Qual mestre de Okinawa sintetizou os 5 Katas Heian para o ensino escolar?",
+        correctAnswer: "Mestre Anko Itosu",
+        distractors: ["Mestre Hironori Otsuka", "Mestre Kenwa Mabuni", "Mestre Choki Motobu"]
       },
       {
-        topic: "Kata Heian Sandan",
+        topic: "Estrutura dos Katas",
         category: "katas",
-        exactKyu: 4,
-        minKyu: 4,
-        question: "Em quais movimentos ocorrem os Kiais no Heian Sandan?",
-        correctAnswer: "Passos 10 e 20",
-        distractors: ["Passos 8 e 16", "Passos 8 e 26", "Passos 12 e 19"]
+        minKyu: 6,
+        question: "Quantos Katas compõem a série introdutória Heian no Shotokan?",
+        correctAnswer: "5 Katas",
+        distractors: ["3 Katas", "7 Katas", "10 Katas"]
       },
       {
-        topic: "Kata Heian Yondan",
+        topic: "Currículo Shotokan",
         category: "katas",
-        exactKyu: 3,
-        minKyu: 3,
-        question: "Quantos movimentos tem o Kata Heian Yondan?",
-        correctAnswer: "27 movimentos",
-        distractors: ["26 movimentos", "21 movimentos", "23 movimentos"]
-      },
-      {
-        topic: "Kata Heian Yondan",
-        category: "katas",
-        exactKyu: 3,
-        minKyu: 3,
-        question: "Em quais movimentos ocorrem os Kiais no Heian Yondan?",
-        correctAnswer: "Passos 13 e 25",
-        distractors: ["Passos 8 e 16", "Passos 10 e 20", "Passos 12 e 19"]
-      },
-      {
-        topic: "Kata Heian Godan",
-        category: "katas",
-        exactKyu: 2,
-        minKyu: 2,
-        question: "Quantos movimentos tem o Kata Heian Godan?",
-        correctAnswer: "23 movimentos",
-        distractors: ["21 movimentos", "27 movimentos", "29 movimentos"]
-      },
-      {
-        topic: "Kata Heian Godan",
-        category: "katas",
-        exactKyu: 2,
-        minKyu: 2,
-        question: "Em quais movimentos ocorrem os Kiais no Heian Godan?",
-        correctAnswer: "Passos 12 e 19",
-        distractors: ["Passos 8 e 16", "Passos 10 e 20", "Passos 13 e 25"]
-      },
-      {
-        topic: "Kata Tekki Shodan",
-        category: "katas",
-        exactKyu: 1,
-        minKyu: 1,
-        question: "Quantos movimentos tem o Kata Tekki Shodan?",
-        correctAnswer: "29 movimentos",
-        distractors: ["21 movimentos", "26 movimentos", "42 movimentos"]
-      },
-      {
-        topic: "Kata Tekki Shodan",
-        category: "katas",
-        exactKyu: 1,
-        minKyu: 1,
-        question: "Qual base é mantida do início ao fim no Kata Tekki Shodan?",
-        correctAnswer: "Kiba Dachi",
-        distractors: ["Zenkutsu Dachi", "Kokutsu Dachi", "Neko Ashi Dachi"]
-      },
-      {
-        topic: "Kata Bassai Dai",
-        category: "katas",
-        exactKyu: 0,
         minKyu: 0,
-        question: "Quantos movimentos tem o Kata Bassai Dai?",
-        correctAnswer: "42 movimentos",
-        distractors: ["65 movimentos", "29 movimentos", "37 movimentos"]
-      },
-      {
-        topic: "Kata Bassai Dai",
-        category: "katas",
-        exactKyu: 0,
-        minKyu: 0,
-        question: "Qual é a tradução do nome do Kata Bassai Dai?",
-        correctAnswer: "Romper a Fortaleza",
-        distractors: ["Mente em Paz", "Olhar o Céu", "Cavaleiro de Ferro"]
+        question: "Quantos Katas oficiais compõem a lista completa tradicional da JKA Shotokan?",
+        correctAnswer: "26 Katas",
+        distractors: ["15 Katas", "32 Katas", "50 Katas"]
       },
       {
         topic: "Kata Kanku Dai",
         category: "katas",
-        exactKyu: 0,
         minKyu: 0,
-        question: "Qual é o significado do nome do Kata Kanku Dai?",
-        correctAnswer: "Olhar para o Céu",
-        distractors: ["Romper a Fortaleza", "Mente em Paz", "Voo da Andorinha"]
+        question: "Qual é o Kata mais longo do Karatê Shotokan tradicional, com 65 movimentos?",
+        correctAnswer: "Kanku Dai",
+        distractors: ["Bassai Dai", "Gojushiho Dai", "Nijushiho"]
       },
       {
-        topic: "Kata Kanku Dai",
+        topic: "Kata Jion",
         category: "katas",
-        exactKyu: 0,
         minKyu: 0,
-        question: "Quantos movimentos tem o Kata Kanku Dai?",
-        correctAnswer: "65 movimentos",
-        distractors: ["42 movimentos", "47 movimentos", "37 movimentos"]
+        question: "Qual é a tradução/origem espiritual do nome do Kata clássico Jion?",
+        correctAnswer: "Amor e Gratidão (Templo Jion)",
+        distractors: ["Romper a Fortaleza", "Voo da Andorinha", "Olhar o Céu"]
       },
       {
-        topic: "Kata Heian",
+        topic: "Kata Hangetsu",
         category: "katas",
-        exactKyu: 6,
-        minKyu: 6,
-        question: "Qual é o significado da palavra 'Heian' dos primeiros 5 katas?",
-        correctAnswer: "Mente em Paz",
-        distractors: ["Cavaleiro de Ferro", "Olhar o Céu", "Romper a Fortaleza"]
+        minKyu: -1,
+        question: "Qual é a tradução do nome do Kata Hangetsu, focado na respiração e base circular?",
+        correctAnswer: "Meia Lua",
+        distractors: ["Sol Nascente", "Estrela Brilhante", "Voo Noturno"]
       },
       {
-        topic: "Kata Empi",
+        topic: "Kata Gankaku",
         category: "katas",
-        exactKyu: 0,
-        minKyu: 0,
-        question: "Qual é a tradução do nome do Kata Empi?",
-        correctAnswer: "Voo da Andorinha",
-        distractors: ["Olhar o Céu", "Mãos nas Nuvens", "Meia Lua"]
+        minKyu: -1,
+        question: "Qual é a tradução do nome do Kata Gankaku, marcado pelo equilíbrio em uma perna?",
+        correctAnswer: "Garça na Rocha",
+        distractors: ["Tigre na Selva", "Dragão Voador", "Águia Dourada"]
       },
 
       // ---------------------------------------------------------------------
@@ -1106,6 +1140,62 @@
           distractors: ["Jodan Age Uke", "Chudan Soto Uke", "Chudan Shuto Uke"]
         },
         {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 6,
+          question: "Em qual base é executado o primeiro movimento (Gedan Barai à esquerda) do Heian Shodan?",
+          correctAnswer: "Zenkutsu Dachi",
+          distractors: ["Kokutsu Dachi", "Kiba Dachi", "Heiko Dachi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 6,
+          question: "Qual defesa ascendente é executada três vezes em avanço com Kiai no Heian Shodan?",
+          correctAnswer: "Jodan Age Uke",
+          distractors: ["Gedan Barai", "Chudan Uchi Uke", "Chudan Shuto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 6,
+          question: "Qual ataque com soco direto é desferido nos passos 8 e 16 com Kiai no Heian Shodan?",
+          correctAnswer: "Chudan Oi Tsuki",
+          distractors: ["Chudan Gyaku Tsuki", "Jodan Oi Tsuki", "Chudan Nukite"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 6,
+          question: "Qual defesa com a faca da mão encerra a sequência final do Heian Shodan?",
+          correctAnswer: "Chudan Shuto Uke",
+          distractors: ["Gedan Barai", "Jodan Age Uke", "Chudan Soto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 6,
+          question: "Em qual base são executadas as quatro defesas Shuto Uke no final do Heian Shodan?",
+          correctAnswer: "Kokutsu Dachi",
+          distractors: ["Zenkutsu Dachi", "Kiba Dachi", "Neko Ashi Dachi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 6,
+          question: "Qual é o significado da palavra 'Heian' dos primeiros 5 katas?",
+          correctAnswer: "Mente em Paz",
+          distractors: ["Cavaleiro de Ferro", "Olhar o Céu", "Romper a Fortaleza"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 6,
+          question: "Qual é o formato do traçado no solo (Embusen) desenhado durante o Heian Shodan?",
+          correctAnswer: "Formato em H (ou I maiúsculo)",
+          distractors: ["Linha reta horizontal", "Círculo fechado", "Triângulo equilátero"]
+        },
+        {
           topic: "Plano de Estudos • Kumite",
           category: "kumite",
           exactKyu: 6,
@@ -1181,6 +1271,70 @@
           distractors: ["Chudan Gyaku Tsuki", "Jodan Uraken Uchi", "Chudan Empi Uchi"]
         },
         {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 5,
+          question: "Qual postura e defesa dupla abre o primeiro movimento do Kata Heian Nidan?",
+          correctAnswer: "Haiwan Morote Jodan Uke",
+          distractors: ["Gedan Barai", "Chudan Soto Uke", "Jodan Age Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 5,
+          question: "Ao contrário do Heian Shodan, em qual base o Heian Nidan se inicia logo no primeiro passo?",
+          correctAnswer: "Kokutsu Dachi",
+          distractors: ["Zenkutsu Dachi", "Kiba Dachi", "Neko Ashi Dachi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 5,
+          question: "Qual chute lateral com estalo é desferido junto com Uraken Uchi no Heian Nidan?",
+          correctAnswer: "Yoko Geri Keage",
+          distractors: ["Mae Geri", "Mawashi Geri", "Ushiro Geri"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 5,
+          question: "No ataque Chudan Nukite do passo 8, como fica posicionada a mão esquerda de apoio?",
+          correctAnswer: "Espalmada sob o cotovelo direito (Osae Uke)",
+          distractors: ["Fechada na cintura", "Aberta na frente do rosto", "Apoiada no joelho"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 5,
+          question: "Quais defesas em Kokutsu Dachi são executadas nos passos 9 a 12 logo após o 1º Kiai?",
+          correctAnswer: "Chudan Shuto Uke",
+          distractors: ["Gedan Barai", "Jodan Age Uke", "Chudan Soto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 5,
+          question: "Qual combinação de chute frontal e soco invertido antecede o Morote Uke no Heian Nidan?",
+          correctAnswer: "Mae Geri e Gyaku Tsuki",
+          distractors: ["Yoko Geri e Oi Tsuki", "Mawashi Geri e Empi", "Mae Geri e Uraken"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 5,
+          question: "Qual defesa reforçada com antebraço em Zenkutsu Dachi antecede o giro de 180 graus no Heian Nidan?",
+          correctAnswer: "Morote Uke",
+          distractors: ["Gedan Barai", "Juji Uke", "Shuto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 5,
+          question: "Qual soco finaliza o Heian Nidan no passo 26 acompanhado de Kiai?",
+          correctAnswer: "Gyaku Tsuki em Zenkutsu Dachi",
+          distractors: ["Oi Tsuki em Kokutsu", "Uraken Uchi", "Chudan Nukite"]
+        },
+        {
           topic: "Plano de Estudos • Kumite",
           category: "kumite",
           exactKyu: 5,
@@ -1248,6 +1402,70 @@
           distractors: ["Zenkutsu Dachi", "Kokutsu Dachi", "Neko Ashi Dachi"]
         },
         {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 4,
+          question: "Qual defesa com o antebraço de dentro para fora inicia o Kata Heian Sandan?",
+          correctAnswer: "Chudan Uchi Uke",
+          distractors: ["Gedan Barai", "Jodan Age Uke", "Chudan Soto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 4,
+          question: "Após o primeiro Uchi Uke no Heian Sandan, quais defesas duplas simultâneas são executadas?",
+          correctAnswer: "Jodan Uchi Uke e Gedan Barai",
+          distractors: ["Gedan Barai e Age Uke", "Morote Uke e Shuto Uke", "Duplo Gedan Barai"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 4,
+          question: "Qual ataque direto em avanço em Zenkutsu Dachi marca o primeiro Kiai do Heian Sandan?",
+          correctAnswer: "Chudan Oi Tsuki (passo 10)",
+          distractors: ["Gyaku Tsuki", "Chudan Nukite", "Uraken Uchi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 4,
+          question: "Após o primeiro Kiai, em qual base o carateca gira colocando os punhos na cintura (Koshi Gamae)?",
+          correctAnswer: "Kiba Dachi",
+          distractors: ["Zenkutsu Dachi", "Kokutsu Dachi", "Heisoku Dachi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 4,
+          question: "Qual golpe com o cotovelo de encontro à palma da mão é executado em Kiba Dachi no Heian Sandan?",
+          correctAnswer: "Mae Empi Uchi",
+          distractors: ["Yoko Empi", "Ushiro Empi", "Mawashi Empi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 4,
+          question: "Qual golpe com o dorso do punho é lançado sobre o ombro antes de avançar no Heian Sandan?",
+          correctAnswer: "Uraken Uchi",
+          distractors: ["Tettsui Uchi", "Shuto Uchi", "Nukite"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 4,
+          question: "Qual pisada penetrante com o calcanhar antecede o golpe de cotovelo no Heian Sandan?",
+          correctAnswer: "Fumikomi",
+          distractors: ["Mae Geri", "Yoko Geri", "Nami Gaeshi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 4,
+          question: "Qual golpe encerra o Heian Sandan com o segundo Kiai em Kiba Dachi?",
+          correctAnswer: "Chudan Tsuki para trás sobre o ombro",
+          distractors: ["Gedan Barai", "Shuto Uke", "Mae Geri"]
+        },
+        {
           topic: "Plano de Estudos • Kumite",
           category: "kumite",
           exactKyu: 4,
@@ -1305,6 +1523,54 @@
           question: "Qual combinação de chutes é desferida logo após o Morote Uke no Heian Yondan?",
           correctAnswer: "Mae Geri e Yoko Geri",
           distractors: ["Mawashi Geri e Ushiro", "Tobi Geri e Kekomi", "Dois Mae Geri"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 3,
+          question: "Como é o ritmo e o movimento inicial de abertura do Kata Heian Yondan?",
+          correctAnswer: "Lento e potente em Haiwan Morote Uke",
+          distractors: ["Rápido com Kiai", "Salto duplo no ar", "Corrida lateral"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 3,
+          question: "Qual defesa cruzada baixa com antebraços (Juji Uke) aparece no Heian Yondan?",
+          correctAnswer: "Gedan Kosa Uke (Juji Uke)",
+          distractors: ["Jodan Age Uke", "Chudan Shuto Uke", "Morote Soto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 3,
+          question: "Qual golpe atinge a palma da mão no passo 13 marcando o primeiro Kiai do Heian Yondan?",
+          correctAnswer: "Mae Empi Uchi em Kiba Dachi",
+          distractors: ["Chudan Oi Tsuki", "Gyaku Tsuki", "Uraken Uchi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 3,
+          question: "Qual golpe com o joelho segurando a cabeça do oponente antecede o último Kiai no Heian Yondan?",
+          correctAnswer: "Hiza Geri",
+          distractors: ["Mae Geri", "Mawashi Geri", "Fumikomi"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 3,
+          question: "Qual técnica encerra o Heian Yondan com Kiai no passo 25?",
+          correctAnswer: "Chudan Shuto Uke duplo em avanço",
+          distractors: ["Gedan Barai", "Gyaku Tsuki", "Age Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 3,
+          question: "Qual golpe penetrante com a ponta dos dedos é desferido em avanço no Heian Yondan?",
+          correctAnswer: "Chudan Nukite",
+          distractors: ["Oi Tsuki", "Empi Uchi", "Teisho Uchi"]
         },
         {
           topic: "Plano de Estudos • Kumite",
@@ -1406,6 +1672,70 @@
           distractors: ["Bassai Dai", "Kanku Dai", "Empi"]
         },
         {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 2,
+          question: "Quantos movimentos oficiais compõem o Kata Tekki Shodan?",
+          correctAnswer: "29 movimentos",
+          distractors: ["21 movimentos", "26 movimentos", "42 movimentos"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 2,
+          question: "Em quais movimentos ocorrem os Kiais no Kata Tekki Shodan?",
+          correctAnswer: "Passos 15 e 29",
+          distractors: ["Passos 10 e 20", "Passos 12 e 19", "Passos 8 e 26"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 2,
+          question: "Qual movimento aéreo com pernas cruzadas marca o segundo Kiai no Heian Godan?",
+          correctAnswer: "Salto com Kosa Dachi e Juji Uke (passo 19)",
+          distractors: ["Salto com Mae Geri", "Salto com Mawashi", "Apenas giro no chão"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 2,
+          question: "Qual defesa em meia-lua com a sola do pé protegendo a virilha caracteriza o Tekki Shodan?",
+          correctAnswer: "Nami Gaeshi (onda que retorna)",
+          distractors: ["Fumikomi", "Mae Geri", "Ashibarai"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 2,
+          question: "Qual defesa média em Kokutsu Dachi abre o primeiro movimento do Heian Godan?",
+          correctAnswer: "Chudan Uchi Uke",
+          distractors: ["Gedan Barai", "Jodan Age Uke", "Chudan Soto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 2,
+          question: "Qual é o significado tradicional do nome do Kata Tekki?",
+          correctAnswer: "Cavaleiro de Ferro",
+          distractors: ["Mente em Paz", "Olhar o Céu", "Romper a Fortaleza"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 2,
+          question: "Qual soco em gancho seguido de postura de fluxo de água (Mizu Nagare) aparece no Heian Godan?",
+          correctAnswer: "Kagi Tsuki",
+          distractors: ["Oi Tsuki", "Gyaku Tsuki", "Yama Tsuki"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 2,
+          question: "Após aterrissar do salto no passo 19 do Heian Godan, qual defesa cruzada alta protege a cabeça?",
+          correctAnswer: "Jodan Juji Uke (Kosa Uke)",
+          distractors: ["Gedan Barai", "Morote Uke", "Shuto Uke"]
+        },
+        {
           topic: "Plano de Estudos • Kumite",
           category: "kumite",
           exactKyu: 2,
@@ -1452,9 +1782,73 @@
           topic: "Plano de Estudos • Kata",
           category: "katas",
           exactKyu: 1,
+          question: "Em quais movimentos ocorrem os Kiais no Kata Bassai Dai?",
+          correctAnswer: "Passos 19 e 42",
+          distractors: ["Passos 15 e 29", "Passos 10 e 20", "Passos 13 e 25"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 1,
+          question: "Qual é o significado tradicional da tradução do Kata Bassai Dai?",
+          correctAnswer: "Romper a Fortaleza (ou Penetrar a Fortaleza)",
+          distractors: ["Mente em Paz", "Olhar o Céu", "Cavaleiro de Ferro"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 1,
           question: "Qual Kata executado 100% na base Kiba Dachi é cobrado com aplicação prática (Bunkai) no 1º Kyu?",
           correctAnswer: "Tekki Shodan",
           distractors: ["Heian Godan", "Bassai Dai", "Jion"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 1,
+          question: "Qual é a posição das mãos no início (Yoi) do Kata Bassai Dai?",
+          correctAnswer: "Mão direita em punho envolvida pela mão esquerda aberta",
+          distractors: ["Punhos fechados na cintura", "Mãos cruzadas na frente", "Palmas voltadas para baixo"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 1,
+          question: "Qual é o primeiro movimento de avanço do Bassai Dai logo após a saudação?",
+          correctAnswer: "Salto frontal penetrante em Kosa Dachi com Morote Uke",
+          distractors: ["Passo atrás em Kokutsu", "Gedan Barai à esquerda", "Chute Mae Geri"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 1,
+          question: "Qual defesa dupla em formato de 'Montanha' (Yama Uke) é executada em Kiba Dachi no Bassai Dai?",
+          correctAnswer: "Yama Uke (defesa em U)",
+          distractors: ["Morote Uke", "Juji Uke", "Shuto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 1,
+          question: "Qual defesa circular em colher com o antebraço quebrando a pegada do adversário aparece no Bassai Dai?",
+          correctAnswer: "Sukui Uke",
+          distractors: ["Gedan Barai", "Age Uke", "Soto Uke"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 1,
+          question: "Qual técnica executada no passo 42 encerra o Kata Bassai Dai com Kiai?",
+          correctAnswer: "Chudan Shuto Uke em Kokutsu Dachi",
+          distractors: ["Chudan Oi Tsuki", "Gyaku Tsuki", "Gedan Barai"]
+        },
+        {
+          topic: "Plano de Estudos • Kata",
+          category: "katas",
+          exactKyu: 1,
+          question: "Na linhagem do Karatê Shotokan, o que significam os sufixos 'Dai' e 'Sho' dos Katas?",
+          correctAnswer: "Dai significa Maior/Grande e Sho significa Menor/Pequeno",
+          distractors: ["Dai significa Rápido e Sho Lento", "Dai significa Forte e Sho Fraco", "Dai Infantil e Sho Adulto"]
         },
         {
           topic: "Plano de Estudos • Kumite",
@@ -1636,8 +2030,9 @@
       // 2. Obter acervo de perguntas curtas e objetivas do Shotokan
       const allShortQuestions = getShortQuestionsDatabase();
 
-      // 3. Pesquisa prévia na graduação selecionada (Kyu) no banco do app para nunca repetir respostas
+      // 3. Pesquisa prévia na graduação selecionada (Kyu) no banco do app para nunca repetir respostas nem conceitos
       const existingQuestionKeys = new Set();
+      const existingConceptKeys = new Set();
       const existingAnswerSigsInGraduation = new Set();
 
       if (avoidExisting) {
@@ -1659,22 +2054,25 @@
                 existingQuestionKeys.add(normalizeKey(q.question));
               }
 
-              // Se pertence à graduação que está sendo gerada, extrair a resposta correta
-              // (compatível com questões com imagens onde a resposta vem de options[correctIndex] e questões de texto)
-              if (isTargetGraduation) {
-                let ans = '';
-                if (typeof q.correctAnswer === 'string' && q.correctAnswer.trim()) {
-                  ans = q.correctAnswer.trim();
-                } else if (Array.isArray(q.options) && typeof q.correctIndex === 'number' && q.options[q.correctIndex]) {
-                  ans = String(q.options[q.correctIndex]).trim();
-                } else if (Array.isArray(q.options) && q.options.length > 0) {
-                  ans = String(q.options[0]).trim();
-                }
+              // Extrair resposta correta da questão existente
+              let ans = '';
+              if (typeof q.correctAnswer === 'string' && q.correctAnswer.trim()) {
+                ans = q.correctAnswer.trim();
+              } else if (Array.isArray(q.options) && typeof q.correctIndex === 'number' && q.options[q.correctIndex]) {
+                ans = String(q.options[q.correctIndex]).trim();
+              } else if (Array.isArray(q.options) && q.options.length > 0) {
+                ans = String(q.options[0]).trim();
+              }
 
-                if (ans) {
-                  const sigs = getAnswerSignatures(ans);
-                  sigs.forEach(sig => existingAnswerSigsInGraduation.add(sig));
-                }
+              // Registrar chave conceitual semântica (evita variações de fraseamento da mesma pergunta)
+              if (isTargetGraduation || q.category === 'katas') {
+                const concept = getQuestionConceptKey(q.question, ans);
+                if (concept) existingConceptKeys.add(concept);
+              }
+
+              if (isTargetGraduation && ans) {
+                const sigs = getAnswerSignatures(ans);
+                sigs.forEach(sig => existingAnswerSigsInGraduation.add(sig));
               }
             });
           }
@@ -1683,12 +2081,24 @@
         }
       }
 
-      // Se opções passarem respostas a excluir (ex: troca de card único no modal sem repetir os outros cards)
+      // Se opções passarem perguntas ou respostas a excluir (ex: troca de card único no modal sem repetir os outros cards)
+      if (Array.isArray(options.excludeQuestions)) {
+        options.excludeQuestions.forEach(qText => {
+          if (qText) {
+            existingQuestionKeys.add(normalizeKey(qText));
+            const concept = getQuestionConceptKey(qText, '');
+            if (concept) existingConceptKeys.add(concept);
+          }
+        });
+      }
+
       if (Array.isArray(options.excludeAnswers)) {
         options.excludeAnswers.forEach(ans => {
           if (ans) {
             const sigs = getAnswerSignatures(ans);
             sigs.forEach(sig => existingAnswerSigsInGraduation.add(sig));
+            const concept = getQuestionConceptKey('', ans);
+            if (concept) existingConceptKeys.add(concept);
           }
         });
       }
@@ -1699,7 +2109,7 @@
       let candidates = combinedPool.filter(q => {
         // REGRA DE GRADUAÇÃO ABSOLUTA:
         // Se a questão possui exactKyu (todos os Katas, Kumites e itens do Plano de Estudos),
-        // ela DEVE bater com targetKyu! Isso impede que Katas da faixa branca caiam na faixa verde!
+        // ela DEVE bater com targetKyu! Isso impede que Katas de faixas distintas se misturem.
         if (q.exactKyu !== undefined) {
           return q.exactKyu === targetKyu;
         }
@@ -1732,15 +2142,17 @@
         return false;
       }
 
-      // 7. Filtrar candidatos estritamente inéditos na graduação (nem pergunta nem resposta repetida)
+      // 7. Filtrar candidatos estritamente inéditos na graduação (nem pergunta, nem conceito, nem resposta repetida)
       let uniqueCandidates = candidates.filter(item => {
         if (existingQuestionKeys.has(normalizeKey(item.question))) return false;
+        const concept = getQuestionConceptKey(item.question, item.correctAnswer);
+        if (concept && existingConceptKeys.has(concept)) return false;
         if (answerCollidesWith(item.correctAnswer, existingAnswerSigsInGraduation)) return false;
         return true;
       });
 
       // Se houver menos candidatos novos do que o requisitado e o filtro de categoria foi muito estreito,
-      // busca nas demais categorias da mesma faixa que não tenham resposta repetida
+      // busca nas demais categorias da mesma faixa que não tenham conceito ou resposta repetida
       if (uniqueCandidates.length < count && categoryFilter !== 'todos') {
         const fallbackCandidates = combinedPool.filter(item => {
           if (item.exactKyu !== undefined && item.exactKyu !== targetKyu) return false;
@@ -1748,6 +2160,8 @@
           const kyuOk = (targetKyu >= 0) ? ((item.minKyu !== undefined ? item.minKyu >= targetKyu : true)) : true;
           if (!kyuOk) return false;
           if (existingQuestionKeys.has(normalizeKey(item.question))) return false;
+          const concept = getQuestionConceptKey(item.question, item.correctAnswer);
+          if (concept && existingConceptKeys.has(concept)) return false;
           if (answerCollidesWith(item.correctAnswer, existingAnswerSigsInGraduation)) return false;
           return true;
         });
@@ -1756,37 +2170,63 @@
         }
       }
 
-      // Se ainda for menor que count, usa candidatos sem pergunta duplicada
+      // Se ainda for menor que count, usa apenas candidatos rigorosamente sem pergunta nem conceito duplicado
       if (uniqueCandidates.length === 0) {
-        uniqueCandidates = candidates.filter(item => !existingQuestionKeys.has(normalizeKey(item.question)));
-      }
-      if (uniqueCandidates.length === 0) {
-        uniqueCandidates = candidates;
+        uniqueCandidates = candidates.filter(item => {
+          if (existingQuestionKeys.has(normalizeKey(item.question))) return false;
+          const concept = getQuestionConceptKey(item.question, item.correctAnswer);
+          if (concept && existingConceptKeys.has(concept)) return false;
+          return true;
+        });
       }
 
-      // 8. Embaralhar e selecionar com garantia de respostas 100% únicas no lote gerado
+      // 8. Embaralhar e selecionar com garantia de respostas e conceitos 100% únicos no lote gerado
       const shuffledPool = shuffle(uniqueCandidates);
       const selected = [];
       const batchSigs = new Set(existingAnswerSigsInGraduation);
+      const batchConcepts = new Set(existingConceptKeys);
+      const batchQuestions = new Set(existingQuestionKeys);
 
       for (const item of shuffledPool) {
         if (selected.length >= count) break;
-        if (!answerCollidesWith(item.correctAnswer, batchSigs)) {
-          selected.push(item);
-          const itemSigs = getAnswerSignatures(item.correctAnswer);
-          itemSigs.forEach(sig => batchSigs.add(sig));
-        }
+        const itemKey = normalizeKey(item.question);
+        const itemConcept = getQuestionConceptKey(item.question, item.correctAnswer);
+
+        if (batchQuestions.has(itemKey)) continue;
+        if (itemConcept && batchConcepts.has(itemConcept)) continue;
+        if (answerCollidesWith(item.correctAnswer, batchSigs)) continue;
+
+        selected.push(item);
+        batchQuestions.add(itemKey);
+        if (itemConcept) batchConcepts.add(itemConcept);
+        const itemSigs = getAnswerSignatures(item.correctAnswer);
+        itemSigs.forEach(sig => batchSigs.add(sig));
       }
 
-      // Se faltar algum item para fechar a quantidade e o banco de respostas inéditas se esgotou,
-      // completa com perguntas distintas
+      // Se faltar algum item para fechar a quantidade e o filtro de categoria era específico,
+      // busca outras perguntas inéditas de outras categorias da mesma graduação sem repetir
       if (selected.length < count) {
-        for (const item of shuffledPool) {
+        const remainingPool = shuffle(combinedPool.filter(item => {
+          if (item.exactKyu !== undefined && item.exactKyu !== targetKyu) return false;
+          if ((item.category === 'katas' || item.category === 'kumite') && item.exactKyu !== targetKyu) return false;
+          const kyuOk = (targetKyu >= 0) ? ((item.minKyu !== undefined ? item.minKyu >= targetKyu : true)) : true;
+          if (!kyuOk) return false;
+          const itemKey = normalizeKey(item.question);
+          if (batchQuestions.has(itemKey)) return false;
+          const itemConcept = getQuestionConceptKey(item.question, item.correctAnswer);
+          if (itemConcept && batchConcepts.has(itemConcept)) return false;
+          if (answerCollidesWith(item.correctAnswer, batchSigs)) return false;
+          return true;
+        }));
+
+        for (const item of remainingPool) {
           if (selected.length >= count) break;
-          const alreadyInSelected = selected.some(s => normalizeKey(s.question) === normalizeKey(item.question));
-          if (!alreadyInSelected) {
-            selected.push(item);
-          }
+          selected.push(item);
+          batchQuestions.add(normalizeKey(item.question));
+          const itemConcept = getQuestionConceptKey(item.question, item.correctAnswer);
+          if (itemConcept) batchConcepts.add(itemConcept);
+          const itemSigs = getAnswerSignatures(item.correctAnswer);
+          itemSigs.forEach(sig => batchSigs.add(sig));
         }
       }
 
