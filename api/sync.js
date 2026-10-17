@@ -53,6 +53,14 @@ function writeGlossaryToTmp(data) {
   } catch (e) {}
 }
 
+let defaultQuizBank = [];
+try {
+  const quizPath = path.join(__dirname, '..', 'assets', 'data', 'quiz-questions.json');
+  if (fs.existsSync(quizPath)) {
+    defaultQuizBank = JSON.parse(fs.readFileSync(quizPath, 'utf8'));
+  }
+} catch(e) {}
+
 let inMemoryData = {
   dojos: [
     'TKST Santo Aleixo',
@@ -81,7 +89,7 @@ let inMemoryData = {
   custom_videos: {},
   progress: {},
   quiz_submissions: [],
-  custom_quiz_bank: [],
+  custom_quiz_bank: defaultQuizBank,
   custom_glossary: {},
   custom_media: [],
   custom_albums: [],

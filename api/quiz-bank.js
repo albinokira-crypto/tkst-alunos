@@ -45,6 +45,16 @@ function readBank() {
     moduleCache = tmp;
     return moduleCache;
   }
+  try {
+    const localJson = path.join(__dirname, '..', 'assets', 'data', 'quiz-questions.json');
+    if (fs.existsSync(localJson)) {
+      const parsed = JSON.parse(fs.readFileSync(localJson, 'utf8'));
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        moduleCache = parsed;
+        return moduleCache;
+      }
+    }
+  } catch(e) {}
   return null;
 }
 
