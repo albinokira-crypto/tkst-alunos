@@ -2556,11 +2556,14 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-              <button class="btn btn-gold" onclick="window.TKST_APP.openBatchSuggestQuestionsModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; color: #000; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.25);" title="Sugerir 5 questões completas em lote com gabarito baseadas no Plano de Estudos">
-                <i class="fas fa-layer-group"></i> Sugerir 5 Questões (Lote)
+              <button class="btn btn-gold" onclick="window.TKST_APP.openShotokanStudyModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 800; color: #000; box-shadow: 0 4px 14px rgba(245, 190, 0, 0.35); background: linear-gradient(135deg, #FFD166 0%, #F5BE00 100%); border: none;" title="Estudo Técnico Aprofundado de Karatê Shotokan (JKA/WKF) & Gerador Especialista de Questões com Gabarito">
+                <i class="fas fa-brain"></i> 🥋 Estudo Shotokan (Gerador IA)
+              </button>
+              <button class="btn btn-secondary" onclick="window.TKST_APP.openBatchSuggestQuestionsModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; color: #E2E8F0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2);" title="Sugerir 5 questões completas em lote com gabarito baseadas no Plano de Estudos">
+                <i class="fas fa-layer-group"></i> 5 do Plano de Estudos
               </button>
               <button class="btn btn-secondary" onclick="window.TKST_APP.openAddQuizQuestionWithSuggestion(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; background: rgba(255,183,3,0.12); border: 1px solid var(--accent-gold); color: var(--accent-gold);" title="Abrir criação individual com pergunta sugerida">
-                <i class="fas fa-lightbulb"></i> Sugerir 1 Pergunta
+                <i class="fas fa-lightbulb"></i> Sugerir 1
               </button>
               <button class="btn btn-primary" onclick="window.TKST_APP.openAddQuizQuestionModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;">
                 <i class="fas fa-plus"></i> Nova Questão
@@ -2630,7 +2633,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="badge badge-gold" style="font-weight: 800; font-size: 0.78rem;">Questão ${idx + 1}</span>
                         <span style="font-size: 0.76rem; color: #94A3B8;">ID: ${q.id}</span>
                       </div>
-                      <div style="display: flex; gap: 6px;">
+                      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openCopyTransferQuizModal('${q.id}')" style="font-size: 0.76rem; padding: 5px 11px; font-weight: 700; background: rgba(59, 130, 246, 0.16); border: 1px solid rgba(59, 130, 246, 0.45); color: #93C5FD; display: inline-flex; align-items: center; gap: 5px;" title="Copiar ou Transferir esta questão para outra graduação">
+                          <i class="fas fa-exchange-alt"></i> Copiar / Transferir
+                        </button>
                         <button class="btn btn-sm btn-primary" onclick="window.TKST_APP.openEditQuizQuestionModal('${q.id}')" style="font-size: 0.76rem; padding: 5px 12px; font-weight: 600;">
                           <i class="fas fa-edit"></i> Editar Pergunta & Resposta
                         </button>
@@ -10730,6 +10736,16 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     generateUniqueQuestionSuggestion: (kyu) => {
+      if (window.TKST_SHOTOKAN_ENGINE && typeof window.TKST_SHOTOKAN_ENGINE.formulateQuestions === 'function') {
+        try {
+          const shotokan = window.TKST_SHOTOKAN_ENGINE.formulateQuestions(kyu, { count: 1, avoidExisting: true });
+          if (shotokan && shotokan[0]) {
+            return shotokan[0];
+          }
+        } catch (e) {
+          console.warn('Nota ao formular sugestão com Shotokan Engine:', e);
+        }
+      }
       const batch = window.TKST_APP.generateBatchQuestionSuggestions(kyu, 1);
       return batch && batch[0] ? batch[0] : "Descreva a execução correta da técnica principal exigida nesta graduação:";
     },
@@ -11102,6 +11118,289 @@ document.addEventListener('DOMContentLoaded', () => {
       if (modal) modal.classList.remove('active');
 
       showToast(`🎉 ${itemsToSave.length} questões do Plano de Estudos adicionadas ao simulado da ${beltName}! Sincronizando...`, 'sync', 4500);
+      renderAdminMaster();
+    },
+
+    openShotokanStudyModal: (kyu) => {
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const beltName = getBeltNameFromKyu(kyu);
+      
+      let initialQuestions = [];
+      if (window.TKST_SHOTOKAN_ENGINE && typeof window.TKST_SHOTOKAN_ENGINE.formulateQuestions === 'function') {
+        initialQuestions = window.TKST_SHOTOKAN_ENGINE.formulateQuestions(kyu, { count: 5, category: 'todos' });
+      }
+      window._currentShotokanQuestions = initialQuestions;
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-brain" style="color: var(--accent-gold); font-size: 1.15rem;"></i>
+            <strong>Estudo Shotokan & Gerador IA (${beltName})</strong>
+          </span>
+          <span class="badge badge-gold" style="font-size: 0.70rem; font-weight: 800; white-space: nowrap;">
+            <i class="fas fa-user-shield"></i> Exclusivo Sensei / Admin
+          </span>
+        </div>
+      `;
+
+      modalBody.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Painel Superior de Configuração do Estudo -->
+          <div style="background: linear-gradient(135deg, rgba(245, 190, 0, 0.12) 0%, rgba(20, 25, 38, 0.95) 100%); border: 1px solid rgba(245, 190, 0, 0.35); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div style="font-size: 0.84rem; color: #F8FAFC;">
+                <i class="fas fa-book-reader" style="color: var(--accent-gold); margin-right: 6px;"></i>
+                O algoritmo pesquisa o acervo técnico do <strong>Karatê Shotokan tradicional (JKA / SKIF / WKF)</strong> e formula perguntas precisas com gabarito oficial para a graduação.
+              </div>
+            </div>
+
+            <!-- Controles de Foco e Quantidade -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; align-items: end;">
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 700; color: #CBD5E1; display: block; margin-bottom: 4px;">
+                  <i class="fas fa-filter" style="color: var(--accent-gold);"></i> Área Técnica de Foco:
+                </label>
+                <select id="shotokanCategorySelect" class="form-input" style="font-size: 0.82rem; padding: 6px 10px; background: rgba(11, 14, 20, 0.85); color: #FFF; border: 1px solid rgba(255, 183, 3, 0.4); width: 100%;">
+                  <option value="todos">🌐 Estudo Completo (Todas as Áreas)</option>
+                  <option value="bases">📐 Bases (Dachi Waza) & Distribuição de Peso</option>
+                  <option value="defesas">🛡️ Defesas (Uke Waza) & Trajetórias</option>
+                  <option value="socos">👊 Socos (Tsuki) & Golpes de Punho (Uchi)</option>
+                  <option value="chutes">🦵 Chutes (Geri Waza) & Armas Corporais</option>
+                  <option value="katas">📜 Katas Oficiais Shotokan (Passos, Kiais & Bunkai)</option>
+                  <option value="kumite">🥊 Kumite (Gohon, Sanbon, Ippon & WKF)</option>
+                  <option value="filosofia">⛩️ Filosofia, Dojô Kun & Mestre Funakoshi</option>
+                  <option value="terminologia">🈳 Terminologia Japonesa & Armas</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 700; color: #CBD5E1; display: block; margin-bottom: 4px;">
+                  <i class="fas fa-list-ol" style="color: var(--accent-gold);"></i> Quantidade de Questões:
+                </label>
+                <select id="shotokanCountSelect" class="form-input" style="font-size: 0.82rem; padding: 6px 10px; background: rgba(11, 14, 20, 0.85); color: #FFF; border: 1px solid rgba(255, 183, 3, 0.4); width: 100%;">
+                  <option value="5" selected>5 Questões (Rápido)</option>
+                  <option value="10">10 Questões (Exame Completo)</option>
+                  <option value="15">15 Questões (Simulado Rico)</option>
+                  <option value="20">20 Questões (Banco Aprofundado)</option>
+                </select>
+              </div>
+
+              <div>
+                <button type="button" class="btn btn-gold" onclick="window.TKST_APP.runShotokanFormulation(${kyu})" style="width: 100%; font-size: 0.82rem; padding: 8px 12px; font-weight: 800; color: #000; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <i class="fas fa-bolt"></i> Estudar & Formular Questões
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Container das Perguntas Formuladas -->
+          <div id="shotokanQuestionsContainer" style="display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
+            ${window.TKST_APP.renderShotokanQuestionCards(initialQuestions, kyu)}
+          </div>
+
+          <!-- Rodapé com Ações -->
+          <div style="display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeModal()" style="padding: 10px 16px;">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.runShotokanFormulation(${kyu})" style="padding: 10px 14px; font-weight: 700; font-size: 0.82rem; background: rgba(255, 183, 3, 0.12); border: 1px solid var(--accent-gold); color: var(--accent-gold); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 4px;">
+              <i class="fas fa-sync-alt"></i> Formular Outras Questões
+            </button>
+            <button type="button" class="btn btn-primary" onclick="window.TKST_APP.saveShotokanQuestionsToBank(${kyu})" style="flex: 1; min-width: 220px; padding: 10px 20px; font-weight: 800; font-size: 0.90rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none;">
+              <i class="fas fa-check-double"></i> Aprovar e Adicionar (<span id="shotokanCountBadge">${initialQuestions.length}</span>) ao Simulado
+            </button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    },
+
+    renderShotokanQuestionCards: (questions, kyu) => {
+      if (!questions || questions.length === 0) {
+        return `
+          <div style="padding: 30px; text-align: center; color: #94A3B8; background: rgba(0,0,0,0.25); border-radius: var(--radius-sm);">
+            <i class="fas fa-info-circle" style="font-size: 2rem; color: var(--accent-gold); margin-bottom: 8px; display: block;"></i>
+            Nenhuma questão gerada com os filtros atuais. Selecione outra área ou clique em 'Estudar & Formular Questões'.
+          </div>
+        `;
+      }
+
+      return questions.map((q, idx) => `
+        <div class="shotokan-question-card" style="background: rgba(22, 28, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.12); border-left: 4px solid var(--accent-gold); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 0;">
+              <input type="checkbox" id="shotokanCheck_${idx}" checked onchange="window.TKST_APP.updateShotokanSelectedCount()" style="width: 16px; height: 16px; accent-color: var(--accent-gold); cursor: pointer;">
+              <strong style="color: #FFF; font-size: 0.88rem;">Questão Shotokan #${idx + 1}</strong>
+            </label>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <span id="shotokanTopic_${idx}" class="badge" style="background: rgba(255,183,3,0.15); border: 1px solid rgba(255,183,3,0.4); color: var(--accent-gold); font-size: 0.70rem; font-weight: 700;">
+                ${q.topic || 'Shotokan'}
+              </span>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.reformulateSingleShotokanQuestion(${idx}, ${kyu})" style="font-size: 0.68rem; padding: 2px 7px; color: #CBD5E1; background: rgba(255,255,255,0.08);" title="Gerar outra pergunta para este card">
+                <i class="fas fa-random"></i> Trocar
+              </button>
+            </div>
+          </div>
+
+          <!-- Enunciado -->
+          <div>
+            <label style="font-size: 0.74rem; font-weight: 700; color: #CBD5E1; display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
+              <i class="fas fa-question-circle" style="color: var(--accent-gold);"></i> Pergunta formulada:
+            </label>
+            <textarea id="shotokanQ_${idx}" class="form-input" rows="2" style="font-size: 0.86rem; font-weight: 600; width: 100%; resize: vertical; line-height: 1.4;" required>${escapeHtml(q.question)}</textarea>
+          </div>
+
+          <!-- Resposta Correta (Gabarito Oficial) -->
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 8px 10px;">
+            <label style="font-size: 0.74rem; font-weight: 700; color: #6EE7B7; display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta (Gabarito Oficial JKA/WKF):
+            </label>
+            <input type="text" id="shotokanCorrect_${idx}" class="form-input" value="${escapeHtml(q.correctAnswer)}" required style="font-size: 0.84rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.45); border-color: rgba(16, 185, 129, 0.45); width: 100%;">
+          </div>
+
+          <!-- 3 Alternativas Incorretas (Distratores Plausíveis) -->
+          <div style="background: rgba(230, 57, 70, 0.05); border: 1px solid rgba(230, 57, 70, 0.25); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 0.74rem; font-weight: 700; color: #FCA5A5; display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
+              <i class="fas fa-times-circle" style="color: var(--accent-crimson);"></i> 3 Alternativas Incorretas (Distratores Técnicos):
+            </label>
+            <input type="text" id="shotokanWrong1_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers?.[0] || '')}" placeholder="Alternativa errada 1..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35); width: 100%;">
+            <input type="text" id="shotokanWrong2_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers?.[1] || '')}" placeholder="Alternativa errada 2..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35); width: 100%;">
+            <input type="text" id="shotokanWrong3_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers?.[2] || '')}" placeholder="Alternativa errada 3..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35); width: 100%;">
+          </div>
+        </div>
+      `).join('');
+    },
+
+    runShotokanFormulation: (kyu) => {
+      const catSelect = document.getElementById('shotokanCategorySelect');
+      const countSelect = document.getElementById('shotokanCountSelect');
+      const category = catSelect ? catSelect.value : 'todos';
+      const count = countSelect ? parseInt(countSelect.value, 10) : 5;
+
+      let questions = [];
+      if (window.TKST_SHOTOKAN_ENGINE && typeof window.TKST_SHOTOKAN_ENGINE.formulateQuestions === 'function') {
+        questions = window.TKST_SHOTOKAN_ENGINE.formulateQuestions(kyu, { count, category });
+      }
+      window._currentShotokanQuestions = questions;
+
+      const container = document.getElementById('shotokanQuestionsContainer');
+      if (container) {
+        container.innerHTML = window.TKST_APP.renderShotokanQuestionCards(questions, kyu);
+      }
+      window.TKST_APP.updateShotokanSelectedCount();
+      showToast(`🥋 ${questions.length} questões formuladas com base no estudo do Karatê Shotokan!`, 'success', 3000);
+    },
+
+    updateShotokanSelectedCount: () => {
+      const checkboxes = document.querySelectorAll('[id^="shotokanCheck_"]');
+      let count = 0;
+      checkboxes.forEach(cb => { if (cb.checked) count++; });
+      const badge = document.getElementById('shotokanCountBadge');
+      if (badge) badge.textContent = count;
+    },
+
+    reformulateSingleShotokanQuestion: (idx, kyu) => {
+      const catSelect = document.getElementById('shotokanCategorySelect');
+      const category = catSelect ? catSelect.value : 'todos';
+
+      let singleQ = null;
+      if (window.TKST_SHOTOKAN_ENGINE && typeof window.TKST_SHOTOKAN_ENGINE.formulateQuestions === 'function') {
+        const pool = window.TKST_SHOTOKAN_ENGINE.formulateQuestions(kyu, { count: 1, category });
+        if (pool && pool[0]) singleQ = pool[0];
+      }
+      if (!singleQ) return;
+
+      const qInput = document.getElementById(`shotokanQ_${idx}`);
+      const cInput = document.getElementById(`shotokanCorrect_${idx}`);
+      const w1 = document.getElementById(`shotokanWrong1_${idx}`);
+      const w2 = document.getElementById(`shotokanWrong2_${idx}`);
+      const w3 = document.getElementById(`shotokanWrong3_${idx}`);
+      const topicEl = document.getElementById(`shotokanTopic_${idx}`);
+
+      if (qInput) qInput.value = singleQ.question;
+      if (cInput) cInput.value = singleQ.correctAnswer;
+      if (w1 && singleQ.wrongAnswers?.[0]) w1.value = singleQ.wrongAnswers[0];
+      if (w2 && singleQ.wrongAnswers?.[1]) w2.value = singleQ.wrongAnswers[1];
+      if (w3 && singleQ.wrongAnswers?.[2]) w3.value = singleQ.wrongAnswers[2];
+      if (topicEl) topicEl.textContent = singleQ.topic || 'Shotokan';
+
+      [qInput, cInput, w1, w2, w3].forEach(el => {
+        if (el) {
+          el.style.transition = 'all 0.3s ease';
+          const origBg = el.style.background;
+          el.style.background = 'rgba(255, 183, 3, 0.22)';
+          setTimeout(() => { el.style.background = origBg || ''; }, 600);
+        }
+      });
+      showToast(`💡 Questão #${idx + 1} reformulada com nova técnica Shotokan!`, 'info', 2000);
+    },
+
+    saveShotokanQuestionsToBank: (kyu) => {
+      const checkboxes = document.querySelectorAll('[id^="shotokanCheck_"]');
+      const itemsToSave = [];
+      const beltName = getBeltNameFromKyu(kyu);
+
+      checkboxes.forEach((cb, idx) => {
+        if (!cb.checked) return;
+        const qInput = document.getElementById(`shotokanQ_${idx}`);
+        const cInput = document.getElementById(`shotokanCorrect_${idx}`);
+        const w1Input = document.getElementById(`shotokanWrong1_${idx}`);
+        const w2Input = document.getElementById(`shotokanWrong2_${idx}`);
+        const w3Input = document.getElementById(`shotokanWrong3_${idx}`);
+
+        const questionText = qInput ? qInput.value.trim() : '';
+        const correctAnswer = cInput ? cInput.value.trim() : '';
+        let wrong1 = w1Input ? w1Input.value.trim() : '';
+        let wrong2 = w2Input ? w2Input.value.trim() : '';
+        let wrong3 = w3Input ? w3Input.value.trim() : '';
+
+        if (!questionText || !correctAnswer) return;
+
+        if (!wrong1 || !wrong2 || !wrong3) {
+          const smart = generateSmartOptions(questionText, correctAnswer);
+          const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
+          if (!wrong1) wrong1 = fallback[0] || 'Opção B';
+          if (!wrong2) wrong2 = fallback[1] || 'Opção C';
+          if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+        }
+
+        const numKyu = parseInt(kyu, 10);
+        itemsToSave.push({
+          id: `q_shotokan_${numKyu}_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          kyuNumber: numKyu,
+          kyu: numKyu,
+          beltName: beltName,
+          question: questionText,
+          image: '',
+          options: [correctAnswer, wrong1, wrong2, wrong3],
+          correctIndex: 0,
+          source: "Estudo Especialista de Karatê Shotokan (JKA/WKF)",
+          _edited: true,
+          updatedAt: Date.now()
+        });
+      });
+
+      if (itemsToSave.length === 0) {
+        showToast('⚠️ Selecione pelo menos uma questão para adicionar.', 'warning', 3500);
+        return;
+      }
+
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      itemsToSave.forEach(item => bank.push(item));
+
+      if (window.TKST_AUTH && window.TKST_AUTH.saveCustomQuizBank) {
+        window.TKST_AUTH.saveCustomQuizBank(bank);
+      }
+
+      const modal = document.getElementById('detailModal');
+      if (modal) modal.classList.remove('active');
+
+      showToast(`🥋 ${itemsToSave.length} questões técnicas de Karatê Shotokan salvas no simulado da ${beltName}! Sincronizando...`, 'sync', 4500);
       renderAdminMaster();
     },
 
@@ -11587,6 +11886,225 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
       detailModal.classList.add('active');
+    },
+
+    openCopyTransferQuizModal: (qId) => {
+      const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      const q = allBank.find(item => item && item.id === qId) ||
+                (window.TKST_DEFAULT_QUIZ_BANK || []).find(item => item && item.id === qId);
+
+      if (!q) {
+        showToast('⚠️ Questão não encontrada.', 'warning');
+        return;
+      }
+
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const currentKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6));
+      const currentBeltName = q.beltName || getBeltNameFromKyu(currentKyu);
+      const correctText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
+
+      const allBelts = [
+        { kyu: 6, label: "6º Kyu (Branca p/ Amarela)" },
+        { kyu: 5, label: "5º Kyu (Amarela p/ Vermelha)" },
+        { kyu: 4, label: "4º Kyu (Vermelha p/ Laranja)" },
+        { kyu: 3, label: "3º Kyu (Laranja p/ Verde)" },
+        { kyu: 2, label: "2º Kyu (Verde p/ Roxa)" },
+        { kyu: 1, label: "1º Kyu (Roxa p/ Marrom)" },
+        { kyu: 0, label: "1º Dan (Shodan)" },
+        { kyu: -1, label: "2º Dan (Nidan)" },
+        { kyu: -2, label: "3º Dan (Sandan)" }
+      ];
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-exchange-alt" style="color: #60A5FA;"></i>
+            <strong>Copiar ou Transferir Questão</strong>
+          </span>
+          <span class="badge" style="background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.4); color: #93C5FD; font-size: 0.70rem; font-weight: 700;">
+            Graduação Atual: ${currentBeltName}
+          </span>
+        </div>
+      `;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitCopyTransferQuiz('${q.id}');" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Preview da Questão -->
+          <div style="background: rgba(18, 23, 34, 0.95); border: 1px solid var(--border-color); border-left: 4px solid #60A5FA; border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 0.76rem; color: #94A3B8; font-weight: 600;">ENUNCIADO DA QUESTÃO SELECIONADA:</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #FFF; line-height: 1.4;">
+              ${escapeHtml(q.question)}
+            </div>
+            <div style="font-size: 0.82rem; color: #6EE7B7; display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> <strong>Gabarito:</strong> ${escapeHtml(correctText)}
+            </div>
+          </div>
+
+          <!-- Seleção da Ação: Copiar ou Transferir -->
+          <div>
+            <label style="font-size: 0.82rem; font-weight: 700; color: #FFF; display: block; margin-bottom: 8px;">
+              <i class="fas fa-sliders-h" style="color: var(--accent-gold);"></i> Escolha o Tipo de Operação:
+            </label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <label id="copyTransferOptCopy" style="display: flex; flex-direction: column; gap: 4px; padding: 12px; background: rgba(59, 130, 246, 0.12); border: 2px solid #3B82F6; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="radio" name="copyTransferMode" value="copy" checked onchange="window.TKST_APP.toggleCopyTransferUI('copy')" style="accent-color: #3B82F6; width: 16px; height: 16px; cursor: pointer;">
+                  <strong style="color: #93C5FD; font-size: 0.90rem;"><i class="fas fa-copy"></i> Copiar (Duplicar)</strong>
+                </div>
+                <div style="font-size: 0.74rem; color: #CBD5E1; padding-left: 24px; line-height: 1.3;">
+                  Mantém a questão na graduação atual (<strong>${currentBeltName}</strong>) e cria uma cópia idêntica na graduação escolhida.
+                </div>
+              </label>
+
+              <label id="copyTransferOptMove" style="display: flex; flex-direction: column; gap: 4px; padding: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="radio" name="copyTransferMode" value="move" onchange="window.TKST_APP.toggleCopyTransferUI('move')" style="accent-color: #F5BE00; width: 16px; height: 16px; cursor: pointer;">
+                  <strong style="color: #FDE047; font-size: 0.90rem;"><i class="fas fa-arrows-alt-h"></i> Transferir (Mover)</strong>
+                </div>
+                <div style="font-size: 0.74rem; color: #CBD5E1; padding-left: 24px; line-height: 1.3;">
+                  <strong>Remove</strong> a questão da graduação atual e move para que passe a pertencer exclusivamente à graduação escolhida.
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Graduação de Destino -->
+          <div class="form-group">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #FFF; display: block; margin-bottom: 6px;">
+              <i class="fas fa-graduation-cap" style="color: var(--accent-gold);"></i> Graduação de Destino:
+            </label>
+            <select id="copyTransferTargetKyu" class="form-input" style="width: 100%; padding: 10px; font-size: 0.88rem; background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; border-radius: var(--radius-sm);" required>
+              ${allBelts.map(b => `
+                <option value="${b.kyu}" ${b.kyu !== currentKyu ? '' : 'disabled'}>
+                  ${b.label} ${b.kyu === currentKyu ? '(Graduação Atual)' : ''}
+                </option>
+              `).join('')}
+            </select>
+            <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 4px;">
+              Selecione a faixa ou Dan para o qual a questão será enviada.
+            </div>
+          </div>
+
+          <!-- Botões de Ação -->
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeModal()" style="padding: 9px 16px;">
+              Cancelar
+            </button>
+            <button type="submit" id="copyTransferSubmitBtn" class="btn btn-primary" style="padding: 9px 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+              <i class="fas fa-check"></i> <span id="copyTransferSubmitText">Confirmar Cópia</span>
+            </button>
+          </div>
+        </form>
+      `;
+
+      modal.classList.add('active');
+    },
+
+    toggleCopyTransferUI: (mode) => {
+      const copyBox = document.getElementById('copyTransferOptCopy');
+      const moveBox = document.getElementById('copyTransferOptMove');
+      const btnText = document.getElementById('copyTransferSubmitText');
+      const btn = document.getElementById('copyTransferSubmitBtn');
+
+      if (mode === 'move') {
+        if (moveBox) {
+          moveBox.style.background = 'rgba(245, 190, 0, 0.12)';
+          moveBox.style.border = '2px solid #F5BE00';
+        }
+        if (copyBox) {
+          copyBox.style.background = 'rgba(255, 255, 255, 0.04)';
+          copyBox.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+        }
+        if (btnText) btnText.textContent = 'Confirmar Transferência';
+        if (btn) btn.style.background = 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)';
+      } else {
+        if (copyBox) {
+          copyBox.style.background = 'rgba(59, 130, 246, 0.12)';
+          copyBox.style.border = '2px solid #3B82F6';
+        }
+        if (moveBox) {
+          moveBox.style.background = 'rgba(255, 255, 255, 0.04)';
+          moveBox.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+        }
+        if (btnText) btnText.textContent = 'Confirmar Cópia';
+        if (btn) btn.style.background = '';
+      }
+    },
+
+    submitCopyTransferQuiz: (qId) => {
+      const modeRadio = document.querySelector('input[name="copyTransferMode"]:checked');
+      const targetSelect = document.getElementById('copyTransferTargetKyu');
+      if (!modeRadio || !targetSelect) return;
+
+      const mode = modeRadio.value;
+      const targetKyu = parseInt(targetSelect.value, 10);
+      const targetBeltName = getBeltNameFromKyu(targetKyu);
+
+      const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      let q = allBank.find(item => item && item.id === qId);
+
+      if (!q) {
+        const defaultQ = (window.TKST_DEFAULT_QUIZ_BANK || []).find(item => item && item.id === qId);
+        if (defaultQ) {
+          q = JSON.parse(JSON.stringify(defaultQ));
+          allBank.push(q);
+        }
+      }
+
+      if (!q) {
+        showToast('⚠️ Erro: Questão não encontrada.', 'error');
+        return;
+      }
+
+      const originalKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6));
+      const originalBeltName = q.beltName || getBeltNameFromKyu(originalKyu);
+
+      if (mode === 'move') {
+        if (originalKyu === targetKyu) {
+          showToast('⚠️ A questão já pertence a esta graduação!', 'warning');
+          return;
+        }
+
+        q.kyuNumber = targetKyu;
+        q.kyu = targetKyu;
+        q.beltName = targetBeltName;
+        q._edited = true;
+        q.updatedAt = Date.now();
+
+        if (window.TKST_AUTH && window.TKST_AUTH.saveCustomQuizBank) {
+          window.TKST_AUTH.saveCustomQuizBank(allBank);
+        }
+
+        const modal = document.getElementById('detailModal');
+        if (modal) modal.classList.remove('active');
+
+        showToast(`🔄 Questão transferida com sucesso de ${originalBeltName} para ${targetBeltName}!`, 'sync', 4500);
+        renderAdminMaster();
+      } else {
+        const cloned = JSON.parse(JSON.stringify(q));
+        cloned.id = `q_custom_${targetKyu}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        cloned.kyuNumber = targetKyu;
+        cloned.kyu = targetKyu;
+        cloned.beltName = targetBeltName;
+        cloned._edited = true;
+        cloned.updatedAt = Date.now();
+
+        allBank.push(cloned);
+
+        if (window.TKST_AUTH && window.TKST_AUTH.saveCustomQuizBank) {
+          window.TKST_AUTH.saveCustomQuizBank(allBank);
+        }
+
+        const modal = document.getElementById('detailModal');
+        if (modal) modal.classList.remove('active');
+
+        showToast(`📋 Questão copiada com sucesso para ${targetBeltName}! (Original mantida em ${originalBeltName})`, 'success', 4500);
+        renderAdminMaster();
+      }
     },
 
     deleteQuizQuestion: (qId) => {
