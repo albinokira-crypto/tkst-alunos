@@ -2556,11 +2556,14 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-              <button class="btn btn-secondary" onclick="window.TKST_APP.openAddQuizQuestionWithSuggestion(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; background: rgba(255,183,3,0.12); border: 1px solid var(--accent-gold); color: var(--accent-gold);" title="Abrir criação com pergunta sugerida">
-                <i class="fas fa-lightbulb"></i> Sugerir Pergunta
+              <button class="btn btn-gold" onclick="window.TKST_APP.openBatchSuggestQuestionsModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; color: #000; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.25);" title="Sugerir 5 questões completas em lote com gabarito baseadas no Plano de Estudos">
+                <i class="fas fa-layer-group"></i> Sugerir 5 Questões (Lote)
+              </button>
+              <button class="btn btn-secondary" onclick="window.TKST_APP.openAddQuizQuestionWithSuggestion(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; background: rgba(255,183,3,0.12); border: 1px solid var(--accent-gold); color: var(--accent-gold);" title="Abrir criação individual com pergunta sugerida">
+                <i class="fas fa-lightbulb"></i> Sugerir 1 Pergunta
               </button>
               <button class="btn btn-primary" onclick="window.TKST_APP.openAddQuizQuestionModal(${adminQuizSelectedKyu})" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700;">
-                <i class="fas fa-plus"></i> Nova Questão para esta Faixa
+                <i class="fas fa-plus"></i> Nova Questão
               </button>
             </div>
           </div>
@@ -3113,7 +3116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Filosofia & Princípios (Dojo Kun e Niju Kun lado a lado) -->
+      <!-- Filosofia & Comunidade (Dojo Kun, Niju Kun e Aniversários lado a lado) -->
       <div class="dashboard-kun-grid">
         <!-- 1. Dojo Kun -->
         <div class="kun-compact-card gold-theme" onclick="window.TKST_APP.openDojoKunModal()" title="Toque para ver o Dojo Kun completo">
@@ -3144,6 +3147,22 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
             <span class="kun-btn-view crimson">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
+          </div>
+        </div>
+
+        <!-- 3. Aniversariantes do Dojô -->
+        <div class="kun-compact-card emerald-theme" onclick="window.TKST_APP.openAniversariantesModal()" title="Toque para ver os aniversariantes do Dojô no DojôBook">
+          <div class="kun-card-top">
+            <div class="kun-title-box">
+              <div class="kun-icon emerald">
+                <i class="fas fa-birthday-cake"></i>
+              </div>
+              <div style="min-width: 0;">
+                <h3 class="kun-name">Aniversários</h3>
+                <span class="kun-kanji" id="homeAniversariantesSubtitle">DojôBook</span>
+              </div>
+            </div>
+            <span class="kun-btn-view emerald">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
           </div>
         </div>
       </div>
@@ -3218,6 +3237,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializa o slide de fotos aleatórias da galeria
     initHomePhotoSlide();
+
+    // Carrega aniversariantes do DojôBook em background para atualizar o botão na Home
+    if (window.TKST_APP && window.TKST_APP.loadDojobookAniversariantes) {
+      window.TKST_APP.loadDojobookAniversariantes();
+    }
   }
 
   // =========================================================================
@@ -9236,6 +9260,250 @@ document.addEventListener('DOMContentLoaded', () => {
 
       modal.classList.add('active');
     },
+
+    loadDojobookAniversariantes: async function(forceRefresh = false) {
+      if (!forceRefresh && window._tkstAniversariantesCache) {
+        return window._tkstAniversariantesCache;
+      }
+      try {
+        const cachedStr = localStorage.getItem('tkst_aniversariantes_cache');
+        if (cachedStr) {
+          const parsed = JSON.parse(cachedStr);
+          if (parsed && (parsed.aniversariantes || parsed.todosPorMes)) {
+            window._tkstAniversariantesCache = parsed;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const res = await fetch('https://dojobook-five.vercel.app/api/aniversariantes?todosMeses=1', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success) {
+            window._tkstAniversariantesCache = data;
+            try {
+              localStorage.setItem('tkst_aniversariantes_cache', JSON.stringify(data));
+            } catch (e) {}
+
+            // Atualiza o subtítulo do botão na Home se houver aniversariante hoje
+            const subEl = document.getElementById('homeAniversariantesSubtitle');
+            if (subEl) {
+              if (data.aniversariantesHoje && data.aniversariantesHoje.length > 0) {
+                subEl.innerHTML = `<strong style="color: var(--accent-gold);">🎂 ${data.aniversariantesHoje.length} hoje!</strong>`;
+              } else {
+                subEl.textContent = 'DojôBook';
+              }
+            }
+            return data;
+          }
+        }
+      } catch (err) {
+        console.warn('Falha ao consultar aniversariantes do DojôBook:', err);
+      }
+      return window._tkstAniversariantesCache || { aniversariantes: [], aniversariantesHoje: [], todosPorMes: {} };
+    },
+
+    openAniversariantesModal: async function(selectedMes = null) {
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const mesHoje = new Date().getMonth() + 1;
+      const mesAtivo = selectedMes !== null ? Number(selectedMes) : mesHoje;
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-birthday-cake" style="color: #10B981;"></i>
+          <span>Aniversariantes do Dojô • DojôBook</span>
+        </div>
+      `;
+
+      let data = window._tkstAniversariantesCache;
+      if (!data) {
+        modalBody.innerHTML = `
+          <div style="text-align: center; padding: 36px 12px;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: #10B981; margin-bottom: 12px;"></i>
+            <div style="color: #FFF; font-weight: 700; font-size: 0.95rem;">Consultando DojôBook...</div>
+            <div style="color: #94A3B8; font-size: 0.78rem; margin-top: 4px;">Buscando os aniversariantes cadastrados via integração oficial.</div>
+          </div>
+        `;
+        modal.classList.add('active');
+        data = await window.TKST_APP.loadDojobookAniversariantes();
+      } else {
+        modal.classList.add('active');
+        window.TKST_APP.loadDojobookAniversariantes(true).then(newData => {
+          if (newData && modal.classList.contains('active')) {
+            window.TKST_APP.renderAniversariantesModalContent(newData, mesAtivo);
+          }
+        });
+      }
+
+      window.TKST_APP.renderAniversariantesModalContent(data, mesAtivo);
+    },
+
+    renderAniversariantesModalContent: function(data, mesAtivo) {
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modalBody) return;
+
+      const MESES = [
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      ];
+      const MESES_CURTO = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+      const hoje = new Date();
+      const mesHoje = hoje.getMonth() + 1;
+      const diaHoje = hoje.getDate();
+
+      let listaDoMes = [];
+      if (data && data.todosPorMes && data.todosPorMes[mesAtivo]) {
+        listaDoMes = data.todosPorMes[mesAtivo];
+      } else if (data && data.aniversariantes && (data.mes === mesAtivo || !data.todosPorMes)) {
+        listaDoMes = data.aniversariantes;
+      }
+
+      const aniversariantesHoje = (data && data.aniversariantesHoje) ? data.aniversariantesHoje : [];
+
+      modalBody.innerHTML = `
+        <div class="aniversariantes-modal-view">
+          ${aniversariantesHoje.length > 0 ? `
+            <div class="aniversariantes-top-banner">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.25rem;">🎉</span>
+                <div>
+                  <strong style="color: var(--accent-gold);">Aniversário Hoje!</strong>
+                  <div style="font-size: 0.78rem; color: #FFF;">
+                    ${aniversariantesHoje.map(a => `<strong>${escapeHtml(a.nome)}</strong>`).join(', ')}
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.copyBirthdayWish('${escapeHtml(aniversariantesHoje[0].nome)}')" style="font-size: 0.70rem; padding: 4px 8px; font-weight: 700;">
+                <i class="fas fa-copy"></i> Copiar Parabéns
+              </button>
+            </div>
+          ` : `
+            <div class="aniversariantes-top-banner">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-info-circle" style="color: #10B981; font-size: 0.95rem;"></i>
+                <span>Mural oficial de aniversariantes da <strong>TKST Karatê-Do</strong> sincronizado diretamente do <strong>DojôBook</strong>.</span>
+              </div>
+            </div>
+          `}
+
+          <!-- Navegação por Mês (12 meses) -->
+          <div class="aniversariantes-months-grid">
+            ${MESES_CURTO.map((m, idx) => {
+              const numMes = idx + 1;
+              const isActive = numMes === mesAtivo;
+              const qtd = (data && data.todosPorMes && data.todosPorMes[numMes]) ? data.todosPorMes[numMes].length : 0;
+              return `
+                <div class="aniversariantes-month-pill ${isActive ? 'active' : ''}" onclick="window.TKST_APP.renderAniversariantesModalContent(window._tkstAniversariantesCache, ${numMes})">
+                  <div>${m}</div>
+                  ${qtd > 0 ? `<div style="font-size: 0.58rem; opacity: 0.85; margin-top: 1px;">(${qtd})</div>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Título da listagem -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
+            <div style="font-weight: 800; font-size: 0.88rem; color: #FFF; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-calendar-alt" style="color: #10B981;"></i>
+              <span>${MESES[mesAtivo - 1]}</span>
+            </div>
+            <span style="font-size: 0.74rem; color: #94A3B8;">
+              ${listaDoMes.length} ${listaDoMes.length === 1 ? 'aniversariante' : 'aniversariantes'}
+            </span>
+          </div>
+
+          <!-- Lista de Aniversariantes -->
+          <div class="aniversariantes-list">
+            ${listaDoMes.length === 0 ? `
+              <div style="text-align: center; padding: 32px 14px; border: 1px dashed rgba(255,255,255,0.12); border-radius: 8px; color: #94A3B8;">
+                <i class="fas fa-calendar-times" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.5;"></i>
+                <div style="font-size: 0.86rem; color: #CBD5E1;">Nenhum aniversariante cadastrado em ${MESES[mesAtivo - 1]}.</div>
+                <div style="font-size: 0.74rem; margin-top: 4px;">Os cadastros com data de nascimento no DojôBook aparecem aqui automaticamente.</div>
+              </div>
+            ` : listaDoMes.map(a => {
+              const ehHoje = mesAtivo === mesHoje && a.dia === diaHoje;
+              const beltCol = (function(bName) {
+                if (!bName) return '#E2E8F0';
+                const b = bName.toLowerCase();
+                if (b.includes('preta') || b.includes('dan')) return '#18181B';
+                if (b.includes('marrom')) return '#78350F';
+                if (b.includes('roxa')) return '#8B5CF6';
+                if (b.includes('verde')) return '#10B981';
+                if (b.includes('laranja')) return '#FF7700';
+                if (b.includes('vermelha')) return '#E63946';
+                if (b.includes('amarela')) return '#F5BE00';
+                return '#E2E8F0';
+              })(a.graduacao_atual);
+
+              const initials = (a.nome || 'A').trim().split(' ').filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+
+              return `
+                <div class="aniversariante-item-card ${ehHoje ? 'is-today' : ''}">
+                  <div class="aniversariante-left-box">
+                    <div class="aniversariante-day-badge ${ehHoje ? 'is-today' : ''}">
+                      <span class="aniversariante-day-num">${a.dia}</span>
+                      <span class="aniversariante-day-label">${MESES_CURTO[mesAtivo - 1]}</span>
+                    </div>
+
+                    ${a.foto_url ? `
+                      <img src="${escapeHtml(a.foto_url)}" alt="${escapeHtml(a.nome)}" class="aniversariante-avatar">
+                    ` : `
+                      <div class="aniversariante-avatar-placeholder">${initials}</div>
+                    `}
+
+                    <div style="min-width: 0; flex: 1;">
+                      <div class="aniversariante-name-row">
+                        <span class="aniversariante-name">${escapeHtml(a.nome)}</span>
+                        ${ehHoje ? `<span class="aniversariante-today-tag">🎂 Aniversário Hoje!</span>` : ''}
+                      </div>
+                      <div class="aniversariante-meta">
+                        <span class="aniversariante-belt-badge" style="border-left: 3px solid ${beltCol};">
+                          <i class="fas fa-medal" style="color: ${beltCol}; font-size: 0.65rem;"></i>
+                          ${escapeHtml(a.graduacao_atual || 'Karatê')}
+                        </span>
+                        ${a.faz_idade ? `<span>· Faz <strong>${a.faz_idade} anos</strong></span>` : ''}
+                        ${a.dojo_nome ? `<span>· Dojô ${escapeHtml(a.dojo_nome)}</span>` : ''}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.copyBirthdayWish('${escapeHtml(a.nome.replace(/'/g, "\\'"))}')" style="font-size: 0.70rem; padding: 4px 8px; flex-shrink: 0;" title="Copiar mensagem para parabenizar">
+                    <i class="fas fa-comment-dots"></i>
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <a href="https://dojobook-five.vercel.app/aniversarios" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.74rem; padding: 7px 12px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i class="fas fa-external-link-alt" style="color: #10B981;"></i> Abrir no DojôBook
+            </a>
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.TKST_APP.closeModal()" style="font-size: 0.74rem; padding: 7px 16px;">
+              Fechar
+            </button>
+          </div>
+        </div>
+      `;
+    },
+
+    copyBirthdayWish: function(nome) {
+      const msg = `Oss! Parabéns pelo seu aniversário, guerreiro(a) ${nome}! Muita saúde, foco, sabedoria e muita evolução nos treinos de Karatê-Do na TKST! 🥋🎂🎉`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(() => {
+          showToast(`📋 Mensagem de parabéns para ${nome} copiada com sucesso!`, 'success', 3500);
+        }).catch(() => {
+          prompt('Copie a mensagem de parabéns:', msg);
+        });
+      } else {
+        prompt('Copie a mensagem de parabéns:', msg);
+      }
+    },
     toggleStudyAccordion: (sectionId) => {
       const body = document.getElementById(`studyBody_${sectionId}`);
       const header = document.getElementById(`studyHeader_${sectionId}`);
@@ -10066,7 +10334,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(`✨ 3 alternativas erradas geradas para a categoria: ${label}!`, 'success', 3500);
     },
 
-    generateUniqueQuestionSuggestion: (kyu) => {
+    generateBatchQuestionSuggestions: (kyu, count = 5) => {
       function normalizeQuestionKey(text) {
         if (!text) return '';
         return String(text)
@@ -10100,214 +10368,311 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       (window._tkstSuggestedHistory || []).forEach(norm => existingSet.add(norm));
 
-      const QUESTIONS_BY_KYU = {
+      const kyuKey = parseInt(kyu);
+      const allCurriculums = (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomCurriculum === 'function')
+        ? window.TKST_AUTH.getCustomCurriculum()
+        : (window.TKST_CURRICULUM || window.TKST_DEFAULT_CURRICULUM || []);
+
+      const beltCurr = allCurriculums.find(c => Number(c.kyuNumber) === kyuKey)
+        || allCurriculums.find(c => c.id === `kyu-${kyuKey}`)
+        || null;
+
+      const beltName = beltCurr ? beltCurr.beltName : getBeltNameFromKyu(kyuKey);
+      const targetBelt = beltCurr ? (beltCurr.targetBelt || beltName) : beltName;
+      const kihonList = beltCurr && Array.isArray(beltCurr.kihon) ? beltCurr.kihon : [];
+      const requiredKatas = (beltCurr && beltCurr.kata && Array.isArray(beltCurr.kata.required)) ? beltCurr.kata.required : [];
+      const kataDescription = (beltCurr && beltCurr.kata && beltCurr.kata.description) ? beltCurr.kata.description : '';
+      const kumiteType = (beltCurr && beltCurr.kumite && beltCurr.kumite.type) ? beltCurr.kumite.type : '';
+      const dachiWazaList = (beltCurr && Array.isArray(beltCurr.dachiWaza)) ? beltCurr.dachiWaza : [];
+      const reqList = (beltCurr && Array.isArray(beltCurr.requirements)) ? beltCurr.requirements : [];
+
+      const ALL_STANCES = [
+        "Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi",
+        "Neko Ashi Dachi", "Sanchin Dachi", "Heiko Dachi", "Musubi Dachi",
+        "Kosa Dachi", "Heisoku Dachi", "Hachiji Dachi"
+      ];
+      const ALL_TECHNIQUES = [
+        "Oi Tsuki", "Gyaku Tsuki", "Kizami Tsuki", "Sanbon Tsuki", "Nihon Tsuki",
+        "Jodan Age Uke", "Chudan Soto Uke", "Chudan Uchi Uke", "Gedan Barai",
+        "Chudan Shuto Uke", "Morote Uke", "Juji Uke", "Manji Uke", "Kakiwake Uke",
+        "Mae Geri", "Mawashi Geri", "Yoko Geri Keage", "Yoko Geri Kekomi", "Ushiro Geri",
+        "Empi Uchi", "Uraken Uchi", "Teisho Uchi", "Nukite", "Hiza Geri"
+      ];
+      const ALL_KATAS = [
+        "Heian Shodan", "Heian Nidan", "Heian Sandan", "Heian Yondan", "Heian Godan",
+        "Tekki Shodan", "Bassai Dai", "Kanku Dai", "Jion", "Enpi", "Hangetsu",
+        "Gankaku", "Jitte", "Sochin", "Nijushiho", "Chinte", "Meikyo", "Unsu"
+      ];
+      const ALL_KUMITE = [
+        "Gohon Kumite (5 passos)", "Sanbon Kumite (1ª e 2ª Forma)",
+        "Kihon Ippon Kumite", "Jiyu Ippon Kumite (semilivre)",
+        "Shiai Kumite (combate de competição)", "Jiyu Kumite (luta livre)"
+      ];
+      const ALL_COUNTS = ["5 vezes (Go Kai)", "3 vezes (San Kai)", "10 vezes (Ju Kai)", "1 vez (Ippon)", "4 vezes (Yon Kai)"];
+      const ALL_DIRECTIONS = ["Mae (Avançando à frente)", "Sagate (Recuando para trás)", "Mawate (Girando / Mudança de frente)", "Yoko (Deslocamento lateral)"];
+
+      function pickDistractors(pool, correct, num = 3) {
+        const normC = normalizeQuestionKey(correct);
+        const filtered = pool.filter(item => normalizeQuestionKey(item) !== normC);
+        const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+        const result = shuffled.slice(0, num);
+        while (result.length < num) {
+          result.push(`Alternativa ${result.length + 1}`);
+        }
+        return result;
+      }
+
+      const generatedCandidates = [];
+
+      // 1. QUESTÕES DIRETAS DO PLANO DE ESTUDOS (KIHON DA FAIXA)
+      kihonList.forEach(k => {
+        if (!k || !k.technique) return;
+
+        // Base exigida na técnica
+        if (k.stance) {
+          generatedCandidates.push({
+            question: `No Kihon do exame oficial para ${beltName}, em qual base (Dachi Waza) é executada a técnica '${k.technique}'?`,
+            correctAnswer: k.stance,
+            wrongAnswers: pickDistractors(ALL_STANCES, k.stance, 3),
+            topic: "Kihon • Bases",
+            beltName: beltName
+          });
+        }
+
+        // Quantidade de repetições
+        if (k.count) {
+          generatedCandidates.push({
+            question: `Quantas repetições são exigidas na linha de Kihon para a técnica '${k.technique}' no exame de ${beltName}?`,
+            correctAnswer: k.count,
+            wrongAnswers: pickDistractors(ALL_COUNTS, k.count, 3),
+            topic: "Kihon • Contagem",
+            beltName: beltName
+          });
+        }
+
+        // Direção de deslocamento
+        if (k.direction) {
+          const dirFull = k.direction.includes('Mae') ? 'Mae (Avançando à frente)'
+            : (k.direction.includes('Sagate') ? 'Sagate (Recuando para trás)'
+            : (k.direction.includes('Mawate') ? 'Mawate (Girando)' : k.direction));
+          generatedCandidates.push({
+            question: `Segundo o plano de estudos da ${beltName}, qual a direção de deslocamento ao executar '${k.technique}'?`,
+            correctAnswer: dirFull,
+            wrongAnswers: pickDistractors(ALL_DIRECTIONS, dirFull, 3),
+            topic: "Kihon • Deslocamento",
+            beltName: beltName
+          });
+        }
+
+        // Reconhecimento de técnica do plano de estudos
+        generatedCandidates.push({
+          question: `Qual das seguintes técnicas de Kihon faz parte das exigências oficiais no plano de estudos para ${beltName}?`,
+          correctAnswer: k.technique,
+          wrongAnswers: pickDistractors(ALL_TECHNIQUES, k.technique, 3),
+          topic: "Kihon • Técnicas",
+          beltName: beltName
+        });
+      });
+
+      // 2. QUESTÕES DO PLANO DE ESTUDOS (KATA DA FAIXA)
+      if (requiredKatas.length > 0) {
+        const kataName = requiredKatas.join(', ');
+        generatedCandidates.push({
+          question: `Qual é o Kata obrigatório exigido no plano de estudos oficial para o exame de ${beltName}?`,
+          correctAnswer: kataName,
+          wrongAnswers: pickDistractors(ALL_KATAS, kataName, 3),
+          topic: "Kata • Exame Oficial",
+          beltName: beltName
+        });
+
+        if (kataDescription) {
+          generatedCandidates.push({
+            question: `Segundo o plano de estudos da ${beltName}, quais diretrizes técnicas são avaliadas no Kata ${requiredKatas[0]}?`,
+            correctAnswer: kataDescription,
+            wrongAnswers: [
+              "Execução rápida sem pausas ou ritmo definido, dispensando o uso de Kiai.",
+              "Treinamento exclusivo em base Kokutsu Dachi com golpes apenas circulares.",
+              "Apresentação adaptada de armas com técnicas de salto acrobático livre."
+            ],
+            topic: "Kata • Diretrizes",
+            beltName: beltName
+          });
+        }
+      }
+
+      // 3. QUESTÕES DO PLANO DE ESTUDOS (KUMITE DA FAIXA)
+      if (kumiteType) {
+        generatedCandidates.push({
+          question: `Qual modalidade de combate (Kumite) é exigida no plano de estudos para o exame de ${beltName}?`,
+          correctAnswer: kumiteType,
+          wrongAnswers: pickDistractors(ALL_KUMITE, kumiteType, 3),
+          topic: "Kumite • Combate",
+          beltName: beltName
+        });
+      }
+
+      // 4. QUESTÕES DO PLANO DE ESTUDOS (DACHI WAZA / BASES)
+      if (dachiWazaList.length > 0) {
+        dachiWazaList.slice(0, 3).forEach(base => {
+          generatedCandidates.push({
+            question: `Qual das seguintes posturas (Dachi Waza) é expressamente exigida no plano de estudos da ${beltName}?`,
+            correctAnswer: base,
+            wrongAnswers: pickDistractors(ALL_STANCES, base, 3),
+            topic: "Dachi Waza • Posturas",
+            beltName: beltName
+          });
+        });
+      }
+
+      // 5. QUESTÕES DO PLANO DE ESTUDOS (REQUISITOS E CARÊNCIA)
+      if (reqList.length > 0) {
+        generatedCandidates.push({
+          question: `Qual é um dos pré-requisitos oficiais no plano de estudos para poder realizar o exame de ${beltName}?`,
+          correctAnswer: reqList[0],
+          wrongAnswers: [
+            "Mínimo de 5 anos ininterruptos de treino como faixa preta",
+            "Apenas participação em torneio internacional de Kumite",
+            "Isenção total de frequência em treinos práticos semanais"
+          ],
+          topic: "Requisitos • Carência",
+          beltName: beltName
+        });
+      }
+
+      // 6. QUESTÕES ESPECÍFICAS CURADAS POR KYU (com gabarito e alternativas coerentes)
+      const CURATED_BY_KYU = {
         7: [
-          "O que significa a palavra KARATÊ-DO em sua tradução literal?",
-          "Quais são as três alturas fundamentais de golpe no Karatê (Alto, Médio e Baixo)?",
-          "Qual é o nome da base frontal com 60% do peso na perna da frente e 40% atrás?",
-          "Qual é o nome da defesa baixa com antebraço mais ensinada aos iniciantes?",
-          "Qual é o nome do chute frontal executado atingindo com a bola do pé (Koshi)?",
-          "Qual é o significado marcial do cumprimento 'REI' e da postura 'MOKUSO' no início da aula?",
-          "Qual é o objetivo do primeiro lema do Dojô Kun: 'Hitotsu! Jinkaku kansei ni tsutomuru koto'?",
-          "Qual é o nome do soco direto desferido com o mesmo braço da perna que avança?",
-          "Qual é o nome da defesa alta com o antebraço utilizada para proteger o rosto contra ataques Jodan?",
-          "Como se chama a postura de pés paralelos na largura dos ombros em posição de espera (Yoi)?",
-          "Quem é considerado o pai do Karatê Moderno e fundador do estilo Shotokan?",
-          "O que expressa a liberação do 'KIAI' no momento de impacto de uma técnica?",
-          "Qual é o nome da saudação realizada em pé no início e no final do treino (Ritsurei)?",
-          "Como se chama a vestimenta tradicional utilizada no treinamento de Karatê-Do?",
-          "Qual é o termo utilizado para designar o local sagrado onde se pratica o Karatê?",
-          "Qual o nome do nó correto da faixa (Obi) e o cuidado com as pontas alinhadas?",
-          "Qual é o papel do respeito mútuo entre Senpai (veterano) e Kohai (iniciante)?"
+          { q: "O que significa a palavra KARATÊ-DO em sua tradução literal?", c: "Caminho das Mãos Vazias", w: ["Caminho da Espada Rápida", "Arte dos Pés de Ferro", "Caminho da Lança Dourada"], t: "Filosofia" },
+          { q: "Quais são as três alturas fundamentais de golpe no Karatê (Jodan, Chudan e Gedan)?", c: "Jodan (Alto), Chudan (Médio) e Gedan (Baixo)", w: ["Mae, Sagate e Mawate", "Ichi, Ni e San", "Rei, Mokuso e Yame"], t: "Fundamentos" },
+          { q: "Qual é o nome da base frontal com 60% do peso na perna da frente e 40% atrás?", c: "Zenkutsu Dachi", w: ["Kokutsu Dachi", "Kiba Dachi", "Heisoku Dachi"], t: "Bases" },
+          { q: "Qual é o nome da defesa baixa com antebraço mais ensinada aos iniciantes?", c: "Gedan Barai", w: ["Age Uke", "Soto Uke", "Shuto Uke"], t: "Defesas" },
+          { q: "Qual é o nome do chute frontal executado atingindo com a bola do pé (Koshi)?", c: "Mae Geri", w: ["Mawashi Geri", "Yoko Geri", "Ushiro Geri"], t: "Chutes" }
         ],
         6: [
-          "Qual é o primeiro Kata fundamental ensinado no currículo do Karatê Shotokan?",
-          "Quantos movimentos oficiais compõem o Kata Heian Shodan?",
-          "Em quais movimentos do Kata Heian Shodan ocorrem os Kiais oficiais?",
-          "Qual é o nome da base recuada em L com 70% do peso na perna de trás (Kokutsu Dachi)?",
-          "Qual é a diferença de trajetória entre a defesa Soto Uke e a defesa Uchi Uke?",
-          "Como se chama o soco contrário à perna que se encontra à frente na base (Gyaku Tsuki)?",
-          "Qual o significado da palavra 'HEIAN' que nomeia a série de 5 katas fundamentais?",
-          "Qual defesa com a faca da mão aberta (Shuto Uke) é introduzida para a faixa amarela?",
-          "O que preceitua o lema do Dojô Kun: 'Hitotsu! Makoto no michi o mamoru koto'?",
-          "Qual o nome do soco rápido desferido com o braço da frente sem trocar a base (Kizami Tsuki)?",
-          "Qual é o significado do comando 'YAME' pronunciado pelo Sensei durante o treino?",
-          "Qual parte da mão é utilizada para golpear no soco frontal tradicional (Seiken)?",
-          "Qual o nome da defesa de antebraço de fora para dentro em nível médio (Soto Ude Uke)?",
-          "Qual o nome da defesa de antebraço de dentro para fora em nível médio (Uchi Ude Uke)?",
-          "Qual a posição do calcanhar do pé traseiro na base Zenkutsu Dachi?",
-          "Qual a postura correta do tronco no avanço em Zenkutsu Dachi?",
-          "Quantas defesas Gedan Barai são executadas no Kata Heian Shodan?"
+          { q: "Qual é o primeiro Kata fundamental ensinado no currículo do Karatê Shotokan?", c: "Heian Shodan", w: ["Heian Nidan", "Tekki Shodan", "Bassai Dai"], t: "Kata" },
+          { q: "Quantos movimentos oficiais compõem o Kata Heian Shodan?", c: "21 movimentos", w: ["26 movimentos", "20 movimentos", "18 movimentos"], t: "Kata" },
+          { q: "Em quais movimentos do Kata Heian Shodan ocorrem os Kiais oficiais?", c: "No 9º e no 17º movimentos", w: ["No 1º e no 21º movimentos", "No 5º e no 10º movimentos", "No 12º e no 19º movimentos"], t: "Kata" },
+          { q: "Qual é o nome da base recuada em L com 70% do peso na perna de trás?", c: "Kokutsu Dachi", w: ["Zenkutsu Dachi", "Kiba Dachi", "Fudo Dachi"], t: "Bases" },
+          { q: "Como se chama o soco contrário à perna que se encontra à frente na base?", c: "Gyaku Tsuki", w: ["Oi Tsuki", "Kizami Tsuki", "Tate Tsuki"], t: "Socos" }
         ],
         5: [
-          "Qual é o Kata oficial exigido para o exame de graduação para a Faixa Vermelha (5º Kyu)?",
-          "Quantos movimentos oficiais possui o Kata Heian Nidan?",
-          "Qual golpe simultâneo de soco e chute lateral com o dorso do punho é executado no Heian Nidan?",
-          "Qual técnica de ataque com a ponta dos quatro dedos estendidos (Nukite) aparece no Heian Nidan?",
-          "Qual é a função e o significado da defesa reforçada com os dois braços (Morote Uke)?",
-          "Qual é a diferença biomecânica entre Yoko Geri Keage (ascendente) e Yoko Geri Kekomi (penetrante)?",
-          "O que preceitua o lema do Dojô Kun: 'Hitotsu! Doryoku no seishin o yashinau koto'?",
-          "Como se distribui a proporção de peso entre as pernas na base Kokutsu Dachi?",
-          "Qual é o principal objetivo pedagógico do treinamento de Kihon Ippon Kumite?",
-          "Qual é o papel do 'Hikite' (braço recolhido à cintura) na geração de torque e potência no soco?",
-          "Qual região do pé deve ser utilizada para conectar o golpe no chute lateral Yoko Geri Kekomi?",
-          "Quais bases compõem as passagens de transição dos movimentos iniciais do Kata Heian Nidan?",
-          "Em quais contagens ocorrem os dois Kiais do Kata Heian Nidan?",
-          "Qual a importância de manter os dois calcanhares assentados no chão durante a execução do Heian Nidan?"
+          { q: "Qual é o Kata oficial exigido para o exame de graduação para a Faixa Vermelha (5º Kyu)?", c: "Heian Nidan", w: ["Heian Shodan", "Heian Sandan", "Tekki Shodan"], t: "Kata" },
+          { q: "Quantos movimentos oficiais possui o Kata Heian Nidan?", c: "26 movimentos", w: ["21 movimentos", "20 movimentos", "24 movimentos"], t: "Kata" },
+          { q: "Qual técnica de ataque com a ponta dos quatro dedos estendidos (Nukite) aparece no Heian Nidan?", c: "Chudan Nukite", w: ["Seiken Tsuki", "Empi Uchi", "Uraken Uchi"], t: "Técnicas" },
+          { q: "Qual é a função e o significado da defesa reforçada com os dois braços (Morote Uke)?", c: "Defesa com suporte do braço oposto para resistir a impactos pesados", w: ["Defesa de pernas cruzadas no solo", "Ataque duplo de ponta de dedos aos olhos", "Bloqueio com esquiva lateral de corpo"], t: "Defesas" },
+          { q: "Qual é a diferença biomecânica entre Yoko Geri Keage e Yoko Geri Kekomi?", c: "Keage é ascendente/percussivo e Kekomi é linear/penetrante", w: ["Keage é circular para trás e Kekomi é frontal", "Keage atinge com a coxa e Kekomi com os dedos", "Não há diferença, são o mesmo chute"], t: "Chutes" }
         ],
         4: [
-          "Qual é o Kata oficial exigido para a graduação de 4º Kyu (Faixa Laranja)?",
-          "Quantos movimentos oficiais compõem o Kata Heian Sandan?",
-          "Qual é a postura do cavaleiro (Kiba Dachi) com peso igualmente distribuído (50/50)?",
-          "Qual técnica de cotovelada (Empi Uchi) é praticada na faixa laranja e no Heian Sandan?",
-          "O que significa o termo 'BUNKAI' no estudo dos Katas de Karatê?",
-          "O que preceitua o lema do Dojô Kun: 'Hitotsu! Reigi o omonnzuru koto'?",
-          "Qual é o nome do golpe aplicado com o dorso dos nós dos dedos (Uraken Uchi)?",
-          "Como se chama a técnica de pisão descendente com o calcanhar (Fumikomi)?",
-          "Qual é o papel da contração rápida do abdômen (Tanden) no momento de fixar o Kime?",
-          "Qual a diferença tática entre a aplicação de Shuto Uke e Morote Uke na autodefesa?",
-          "Qual técnica de bloqueio duplo cruzando os braços no peito aparece no Heian Sandan?",
-          "Quais são os dois movimentos de Kiai do Kata Heian Sandan?",
-          "Como deve ser alinhada a bacia e os joelhos para fora na base Kiba Dachi?"
+          { q: "Qual é o Kata oficial exigido para a graduação de 4º Kyu (Faixa Laranja)?", c: "Heian Sandan", w: ["Heian Nidan", "Heian Yondan", "Bassai Dai"], t: "Kata" },
+          { q: "Quantos movimentos oficiais compõem o Kata Heian Sandan?", c: "20 movimentos", w: ["26 movimentos", "21 movimentos", "23 movimentos"], t: "Kata" },
+          { q: "Qual é a postura do cavaleiro (Kiba Dachi) com peso igualmente distribuído?", c: "50% na perna esquerda e 50% na direita", w: ["70% atrás e 30% na frente", "60% na frente e 40% atrás", "90% na perna de apoio"], t: "Bases" },
+          { q: "Qual técnica de cotovelada (Empi Uchi) é praticada na faixa laranja e no Heian Sandan?", c: "Mawashi Empi Uchi (ou Mae Empi Uchi)", w: ["Yoko Geri", "Shuto Uke", "Gedan Barai"], t: "Golpes" },
+          { q: "O que significa o termo 'BUNKAI' no estudo dos Katas de Karatê?", c: "Análise e aplicação prática das técnicas de combate do Kata", w: ["Contagem numérica em japonês", "Saudação cerimonial de início de treino", "Uniforme tradicional e faixa"], t: "Conceitos" }
         ],
         3: [
-          "Qual é o Kata oficial exigido para a graduação de 3º Kyu (Faixa Verde)?",
-          "Quantos movimentos oficiais compõem o Kata Heian Yondan?",
-          "Qual chute circular atinge o oponente com o peito do pé ou a bola do pé (Mawashi Geri)?",
-          "O que significa manter o estado de alerta e foco mental (ZANSHIN) após um golpe?",
-          "O que preceitua o lema do Dojô Kun: 'Hitotsu! Kekki no yu o imashimuru koto'?",
-          "Qual é a defesa em cruz com os punhos fechados ou abertos (Juji Uke)?",
-          "Qual técnica de bloqueio com abertura simultânea dos braços (Kakiwake Uke) está no Heian Yondan?",
-          "Como se define o conceito de MA-AI (distância espacial e temporal de combate) no Kumite?",
-          "Qual chute retilíneo para trás é desferido com o calcanhar na direção do adversário (Ushiro Geri)?",
-          "Como a rotação do quadril (Koshi no Kaiten) multiplica a força de impacto no Karatê?",
-          "Qual técnica com a base da palma da mão (Teisho Uchi) é treinada no nível intermediário?",
-          "Em quais movimentos do Heian Yondan são executados os Kiais?",
-          "Qual a postura das pernas ao desferir a joelhada (Hiza Geri) no final do Heian Yondan?"
+          { q: "Qual é o Kata oficial exigido para a graduação de 3º Kyu (Faixa Verde)?", c: "Heian Yondan", w: ["Heian Sandan", "Heian Godan", "Tekki Shodan"], t: "Kata" },
+          { q: "Quantos movimentos oficiais compõem o Kata Heian Yondan?", c: "27 movimentos", w: ["20 movimentos", "26 movimentos", "21 movimentos"], t: "Kata" },
+          { q: "Qual chute circular atinge o oponente com o peito do pé ou a bola do pé?", c: "Mawashi Geri", w: ["Mae Geri", "Ushiro Geri", "Yoko Geri"], t: "Chutes" },
+          { q: "O que significa manter o estado de alerta e foco mental (ZANSHIN) após um golpe?", c: "Postura e atenção contínua mantida antes, durante e após a técnica", w: ["Comemorar imediatamente o ponto obtido", "Relaxar totalmente os músculos e baixar a guarda", "Gritar Kiai repetidamente sem recuar"], t: "Filosofia" },
+          { q: "Qual é a defesa em cruz com os punhos fechados ou abertos apresentada no Heian Yondan?", c: "Juji Uke", w: ["Manji Uke", "Age Uke", "Gedan Barai"], t: "Defesas" }
         ],
         2: [
-          "Qual é o Kata oficial exigido para a graduação de 2º Kyu (Faixa Roxa)?",
-          "Quantos movimentos oficiais compõem o Kata Heian Godan?",
-          "Qual é o nome da defesa dupla em níveis opostos (um braço alto e outro baixo) conhecida como Manji Uke?",
-          "Qual é o momento e a técnica do salto aéreo característico do Kata Heian Godan?",
-          "Como se chama a base com pernas cruzadas adotada logo após a aterrissagem do salto no Heian Godan?",
-          "Quais são as diferenças de dinâmica entre o Jiyu Ippon Kumite e o Jiyu Kumite livre?",
-          "O que caracteriza a aplicação máxima de foco, velocidade e energia corporal no KIME?",
-          "Qual é o significado filosófico da máxima 'Karate ni sente nashi' (No Karatê não há primeiro ataque)?",
-          "Qual técnica de chave articular ou projeção rápida é revelada no Bunkai do Heian Godan?",
-          "Como a alternância de ritmos (Waza no Kankyu) influencia a pontuação e expressão do Kata?",
-          "Em quais tempos ocorrem os dois Kiais do Kata Heian Godan?",
-          "Qual o papel do equilíbrio mental e estabilidade pós-salto no Heian Godan?"
+          { q: "Qual é o Kata oficial exigido para a graduação de 2º Kyu (Faixa Roxa)?", c: "Heian Godan", w: ["Heian Yondan", "Tekki Shodan", "Bassai Dai"], t: "Kata" },
+          { q: "Quantos movimentos oficiais compõem o Kata Heian Godan?", c: "23 movimentos", w: ["27 movimentos", "21 movimentos", "26 movimentos"], t: "Kata" },
+          { q: "Qual é a defesa dupla em níveis opostos (um braço alto e outro baixo) do Heian Godan?", c: "Manji Uke", w: ["Juji Uke", "Kakiwake Uke", "Morote Uke"], t: "Defesas" },
+          { q: "Como se chama a base com pernas cruzadas adotada logo após o salto do Heian Godan?", c: "Kosa Dachi", w: ["Zenkutsu Dachi", "Kiba Dachi", "Kokutsu Dachi"], t: "Bases" },
+          { q: "O que caracteriza a aplicação máxima de foco, velocidade e contração no KIME?", c: "Concentração máxima de força e energia no instante do impacto", w: ["Relaxamento muscular total sem impacto", "Apenas respiração suave sem foco", "Esquiva sem desferir contra-ataque"], t: "Conceitos" }
         ],
         1: [
-          "Quais são os Katas avançados tradicionalmente cobrados no exame para Faixa Marrom 1º Kyu?",
-          "Quantos movimentos compõem o Kata Bassai Dai ('Romper a Fortaleza')?",
-          "Qual postura linear é mantida ao longo de todo o trajeto do Kata Tekki Shodan?",
-          "Qual é a diferença entre as três iniciativas táticas de combate: Sen no Sen, Go no Sen e Sen Sen no Sen?",
-          "Como o conceito de Tai Sabaki (esquiva e reposicionamento corporal) anula a força do ataque inimigo?",
-          "O que representa filosoficamente a graduação de Faixa Marrom na transição para a Faixa Preta?",
-          "Qual a vantagem biomecânica da base Fudo Dachi (Sochin Dachi) em combate pesado?",
-          "Como a terceira lei de Newton (Ação e Reação através do solo) opera na aceleração do Karatê?",
-          "Quais mestres históricos foram fundamentais para a criação dos katas Shotokan (Itosu, Matsumura, Azato)?",
-          "Qual a importância de dominar o Bunkai Oyo (aplicação livre com variações) para a faixa marrom?",
-          "Em quais passagens ocorrem os dois Kiais marcantes do Kata Bassai Dai?",
-          "Qual é a importância da flexibilidade dos tornozelos e quadris na base Kiba Dachi do Tekki Shodan?"
+          { q: "Quais Katas são tradicionalmente cobrados no exame para Faixa Marrom (1º Kyu)?", c: "Tekki Shodan e Bassai Dai", w: ["Heian Shodan e Heian Nidan", "Gankaku e Unsu", "Jion e Sochin"], t: "Kata" },
+          { q: "Quantos movimentos compõem o Kata Bassai Dai ('Romper a Fortaleza')?", c: "42 movimentos", w: ["23 movimentos", "27 movimentos", "54 movimentos"], t: "Kata" },
+          { q: "Qual postura linear e lateral é mantida ao longo de todo o Kata Tekki Shodan?", c: "Kiba Dachi", w: ["Zenkutsu Dachi", "Kokutsu Dachi", "Fudo Dachi"], t: "Bases" },
+          { q: "Qual a diferença entre as três iniciativas: Sen no Sen, Go no Sen e Sen Sen no Sen?", c: "São tempos de antecipação: contra-ataque simultâneo, defensivo e antecipado", w: ["São categorias de peso de torneio infantil", "São alturas de chutes no ar", "São saudações formais da WKF"], t: "Estratégia" },
+          { q: "Como o conceito de Tai Sabaki (esquiva corporal) opera no combate?", c: "Deslocamento e rotação do corpo para sair da linha de ataque e contra-atacar", w: ["Bloqueio estático resistindo com a força bruta", "Recuo linear de 10 passos sem defesa", "Ficar imóvel esperando o golpe adversário"], t: "Tática" }
         ],
         0: [
-          "Qual é o significado original do termo 'SHODAN' e por que ele simboliza o início dos estudos?",
-          "Quais Katas superiores compõem os Sentei Katas do estilo Shotokan (Kanku Dai, Jion, Enpi, Hangetsu)?",
-          "Como se define a harmonia da tríade SHIN-GI-TAI (Coração/Mente, Técnica e Condição Física)?",
-          "Quais são os critérios exigidos pelas regras da WKF para a validação de um IPPON no Kumite?",
-          "Qual o significado do primeiro preceito do Niju Kun: 'O Karatê começa com cortesia e termina com cortesia'?",
-          "O que significa alcançar a atitude mental de MUSHIN (mente limpa, sem apego ou hesitação) no combate?",
-          "Como o estudo dos pontos vitais (Kyusho Waza) fundamenta a eficácia da defesa pessoal no Karatê?",
-          "Qual é a responsabilidade moral e o exemplo de conduta de um Yudansha (faixa preta) perante os alunos?",
-          "Qual a diferença estrutural entre a respiração diafragmática marcial (Ibuki) e a respiração natural no combate?",
-          "Quais os princípios biomecânicos envolvidos na transição rápida de bases em Katas superiores?",
-          "Quantos movimentos oficiais compõem o Kata Kanku Dai ('Olhar para o Céu')?",
-          "Qual a interpretação marcial da abertura com as mãos triangulares em direção ao sol no Kanku Dai?"
+          { q: "Qual é o significado original do termo 'SHODAN' na faixa preta?", c: "Primeiro degrau / O verdadeiro início do aprendizado", w: ["Grau supremo e término de todo estudo", "Mestre absoluto invencível", "Instrutor de elite aposentado"], t: "Filosofia" },
+          { q: "Quais Katas superiores compõem os Sentei Katas do estilo Shotokan?", c: "Kanku Dai, Jion, Enpi e Hangetsu", w: ["Heian Shodan, Nidan e Sandan", "Gojushiho Dai e Sho", "Unsu e Meikyo"], t: "Kata" },
+          { q: "Como se define a harmonia marcial da tríade SHIN-GI-TAI?", c: "Mente/Coração (Shin), Técnica (Gi) e Condição Física/Corpo (Tai)", w: ["Soco, Chute e Defesa", "Árbitro, Atleta e Técnico", "Força, Peso e Altura"], t: "Filosofia" },
+          { q: "Quais são os critérios exigidos pelas regras da WKF para validação de um IPPON?", c: "Boa forma, atitude esportiva, vigor, Zanshin, tempo e distância corretos", w: ["Apenas força muscular máxima atingindo o oponente", "Queda forçada sem controle técnico", "Qualquer golpe que derrube o adversário"], t: "Regulamento" },
+          { q: "O que significa alcançar a atitude mental de MUSHIN no Karatê?", c: "Mente vazia de pensamentos dispersos, atenta e fluida em estado presente", w: ["Agressividade descontrolada em combate", "Dúvida e hesitação antes de atacar", "Apego à vitória a qualquer custo"], t: "Filosofia" }
         ],
         "-1": [
-          "Qual é o papel e a maturidade técnica exigida de um Nidan no ensino e preservação do Shotokan?",
-          "Quais Katas superiores como Jitte, Gankaku e Sochin compõem o aprofundamento do 2º Dan?",
-          "Como o instrutor Nidan deve conduzir a correção postural e a pedagogia motora de novos faixas pretas?",
-          "Qual é a postura de apoio em uma só perna (Tsuruashi Dachi) destacada no Kata Gankaku?",
-          "Como se articula o conceito de 'Hito Empi, Hito Ken' no combate de curta distância no Dojô?",
-          "Qual é a interpretação do preceito 'Pense no Karatê como um espelho da sua vida diária' de Gichin Funakoshi?",
-          "Como estruturar um treinamento seguro que previna lesões em alunos de diferentes faixas etárias?",
-          "Qual a dinâmica de alavancas e tempo no emprego de Ashi Barai (rasteiras com o pé)?",
-          "Quais são os pontos chaves de interpretação do Kata Jitte ('Dez Mãos')?",
-          "Qual o objetivo da base Fudo Dachi na execução potente do Kata Sochin?"
+          { q: "Qual é o papel e a maturidade técnica exigida de um Sensei Nidan (2º Dan)?", c: "Aprofundamento técnico, liderança marcial e refinamento pedagógico", w: ["Apenas treinar sem responsabilidade no Dojô", "Desconsiderar os fundamentos do estilo", "Prática exclusiva de luta esportiva"], t: "Liderança" },
+          { q: "Quais Katas superiores compõem o aprofundamento oficial do 2º Dan?", c: "Jitte, Gankaku e Sochin", w: ["Heian Shodan e Heian Nidan", "Tekki Shodan e Bassai Dai", "Taikyoku Shodan"], t: "Kata" },
+          { q: "Qual é a postura em uma só perna (Tsuruashi Dachi) destacada no Kata Gankaku?", c: "Base da Garça sobre a Rocha para equilíbrio e contra-ataque rápido", w: ["Base sentada no solo para defesa de pernas", "Postura deitada para rolamento marcial", "Base do cavaleiro aberta"], t: "Bases" },
+          { q: "Como o Sensei Nidan deve conduzir a pedagogia motora de novos faixas pretas?", c: "Com clareza nos detalhes biomecânicos, respeito mútuo e exemplo prático", w: ["Com punições físicas e sem explicações", "Exigindo apenas força bruta sem postura", "Delegando todas as aulas a iniciantes"], t: "Pedagogia" },
+          { q: "Qual o objetivo da base Fudo Dachi (Sochin Dachi) na execução potente do Kata Sochin?", c: "Estabilidade inabalável combinando a firmeza do Kiba Dachi com o avanço do Zenkutsu", w: ["Salto em altura com pernas recolhidas", "Recuo evasivo com 90% do peso atrás", "Base de repouso sem flexão de joelhos"], t: "Bases" }
         ],
         "-2": [
-          "Qual a responsabilidade de liderança do Sensei Sandan na formação de novos instrutores e atletas?",
-          "Quais Katas mestres de alto grau como Nijushiho, Meikyo, Chinte e Gojushiho são estudados no nível Sandan?",
-          "O que preceitua a filosofia Budo a respeito da 'Vitória sobre o próprio ego' (Katsu Hayabi)?",
-          "Como sincronizar o controle de energia interna (Ki), respiração sonora e explosão articular em técnicas avançadas?",
-          "Quais critérios técnicos objetivos e éticos devem guiar um examinador em bancas de graduação?",
-          "Como o princípio ancestral do 'Shuhari' (Obediência, Ruptura e Transcendência) descreve a evolução marcial?",
-          "Qual a visão madura do conceito histórico de 'Ikken Hissatsu' dentro da ética do Karatê contemporâneo?",
-          "Como o Sensei sênior cultiva a resiliência mental e o respeito mútuo em toda a comunidade do Dojô?",
-          "Quais as peculiaridades do Kata Unsu ('Nuvens Dispersas') e seus saltos técnicos complexos?",
-          "Qual a relação entre longevidade marcial e prática suave (Ju) combinada com rigidez (Go)?"
+          { q: "Qual a responsabilidade de liderança do Sensei Sandan (3º Dan) na formação marcial?", c: "Formação de instrutores, preservação dos valores do Budo e visão ética do Dojô", w: ["Apenas competir em torneios locais", "Não participar mais de bancas de exame", "Focar apenas em aspectos comerciais"], t: "Liderança" },
+          { q: "Quais Katas mestres de alto grau são tradicionalmente estudados no nível Sandan?", c: "Nijushiho, Meikyo, Chinte e Gojushiho", w: ["Heian Shodan, Nidan e Sandan", "Tekki Shodan", "Bassai Dai"], t: "Kata" },
+          { q: "Como o princípio ancestral do 'Shuhari' descreve a evolução marcial?", c: "Shu (Obedecer às regras), Ha (Romper/Compreender) e Ri (Transcender e criar)", w: ["Começar, Parar e Desistir", "Ataque, Defesa e Contra-ataque", "Infantil, Juvenil e Adulto"], t: "Filosofia" },
+          { q: "O que preceitua a filosofia Budo a respeito da 'Vitória sobre o próprio ego' (Katsu Hayabi)?", c: "A verdadeira maestria consiste em vencer a si mesmo antes de vencer qualquer outro", w: ["Derrotar todos os adversários publicamente", "Acumular troféus e medalhas de ouro", "Provar superioridade sobre outros estilos"], t: "Filosofia" },
+          { q: "Quais as peculiaridades do Kata Unsu ('Nuvens Dispersas') no Karatê Shotokan?", c: "Complexidade dinâmica com variação rápida de ritmo, defesas circulares e salto aéreo de 360°", w: ["Apenas movimentos lentos em linha reta", "Execução sentada sem deslocamento", "Kata exclusivo com armas tradicionais"], t: "Kata" }
         ]
       };
 
-      const kyuKey = parseInt(kyu);
-      const candidates = QUESTIONS_BY_KYU[kyuKey] || QUESTIONS_BY_KYU[7] || [];
-      
-      const shuffled = [...candidates].sort(() => 0.5 - Math.random());
-      for (const q of shuffled) {
-        const norm = normalizeQuestionKey(q);
-        if (!existingSet.has(norm)) {
-          existingSet.add(norm);
-          window._tkstSuggestedHistory.push(norm);
-          try {
-            sessionStorage.setItem('tkst_suggested_history', JSON.stringify(window._tkstSuggestedHistory.slice(-300)));
-          } catch(e) {}
-          return q;
+      if (CURATED_BY_KYU[kyuKey]) {
+        CURATED_BY_KYU[kyuKey].forEach(item => {
+          generatedCandidates.push({
+            question: item.q,
+            correctAnswer: item.c,
+            wrongAnswers: item.w,
+            topic: item.t,
+            beltName: beltName
+          });
+        });
+      }
+
+      // Embaralha todas as opções candidatas originadas do plano de estudos
+      const shuffledCandidates = [...generatedCandidates].sort(() => 0.5 - Math.random());
+      const selectedBatch = [];
+
+      for (const item of shuffledCandidates) {
+        const normKey = normalizeQuestionKey(item.question);
+        if (!existingSet.has(normKey)) {
+          existingSet.add(normKey);
+          window._tkstSuggestedHistory.push(normKey);
+          selectedBatch.push({
+            id: `batch_${Date.now()}_${selectedBatch.length}`,
+            question: item.question,
+            correctAnswer: item.correctAnswer,
+            wrongAnswers: item.wrongAnswers,
+            topic: item.topic || "Plano de Estudos",
+            beltName: item.beltName || beltName,
+            toString: function() { return this.question; },
+            valueOf: function() { return this.question; }
+          });
+          if (selectedBatch.length >= count) break;
         }
       }
 
-      const socos = ["Gyaku Tsuki", "Oi Tsuki", "Kizami Tsuki", "Tate Tsuki", "Uraken Uchi", "Shuto Uchi", "Empi Uchi", "Teisho Uchi"];
-      const defesas = ["Gedan Barai", "Age Uke", "Soto Uke", "Uchi Uke", "Shuto Uke", "Morote Uke", "Juji Uke", "Manji Uke", "Kakiwake Uke"];
-      const chutes = ["Mae Geri", "Mawashi Geri", "Yoko Geri Keage", "Yoko Geri Kekomi", "Ushiro Geri", "Mikazuki Geri", "Hiza Geri"];
-      const bases = ["Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi", "Neko Ashi Dachi", "Sanchin Dachi", "Musubi Dachi"];
-      const katas = ["Heian Shodan", "Heian Nidan", "Heian Sandan", "Heian Yondan", "Heian Godan", "Tekki Shodan", "Bassai Dai", "Kanku Dai", "Jion", "Enpi"];
-      const alturas = ["Jodan (nível alto)", "Chudan (nível médio)", "Gedan (nível baixo)"];
-
-      const randPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-      const dynamicTemplates = [
-        () => `Qual a postura correta e o posicionamento do centro de gravidade na base ${randPick(bases)} ao executar o ${randPick(socos)}?`,
-        () => `Como deve ser realizado o movimento de rotação do quadril e recuo ao aplicar a defesa ${randPick(defesas)}?`,
-        () => `Qual região de impacto do pé deve ser utilizada para conectar com precisão a técnica ${randPick(chutes)}?`,
-        () => `Qual a aplicação marcial prática em autodefesa (Bunkai) recomendada para o golpe ${randPick(socos)} a partir da base ${randPick(bases)}?`,
-        () => `Qual a diferença de trajetória e tempo de reação entre a defesa ${randPick(defesas)} e outra defesa de antebraço?`,
-        () => `Em qual situação de combate real ou simulado o chute ${randPick(chutes)} deve ser combinado com o golpe ${randPick(socos)}?`,
-        () => `Qual o foco de concentração de energia (Kime) ao finalizar o ataque de ${randPick(socos)} em ${randPick(alturas)}?`,
-        () => `Como a respiração correta (Ibuki / Nogare) auxilia na velocidade e no impacto do golpe ${randPick(socos)}?`,
-        () => `Qual o significado e função marcial do Kata ${randPick(katas)} dentro da evolução no estilo Shotokan?`,
-        () => `Como se posiciona o pé de apoio e a articulação do joelho durante a elevação do golpe ${randPick(chutes)}?`,
-        () => `Qual a principal finalidade da base ${randPick(bases)} no equilíbrio entre estabilidade firme e mobilidade ágil?`,
-        () => `Como evitar vulnerabilidades na guarda corporal ao desferir o golpe ${randPick(socos)} em altura ${randPick(alturas)}?`
-      ];
-
-      for (let attempt = 0; attempt < 50; attempt++) {
-        const genFn = dynamicTemplates[Math.floor(Math.random() * dynamicTemplates.length)];
-        const genQ = genFn();
-        const norm = normalizeQuestionKey(genQ);
-        if (!existingSet.has(norm)) {
-          existingSet.add(norm);
-          window._tkstSuggestedHistory.push(norm);
-          try {
-            sessionStorage.setItem('tkst_suggested_history', JSON.stringify(window._tkstSuggestedHistory.slice(-300)));
-          } catch(e) {}
-          return genQ;
-        }
+      // Fallback garantido se o banco já tiver quase todas
+      while (selectedBatch.length < count && generatedCandidates.length > 0) {
+        const fallbackItem = generatedCandidates[Math.floor(Math.random() * generatedCandidates.length)];
+        selectedBatch.push({
+          id: `batch_${Date.now()}_${selectedBatch.length}`,
+          question: fallbackItem.question,
+          correctAnswer: fallbackItem.correctAnswer,
+          wrongAnswers: fallbackItem.wrongAnswers,
+          topic: fallbackItem.topic || "Plano de Estudos",
+          beltName: fallbackItem.beltName || beltName,
+          toString: function() { return this.question; },
+          valueOf: function() { return this.question; }
+        });
       }
 
-      return "Descreva a execução correta e os pontos de atenção da técnica principal exigida nesta graduação:";
+      try {
+        sessionStorage.setItem('tkst_suggested_history', JSON.stringify(window._tkstSuggestedHistory.slice(-300)));
+      } catch (e) {}
+
+      return selectedBatch;
+    },
+
+    generateUniqueQuestionSuggestion: (kyu) => {
+      const batch = window.TKST_APP.generateBatchQuestionSuggestions(kyu, 1);
+      return batch && batch[0] ? batch[0] : "Descreva a execução correta da técnica principal exigida nesta graduação:";
     },
 
     suggestQuizQuestion: (kyu, targetInputId = 'newQuizQuestionInput') => {
@@ -10315,26 +10680,199 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!inputEl) return;
       const suggested = window.TKST_APP.generateUniqueQuestionSuggestion(kyu);
       if (!suggested) {
-        if (typeof showToast === 'function') {
-          showToast('⚠️ Nenhuma sugestão disponível no momento.', 'warning');
-        } else {
-          alert('Nenhuma sugestão disponível no momento.');
-        }
+        showToast('⚠️ Nenhuma sugestão disponível no momento.', 'warning');
         return;
       }
-      inputEl.value = suggested;
+
+      const qText = typeof suggested === 'object' ? suggested.question : suggested;
+      inputEl.value = qText;
       inputEl.focus();
-      if (typeof showToast === 'function') {
-        showToast('💡 Pergunta sugerida! Você pode editá-la e preencher a resposta.', 'success');
+
+      const isEdit = targetInputId.includes('edit');
+      const cInput = document.getElementById(isEdit ? 'editQuizCorrectAnswerInput' : 'newQuizCorrectAnswerInput');
+      const w1 = document.getElementById(isEdit ? 'editQuizWrong1Input' : 'newQuizWrong1Input');
+      const w2 = document.getElementById(isEdit ? 'editQuizWrong2Input' : 'newQuizWrong2Input');
+      const w3 = document.getElementById(isEdit ? 'editQuizWrong3Input' : 'newQuizWrong3Input');
+
+      if (typeof suggested === 'object' && suggested.correctAnswer) {
+        if (cInput && (!cInput.value.trim() || !isEdit)) {
+          cInput.value = suggested.correctAnswer;
+        }
+        if (suggested.wrongAnswers && suggested.wrongAnswers.length >= 3) {
+          if (w1 && (!w1.value.trim() || !isEdit)) w1.value = suggested.wrongAnswers[0] || '';
+          if (w2 && (!w2.value.trim() || !isEdit)) w2.value = suggested.wrongAnswers[1] || '';
+          if (w3 && (!w3.value.trim() || !isEdit)) w3.value = suggested.wrongAnswers[2] || '';
+        }
       }
+
+      const beltName = (typeof suggested === 'object' && suggested.beltName) ? suggested.beltName : getBeltNameFromKyu(kyu);
+      showToast(`📖 Pergunta e gabarito pesquisados no Plano de Estudos da ${beltName}!`, 'success', 3500);
     },
 
     openAddQuizQuestionWithSuggestion: (kyu) => {
       const suggested = window.TKST_APP.generateUniqueQuestionSuggestion(kyu);
       window.TKST_APP.openAddQuizQuestionModal(kyu, suggested);
-      if (typeof showToast === 'function') {
-        showToast('💡 Pergunta inédita sugerida! Você pode editar o texto livremente.', 'info');
+      const beltName = (typeof suggested === 'object' && suggested.beltName) ? suggested.beltName : getBeltNameFromKyu(kyu);
+      showToast(`💡 Pergunta e alternativas pesquisadas no Plano de Estudos da ${beltName}!`, 'info', 3500);
+    },
+
+    openBatchSuggestQuestionsModal: (kyu) => {
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const beltName = getBeltNameFromKyu(kyu);
+      const batch = window.TKST_APP.generateBatchQuestionSuggestions(kyu, 5);
+      window._currentBatchSuggestions = batch;
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;">
+          <span><i class="fas fa-layer-group" style="color: var(--accent-gold);"></i> Sugestão em Lote (5 Questões • ${beltName})</span>
+          <span class="badge badge-gold" style="font-size: 0.70rem; font-weight: 700; white-space: nowrap;"><i class="fas fa-book-reader"></i> Plano de Estudos</span>
+        </div>
+      `;
+
+      modalBody.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Top Banner com ações -->
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; flex-wrap: wrap; gap: 8px;">
+            <div style="font-size: 0.82rem; color: #E2E8F0;">
+              <i class="fas fa-magic" style="color: var(--accent-gold); margin-right: 6px;"></i>
+              <strong>5 questões completas</strong> pesquisadas automaticamente no Plano de Estudos oficial de <strong>${beltName}</strong> com resposta correta e 3 erradas.
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.regenerateBatchSuggestions(${kyu})" style="font-size: 0.74rem; padding: 4px 10px; font-weight: 700;">
+              <i class="fas fa-sync-alt"></i> Gerar Outro Lote
+            </button>
+          </div>
+
+          <!-- Cards das 5 Perguntas -->
+          <div style="display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
+            ${batch.map((q, idx) => `
+              <div class="batch-question-card" style="background: rgba(22, 28, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 0;">
+                    <input type="checkbox" id="batchCheck_${idx}" checked onchange="window.TKST_APP.updateBatchSelectedCount()" style="width: 16px; height: 16px; accent-color: var(--accent-gold); cursor: pointer;">
+                    <strong style="color: #FFF; font-size: 0.86rem;">Questão #${idx + 1}</strong>
+                  </label>
+                  <span class="badge" style="background: rgba(255,183,3,0.14); border: 1px solid rgba(255,183,3,0.35); color: var(--accent-gold); font-size: 0.68rem; font-weight: 700;">
+                    ${q.topic || 'Plano de Estudos'}
+                  </span>
+                </div>
+
+                <!-- Enunciado -->
+                <div>
+                  <textarea id="batchQ_${idx}" class="form-input" rows="2" style="font-size: 0.86rem; font-weight: 600; width: 100%; resize: vertical;" required>${escapeHtml(q.question)}</textarea>
+                </div>
+
+                <!-- Resposta Correta (Gabarito) -->
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 8px 10px;">
+                  <label style="font-size: 0.74rem; font-weight: 700; color: #6EE7B7; display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
+                    <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta (Gabarito Oficial):
+                  </label>
+                  <input type="text" id="batchCorrect_${idx}" class="form-input" value="${escapeHtml(q.correctAnswer)}" required style="font-size: 0.84rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.4); border-color: rgba(16, 185, 129, 0.4);">
+                </div>
+
+                <!-- 3 Alternativas Erradas -->
+                <div style="background: rgba(230, 57, 70, 0.05); border: 1px solid rgba(230, 57, 70, 0.22); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px;">
+                  <label style="font-size: 0.74rem; font-weight: 700; color: #FCA5A5; display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
+                    <i class="fas fa-times-circle" style="color: var(--accent-crimson);"></i> 3 Alternativas Incorretas (Distratores):
+                  </label>
+                  <input type="text" id="batchWrong1_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers[0] || '')}" placeholder="Alternativa errada 1..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35);">
+                  <input type="text" id="batchWrong2_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers[1] || '')}" placeholder="Alternativa errada 2..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35);">
+                  <input type="text" id="batchWrong3_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers[2] || '')}" placeholder="Alternativa errada 3..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35);">
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Rodapé com Ações -->
+          <div style="display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeModal()" style="padding: 10px 16px;">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" onclick="window.TKST_APP.saveBatchQuestionsToBank(${kyu})" style="flex: 1; padding: 10px 20px; font-weight: 800; font-size: 0.90rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i class="fas fa-check-double"></i> Aprovar e Adicionar (<span id="batchCountBadge">5</span>) ao Simulado
+            </button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    },
+
+    regenerateBatchSuggestions: (kyu) => {
+      window.TKST_APP.openBatchSuggestQuestionsModal(kyu);
+      showToast('🔄 Novo lote de 5 questões pesquisado no Plano de Estudos!', 'info', 2500);
+    },
+
+    updateBatchSelectedCount: () => {
+      const checkboxes = document.querySelectorAll('[id^="batchCheck_"]');
+      let count = 0;
+      checkboxes.forEach(cb => { if (cb.checked) count++; });
+      const badge = document.getElementById('batchCountBadge');
+      if (badge) badge.textContent = count;
+    },
+
+    saveBatchQuestionsToBank: (kyu) => {
+      const checkboxes = document.querySelectorAll('[id^="batchCheck_"]');
+      const itemsToSave = [];
+      const beltName = getBeltNameFromKyu(kyu);
+
+      checkboxes.forEach((cb, idx) => {
+        if (!cb.checked) return;
+        const qInput = document.getElementById(`batchQ_${idx}`);
+        const cInput = document.getElementById(`batchCorrect_${idx}`);
+        const w1Input = document.getElementById(`batchWrong1_${idx}`);
+        const w2Input = document.getElementById(`batchWrong2_${idx}`);
+        const w3Input = document.getElementById(`batchWrong3_${idx}`);
+
+        const questionText = qInput ? qInput.value.trim() : '';
+        const correctAnswer = cInput ? cInput.value.trim() : '';
+        let wrong1 = w1Input ? w1Input.value.trim() : '';
+        let wrong2 = w2Input ? w2Input.value.trim() : '';
+        let wrong3 = w3Input ? w3Input.value.trim() : '';
+
+        if (!questionText || !correctAnswer) return;
+
+        if (!wrong1 || !wrong2 || !wrong3) {
+          const smart = generateSmartOptions(questionText, correctAnswer);
+          const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
+          if (!wrong1) wrong1 = fallback[0] || 'Opção B';
+          if (!wrong2) wrong2 = fallback[1] || 'Opção C';
+          if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+        }
+
+        itemsToSave.push({
+          id: `q_custom_${kyu}_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          kyuNumber: kyu,
+          beltName: beltName,
+          question: questionText,
+          image: '',
+          options: [correctAnswer, wrong1, wrong2, wrong3],
+          correctIndex: 0,
+          _edited: true,
+          updatedAt: Date.now()
+        });
+      });
+
+      if (itemsToSave.length === 0) {
+        showToast('⚠️ Selecione pelo menos uma questão para adicionar.', 'warning', 3500);
+        return;
       }
+
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      itemsToSave.forEach(item => bank.push(item));
+
+      if (window.TKST_AUTH && window.TKST_AUTH.saveCustomQuizBank) {
+        window.TKST_AUTH.saveCustomQuizBank(bank);
+      }
+
+      const modal = document.getElementById('detailModal');
+      if (modal) modal.classList.remove('active');
+
+      showToast(`🎉 ${itemsToSave.length} questões do Plano de Estudos adicionadas ao simulado da ${beltName}! Sincronizando...`, 'sync', 4500);
+      renderAdminMaster();
     },
 
     openAddQuizQuestionModal: (kyu, initialQuestion = '') => {
@@ -10342,6 +10880,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
       const beltName = getBeltNameFromKyu(kyu);
+
+      const qText = typeof initialQuestion === 'object' ? (initialQuestion.question || '') : (initialQuestion || '');
+      const cText = typeof initialQuestion === 'object' ? (initialQuestion.correctAnswer || '') : '';
+      const w1Text = typeof initialQuestion === 'object' ? (initialQuestion.wrongAnswers?.[0] || '') : '';
+      const w2Text = typeof initialQuestion === 'object' ? (initialQuestion.wrongAnswers?.[1] || '') : '';
+      const w3Text = typeof initialQuestion === 'object' ? (initialQuestion.wrongAnswers?.[2] || '') : '';
 
       modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Nova Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.7rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> Edição Protegida</span></div>`;
 
@@ -10356,13 +10900,18 @@ document.addEventListener('DOMContentLoaded', () => {
               <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0;">
                 <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
               </label>
-              <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.suggestQuizQuestion(${kyu}, 'newQuizQuestionInput')" style="font-size: 0.74rem; padding: 3px 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border-radius: 4px;" title="Sugerir pergunta inédita para esta faixa">
-                <i class="fas fa-lightbulb"></i> Sugerir Pergunta
-              </button>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.openBatchSuggestQuestionsModal(${kyu})" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700; color: #000;" title="Sugerir 5 perguntas em lote">
+                  <i class="fas fa-layer-group"></i> Lote (5)
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.suggestQuizQuestion(${kyu}, 'newQuizQuestionInput')" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700;" title="Sugerir pergunta inédita para esta faixa">
+                  <i class="fas fa-lightbulb"></i> Sugerir 1
+                </button>
+              </div>
             </div>
-            <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite sua pergunta aqui ou clique em 'Sugerir Pergunta' acima..." style="resize: vertical; font-size: 0.88rem;">${initialQuestion || ''}</textarea>
+            <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite sua pergunta aqui ou clique em 'Sugerir Pergunta' acima..." style="resize: vertical; font-size: 0.88rem;">${escapeHtml(qText)}</textarea>
             <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px;">
-              <i class="fas fa-keyboard"></i> Você pode digitar livremente sua própria pergunta ou clicar em <strong>Sugerir Pergunta</strong> e alterá-la como quiser.
+              <i class="fas fa-keyboard"></i> Você pode digitar livremente sua própria pergunta ou usar a sugestão baseada no Plano de Estudos.
             </div>
           </div>
 
@@ -10394,7 +10943,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #6EE7B7; font-weight: 700;">
               <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito Oficial):
             </label>
-            <input type="text" id="newQuizCorrectAnswerInput" class="form-input" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.88rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.4); border-color: rgba(16, 185, 129, 0.4);">
+            <input type="text" id="newQuizCorrectAnswerInput" class="form-input" value="${escapeHtml(cText)}" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.88rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.4); border-color: rgba(16, 185, 129, 0.4);">
           </div>
 
           <!-- 3 Respostas Erradas -->
@@ -10410,17 +10959,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div>
               <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 1:</span>
-              <input type="text" id="newQuizWrong1Input" class="form-input" placeholder="Digite a 1ª alternativa errada (ou use Auto-sugerir)..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
+              <input type="text" id="newQuizWrong1Input" class="form-input" value="${escapeHtml(w1Text)}" placeholder="Digite a 1ª alternativa errada (ou use Auto-sugerir)..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
             </div>
 
             <div>
               <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 2:</span>
-              <input type="text" id="newQuizWrong2Input" class="form-input" placeholder="Digite a 2ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
+              <input type="text" id="newQuizWrong2Input" class="form-input" value="${escapeHtml(w2Text)}" placeholder="Digite a 2ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
             </div>
 
             <div>
               <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 3:</span>
-              <input type="text" id="newQuizWrong3Input" class="form-input" placeholder="Digite a 3ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
+              <input type="text" id="newQuizWrong3Input" class="form-input" value="${escapeHtml(w3Text)}" placeholder="Digite a 3ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
             </div>
           </div>
 
