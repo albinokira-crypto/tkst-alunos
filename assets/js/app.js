@@ -3006,6 +3006,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const top10Leaderboard = activeRanked.slice(0, 10);
 
+    const MESES_NOMES = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+    const mesAtualNome = MESES_NOMES[new Date().getMonth()];
+
     let html = `
       ${isAdmin && todayStudents.length > 0 ? `
         <!-- ADMIN TODAY REGISTRATIONS BANNER -->
@@ -3158,8 +3164,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas fa-birthday-cake"></i>
               </div>
               <div style="min-width: 0;">
-                <h3 class="kun-name">Aniversários</h3>
-                <span class="kun-kanji" id="homeAniversariantesSubtitle">DojôBook</span>
+                <h3 class="kun-name">Aniversariantes</h3>
+                <span class="kun-kanji" id="homeAniversariantesSubtitle">${mesAtualNome}</span>
               </div>
             </div>
             <span class="kun-btn-view emerald">Ver <i class="fas fa-chevron-right" style="font-size: 0.55rem;"></i></span>
@@ -8980,6 +8986,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // 7. PUBLIC APPLICATION API (Attached to window.TKST_APP)
   // =========================================================================
   window.TKST_APP = {
+    closeModal: () => {
+      if (window.TKST_APP && typeof window.TKST_APP.closeDetailModal === 'function') {
+        window.TKST_APP.closeDetailModal();
+      } else {
+        const modal = document.getElementById('detailModal');
+        if (modal) {
+          modal.removeAttribute('data-prevent-outside-close');
+          modal.classList.remove('active');
+        }
+      }
+    },
     switchTab,
     openAdminPanel,
     openAdmin: (subTab) => openAdminPanel(subTab),
@@ -9288,10 +9305,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Atualiza o subtítulo do botão na Home se houver aniversariante hoje
             const subEl = document.getElementById('homeAniversariantesSubtitle');
             if (subEl) {
+              const MESES_NOMES = [
+                "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+              ];
+              const mesAtualNome = MESES_NOMES[new Date().getMonth()];
               if (data.aniversariantesHoje && data.aniversariantesHoje.length > 0) {
                 subEl.innerHTML = `<strong style="color: var(--accent-gold);">🎂 ${data.aniversariantesHoje.length} hoje!</strong>`;
               } else {
-                subEl.textContent = 'DojôBook';
+                subEl.textContent = mesAtualNome;
               }
             }
             return data;
@@ -9308,6 +9330,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
       if (!modal || !modalTitle || !modalBody) return;
+
+      modal.removeAttribute('data-prevent-outside-close');
 
       const mesHoje = new Date().getMonth() + 1;
       const mesAtivo = selectedMes !== null ? Number(selectedMes) : mesHoje;
@@ -9484,7 +9508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <a href="https://dojobook-five.vercel.app/aniversarios" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.74rem; padding: 7px 12px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
               <i class="fas fa-external-link-alt" style="color: #10B981;"></i> Abrir no DojôBook
             </a>
-            <button type="button" class="btn btn-primary btn-sm" onclick="window.TKST_APP.closeModal()" style="font-size: 0.74rem; padding: 7px 16px;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.TKST_APP.closeDetailModal()" style="font-size: 0.74rem; padding: 7px 16px;">
               Fechar
             </button>
           </div>
@@ -13248,6 +13272,9 @@ https://tkst-alunos.pages.dev/?cadastro=1</div>
         modal.classList.remove('active');
         stopModalMedia(modal);
       }
+    },
+    closeModal: () => {
+      window.TKST_APP.closeDetailModal();
     },
     closeVideoModal: () => {
       const modal = document.getElementById('videoModal');

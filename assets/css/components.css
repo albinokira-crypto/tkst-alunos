@@ -2900,12 +2900,14 @@ body.login-view-active .content-body {
 }
 
 .kun-name {
-  font-size: 0.95rem;
+  font-size: clamp(0.78rem, 1.05vw, 0.92rem);
   font-weight: 700;
   color: #FFF;
   margin: 0;
   line-height: 1.15;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kun-kanji {
@@ -3770,7 +3772,7 @@ body.login-view-active .content-body {
   }
 
   .kun-name {
-    font-size: 0.78rem !important;
+    font-size: 0.70rem !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
