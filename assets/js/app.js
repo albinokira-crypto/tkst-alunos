@@ -11153,8 +11153,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="background: linear-gradient(135deg, rgba(245, 190, 0, 0.12) 0%, rgba(20, 25, 38, 0.95) 100%); border: 1px solid rgba(245, 190, 0, 0.35); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
               <div style="font-size: 0.84rem; color: #F8FAFC;">
-                <i class="fas fa-book-reader" style="color: var(--accent-gold); margin-right: 6px;"></i>
-                O algoritmo pesquisa o acervo técnico do <strong>Karatê Shotokan tradicional (JKA / SKIF / WKF)</strong> e formula perguntas precisas com gabarito oficial para a graduação.
+                <i class="fas fa-bolt" style="color: var(--accent-gold); margin-right: 6px;"></i>
+                <strong>Critério de Simulado Rápido:</strong> O algoritmo formula perguntas e alternativas <strong>curtas e objetivas</strong> (1 a 5 palavras), sem termos técnicos excessivos nem descrições longas, permitindo que o aluno responda com agilidade no tempo cronometrado.
               </div>
             </div>
 
@@ -11167,13 +11167,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <select id="shotokanCategorySelect" class="form-input" style="font-size: 0.82rem; padding: 6px 10px; background: rgba(11, 14, 20, 0.85); color: #FFF; border: 1px solid rgba(255, 183, 3, 0.4); width: 100%;">
                   <option value="todos">🌐 Estudo Completo (Todas as Áreas)</option>
                   <option value="bases">📐 Bases (Dachi Waza) & Distribuição de Peso</option>
-                  <option value="defesas">🛡️ Defesas (Uke Waza) & Trajetórias</option>
+                  <option value="defesas">🛡️ Defesas (Uke Waza) & Alturas</option>
                   <option value="socos">👊 Socos (Tsuki) & Golpes de Punho (Uchi)</option>
-                  <option value="chutes">🦵 Chutes (Geri Waza) & Armas Corporais</option>
-                  <option value="katas">📜 Katas Oficiais Shotokan (Passos, Kiais & Bunkai)</option>
-                  <option value="kumite">🥊 Kumite (Gohon, Sanbon, Ippon & WKF)</option>
+                  <option value="chutes">🦵 Chutes (Geri Waza) & Armas dos Pés</option>
+                  <option value="katas">📜 Katas Oficiais Shotokan (Passos & Kiais)</option>
+                  <option value="kumite">🥊 Kumite (Passos & Regras WKF)</option>
                   <option value="filosofia">⛩️ Filosofia, Dojô Kun & Mestre Funakoshi</option>
-                  <option value="terminologia">🈳 Terminologia Japonesa & Armas</option>
+                  <option value="terminologia">🈳 Terminologia & Níveis (Jodan/Chudan/Gedan)</option>
                 </select>
               </div>
 
@@ -11250,23 +11250,23 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Enunciado -->
           <div>
             <label style="font-size: 0.74rem; font-weight: 700; color: #CBD5E1; display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
-              <i class="fas fa-question-circle" style="color: var(--accent-gold);"></i> Pergunta formulada:
+              <i class="fas fa-question-circle" style="color: var(--accent-gold);"></i> Pergunta formulada (Direta):
             </label>
             <textarea id="shotokanQ_${idx}" class="form-input" rows="2" style="font-size: 0.86rem; font-weight: 600; width: 100%; resize: vertical; line-height: 1.4;" required>${escapeHtml(q.question)}</textarea>
           </div>
 
-          <!-- Resposta Correta (Gabarito Oficial) -->
+          <!-- Resposta Correta (Curta e Objetiva) -->
           <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 8px 10px;">
             <label style="font-size: 0.74rem; font-weight: 700; color: #6EE7B7; display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
-              <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta (Gabarito Oficial JKA/WKF):
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta (Curta e Objetiva):
             </label>
             <input type="text" id="shotokanCorrect_${idx}" class="form-input" value="${escapeHtml(q.correctAnswer)}" required style="font-size: 0.84rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.45); border-color: rgba(16, 185, 129, 0.45); width: 100%;">
           </div>
 
-          <!-- 3 Alternativas Incorretas (Distratores Plausíveis) -->
+          <!-- 3 Alternativas Incorretas (Curtas) -->
           <div style="background: rgba(230, 57, 70, 0.05); border: 1px solid rgba(230, 57, 70, 0.25); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px;">
             <label style="font-size: 0.74rem; font-weight: 700; color: #FCA5A5; display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
-              <i class="fas fa-times-circle" style="color: var(--accent-crimson);"></i> 3 Alternativas Incorretas (Distratores Técnicos):
+              <i class="fas fa-times-circle" style="color: var(--accent-crimson);"></i> 3 Alternativas Incorretas (Curtas):
             </label>
             <input type="text" id="shotokanWrong1_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers?.[0] || '')}" placeholder="Alternativa errada 1..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35); width: 100%;">
             <input type="text" id="shotokanWrong2_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers?.[1] || '')}" placeholder="Alternativa errada 2..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35); width: 100%;">
@@ -11293,7 +11293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = window.TKST_APP.renderShotokanQuestionCards(questions, kyu);
       }
       window.TKST_APP.updateShotokanSelectedCount();
-      showToast(`🥋 ${questions.length} questões formuladas com base no estudo do Karatê Shotokan!`, 'success', 3000);
+      showToast(`⚡ ${questions.length} questões com respostas curtas e objetivas formuladas para o simulado!`, 'success', 3000);
     },
 
     updateShotokanSelectedCount: () => {
