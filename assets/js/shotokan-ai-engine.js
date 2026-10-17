@@ -219,199 +219,247 @@
       },
 
       // ---------------------------------------------------------------------
-      // DEFESAS (UKE WAZA) - RESPOSTAS CURTAS
+      // DEFESAS (UKE WAZA) - COM ALTURA (JODAN / CHUDAN / GEDAN)
       // ---------------------------------------------------------------------
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 6,
-        question: "Qual defesa bloqueia ataques na altura da cabeça e rosto (Jodan)?",
-        correctAnswer: "Age Uke",
-        distractors: ["Gedan Barai", "Soto Uke", "Uchi Uke"]
+        question: "Qual defesa Jodan protege contra ataques na altura do rosto?",
+        correctAnswer: "Jodan Age Uke",
+        distractors: ["Gedan Barai", "Chudan Soto Uke", "Chudan Uchi Uke"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 6,
-        question: "Qual defesa faz a varredura baixa contra golpes na cintura ou pernas?",
+        question: "Qual defesa Gedan faz a varredura baixa contra golpes na cintura ou pernas?",
         correctAnswer: "Gedan Barai",
-        distractors: ["Age Uke", "Shuto Uke", "Soto Uke"]
+        distractors: ["Jodan Age Uke", "Chudan Shuto Uke", "Chudan Soto Uke"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 5,
-        question: "Qual defesa é feita de fora para dentro na altura do tronco (Chudan)?",
-        correctAnswer: "Soto Uke",
-        distractors: ["Uchi Uke", "Age Uke", "Gedan Barai"]
+        question: "Qual defesa Chudan de fora para dentro bloqueia na altura do peito?",
+        correctAnswer: "Chudan Soto Uke",
+        distractors: ["Chudan Uchi Uke", "Jodan Age Uke", "Gedan Barai"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 5,
-        question: "Qual defesa é feita de dentro para fora na altura do tronco (Chudan)?",
-        correctAnswer: "Uchi Uke",
-        distractors: ["Soto Uke", "Age Uke", "Gedan Barai"]
+        question: "Qual defesa Chudan de dentro para fora bloqueia na altura do peito?",
+        correctAnswer: "Chudan Uchi Uke",
+        distractors: ["Chudan Soto Uke", "Jodan Age Uke", "Gedan Barai"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 5,
-        question: "Qual defesa clássica é executada com a mão aberta em faca da mão?",
-        correctAnswer: "Shuto Uke",
-        distractors: ["Age Uke", "Gedan Barai", "Oi Tsuki"]
+        question: "Qual defesa Chudan com a mão aberta em faca protege a altura do peito?",
+        correctAnswer: "Chudan Shuto Uke",
+        distractors: ["Jodan Age Uke", "Gedan Barai", "Chudan Oi Tsuki"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 3,
-        question: "Qual defesa reforçada utiliza as duas mãos no mesmo lado?",
-        correctAnswer: "Morote Uke",
-        distractors: ["Age Uke", "Gedan Barai", "Soto Uke"]
+        question: "Qual defesa Chudan reforçada com as duas mãos protege a altura do peito?",
+        correctAnswer: "Chudan Morote Uke",
+        distractors: ["Jodan Age Uke", "Gedan Barai", "Chudan Soto Uke"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 3,
-        question: "Qual defesa é feita cruzando os dois antebraços em X?",
-        correctAnswer: "Juji Uke",
-        distractors: ["Morote Uke", "Age Uke", "Manji Uke"]
+        question: "Qual defesa Jodan cruzando os antebraços em X bloqueia ataques no rosto?",
+        correctAnswer: "Jodan Juji Uke",
+        distractors: ["Chudan Morote Uke", "Jodan Age Uke", "Manji Uke"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 2,
-        question: "Qual defesa bloqueia em cima atrás e embaixo na frente simultaneamente?",
+        question: "Qual defesa mista bloqueia em cima atrás (Jodan) e embaixo na frente (Gedan)?",
         correctAnswer: "Manji Uke",
-        distractors: ["Juji Uke", "Morote Uke", "Shuto Uke"]
+        distractors: ["Jodan Juji Uke", "Chudan Morote Uke", "Chudan Shuto Uke"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 4,
-        question: "Qual defesa abre os dois braços lateralmente em forma de cunha?",
-        correctAnswer: "Kakiwake Uke",
-        distractors: ["Juji Uke", "Gedan Barai", "Age Uke"]
+        question: "Qual defesa Chudan abrindo os braços em cunha afasta ataques no peito?",
+        correctAnswer: "Chudan Kakiwake Uke",
+        distractors: ["Jodan Juji Uke", "Gedan Barai", "Jodan Age Uke"]
       },
       {
         topic: "Defesas (Uke Waza)",
         category: "defesas",
         minKyu: 4,
-        question: "Qual defesa utiliza a base da palma da mão aberta?",
-        correctAnswer: "Teisho Uke",
-        distractors: ["Shuto Uke", "Age Uke", "Gedan Barai"]
+        question: "Qual defesa Chudan com a base da palma da mão bloqueia na altura do peito?",
+        correctAnswer: "Chudan Teisho Uke",
+        distractors: ["Chudan Shuto Uke", "Jodan Age Uke", "Gedan Barai"]
+      },
+      {
+        topic: "Defesas (Uke Waza)",
+        category: "defesas",
+        minKyu: 3,
+        question: "Qual defesa Jodan com a base da palma da mão bloqueia ataques no rosto?",
+        correctAnswer: "Jodan Teisho Uke",
+        distractors: ["Chudan Teisho Uke", "Jodan Age Uke", "Gedan Barai"]
       },
 
       // ---------------------------------------------------------------------
-      // SOCOS E GOLPES DE MÃO (TSUKI & UCHI WAZA) - RESPOSTAS CURTAS
+      // SOCOS E GOLPES DE MÃO (TSUKI & UCHI) COM ALTURA (JODAN / CHUDAN)
       // ---------------------------------------------------------------------
       {
         topic: "Socos (Tsuki Waza)",
         category: "socos",
         minKyu: 6,
-        question: "Qual soco é desferido avançando com a perna e o braço do mesmo lado?",
-        correctAnswer: "Oi Tsuki",
-        distractors: ["Gyaku Tsuki", "Kizami Tsuki", "Uraken Uchi"]
+        question: "Qual soco Chudan avança com o mesmo braço e perna na altura do peito?",
+        correctAnswer: "Chudan Oi Tsuki",
+        distractors: ["Chudan Gyaku Tsuki", "Chudan Kizami Tsuki", "Jodan Uraken Uchi"]
+      },
+      {
+        topic: "Socos (Tsuki Waza)",
+        category: "socos",
+        minKyu: 6,
+        question: "Qual soco Jodan avança com o mesmo braço e perna na altura do rosto?",
+        correctAnswer: "Jodan Oi Tsuki",
+        distractors: ["Chudan Oi Tsuki", "Chudan Gyaku Tsuki", "Jodan Age Uke"]
       },
       {
         topic: "Socos (Tsuki Waza)",
         category: "socos",
         minKyu: 5,
-        question: "Qual soco é desferido com o braço contrário à perna da frente?",
-        correctAnswer: "Gyaku Tsuki",
-        distractors: ["Oi Tsuki", "Kizami Tsuki", "Empi Uchi"]
+        question: "Qual soco Chudan invertido é desferido com o braço contrário no peito?",
+        correctAnswer: "Chudan Gyaku Tsuki",
+        distractors: ["Chudan Oi Tsuki", "Chudan Kizami Tsuki", "Jodan Age Uke"]
+      },
+      {
+        topic: "Socos (Tsuki Waza)",
+        category: "socos",
+        minKyu: 5,
+        question: "Qual soco Jodan invertido é desferido com o braço contrário no rosto?",
+        correctAnswer: "Jodan Gyaku Tsuki",
+        distractors: ["Chudan Gyaku Tsuki", "Chudan Oi Tsuki", "Jodan Oi Tsuki"]
       },
       {
         topic: "Socos (Tsuki Waza)",
         category: "socos",
         minKyu: 4,
-        question: "Qual soco rápido de encontro é desferido com a mão da frente?",
-        correctAnswer: "Kizami Tsuki",
-        distractors: ["Oi Tsuki", "Gyaku Tsuki", "Uraken Uchi"]
+        question: "Qual soco Jodan rápido de encontro é desferido com a mão da frente no rosto?",
+        correctAnswer: "Jodan Kizami Tsuki",
+        distractors: ["Chudan Oi Tsuki", "Chudan Gyaku Tsuki", "Jodan Uraken Uchi"]
+      },
+      {
+        topic: "Socos (Tsuki Waza)",
+        category: "socos",
+        minKyu: 4,
+        question: "Qual soco Chudan rápido de encontro é desferido com a mão da frente no peito?",
+        correctAnswer: "Chudan Kizami Tsuki",
+        distractors: ["Jodan Kizami Tsuki", "Chudan Oi Tsuki", "Jodan Age Uke"]
       },
       {
         topic: "Golpes de Punho (Uchi)",
         category: "socos",
         minKyu: 5,
-        question: "Qual golpe chicoteado é desferido com as costas do punho?",
-        correctAnswer: "Uraken Uchi",
-        distractors: ["Oi Tsuki", "Gyaku Tsuki", "Empi Uchi"]
+        question: "Qual golpe Jodan chicoteado com as costas do punho atinge a altura do rosto?",
+        correctAnswer: "Jodan Uraken Uchi",
+        distractors: ["Chudan Oi Tsuki", "Chudan Gyaku Tsuki", "Chudan Empi Uchi"]
       },
       {
         topic: "Golpes de Cotovelo",
         category: "socos",
         minKyu: 4,
-        question: "Como se chama o golpe de cotovelada no Karatê?",
-        correctAnswer: "Empi Uchi (Hiji Uchi)",
-        distractors: ["Uraken Uchi", "Oi Tsuki", "Mae Geri"]
+        question: "Como se chama o golpe Chudan de cotovelada na altura do peito?",
+        correctAnswer: "Chudan Empi Uchi",
+        distractors: ["Jodan Uraken Uchi", "Chudan Oi Tsuki", "Chudan Mae Geri"]
       },
       {
         topic: "Golpes de Mão Aberta",
         category: "socos",
         minKyu: 5,
-        question: "Qual golpe cortante é desferido com a faca da mão aberta?",
-        correctAnswer: "Shuto Uchi",
-        distractors: ["Oi Tsuki", "Nukite", "Teisho"]
+        question: "Qual golpe Jodan cortante com a faca da mão atinge o pescoço ou rosto?",
+        correctAnswer: "Jodan Shuto Uchi",
+        distractors: ["Chudan Oi Tsuki", "Chudan Nukite", "Chudan Teisho Uchi"]
       },
       {
         topic: "Golpes Especiais",
         category: "socos",
         minKyu: 4,
-        question: "Qual golpe perfura com as pontas dos dedos em forma de lança?",
-        correctAnswer: "Nukite",
-        distractors: ["Shuto Uchi", "Uraken", "Teisho"]
+        question: "Qual golpe Chudan perfurante com as pontas dos dedos atinge a altura do peito?",
+        correctAnswer: "Chudan Nukite",
+        distractors: ["Jodan Shuto Uchi", "Jodan Uraken Uchi", "Chudan Teisho Uchi"]
       },
       {
         topic: "Golpes Especiais",
         category: "socos",
         minKyu: 4,
-        question: "Qual golpe atinge com a base carnuda do punho cerrado (martelo)?",
-        correctAnswer: "Tettsui Uchi (Kentsui)",
-        distractors: ["Oi Tsuki", "Uraken", "Shuto Uchi"]
+        question: "Qual golpe Jodan com o punho martelo atinge a altura da cabeça ou rosto?",
+        correctAnswer: "Jodan Tettsui Uchi",
+        distractors: ["Chudan Oi Tsuki", "Jodan Uraken Uchi", "Jodan Shuto Uchi"]
       },
       {
         topic: "Golpes Especiais",
         category: "socos",
         minKyu: 3,
-        question: "Qual golpe atinge com o calcanhar da palma da mão aberta?",
-        correctAnswer: "Teisho Uchi",
-        distractors: ["Nukite", "Seiken", "Empi Uchi"]
+        question: "Qual golpe Jodan com a base da palma da mão atinge a altura do rosto?",
+        correctAnswer: "Jodan Teisho Uchi",
+        distractors: ["Chudan Nukite", "Chudan Seiken", "Chudan Empi Uchi"]
+      },
+      {
+        topic: "Socos Especiais",
+        category: "socos",
+        minKyu: 2,
+        question: "Qual soco duplo em forma de U atinge o rosto (Jodan) e o tronco (Chudan) juntos?",
+        correctAnswer: "Yama Tsuki",
+        distractors: ["Chudan Oi Tsuki", "Chudan Gyaku Tsuki", "Jodan Kizami Tsuki"]
       },
 
       // ---------------------------------------------------------------------
-      // CHUTES (GERI WAZA) - RESPOSTAS CURTAS
+      // CHUTES (GERI WAZA) - COM ALTURA (JODAN / CHUDAN)
       // ---------------------------------------------------------------------
       {
         topic: "Chutes (Geri Waza)",
         category: "chutes",
         minKyu: 6,
-        question: "Como se chama o chute frontal no Karatê Shotokan?",
-        correctAnswer: "Mae Geri",
-        distractors: ["Mawashi Geri", "Yoko Geri", "Ushiro Geri"]
+        question: "Como se chama o chute Chudan frontal na altura do peito ou abdômen?",
+        correctAnswer: "Chudan Mae Geri",
+        distractors: ["Jodan Mawashi Geri", "Chudan Yoko Geri", "Chudan Ushiro Geri"]
       },
       {
         topic: "Chutes (Geri Waza)",
         category: "chutes",
         minKyu: 5,
-        question: "Como se chama o chute circular no Karatê Shotokan?",
-        correctAnswer: "Mawashi Geri",
-        distractors: ["Mae Geri", "Yoko Geri", "Ushiro Geri"]
+        question: "Como se chama o chute Jodan circular na altura da cabeça e rosto?",
+        correctAnswer: "Jodan Mawashi Geri",
+        distractors: ["Chudan Mawashi Geri", "Chudan Mae Geri", "Chudan Yoko Geri"]
       },
       {
         topic: "Chutes (Geri Waza)",
         category: "chutes",
         minKyu: 5,
-        question: "Como se chama o chute lateral no Karatê Shotokan?",
-        correctAnswer: "Yoko Geri",
-        distractors: ["Mae Geri", "Mawashi Geri", "Ushiro Geri"]
+        question: "Como se chama o chute Chudan circular na altura das costelas e peito?",
+        correctAnswer: "Chudan Mawashi Geri",
+        distractors: ["Jodan Mawashi Geri", "Chudan Mae Geri", "Chudan Ushiro Geri"]
+      },
+      {
+        topic: "Chutes (Geri Waza)",
+        category: "chutes",
+        minKyu: 5,
+        question: "Como se chama o chute Chudan lateral na altura do peito ou tronco?",
+        correctAnswer: "Chudan Yoko Geri",
+        distractors: ["Chudan Mae Geri", "Chudan Mawashi Geri", "Chudan Ushiro Geri"]
       },
       {
         topic: "Chutes (Geri Waza)",
         category: "chutes",
         minKyu: 4,
-        question: "Como se chama o chute desferido reto para trás com o calcanhar?",
-        correctAnswer: "Ushiro Geri",
-        distractors: ["Mae Geri", "Mawashi Geri", "Yoko Geri"]
+        question: "Como se chama o chute Chudan desferido reto para trás com o calcanhar no tronco?",
+        correctAnswer: "Chudan Ushiro Geri",
+        distractors: ["Chudan Mae Geri", "Chudan Mawashi Geri", "Chudan Yoko Geri"]
       },
       {
         topic: "Chutes (Geri Waza)",
@@ -860,6 +908,30 @@
         question: "Qual altura corporal corresponde ao nível 'Gedan'?",
         correctAnswer: "Abaixo da cintura (Baixo)",
         distractors: ["Cabeça e rosto (Alto)", "Tronco e peito (Médio)", "Ombros"]
+      },
+      {
+        topic: "Níveis de Ataque e Defesa",
+        category: "terminologia",
+        minKyu: 6,
+        question: "No Karatê, como se chama a altura de socos e defesas no rosto?",
+        correctAnswer: "Jodan",
+        distractors: ["Chudan", "Gedan", "Koshi"]
+      },
+      {
+        topic: "Níveis de Ataque e Defesa",
+        category: "terminologia",
+        minKyu: 6,
+        question: "No Karatê, como se chama a altura de socos e defesas no peito?",
+        correctAnswer: "Chudan",
+        distractors: ["Jodan", "Gedan", "Hikite"]
+      },
+      {
+        topic: "Níveis de Ataque e Defesa",
+        category: "terminologia",
+        minKyu: 6,
+        question: "No Karatê, como se chama a altura de defesas e golpes abaixo da cintura?",
+        correctAnswer: "Gedan",
+        distractors: ["Jodan", "Chudan", "Kime"]
       },
       {
         topic: "Armas Corporais",
