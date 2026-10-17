@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TKST - Sincronização de Questões (Celular <-> PC)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111622;
+      --border: rgba(255, 183, 3, 0.25);
+      --gold: #FFB703;
+      --gold-glow: rgba(255, 183, 3, 0.2);
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --green: #22C55E;
+      --red: #EF4444;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 18px;
+      line-height: 1.5;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .header {
+      text-align: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .header h1 {
+      color: var(--gold);
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .header p {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin-top: 4px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .counter-badge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 183, 3, 0.1);
+      border: 1.5px solid var(--gold);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+    }
+    .counter-badge .info {
+      display: flex;
+      flex-direction: column;
+    }
+    .counter-badge .info span.label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .counter-badge .info span.device {
+      font-size: 0.88rem;
+      color: #E2E8F0;
+      font-weight: 600;
+    }
+    .counter-badge .number {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--gold);
+      font-family: monospace;
+    }
+    .kyu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 0.78rem;
+    }
+    .kyu-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+    .kyu-item strong {
+      color: #FFF;
+    }
+    .btn {
+      width: 100%;
+      padding: 13px 16px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+    .btn-gold {
+      background: var(--gold);
+      color: #0A0D14;
+      box-shadow: 0 4px 14px rgba(255, 183, 3, 0.3);
+    }
+    .btn-gold:hover {
+      background: #E5A502;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #E2E8F0;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.12);
+    }
+    .btn-green {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid var(--green);
+      color: #86EFAC;
+    }
+    .alert {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .alert-success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--green);
+      color: #86EFAC;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .alert-warn {
+      background: rgba(255, 183, 3, 0.15);
+      border: 1px solid var(--gold);
+      color: #FDE047;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      background: #06090F;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 10px;
+      color: #CBD5E1;
+      font-family: monospace;
+      font-size: 0.78rem;
+      margin-bottom: 10px;
+      resize: vertical;
+    }
+    .log-box {
+      background: #06090F;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 0.74rem;
+      color: #94A3B8;
+      max-height: 150px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-sync-alt"></i> TKST Sincronizador</h1>
+      <p>Ponte oficial para transferir questões entre Celular e PC sem perder nada</p>
+    </div>
+
+    <!-- Status no dispositivo -->
+    <div class="card">
+      <div class="counter-badge">
+        <div class="info">
+          <span class="label">Neste Dispositivo:</span>
+          <span class="device" id="deviceType">Detectando aparelho...</span>
+        </div>
+        <div class="number" id="qCount">0</div>
+      </div>
+      <div id="statusAlert" class="alert"></div>
+
+      <div class="kyu-grid" id="kyuGrid"></div>
+    </div>
+
+    <!-- Ações de Envio do Celular -->
+    <div class="card">
+      <h3 style="font-size: 0.95rem; color: var(--gold); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-mobile-alt"></i> Se você está no CELULAR:
+      </h3>
+      
+      <button class="btn btn-gold" onclick="enviarParaPC()">
+        <i class="fas fa-cloud-upload-alt"></i> 1. Enviar 166 Questões ao PC (Nuvem em Tempo Real)
+      </button>
+
+      <button class="btn btn-secondary" onclick="copiarJson()">
+        <i class="fas fa-copy"></i> 2. Copiar Código das Questões (JSON)
+      </button>
+
+      <button class="btn btn-secondary" onclick="baixarArquivo()">
+        <i class="fas fa-download"></i> 3. Baixar Arquivo tkst_questoes.json
+      </button>
+    </div>
+
+    <!-- Ações de Recebimento no PC -->
+    <div class="card">
+      <h3 style="font-size: 0.95rem; color: #86EFAC; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-desktop"></i> Se você está no PC:
+      </h3>
+      <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+        Se você copiou o código no celular, cole no campo abaixo e clique em Importar:
+      </p>
+
+      <textarea id="importInput" placeholder="Cole o código JSON das questões aqui..."></textarea>
+      
+      <button class="btn btn-green" onclick="importarJson()">
+        <i class="fas fa-file-import"></i> Salvar e Aplicar Questões no PC
+      </button>
+
+      <div style="margin-top: 12px;">
+        <div style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 4px;">Log de Sincronização:</div>
+        <div class="log-box" id="logBox">Aguardando ação...</div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 10px;">
+      <a href="./index.html" style="color: var(--gold); text-decoration: none; font-size: 0.85rem; font-weight: 600;">
+        <i class="fas fa-arrow-left"></i> Voltar ao Portal TKST Alunos
+      </a>
+    </div>
+  </div>
+
+  <script src="assets/js/data-quiz.js?v=271"></script>
+  <script>
+    const SYNC_TOPIC = 'tkst_karate_sync_v3_live';
+    const NTFY_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
+    
+    function log(msg) {
+      const box = document.getElementById('logBox');
+      const time = new Date().toLocaleTimeString();
+      box.textContent = `[${time}] ${msg}\n` + box.textContent;
+    }
+
+    function isMobile() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    function getLocalBank() {
+      const deletedIds = JSON.parse(localStorage.getItem('tkst_deleted_quiz_ids') || '[]');
+      let bank = [];
+      try {
+        bank = JSON.parse(localStorage.getItem('tkst_custom_quiz_bank') || '[]');
+      } catch(e) { bank = []; }
+
+      if (!Array.isArray(bank) || bank.length === 0) {
+        try {
+          bank = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent') || '[]');
+        } catch(e) { bank = []; }
+      }
+
+      const map = new Map();
+      (window.TKST_DEFAULT_QUIZ_BANK || []).forEach(q => {
+        if (q && q.id && !deletedIds.includes(q.id)) map.set(q.id, { ...q });
+      });
+      if (Array.isArray(bank)) {
+        bank.forEach(q => {
+          if (q && q.id && !deletedIds.includes(q.id)) map.set(q.id, q);
+        });
+      }
+      return Array.from(map.values());
+    }
+
+    function renderUI() {
+      const isMob = isMobile();
+      document.getElementById('deviceType').textContent = isMob ? '📱 Smartphone / Celular' : '💻 Computador / Notebook';
+      
+      const bank = getLocalBank();
+      document.getElementById('qCount').textContent = bank.length;
+
+      const kyuCounts = {};
+      bank.forEach(q => {
+        const k = q.kyuNumber !== undefined ? q.kyuNumber : 'Outros';
+        kyuCounts[k] = (kyuCounts[k] || 0) + 1;
+      });
+
+      const grid = document.getElementById('kyuGrid');
+      grid.innerHTML = '';
+      const order = [7, 6, 5, 4, 3, 2, 1, 0, -1, -2];
+      const names = {
+        7: '7º Kyu (Branca)',
+        6: '6º Kyu (Amarela)',
+        5: '5º Kyu (Vermelha)',
+        4: '4º Kyu (Roxa)',
+        3: '3º Kyu (Verde)',
+        2: '2º Kyu (Azul)',
+        1: '1º Kyu (Marrom)',
+        0: '1º Dan (Shodan)',
+        '-1': '2º Dan (Nidan)',
+        '-2': '3º Dan (Sandan)'
+      };
+
+      order.forEach(k => {
+        if (kyuCounts[k]) {
+          const div = document.createElement('div');
+          div.className = 'kyu-item';
+          div.innerHTML = `<span>${names[k] || k}:</span> <strong>${kyuCounts[k]}</strong>`;
+          grid.appendChild(div);
+        }
+      });
+
+      const alert = document.getElementById('statusAlert');
+      if (bank.length >= 166) {
+        alert.className = 'alert alert-success';
+        alert.innerHTML = `<i class="fas fa-check-circle"></i> Banco completo com ${bank.length} questões detectado neste aparelho!`;
+        alert.style.display = 'flex';
+      } else if (bank.length > 0) {
+        alert.className = 'alert alert-warn';
+        alert.innerHTML = `<i class="fas fa-info-circle"></i> Encontradas ${bank.length} questões locais. Pronto para sincronizar.`;
+        alert.style.display = 'flex';
+      }
+    }
+
+    // Copiar JSON
+    async function copiarJson() {
+      const bank = getLocalBank();
+      if (bank.length === 0) {
+        alert('Nenhuma questão encontrada para copiar!');
+        return;
+      }
+      try {
+        const jsonStr = JSON.stringify(bank);
+        await navigator.clipboard.writeText(jsonStr);
+        log(`Copiado com sucesso! ${bank.length} questões no clipboard.`);
+        alert(`✅ ${bank.length} questões copiadas! Agora abra o PC e cole no campo de importar.`);
+      } catch(err) {
+        log('Erro ao copiar: ' + err.message);
+        document.getElementById('importInput').value = JSON.stringify(bank);
+        alert('Selecione e copie o texto que apareceu na caixa abaixo.');
+      }
+    }
+
+    // Baixar arquivo JSON
+    function baixarArquivo() {
+      const bank = getLocalBank();
+      const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bank, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute("href", str);
+      a.setAttribute("download", `tkst_questoes_${bank.length}.json`);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      log(`Download iniciado: tkst_questoes_${bank.length}.json`);
+    }
+
+    // Enviar para o PC via Nuvem (NTFY + API)
+    async function enviarParaPC() {
+      const bank = getLocalBank();
+      if (bank.length === 0) {
+        alert('Nenhuma questão encontrada!');
+        return;
+      }
+      log(`Iniciando transmissão de ${bank.length} questões...`);
+
+      // 1. Enviar ao endpoint /api/quiz-bank
+      try {
+        log('Enviando para /api/quiz-bank...');
+        await fetch('/api/quiz-bank', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bank: bank, count: bank.length, timestamp: Date.now() })
+        });
+        log('Recebido pelo endpoint /api/quiz-bank!');
+      } catch(e) {
+        log('Nota /api/quiz-bank: ' + e.message);
+      }
+
+      // 2. Enviar via NTFY em pacotes seguros
+      try {
+        log('Transmitindo via NTFY live stream...');
+        const payload = JSON.stringify({ type: 'quiz_sync_broadcast', count: bank.length, bank: bank, timestamp: Date.now() });
+        
+        const res = await fetch(NTFY_URL, {
+          method: 'POST',
+          headers: {
+            'Title': 'TKST_QUIZ_SYNC',
+            'Content-Type': 'text/plain; charset=utf-8'
+          },
+          body: payload
+        });
+        if (res.ok) {
+          log(`✅ Transmissão NTFY concluída com sucesso (${bank.length} questões)!`);
+          alert(`✅ SUCESSO! As ${bank.length} questões foram transmitidas. O PC receberá em instantes.`);
+        } else {
+          log(`Resposta NTFY: ${res.status}`);
+          alert(`Enviado via API! Se o PC não atualizar em 10 segundos, use o botão "Copiar Código".`);
+        }
+      } catch(e) {
+        log('Erro NTFY: ' + e.message);
+        alert(`Erro na rede. Use a opção "Copiar Código das Questões" para transferir sem internet!`);
+      }
+    }
+
+    // Importar JSON no PC
+    function importarJson() {
+      const val = document.getElementById('importInput').value.trim();
+      if (!val) {
+        alert('Cole o código JSON na caixa antes de clicar em Importar!');
+        return;
+      }
+      try {
+        let parsed = JSON.parse(val);
+        if (!Array.isArray(parsed) && parsed.bank && Array.isArray(parsed.bank)) {
+          parsed = parsed.bank;
+        }
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          alert('O conteúdo colado não é uma lista válida de questões.');
+          return;
+        }
+
+        const current = getLocalBank();
+        const map = new Map();
+        current.forEach(q => map.set(q.id, q));
+        parsed.forEach(q => {
+          if (q && q.id && q.question) map.set(q.id, q);
+        });
+
+        const merged = Array.from(map.values());
+        localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(merged));
+        localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(merged));
+        window.TKST_QUIZ_BANK = merged;
+        window.TKST_QUIZ = merged;
+
+        log(`✅ Sucesso! Banco atualizado para ${merged.length} questões.`);
+        renderUI();
+        alert(`🎉 Perfeito! O banco do seu PC agora tem ${merged.length} questões completas!`);
+      } catch(e) {
+        alert('Erro ao interpretar o JSON: ' + e.message);
+      }
+    }
+
+    // Ouvinte em tempo real no PC
+    function initReceiver() {
+      try {
+        if (typeof EventSource !== 'undefined') {
+          const es = new EventSource(NTFY_URL + '/sse');
+          es.onmessage = function(e) {
+            try {
+              const data = JSON.parse(e.data);
+              if (data && data.message) {
+                const parsed = JSON.parse(data.message);
+                if (parsed && parsed.type === 'quiz_sync_broadcast' && Array.isArray(parsed.bank)) {
+                  log(`Recebidas ${parsed.bank.length} questões via NTFY! Aplicando...`);
+                  const current = getLocalBank();
+                  const map = new Map();
+                  current.forEach(q => map.set(q.id, q));
+                  parsed.bank.forEach(q => {
+                    if (q && q.id && q.question) map.set(q.id, q);
+                  });
+                  const merged = Array.from(map.values());
+                  localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(merged));
+                  localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(merged));
+                  renderUI();
+                  log(`🎉 Atualizado em tempo real para ${merged.length} questões!`);
+                }
+              }
+            } catch(err) {}
+          };
+        }
+      } catch(e) {}
+    }
+
+    window.addEventListener('load', () => {
+      renderUI();
+      initReceiver();
+    });
+  </script>
+</body>
+</html>

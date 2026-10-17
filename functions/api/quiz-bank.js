@@ -15,6 +15,8 @@ const corsHeaders = {
   'Cache-Control': 'no-store, no-cache, must-revalidate'
 };
 
+let inMemoryQuizBank = null;
+
 function toBase64Utf8(str) {
   const bytes = new TextEncoder().encode(str);
   let binary = '';
@@ -58,6 +60,15 @@ export async function onRequestOptions() {
 export async function onRequestGet(context) {
   const { request, env } = context;
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
+
+  if (inMemoryQuizBank && Array.isArray(inMemoryQuizBank) && inMemoryQuizBank.length > 0) {
+    return new Response(JSON.stringify({
+      success: true,
+      source: 'memory_cache',
+      count: inMemoryQuizBank.length,
+      data: inMemoryQuizBank
+    }), { status: 200, headers: corsHeaders });
+  }
 
   // 1. Tentar via GitHub API
   if (token) {
@@ -143,6 +154,10 @@ export async function onRequestPost(context) {
         success: false,
         error: 'Payload inválido: esperado array de questões.'
       }), { status: 400, headers: corsHeaders });
+    }
+
+    if (incoming.length > 0) {
+      inMemoryQuizBank = incoming;
     }
 
     if (!token) {

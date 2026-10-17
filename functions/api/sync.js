@@ -1,5 +1,5 @@
 // functions/api/sync.js
-// Cloudflare Pages Function para sincronização geral (dojos, status de alunos, etc.)
+// Cloudflare Pages Function para sincronização geral (dojos, status de alunos, quiz bank, etc.)
 
 const corsHeaders = {
   'Content-Type': 'application/json',
@@ -15,6 +15,11 @@ const DEFAULT_DOJOS = [
   'TKST Rio do Ouro'
 ];
 
+let inMemoryState = {
+  dojos: DEFAULT_DOJOS,
+  custom_quiz_bank: []
+};
+
 export async function onRequestOptions() {
   return new Response(null, { status: 200, headers: corsHeaders });
 }
@@ -23,7 +28,8 @@ export async function onRequestGet() {
   return new Response(JSON.stringify({
     success: true,
     timestamp: Date.now(),
-    dojos: DEFAULT_DOJOS,
+    data: inMemoryState,
+    dojos: inMemoryState.dojos || DEFAULT_DOJOS,
     status: 'online'
   }), { status: 200, headers: corsHeaders });
 }
@@ -32,6 +38,9 @@ export async function onRequestPost(context) {
   const { request } = context;
   try {
     const body = await request.json().catch(() => ({}));
+    if (body && typeof body === 'object') {
+      inMemoryState = { ...inMemoryState, ...body, timestamp: Date.now() };
+    }
     return new Response(JSON.stringify({
       success: true,
       timestamp: Date.now(),

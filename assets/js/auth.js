@@ -26,7 +26,7 @@
   const STORAGE_KEY_CURRICULUM = 'tkst_custom_curriculum';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
 
-  const SYNC_TOPIC = 'tkst_karate_cloud_v2_sync';
+  const SYNC_TOPIC = 'tkst_karate_sync_v3_live';
   const SYNC_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
   let isSyncing = false;
   let syncPending = false;
@@ -127,7 +127,7 @@
       console.warn('safeSaveQuizBank quota exceeded, stripping backup history and saving delta...', err);
       try {
         localStorage.removeItem('tkst_quiz_backup_history');
-        const customDelta = cleanBank.filter(q => q && (q._edited || (q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_')))));
+        const customDelta = cleanBank.filter(q => q && q.id && q.question);
         localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(customDelta));
         try { localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(customDelta)); } catch(e) {}
         return true;
@@ -222,7 +222,7 @@
 
   async function pushQuizBankToCloud(bank, deletedIds) {
     try {
-      const customOnly = stripDefaultImages((bank || []).filter(q => q && (q._edited || (q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))))));
+      const customOnly = stripDefaultImages((bank || []).filter(q => q && q.id && q.question));
       const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || []);
       // 1. Endpoint dedicado /api/quiz-bank (persistência entre requisições)
       fetch('/api/quiz-bank', {
@@ -279,9 +279,9 @@
       const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
       let localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
 
-      // Filtra questões genéricas antigas que não sejam do Sensei (mantém com imagem ou customizadas/shotokan)
+      // Mantém todas as questões válidas do banco
       if (Array.isArray(localSaved) && localSaved.length > 0) {
-        localSaved = localSaved.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))));
+        localSaved = localSaved.filter(q => q && q.id && q.question);
       }
 
       // Auto-recupera do cofre permanente se localSaved estiver vazio
@@ -289,7 +289,7 @@
         try {
           const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent')) || [];
           if (Array.isArray(vault) && vault.length > 0) {
-            localSaved = vault.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))));
+            localSaved = vault.filter(q => q && q.id && q.question);
             safeSaveQuizBank(localSaved);
           }
         } catch(e) {}
@@ -353,7 +353,7 @@
       if (cloudQuestions.length > 0) {
         const restoredCloud = restoreDefaultImages(cloudQuestions);
         restoredCloud.forEach(q => {
-          const isSenseiQ = (q && q.image && q.image.length > 0) || (q && q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_')));
+          const isSenseiQ = q && q.id && q.question;
           if (isSenseiQ && !deletedIds.includes(q.id) && q && q.id) {
             const localQ = bankMap.get(q.id);
             if (!localQ || !localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt) || !localQ._edited) {
@@ -1032,7 +1032,7 @@
       const deletedGlossaryTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
       const quiz_submissions = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => !deletedQuizSubIds.includes(s.id));
       const allSavedQuiz = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
-      const custom_quiz_bank = stripDefaultImages(allSavedQuiz.filter(q => !deletedQuizIds.includes(q.id) && (q._edited || (q.id && (q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))))));
+      const custom_quiz_bank = stripDefaultImages(allSavedQuiz.filter(q => q && q.id && q.question && !deletedQuizIds.includes(q.id)));
       
       const allGlossary = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY)) || {};
       const custom_glossary = {};

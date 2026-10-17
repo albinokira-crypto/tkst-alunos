@@ -2,6 +2,7 @@ const CACHE_NAME = 'tkst-alunos-v271';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './sincronizar.html',
   './assets/css/main.css?v=271',
   './assets/css/components.css?v=271',
   './assets/js/jsqr.min.js?v=271',
