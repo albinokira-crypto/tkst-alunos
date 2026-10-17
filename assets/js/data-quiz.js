@@ -337,6 +337,7 @@ window.TKST_CUSTOM_VAULT_QUESTIONS = [
   ],
   "correctIndex": 1
 },
+// ==TKST_CUSTOM_QUESTIONS_START==
 {
   "id": "q_custom_6_1787068908101",
   "kyuNumber": 6,
@@ -442,13 +443,24 @@ window.TKST_CUSTOM_VAULT_QUESTIONS = [
     }
 
     const finalBank = Array.from(bankMap.values());
-    localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(finalBank));
-    localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(finalBank));
-
     window.TKST_QUIZ_BANK = finalBank;
     window.TKST_QUIZ = finalBank;
+
+    try {
+      localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(finalBank));
+      localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(finalBank));
+    } catch(quotaErr) {
+      try {
+        localStorage.removeItem('tkst_quiz_backup_history');
+        const customOnly = finalBank.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+        localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(customOnly));
+        localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(customOnly));
+      } catch(innerErr) {}
+    }
   } catch(e) {
-    window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK || [];
-    window.TKST_QUIZ = window.TKST_DEFAULT_QUIZ_BANK || [];
+    if (!window.TKST_QUIZ_BANK || window.TKST_QUIZ_BANK.length === 0) {
+      window.TKST_QUIZ_BANK = window.TKST_DEFAULT_QUIZ_BANK || [];
+      window.TKST_QUIZ = window.TKST_DEFAULT_QUIZ_BANK || [];
+    }
   }
 })();

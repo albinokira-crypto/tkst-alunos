@@ -78,6 +78,14 @@
 
   // Load custom quiz bank on initialization if present (com cofre permanente e histórico de proteção)
   try {
+    // Limpa histórico de backup inflado se existir para liberar espaço no localStorage
+    try {
+      const histRaw = localStorage.getItem('tkst_quiz_backup_history');
+      if (histRaw && histRaw.length > 200000) {
+        localStorage.removeItem('tkst_quiz_backup_history');
+      }
+    } catch(e) {}
+
     const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
     let savedBank = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
 
@@ -87,31 +95,35 @@
         const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent')) || [];
         if (Array.isArray(vault) && vault.length > 0) {
           savedBank = vault;
-          localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(vault));
-        } else {
-          const history = JSON.parse(localStorage.getItem('tkst_quiz_backup_history') || '[]');
-          if (Array.isArray(history) && history.length > 0 && Array.isArray(history[0].bank) && history[0].bank.length > 0) {
-            savedBank = history[0].bank;
-            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(savedBank));
-            localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(savedBank));
-          }
         }
       } catch(e) {}
     }
 
     const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+    const bankMap = new Map();
+    defaultList.forEach(q => bankMap.set(q.id, { ...q }));
+    if (Array.isArray(window.TKST_QUIZ_BANK)) {
+      window.TKST_QUIZ_BANK.forEach(q => {
+        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+      });
+    }
     if (Array.isArray(savedBank) && savedBank.length > 0) {
-      const bankMap = new Map();
-      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
       savedBank.forEach(q => {
         if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
       });
-      const merged = Array.from(bankMap.values());
+    }
+    const merged = Array.from(bankMap.values());
+    window.TKST_QUIZ_BANK = merged;
+    window.TKST_QUIZ = merged;
+
+    try {
       localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(merged));
-      window.TKST_QUIZ_BANK = merged;
-    } else if (defaultList.length > 0) {
-      window.TKST_QUIZ_BANK = defaultList;
-      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(defaultList));
+    } catch(err) {
+      try {
+        localStorage.removeItem('tkst_quiz_backup_history');
+        const customOnly = merged.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+        localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(customOnly));
+      } catch(e) {}
     }
   } catch(e) {}
 
@@ -2937,6 +2949,15 @@
       const bankMap = new Map();
       rawDefault.forEach(q => { if (q && q.id) bankMap.set(q.id, { ...q }); });
 
+      // Preserva e mescla questões já em memória
+      if (Array.isArray(window.TKST_QUIZ_BANK)) {
+        window.TKST_QUIZ_BANK.forEach(q => {
+          if (q && q.id && !del.includes(q.id)) {
+            bankMap.set(q.id, q);
+          }
+        });
+      }
+
       try {
         let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
         if (Array.isArray(saved) && saved.length > 0) {
@@ -2948,14 +2969,6 @@
           const vault = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent') || '[]');
           if (Array.isArray(vault) && vault.length > 0) {
             saved = vault.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
-            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(saved));
-          } else {
-            const history = JSON.parse(localStorage.getItem('tkst_quiz_backup_history') || '[]');
-            if (Array.isArray(history) && history.length > 0 && Array.isArray(history[0].bank) && history[0].bank.length > 0) {
-              saved = history[0].bank.filter(q => (q && q.image && q.image.length > 0) || (q && q.id && q.id.startsWith('q_custom_')));
-              localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(saved));
-              localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(saved));
-            }
           }
         }
 
@@ -2969,9 +2982,21 @@
       } catch(e) {}
 
       const mergedBank = Array.from(bankMap.values());
-      localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(mergedBank));
-      localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(mergedBank));
       window.TKST_QUIZ_BANK = mergedBank;
+      window.TKST_QUIZ = mergedBank;
+
+      try {
+        localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(mergedBank));
+        localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(mergedBank));
+      } catch(storageErr) {
+        try {
+          localStorage.removeItem('tkst_quiz_backup_history');
+          const customOnly = mergedBank.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+          localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(customOnly));
+          localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(customOnly));
+        } catch(innerErr) {}
+      }
+
       return mergedBank;
     },
 
@@ -2988,25 +3013,37 @@
       });
       const cleanBank = Array.from(bankMap.values());
 
-      // 1. Salva localmente com redundância no Cofre Permanente e Histórico
+      window.TKST_QUIZ_BANK = cleanBank;
+      window.TKST_QUIZ = cleanBank;
+
+      // 1. Salva localmente com redundância no Cofre Permanente e proteção de quota
       try {
         localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(cleanBank));
         localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(cleanBank));
 
-        // Mantém histórico rotativo de snapshots (até 20 versões)
+        // Mantém histórico leve (sem base64 duplicado) para auditoria sem estourar o storage
         let history = [];
         try {
           history = JSON.parse(localStorage.getItem('tkst_quiz_backup_history') || '[]');
         } catch(e) { history = []; }
-        history.unshift({ timestamp: Date.now(), count: cleanBank.length, bank: cleanBank });
-        if (history.length > 20) history = history.slice(0, 20);
-        localStorage.setItem('tkst_quiz_backup_history', JSON.stringify(history));
-      } catch (storageErr) {
-        console.warn('LocalStorage QuotaExceeded ao salvar Quiz Bank. Salvando apenas itens customizados...', storageErr);
+        const lightSummary = cleanBank.map(q => ({ id: q.id, kyuNumber: q.kyuNumber, question: q.question, hasImage: !!q.image }));
+        history.unshift({ timestamp: Date.now(), count: cleanBank.length, bankSummary: lightSummary });
+        if (history.length > 5) history = history.slice(0, 5);
         try {
-          const minimalBank = cleanBank.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
-          localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(minimalBank));
-          localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(minimalBank));
+          localStorage.setItem('tkst_quiz_backup_history', JSON.stringify(history));
+        } catch(e) {}
+      } catch (storageErr) {
+        console.warn('LocalStorage QuotaExceeded ao salvar Quiz Bank. Limpando histórico e salvando delta...', storageErr);
+        try {
+          localStorage.removeItem('tkst_quiz_backup_history');
+          try {
+            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(cleanBank));
+            localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(cleanBank));
+          } catch(retryErr) {
+            const minimalBank = cleanBank.filter(q => q && (q._edited || (q.id && q.id.startsWith('q_custom_'))));
+            localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(minimalBank));
+            localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(minimalBank));
+          }
         } catch (innerErr) {
           console.warn('Não foi possível gravar no localStorage, mantendo em memória e nuvem:', innerErr);
         }

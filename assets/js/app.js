@@ -109,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.61';
+  const APP_DISPLAY_VERSION = 'V-2.62';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.61. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.62. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.61)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.62)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
         } catch(e) {}
@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return q;
   }
 
-  function compressImageSource(src, maxWidth = 500, maxHeight = 500, quality = 0.72) {
+  function compressImageSource(src, maxWidth = 400, maxHeight = 400, quality = 0.62) {
     return new Promise((resolve) => {
       if (!src || typeof src !== 'string' || !src.trim()) {
         return resolve('');
@@ -614,8 +614,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return resolve(trimmed);
       }
 
-      // Se já for um data URL leve (< 80KB), não precisa reprocessar
-      if (trimmed.startsWith('data:image/') && trimmed.length < 80000) {
+      // Se já for um data URL leve (< 35KB), não precisa reprocessar
+      if (trimmed.startsWith('data:image/') && trimmed.length < 35000) {
         return resolve(trimmed);
       }
 
@@ -635,8 +635,8 @@ document.addEventListener('DOMContentLoaded', () => {
           clearTimeout(timeoutId);
           try {
             const canvas = document.createElement('canvas');
-            let width = img.width || img.naturalWidth || 500;
-            let height = img.height || img.naturalHeight || 500;
+            let width = img.width || img.naturalWidth || 400;
+            let height = img.height || img.naturalHeight || 400;
 
             if (width > height) {
               if (width > maxWidth) {
@@ -657,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Comprime para JPEG (~18KB-35KB)
+            // Comprime para JPEG (~15KB-25KB)
             const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
             resolve(compressedDataUrl);
           } catch(canvasErr) {
@@ -682,7 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!file || !file.type || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = function(e) {
-      compressImageSource(e.target.result, 500, 500, 0.72).then(callback);
+      compressImageSource(e.target.result, 400, 400, 0.62).then(callback);
     };
     reader.readAsDataURL(file);
   }
@@ -2608,7 +2608,11 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px;">
             ${(() => {
               const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
-              const currentKyuQuestions = allBank.map(q => ensureSmartQuestionOptions(q)).filter(q => (adminQuizSelectedKyu === 6) ? (q.kyuNumber === 6 || q.kyuNumber === 7) : (q.kyuNumber === adminQuizSelectedKyu));
+              const currentKyuQuestions = allBank.map(q => ensureSmartQuestionOptions(q)).filter(q => {
+                const qKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6));
+                const targetKyu = Number(adminQuizSelectedKyu);
+                return (targetKyu === 6) ? (qKyu === 6 || qKyu === 7) : (qKyu === targetKyu);
+              });
               if (currentKyuQuestions.length === 0) {
                 return `
                   <div style="padding: 30px; text-align: center; color: #64748B;">
@@ -6386,10 +6390,16 @@ document.addEventListener('DOMContentLoaded', () => {
       questionCount = 30;
       beltName = "Simulado Geral";
     } else {
-      const parsedKyu = parseInt(kyuNumber);
-      pool = bank.filter(q => q.kyuNumber === parsedKyu);
+      const parsedKyu = parseInt(kyuNumber, 10);
+      pool = bank.filter(q => {
+        const qKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : -999));
+        return (parsedKyu === 6) ? (qKyu === 6 || qKyu === 7) : (qKyu === parsedKyu);
+      });
       if (pool.length === 0) {
-        pool = bank.filter(q => q.kyuNumber <= parsedKyu);
+        pool = bank.filter(q => {
+          const qKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : -999));
+          return qKyu <= parsedKyu && qKyu >= 0;
+        });
       }
       if (pool.length === 0) {
         pool = [...bank];
@@ -11061,9 +11071,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!wrong3) wrong3 = fallback[2] || 'Opção D';
         }
 
+        const numKyu = parseInt(kyu, 10);
         itemsToSave.push({
-          id: `q_custom_${kyu}_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
-          kyuNumber: kyu,
+          id: `q_custom_${numKyu}_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          kyuNumber: numKyu,
+          kyu: numKyu,
           beltName: beltName,
           question: questionText,
           image: '',
@@ -11238,16 +11250,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Redução e compressão automática da imagem (evita estouro de armazenamento)
         if (quizModalTempImage) {
           try {
-            quizModalTempImage = await compressImageSource(quizModalTempImage, 500, 500, 0.72);
+            quizModalTempImage = await compressImageSource(quizModalTempImage, 400, 400, 0.62);
           } catch(imgErr) {
             console.warn('Compress image fallback em add:', imgErr);
           }
         }
 
-        const beltName = getBeltNameFromKyu(kyu);
+        const numericKyu = parseInt(kyu, 10);
+        const beltName = getBeltNameFromKyu(numericKyu);
         const newQuestion = {
-          id: `q_custom_${kyu}_${Date.now()}`,
-          kyuNumber: kyu,
+          id: `q_custom_${numericKyu}_${Date.now()}`,
+          kyuNumber: numericKyu,
+          kyu: numericKyu,
           beltName: beltName,
           question: questionText,
           image: quizModalTempImage || '',
@@ -11260,11 +11274,249 @@ document.addEventListener('DOMContentLoaded', () => {
         bank.push(newQuestion);
         window.TKST_AUTH.saveCustomQuizBank(bank);
         detailModal.classList.remove('active');
-        showToast('✅ Nova questão cadastrada e otimizada! Sincronizando...', 'sync');
+        showToast('✅ Nova questão cadastrada e salva no simulado! Sincronizando...', 'sync');
         renderAdminMaster();
       } catch (err) {
         console.error('Erro ao cadastrar questão:', err);
         alert('Ocorreu um erro ao cadastrar a questão.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHtml;
+        }
+      }
+    },
+
+    autoFillWrongOptionsFromInputs: (mode = 'add') => {
+      const isEdit = mode === 'edit';
+      const qInput = document.getElementById(isEdit ? 'editQuizQuestionInput' : 'newQuizQuestionInput');
+      const cInput = document.getElementById(isEdit ? 'editQuizCorrectAnswerInput' : 'newQuizCorrectAnswerInput');
+      const w1 = document.getElementById(isEdit ? 'editQuizWrong1Input' : 'newQuizWrong1Input');
+      const w2 = document.getElementById(isEdit ? 'editQuizWrong2Input' : 'newQuizWrong2Input');
+      const w3 = document.getElementById(isEdit ? 'editQuizWrong3Input' : 'newQuizWrong3Input');
+
+      if (!cInput) return false;
+      const qText = qInput ? qInput.value.trim() : '';
+      const cText = cInput.value.trim();
+      if (!cText) {
+        showToast('⚠️ Digite a resposta correta primeiro para auto-sugerir alternativas do mesmo tipo!', 'warning', 3500);
+        cInput.focus();
+        return false;
+      }
+
+      const smart = generateSmartOptions(qText, cText);
+      const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== cText.toLowerCase());
+
+      if (w1 && fallback[0]) w1.value = fallback[0];
+      if (w2 && fallback[1]) w2.value = fallback[1];
+      if (w3 && fallback[2]) w3.value = fallback[2];
+
+      [w1, w2, w3].forEach(el => {
+        if (el) {
+          el.style.transition = 'all 0.3s ease';
+          const origBg = el.style.background;
+          el.style.background = 'rgba(230, 57, 70, 0.28)';
+          el.style.borderColor = 'rgba(230, 57, 70, 0.7)';
+          setTimeout(() => {
+            el.style.background = origBg || 'rgba(0,0,0,0.35)';
+            el.style.borderColor = '';
+          }, 700);
+        }
+      });
+
+      const category = detectKarateCategory(qText, cText);
+      const catLabels = {
+        defesas: 'Defesas',
+        socos: 'Socos e Ataques',
+        chutes: 'Chutes',
+        bases: 'Bases',
+        katas: 'Katas',
+        kumite: 'Kumite',
+        alturas: 'Alturas/Níveis',
+        armas: 'Armas Corporais',
+        comandos: 'Comandos do Dojô',
+        frases: 'Frases equivalentes'
+      };
+      const label = (category && catLabels[category]) || 'Alternativas equivalentes';
+      showToast(`✨ 3 alternativas erradas geradas automaticamente (${label})!`, 'success', 3000);
+      return true;
+    },
+
+    openEditQuizQuestionModal: (qId) => {
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      const q = bank.find(item => item.id === qId);
+      if (!q) {
+        alert('Questão não encontrada.');
+        return;
+      }
+      quizModalTempImage = q.image || '';
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      const qKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6));
+      const beltName = q.beltName || getBeltNameFromKyu(qKyu);
+
+      const qText = q.question || '';
+      const cText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
+      const wrongList = (q.options || []).filter((_, idx) => idx !== (q.correctIndex !== undefined ? q.correctIndex : 0));
+      const w1Text = wrongList[0] || '';
+      const w2Text = wrongList[1] || '';
+      const w3Text = wrongList[2] || '';
+
+      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.7rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> ID: ${q.id}</span></div>`;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditQuizQuestion('${q.id}');" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.80rem; color: #E2E8F0;">
+            <i class="fas fa-edit" style="color: var(--accent-gold); margin-right: 6px;"></i> <strong>Edição da Questão:</strong> Altere os campos desejados e clique em Salvar Alterações.
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 6px;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0;">
+                <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
+              </label>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.suggestQuizQuestion(${qKyu}, 'editQuizQuestionInput')" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700;" title="Sugerir pergunta inédita para esta faixa">
+                <i class="fas fa-lightbulb"></i> Sugerir Pergunta
+              </button>
+            </div>
+            <textarea id="editQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite a pergunta..." style="resize: vertical; font-size: 0.88rem;">${escapeHtml(qText)}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+              <i class="fas fa-image" style="color: var(--accent-gold); margin-right: 6px;"></i> Imagem Ilustrativa (Opcional):
+            </label>
+            
+            <div id="quizModalImagePreviewBox" style="display: ${quizModalTempImage ? 'block' : 'none'}; margin-bottom: 8px; background: rgba(0,0,0,0.35); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 8px; text-align: center;">
+              <img id="quizModalImagePreview" src="${quizModalTempImage}" style="max-height: 140px; max-width: 100%; object-fit: contain; border-radius: 4px; margin-bottom: 6px;">
+              <div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeQuizModalImage()" style="font-size: 0.72rem; padding: 3px 8px;">
+                  <i class="fas fa-trash"></i> Remover Imagem
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <label class="btn btn-secondary" style="font-size: 0.76rem; padding: 6px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fas fa-camera"></i> Escolher ou Tirar Foto
+                <input type="file" accept="image/*" id="quizModalFileInput" style="display: none;" onchange="window.TKST_APP.handleQuizModalImageUpload(this)">
+              </label>
+              <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou cole o link da imagem (https://...)" oninput="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; min-width: 160px; font-size: 0.78rem;">
+            </div>
+          </div>
+
+          <!-- Resposta Correta -->
+          <div class="form-group" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 10px 12px;">
+            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #6EE7B7; font-weight: 700;">
+              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito Oficial):
+            </label>
+            <input type="text" id="editQuizCorrectAnswerInput" class="form-input" value="${escapeHtml(cText)}" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.88rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.4); border-color: rgba(16, 185, 129, 0.4);">
+          </div>
+
+          <!-- 3 Respostas Erradas -->
+          <div class="form-group" style="background: rgba(230, 57, 70, 0.06); border: 1px solid rgba(230, 57, 70, 0.25); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0; color: #FCA5A5; font-weight: 700;">
+                <i class="fas fa-times-circle" style="color: var(--accent-crimson); margin-right: 6px;"></i> 3 Alternativas Incorretas (Respostas Erradas):
+              </label>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.autoFillWrongOptionsFromInputs('edit')" style="font-size: 0.70rem; padding: 2px 7px;" title="Preencher com sugestões automáticas">
+                <i class="fas fa-magic"></i> Auto-sugerir
+              </button>
+            </div>
+
+            <div>
+              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 1:</span>
+              <input type="text" id="editQuizWrong1Input" class="form-input" value="${escapeHtml(w1Text)}" placeholder="Digite a 1ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
+            </div>
+
+            <div>
+              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 2:</span>
+              <input type="text" id="editQuizWrong2Input" class="form-input" value="${escapeHtml(w2Text)}" placeholder="Digite a 2ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
+            </div>
+
+            <div>
+              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 3:</span>
+              <input type="text" id="editQuizWrong3Input" class="form-input" value="${escapeHtml(w3Text)}" placeholder="Digite a 3ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 6px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.cancelModalEdit()" style="flex: 1; padding: 10px;">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 10px; font-weight: 700;">
+              <i class="fas fa-save"></i> Salvar Alterações
+            </button>
+          </div>
+        </form>
+      `;
+
+      detailModal.setAttribute('data-prevent-outside-close', 'true');
+      detailModal.classList.add('active');
+    },
+
+    submitEditQuizQuestion: async (qId) => {
+      const submitBtn = document.querySelector('#detailModalBody button[type="submit"]');
+      const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+      }
+
+      try {
+        const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+        const idx = bank.findIndex(item => item.id === qId);
+        if (idx === -1) {
+          alert('Questão não encontrada no banco.');
+          return;
+        }
+
+        const questionText = document.getElementById('editQuizQuestionInput').value.trim();
+        const correctAnswer = document.getElementById('editQuizCorrectAnswerInput').value.trim();
+        let wrong1 = (document.getElementById('editQuizWrong1Input')?.value || '').trim();
+        let wrong2 = (document.getElementById('editQuizWrong2Input')?.value || '').trim();
+        let wrong3 = (document.getElementById('editQuizWrong3Input')?.value || '').trim();
+
+        if (!questionText || !correctAnswer) {
+          alert('Por favor, preencha a pergunta e a resposta correta.');
+          return;
+        }
+
+        if (!wrong1 || !wrong2 || !wrong3) {
+          const smart = generateSmartOptions(questionText, correctAnswer);
+          const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
+          if (!wrong1) wrong1 = fallback[0] || 'Opção B';
+          if (!wrong2) wrong2 = fallback[1] || 'Opção C';
+          if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+        }
+
+        if (quizModalTempImage) {
+          try {
+            quizModalTempImage = await compressImageSource(quizModalTempImage, 400, 400, 0.62);
+          } catch(imgErr) {}
+        }
+
+        const existing = bank[idx];
+        const numKyu = Number(existing.kyuNumber !== undefined ? existing.kyuNumber : (existing.kyu !== undefined ? existing.kyu : 6));
+        bank[idx] = {
+          ...existing,
+          kyuNumber: numKyu,
+          kyu: numKyu,
+          question: questionText,
+          image: quizModalTempImage || '',
+          options: [correctAnswer, wrong1, wrong2, wrong3],
+          correctIndex: 0,
+          _edited: true,
+          updatedAt: Date.now()
+        };
+
+        window.TKST_AUTH.saveCustomQuizBank(bank);
+        detailModal.classList.remove('active');
+        showToast('✅ Questão atualizada com sucesso! Sincronizando...', 'sync');
+        renderAdminMaster();
+      } catch (err) {
+        console.error('Erro ao editar questão:', err);
+        alert('Ocorreu um erro ao editar a questão.');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
