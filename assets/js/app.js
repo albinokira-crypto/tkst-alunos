@@ -10773,13 +10773,18 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <!-- Top Banner com ações -->
           <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 10px 14px; flex-wrap: wrap; gap: 8px;">
-            <div style="font-size: 0.82rem; color: #E2E8F0;">
+            <div style="font-size: 0.82rem; color: #E2E8F0; flex: 1; min-width: 220px;">
               <i class="fas fa-magic" style="color: var(--accent-gold); margin-right: 6px;"></i>
               <strong>5 questões completas</strong> pesquisadas automaticamente no Plano de Estudos oficial de <strong>${beltName}</strong> com resposta correta e 3 erradas.
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.regenerateBatchSuggestions(${kyu})" style="font-size: 0.74rem; padding: 4px 10px; font-weight: 700;">
-              <i class="fas fa-sync-alt"></i> Gerar Outro Lote
-            </button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.autoFillAllBatchWrongOptions()" style="font-size: 0.74rem; padding: 5px 11px; font-weight: 700; background: rgba(230, 57, 70, 0.18); border: 1px solid rgba(230, 57, 70, 0.45); color: #FECACA; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 4px;" title="Auto-sugerir alternativas incorretas para as 5 questões de uma só vez">
+                <i class="fas fa-magic" style="color: #F87171;"></i> Auto-sugerir Todas Erradas (5)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.regenerateBatchSuggestions(${kyu})" style="font-size: 0.74rem; padding: 5px 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 4px;" title="Gerar outro conjunto de 5 questões">
+                <i class="fas fa-sync-alt"></i> Gerar Outro Lote
+              </button>
+            </div>
           </div>
 
           <!-- Cards das 5 Perguntas -->
@@ -10811,9 +10816,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <!-- 3 Alternativas Erradas -->
                 <div style="background: rgba(230, 57, 70, 0.05); border: 1px solid rgba(230, 57, 70, 0.22); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px;">
-                  <label style="font-size: 0.74rem; font-weight: 700; color: #FCA5A5; display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
-                    <i class="fas fa-times-circle" style="color: var(--accent-crimson);"></i> 3 Alternativas Incorretas (Distratores):
-                  </label>
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+                    <label style="font-size: 0.74rem; font-weight: 700; color: #FCA5A5; display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
+                      <i class="fas fa-times-circle" style="color: var(--accent-crimson);"></i> 3 Alternativas Incorretas (Distratores):
+                    </label>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.autoFillBatchWrongOptions(${idx})" style="font-size: 0.70rem; padding: 2px 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; border-radius: 4px; background: rgba(230, 57, 70, 0.18); border: 1px solid rgba(230, 57, 70, 0.4); color: #FECACA;" title="Auto-sugerir 3 alternativas erradas para esta questão">
+                      <i class="fas fa-magic" style="color: #F87171;"></i> Auto-sugerir
+                    </button>
+                  </div>
                   <input type="text" id="batchWrong1_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers[0] || '')}" placeholder="Alternativa errada 1..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35);">
                   <input type="text" id="batchWrong2_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers[1] || '')}" placeholder="Alternativa errada 2..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35);">
                   <input type="text" id="batchWrong3_${idx}" class="form-input" value="${escapeHtml(q.wrongAnswers[2] || '')}" placeholder="Alternativa errada 3..." style="font-size: 0.80rem; background: rgba(0,0,0,0.35);">
@@ -10823,11 +10833,14 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <!-- Rodapé com Ações -->
-          <div style="display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+          <div style="display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; flex-wrap: wrap;">
             <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeModal()" style="padding: 10px 16px;">
               Cancelar
             </button>
-            <button type="button" class="btn btn-primary" onclick="window.TKST_APP.saveBatchQuestionsToBank(${kyu})" style="flex: 1; padding: 10px 20px; font-weight: 800; font-size: 0.90rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.autoFillAllBatchWrongOptions()" style="padding: 10px 14px; font-weight: 700; font-size: 0.82rem; background: rgba(230, 57, 70, 0.18); border: 1px solid rgba(230, 57, 70, 0.45); color: #FECACA; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 4px;" title="Auto-sugerir alternativas incorretas para as 5 questões de uma só vez">
+              <i class="fas fa-magic" style="color: #F87171;"></i> Auto-sugerir 5 Erradas
+            </button>
+            <button type="button" class="btn btn-primary" onclick="window.TKST_APP.saveBatchQuestionsToBank(${kyu})" style="flex: 1; min-width: 200px; padding: 10px 20px; font-weight: 800; font-size: 0.90rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
               <i class="fas fa-check-double"></i> Aprovar e Adicionar (<span id="batchCountBadge">5</span>) ao Simulado
             </button>
           </div>
@@ -10840,6 +10853,112 @@ document.addEventListener('DOMContentLoaded', () => {
     regenerateBatchSuggestions: (kyu) => {
       window.TKST_APP.openBatchSuggestQuestionsModal(kyu);
       showToast('🔄 Novo lote de 5 questões pesquisado no Plano de Estudos!', 'info', 2500);
+    },
+
+    autoFillBatchWrongOptions: (idx) => {
+      const qInput = document.getElementById(`batchQ_${idx}`);
+      const cInput = document.getElementById(`batchCorrect_${idx}`);
+      const w1 = document.getElementById(`batchWrong1_${idx}`);
+      const w2 = document.getElementById(`batchWrong2_${idx}`);
+      const w3 = document.getElementById(`batchWrong3_${idx}`);
+
+      if (!cInput) return false;
+      const qText = qInput ? qInput.value.trim() : '';
+      const cText = cInput.value.trim();
+      if (!cText) {
+        showToast(`⚠️ Digite a resposta correta da Questão #${idx + 1} primeiro para auto-sugerir alternativas do mesmo tipo!`, 'warning', 3500);
+        cInput.focus();
+        return false;
+      }
+
+      const smart = generateSmartOptions(qText, cText);
+      const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== cText.toLowerCase());
+
+      if (w1 && fallback[0]) w1.value = fallback[0];
+      if (w2 && fallback[1]) w2.value = fallback[1];
+      if (w3 && fallback[2]) w3.value = fallback[2];
+
+      [w1, w2, w3].forEach(el => {
+        if (el) {
+          el.style.transition = 'all 0.3s ease';
+          const origBg = el.style.background;
+          el.style.background = 'rgba(230, 57, 70, 0.28)';
+          el.style.borderColor = 'rgba(230, 57, 70, 0.7)';
+          setTimeout(() => {
+            el.style.background = origBg || 'rgba(0,0,0,0.35)';
+            el.style.borderColor = '';
+          }, 700);
+        }
+      });
+
+      const category = detectKarateCategory(qText, cText);
+      const catLabels = {
+        defesas: 'Defesas',
+        socos: 'Socos e Ataques',
+        chutes: 'Chutes',
+        bases: 'Bases',
+        katas: 'Katas',
+        kumite: 'Kumite',
+        alturas: 'Alturas/Níveis',
+        armas: 'Armas Corporais',
+        comandos: 'Comandos do Dojô',
+        frases: 'Frases de tamanho similar'
+      };
+      const label = (category && catLabels[category]) || 'Itens equivalentes';
+      showToast(`✨ 3 alternativas erradas geradas para a Questão #${idx + 1} (${label})!`, 'success', 3000);
+      return true;
+    },
+
+    autoFillAllBatchWrongOptions: () => {
+      const checkboxes = document.querySelectorAll('[id^="batchCheck_"]');
+      const totalCards = checkboxes.length || 5;
+      let filledCount = 0;
+      let missingCorrectCount = 0;
+
+      for (let idx = 0; idx < totalCards; idx++) {
+        const qInput = document.getElementById(`batchQ_${idx}`);
+        const cInput = document.getElementById(`batchCorrect_${idx}`);
+        const w1 = document.getElementById(`batchWrong1_${idx}`);
+        const w2 = document.getElementById(`batchWrong2_${idx}`);
+        const w3 = document.getElementById(`batchWrong3_${idx}`);
+
+        if (!cInput || !qInput) continue;
+        const qText = qInput.value.trim();
+        const cText = cInput.value.trim();
+
+        if (!cText) {
+          missingCorrectCount++;
+          continue;
+        }
+
+        const smart = generateSmartOptions(qText, cText);
+        const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== cText.toLowerCase());
+
+        if (w1 && fallback[0]) w1.value = fallback[0];
+        if (w2 && fallback[1]) w2.value = fallback[1];
+        if (w3 && fallback[2]) w3.value = fallback[2];
+
+        [w1, w2, w3].forEach(el => {
+          if (el) {
+            el.style.transition = 'all 0.3s ease';
+            const origBg = el.style.background;
+            el.style.background = 'rgba(230, 57, 70, 0.28)';
+            el.style.borderColor = 'rgba(230, 57, 70, 0.7)';
+            setTimeout(() => {
+              el.style.background = origBg || 'rgba(0,0,0,0.35)';
+              el.style.borderColor = '';
+            }, 700);
+          }
+        });
+
+        filledCount++;
+      }
+
+      if (filledCount > 0) {
+        showToast(`✨ Alternativas erradas auto-sugeridas para todas as ${filledCount} questões!`, 'success', 3500);
+      } else if (missingCorrectCount > 0) {
+        showToast('⚠️ Preencha a resposta correta das questões antes de auto-sugerir as alternativas erradas!', 'warning', 3500);
+      }
     },
 
     updateBatchSelectedCount: () => {
