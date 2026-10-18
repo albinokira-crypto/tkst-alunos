@@ -648,49 +648,51 @@
         } catch(e) {}
       }
 
+      // Recupera o mapa permanente de questões editadas pelo Sensei
+      let activeEditedMap = {};
+      try {
+        activeEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+      } catch(e) {}
+
       if (cloudQuestions.length > 0) {
         const restoredCloud = restoreDefaultImages(cloudQuestions);
-        let cloudEditedMap = {};
-        try {
-          cloudEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
-        } catch(e) {}
-
         restoredCloud.forEach(q => {
-          const isSenseiQ = q && q.id && q.question;
-          if (isSenseiQ && !deletedIds.includes(q.id) && q && q.id) {
-            const localQ = bankMap.get(q.id);
-            const isLocalEdited = localQ && (localQ._edited || localQ._custom);
-            const isCloudNewer = q.updatedAt && localQ && localQ.updatedAt && q.updatedAt >= localQ.updatedAt;
-            if (!localQ || (!isLocalEdited && (!localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt))) || (isLocalEdited && isCloudNewer) || q._edited) {
+          if (q && q.id && q.question && !deletedIds.includes(q.id)) {
+            // Se a questão já foi editada pelo Sensei localmente, JAMAIS sobrescreve com padrão antigo da nuvem!
+            if (activeEditedMap[q.id]) {
+              const eq = activeEditedMap[q.id];
+              // Só aceita a versão da nuvem se for explicitamente editada e tiver timestamp mais recente
+              if (q._edited && q.updatedAt && eq.updatedAt && q.updatedAt > eq.updatedAt) {
+                activeEditedMap[q.id] = q;
+                bankMap.set(q.id, q);
+              } else {
+                bankMap.set(q.id, eq);
+              }
+            } else {
+              const localQ = bankMap.get(q.id);
               const updatedItem = { ...(localQ || {}), ...q, image: q.image || (localQ && localQ.image) || '' };
               bankMap.set(q.id, updatedItem);
               if (q._edited) {
-                cloudEditedMap[q.id] = updatedItem;
+                activeEditedMap[q.id] = updatedItem;
               }
             }
           }
         });
-
-        try {
-          localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(cloudEditedMap));
-        } catch(e) {}
       }
 
-      // Re-aplica com prioridade máxima o mapa de questões editadas localmente
-      try {
-        const editedStored = localStorage.getItem('tkst_edited_quiz_questions');
-        if (editedStored) {
-          const editedMap = JSON.parse(editedStored);
-          if (editedMap && typeof editedMap === 'object') {
-            Object.keys(editedMap).forEach(qId => {
-              const eq = editedMap[qId];
-              if (eq && eq.id && eq.question && !deletedIds.includes(eq.id)) {
-                const vaultQ = bankMap.get(eq.id);
-                bankMap.set(eq.id, { ...(vaultQ || {}), ...eq, image: eq.image || (vaultQ && vaultQ.image) || '' });
-              }
-            });
-          }
+      // Re-aplica TODAS as questões editadas do Sensei com prioridade absoluta
+      Object.keys(activeEditedMap).forEach(qId => {
+        const eq = activeEditedMap[qId];
+        if (eq && eq.id && eq.question && !deletedIds.includes(eq.id)) {
+          const vaultQ = bankMap.get(eq.id);
+          const finalItem = { ...(vaultQ || {}), ...eq, _edited: true, _custom: true, image: eq.image || (vaultQ && vaultQ.image) || '' };
+          bankMap.set(eq.id, finalItem);
+          activeEditedMap[qId] = finalItem;
         }
+      });
+
+      try {
+        localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(activeEditedMap));
       } catch(e) {}
 
       const merged = Array.from(bankMap.values());
@@ -1696,8 +1698,8 @@
       }
     }
 
-    // 7. Sync Custom Quiz Bank (Filter out tombstoned deleted questions and merge with defaults)
-    if (Array.isArray(cloudData.custom_quiz_bank) && cloudData.custom_quiz_bank.length > 0) {
+    // 7. Sync Custom Quiz Bank & Edited Questions (Filter out tombstoned deleted questions and merge with defaults)
+    if ((Array.isArray(cloudData.custom_quiz_bank) && cloudData.custom_quiz_bank.length > 0) || (cloudData.edited_quiz_questions && typeof cloudData.edited_quiz_questions === 'object')) {
       const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !localDeletedQuizzes.includes(q.id));
       let localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
       if (Array.isArray(localSaved)) {
@@ -1708,57 +1710,65 @@
       localSaved.forEach(q => {
         if (!localDeletedQuizzes.includes(q.id)) bankMap.set(q.id, q);
       });
-      // Se a nuvem enviou o mapa de edições do Sensei, mescla com o armazenamento local
-      if (cloudData.edited_quiz_questions && typeof cloudData.edited_quiz_questions === 'object') {
-        try {
-          const curMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
-          const mergedMap = { ...curMap, ...cloudData.edited_quiz_questions };
-          localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(mergedMap));
-          changed = true;
-        } catch(e) {}
-      }
 
-      const restoredIncoming = restoreDefaultImages(cloudData.custom_quiz_bank);
-      let incomingEditedMap = {};
+      let activeEditedMap = {};
       try {
-        incomingEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+        activeEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
       } catch(e) {}
 
-      restoredIncoming.forEach(q => {
-        if (!localDeletedQuizzes.includes(q.id) && q && q.id) {
-          const localQ = bankMap.get(q.id);
-          const isLocalEdited = localQ && (localQ._edited || localQ._custom);
-          const isCloudNewer = q.updatedAt && localQ && localQ.updatedAt && q.updatedAt >= localQ.updatedAt;
-          if (!localQ || (!isLocalEdited && (!localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt))) || (isLocalEdited && isCloudNewer) || q._edited) {
-            const updatedItem = { ...(localQ || {}), ...q, image: q.image || (localQ && localQ.image) || '' };
-            bankMap.set(q.id, updatedItem);
-            if (q._edited) {
-              incomingEditedMap[q.id] = updatedItem;
+      // Mescla edições que vieram da nuvem
+      if (cloudData.edited_quiz_questions && typeof cloudData.edited_quiz_questions === 'object') {
+        Object.keys(cloudData.edited_quiz_questions).forEach(qId => {
+          const incomingQ = cloudData.edited_quiz_questions[qId];
+          if (incomingQ && incomingQ.id && incomingQ.question && !localDeletedQuizzes.includes(incomingQ.id)) {
+            const currentQ = activeEditedMap[qId];
+            if (!currentQ || !currentQ.updatedAt || (incomingQ.updatedAt && incomingQ.updatedAt >= currentQ.updatedAt)) {
+              activeEditedMap[qId] = incomingQ;
               changed = true;
             }
           }
+        });
+      }
+
+      if (Array.isArray(cloudData.custom_quiz_bank)) {
+        const restoredIncoming = restoreDefaultImages(cloudData.custom_quiz_bank);
+        restoredIncoming.forEach(q => {
+          if (!localDeletedQuizzes.includes(q.id) && q && q.id && q.question) {
+            if (activeEditedMap[q.id]) {
+              const eq = activeEditedMap[q.id];
+              if (q._edited && q.updatedAt && eq.updatedAt && q.updatedAt > eq.updatedAt) {
+                activeEditedMap[q.id] = q;
+                bankMap.set(q.id, q);
+                changed = true;
+              } else {
+                bankMap.set(q.id, eq);
+              }
+            } else {
+              const localQ = bankMap.get(q.id);
+              const updatedItem = { ...(localQ || {}), ...q, image: q.image || (localQ && localQ.image) || '' };
+              bankMap.set(q.id, updatedItem);
+              if (q._edited) {
+                activeEditedMap[q.id] = updatedItem;
+                changed = true;
+              }
+            }
+          }
+        });
+      }
+
+      // Re-aplica mapa dedicado de edições com prioridade absoluta
+      Object.keys(activeEditedMap).forEach(qId => {
+        const eq = activeEditedMap[qId];
+        if (eq && eq.id && eq.question && !localDeletedQuizzes.includes(eq.id)) {
+          const vaultQ = bankMap.get(eq.id);
+          const finalItem = { ...(vaultQ || {}), ...eq, _edited: true, _custom: true, image: eq.image || (vaultQ && vaultQ.image) || '' };
+          bankMap.set(eq.id, finalItem);
+          activeEditedMap[qId] = finalItem;
         }
       });
 
       try {
-        localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(incomingEditedMap));
-      } catch(e) {}
-
-      // Re-aplica mapa dedicado de edições locais (garantia que edições sobrepõem qualquer padrão)
-      try {
-        const editedStored = localStorage.getItem('tkst_edited_quiz_questions');
-        if (editedStored) {
-          const editedMap = JSON.parse(editedStored);
-          if (editedMap && typeof editedMap === 'object') {
-            Object.keys(editedMap).forEach(qId => {
-              const eq = editedMap[qId];
-              if (eq && eq.id && eq.question && !localDeletedQuizzes.includes(eq.id)) {
-                const vaultQ = bankMap.get(eq.id);
-                bankMap.set(eq.id, { ...(vaultQ || {}), ...eq, image: eq.image || (vaultQ && vaultQ.image) || '' });
-              }
-            });
-          }
-        }
+        localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(activeEditedMap));
       } catch(e) {}
 
       const mergedBank = Array.from(bankMap.values());

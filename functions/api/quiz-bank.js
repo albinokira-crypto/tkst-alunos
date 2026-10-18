@@ -10,6 +10,7 @@ const MARKER_END = '// ==TKST_CUSTOM_QUESTIONS_END==';
 import { getCorsHeaders, verifyAuth } from './_auth.js';
 
 let inMemoryQuizBank = null;
+let inMemoryEditedMap = {};
 
 function toBase64Utf8(str) {
   const bytes = new TextEncoder().encode(str);

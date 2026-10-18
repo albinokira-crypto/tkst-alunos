@@ -20,6 +20,7 @@ const MARKER_END = '// ==TKST_CUSTOM_QUESTIONS_END==';
 
 // Módulo-level cache: sobrevive entre requisições na mesma instância Vercel
 let moduleCache = null;
+let moduleEditedMap = {};
 
 function readFromTmp() {
   try {
@@ -138,9 +139,9 @@ module.exports = async (req, res) => {
     }
 
     if (!bank || bank.length === 0) {
-      return res.status(200).json({ success: true, data: [], empty: true });
+      return res.status(200).json({ success: true, data: [], editedMap: moduleEditedMap, empty: true });
     }
-    return res.status(200).json({ success: true, data: bank, count: bank.length });
+    return res.status(200).json({ success: true, data: bank, editedMap: moduleEditedMap, count: bank.length });
   }
 
   // POST — salva/atualiza o banco de questões
@@ -152,6 +153,10 @@ module.exports = async (req, res) => {
       const incoming = body.bank || body.data || body;
       if (!Array.isArray(incoming)) {
         return res.status(400).json({ success: false, error: 'Payload inválido: esperado array de questões.' });
+      }
+
+      if (body.editedMap && typeof body.editedMap === 'object') {
+        moduleEditedMap = { ...moduleEditedMap, ...body.editedMap };
       }
 
       // Merge: mantém o que já existe e adiciona/atualiza com o que chegou
@@ -169,6 +174,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({
         success: true,
         data: merged,
+        editedMap: moduleEditedMap,
         count: merged.length,
         savedAt: new Date().toISOString()
       });

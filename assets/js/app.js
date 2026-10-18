@@ -107,14 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.62';
+  const APP_DISPLAY_VERSION = 'V-2.84';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.62. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.84. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.62)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.84)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
         } catch(e) {}
@@ -11977,7 +11977,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Salvar imediatamente no mapa de questões editadas para garantia total de persistência
         try {
           const editedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
-          editedMap[qId] = { ...bank[idx] };
+          const cleanToStore = { ...bank[idx] };
+          if (cleanToStore.image && cleanToStore.image.length > 50000) {
+            cleanToStore.image = '';
+          }
+          editedMap[qId] = cleanToStore;
           localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(editedMap));
         } catch(e) {}
 

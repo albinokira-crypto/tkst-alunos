@@ -2783,7 +2783,7 @@ window.TKST_QUIZ = window.TKST_DEFAULT_QUIZ_BANK;
             const eq = editedMap[qId];
             if (eq && eq.id && eq.question && !deletedIds.includes(eq.id)) {
               const vaultQ = bankMap.get(eq.id);
-              const mergedQ = vaultQ ? { ...vaultQ, ...eq, image: eq.image || vaultQ.image } : eq;
+              const mergedQ = vaultQ ? { ...vaultQ, ...eq, _edited: true, _custom: true, image: eq.image || vaultQ.image } : { ...eq, _edited: true, _custom: true };
               bankMap.set(eq.id, sanitizeItem(mergedQ));
             }
           });

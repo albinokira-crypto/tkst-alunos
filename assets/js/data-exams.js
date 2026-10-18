@@ -1061,11 +1061,14 @@ window.TKST_EXAM_GENERATOR = {
     const targetKyu = this.getQuizBankKyuForExam(kyu);
 
     // Filtra EXCLUSIVAMENTE as questões da graduação solicitada pelo Sensei para o gerador de provas
-    let pool = all.filter(q => Number(q.kyuNumber) === targetKyu);
+    let pool = all.filter(q => {
+      const qKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6));
+      return (targetKyu === 6) ? (qKyu === 6 || qKyu === 7) : (qKyu === targetKyu);
+    });
 
     // Fallback de segurança se o banco da faixa estiver vazio
     if (pool.length === 0) {
-      pool = all.filter(q => q.kyuNumber !== undefined);
+      pool = all.filter(q => (q.kyuNumber !== undefined || q.kyu !== undefined));
     }
 
     // Deduplica por ID e texto único
