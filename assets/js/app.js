@@ -232,26 +232,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }, duration);
   }
 
-  // Listener: confirmação visual quando questões são salvas/sincronizadas
+  // Listener: sincronização em segundo plano silenciosa (sem poluir a tela com toasts repetitivos)
   window.addEventListener('tkst_quiz_bank_saved', (e) => {
-    showToast(`☁️ Questões salvas! Sincronizando com a nuvem... (${e.detail.count} no banco)`, 'sync', 4000);
+    console.log('[Sync Background] Questões salvas na nuvem:', e.detail?.count);
   });
   window.addEventListener('tkst_quiz_committed', (e) => {
-    showToast(`💚 ${e.detail.count} questões salvas permanentemente no GitHub!`, 'success', 5000);
+    console.log('[Sync Background] Questões salvas no GitHub:', e.detail?.count);
   });
-  let lastQuizBankCount = 0;
-  let lastQuizSyncToastTime = 0;
   window.addEventListener('tkst_quiz_bank_updated', (e) => {
-    const count = (e.detail && e.detail.count) || (Array.isArray(window.TKST_QUIZ_BANK) ? window.TKST_QUIZ_BANK.length : 0);
-    const now = Date.now();
-    if (e.detail && e.detail.updated && (now - lastQuizSyncToastTime > 6000)) {
-      lastQuizSyncToastTime = now;
-      showToast(`📥 Questões sincronizadas em tempo real com o PC!`, 'success', 3000);
-    } else if (count > 0 && count !== lastQuizBankCount && (now - lastQuizSyncToastTime > 15000)) {
-      lastQuizBankCount = count;
-      lastQuizSyncToastTime = now;
-      showToast(`📥 Banco sincronizado: ${count} questões disponíveis!`, 'info', 3000);
-    }
+    console.log('[Sync Background] Banco de questões atualizado silenciosamente');
     if (activeTab === 'admin') {
       if (typeof renderAdminMaster === 'function') {
         renderAdminMaster();
@@ -11771,7 +11760,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detailModal.classList.remove('active');
         const modalContainer = detailModal.querySelector('.modal-container');
         if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
-        showToast('✅ Nova questão cadastrada e salva no simulado! Sincronizando...', 'sync');
+        showToast('✅ Nova questão cadastrada com sucesso!', 'success');
         renderAdminMaster();
       } catch (err) {
         console.error('Erro ao cadastrar questão:', err);
@@ -12045,7 +12034,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detailModal.classList.remove('active');
         const modalContainer = detailModal.querySelector('.modal-container');
         if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
-        showToast('✅ Questão atualizada com sucesso! Sincronizando...', 'sync');
+        showToast('✅ Questão atualizada com sucesso!', 'success');
         renderAdminMaster();
       } catch (err) {
         console.error('Erro ao editar questão:', err);
@@ -15655,6 +15644,18 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         try {
           const cloudExam = await window.TKST_AUTH.fetchExamFromCloud(baseCode);
           if (cloudExam) exam = cloudExam;
+        } catch(e) {}
+      }
+
+      // Se o exame tiver studentId mas não tiver nome de aluno preenchido, localiza na base de matriculados
+      if (exam && (!exam.studentName || !exam.studentName.trim()) && exam.studentId && window.TKST_AUTH && typeof window.TKST_AUTH.getAllStudents === 'function') {
+        try {
+          const allSt = window.TKST_AUTH.getAllStudents() || [];
+          const matchedSt = allSt.find(s => s.id === exam.studentId);
+          if (matchedSt) {
+            exam.studentName = matchedSt.name || matchedSt.username;
+            exam.studentAbbr = exam.studentName;
+          }
         } catch(e) {}
       }
 

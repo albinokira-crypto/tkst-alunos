@@ -13,7 +13,8 @@ const DEFAULT_DOJOS = [
 let inMemoryState = {
   dojos: DEFAULT_DOJOS,
   custom_quiz_bank: [],
-  edited_quiz_questions: {}
+  edited_quiz_questions: {},
+  generated_exams: {}
 };
 
 export async function onRequestOptions(context) {
@@ -31,6 +32,7 @@ export async function onRequestGet(context) {
     data: inMemoryState,
     dojos: inMemoryState.dojos || DEFAULT_DOJOS,
     edited_quiz_questions: inMemoryState.edited_quiz_questions || {},
+    generated_exams: inMemoryState.generated_exams || {},
     status: 'online'
   }), { status: 200, headers });
 }
@@ -60,10 +62,13 @@ export async function onRequestPost(context) {
       }
       const existingEdited = inMemoryState.edited_quiz_questions || {};
       const newEdited = sanitizedBody.edited_quiz_questions || {};
+      const existingExams = inMemoryState.generated_exams || {};
+      const newExams = sanitizedBody.generated_exams || {};
       inMemoryState = { 
         ...inMemoryState, 
         ...sanitizedBody, 
         edited_quiz_questions: { ...existingEdited, ...newEdited },
+        generated_exams: { ...existingExams, ...newExams },
         timestamp: Date.now() 
       };
     }

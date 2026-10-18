@@ -1983,7 +1983,18 @@
     if (cloudData.generated_exams && typeof cloudData.generated_exams === 'object') {
       try {
         let localExams = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-        const mergedExams = { ...localExams, ...cloudData.generated_exams };
+        const incoming = cloudData.generated_exams;
+        const mergedExams = { ...localExams, ...incoming };
+        Object.keys(incoming).forEach(k => {
+          const rec = incoming[k];
+          if (rec) {
+            const raw = String(rec.examId || rec.baseExamId || k).replace(/^#/, '').trim().toUpperCase();
+            const b5 = raw.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+            mergedExams[k] = rec;
+            mergedExams[raw] = rec;
+            if (b5) mergedExams[b5] = rec;
+          }
+        });
         const exStr = JSON.stringify(mergedExams);
         if (localStorage.getItem('tkst_generated_exams') !== exStr) {
           safeLocalStorageSet('tkst_generated_exams', exStr);
@@ -2088,16 +2099,19 @@
   }
 
   function handleIncomingExamRecord(rec) {
-    if (!rec || !rec.examId) return;
+    if (!rec) return;
     try {
-      const cleanId = String(rec.examId).trim().toUpperCase();
+      const cleanId = String(rec.examId || rec.baseExamId || '').trim().toUpperCase();
+      const baseCode = cleanId.replace(/^#/, '').split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
       if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
-      window.TKST_GENERATED_EXAMS_CACHE[rec.examId] = rec;
-      window.TKST_GENERATED_EXAMS_CACHE[cleanId] = rec;
+      if (rec.examId) window.TKST_GENERATED_EXAMS_CACHE[rec.examId] = rec;
+      if (cleanId) window.TKST_GENERATED_EXAMS_CACHE[cleanId] = rec;
+      if (baseCode) window.TKST_GENERATED_EXAMS_CACHE[baseCode] = rec;
       let localExams = {};
       try { localExams = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
-      localExams[rec.examId] = rec;
-      localExams[cleanId] = rec;
+      if (rec.examId) localExams[rec.examId] = rec;
+      if (cleanId) localExams[cleanId] = rec;
+      if (baseCode) localExams[baseCode] = rec;
       safeLocalStorageSet('tkst_generated_exams', JSON.stringify(localExams));
     } catch(e) {}
   }
@@ -4400,16 +4414,19 @@
     },
 
     broadcastGeneratedExam: function(record) {
-      if (!record || !record.examId) return;
+      if (!record || (!record.examId && !record.baseExamId)) return;
       try {
-        const cleanId = String(record.examId).trim().toUpperCase();
+        const cleanId = String(record.examId || record.baseExamId).trim().toUpperCase();
+        const baseCode = cleanId.replace(/^#/, '').split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
         if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
-        window.TKST_GENERATED_EXAMS_CACHE[record.examId] = record;
-        window.TKST_GENERATED_EXAMS_CACHE[cleanId] = record;
+        if (record.examId) window.TKST_GENERATED_EXAMS_CACHE[record.examId] = record;
+        if (cleanId) window.TKST_GENERATED_EXAMS_CACHE[cleanId] = record;
+        if (baseCode) window.TKST_GENERATED_EXAMS_CACHE[baseCode] = record;
         let store = {};
         try { store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
-        store[record.examId] = record;
-        store[cleanId] = record;
+        if (record.examId) store[record.examId] = record;
+        if (cleanId) store[cleanId] = record;
+        if (baseCode) store[baseCode] = record;
         safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
 
         // 1. Transmissão instantânea ultra-leve via NTFY (< 300 bytes) para sincronizar com o celular/PC imediatamente
@@ -4426,12 +4443,13 @@
           })
         }).catch(() => {});
 
-        // 2. Persistência direta no Vercel Serverless /api/sync para retenção imediata na nuvem
+        // 2. Persistência direta em /api/sync para retenção imediata na nuvem
         fetch('/api/sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             generated_exams: {
+              [baseCode]: record,
               [cleanId]: record,
               [record.examId]: record
             }
@@ -4443,18 +4461,24 @@
     getGeneratedExam: function(examId) {
       if (!examId) return null;
       const clean = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
-      const baseCode = clean.split('-')[0];
+      const baseCode = clean.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
       try {
         if (window.TKST_GENERATED_EXAMS_CACHE) {
-          if (window.TKST_GENERATED_EXAMS_CACHE[clean]) return window.TKST_GENERATED_EXAMS_CACHE[clean];
           if (window.TKST_GENERATED_EXAMS_CACHE[baseCode]) return window.TKST_GENERATED_EXAMS_CACHE[baseCode];
-          const cacheKey = Object.keys(window.TKST_GENERATED_EXAMS_CACHE).find(k => k.trim().toUpperCase() === clean || k.trim().toUpperCase() === baseCode);
+          if (window.TKST_GENERATED_EXAMS_CACHE[clean]) return window.TKST_GENERATED_EXAMS_CACHE[clean];
+          const cacheKey = Object.keys(window.TKST_GENERATED_EXAMS_CACHE).find(k => {
+            const kBase = k.replace(/^#/, '').trim().toUpperCase().split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+            return kBase === baseCode;
+          });
           if (cacheKey && window.TKST_GENERATED_EXAMS_CACHE[cacheKey]) return window.TKST_GENERATED_EXAMS_CACHE[cacheKey];
         }
         const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-        if (store[clean]) return store[clean];
         if (store[baseCode]) return store[baseCode];
-        const foundKey = Object.keys(store).find(k => k.trim().toUpperCase() === clean || k.trim().toUpperCase() === baseCode);
+        if (store[clean]) return store[clean];
+        const foundKey = Object.keys(store).find(k => {
+          const kBase = k.replace(/^#/, '').trim().toUpperCase().split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+          return kBase === baseCode;
+        });
         if (foundKey && store[foundKey]) return store[foundKey];
       } catch(e) {}
       return null;
@@ -4463,22 +4487,22 @@
     fetchExamFromCloud: async function(examId) {
       if (!examId) return null;
       const clean = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
-      const baseCode = clean.split('-')[0];
+      const baseCode = clean.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
 
       // 1. Verifica cache local
-      const local = this.getGeneratedExam(clean) || this.getGeneratedExam(baseCode);
+      const local = this.getGeneratedExam(baseCode) || this.getGeneratedExam(clean);
       if (local && (local.studentName || local.studentAbbr)) return local;
 
-      // 2. Tenta buscar no Vercel /api/sync com timeout curto
+      // 2. Tenta buscar em /api/sync com timeout estendido de 3.5s para conexões móveis
       try {
         const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 1200);
+        const tid = setTimeout(() => controller.abort(), 3500);
         const res = await fetch('/api/sync', { cache: 'no-store', signal: controller.signal });
         clearTimeout(tid);
         if (res.ok) {
           const json = await res.json();
-          if (json && json.success && json.data && json.data.generated_exams) {
-            const cloudExams = json.data.generated_exams;
+          const cloudExams = (json && json.data && json.data.generated_exams) || (json && json.generated_exams);
+          if (cloudExams && typeof cloudExams === 'object') {
             if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
             Object.assign(window.TKST_GENERATED_EXAMS_CACHE, cloudExams);
             let store = {};
@@ -4486,17 +4510,26 @@
             Object.assign(store, cloudExams);
             safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
 
-            const match = cloudExams[clean] || cloudExams[baseCode] ||
-              Object.values(cloudExams).find(x => x && (x.examId === clean || x.examId === baseCode || (x.examId && x.examId.toUpperCase() === clean)));
-            if (match) return match;
+            let match = cloudExams[baseCode] || cloudExams[clean];
+            if (!match) {
+              match = Object.values(cloudExams).find(x => {
+                if (!x) return false;
+                const xCode = String(x.examId || x.baseExamId || '').replace(/^#/, '').toUpperCase().split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+                return xCode === baseCode;
+              });
+            }
+            if (match) {
+              handleIncomingExamRecord(match);
+              if (match.studentName || match.studentAbbr) return match;
+            }
           }
         }
       } catch(e) {}
 
-      // 3. Fallback: faz poll no NTFY para capturar exames gerados recentemente com timeout
+      // 3. Fallback: faz poll no NTFY para capturar exames gerados recentemente com timeout de 3.5s
       try {
         const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 1200);
+        const tid = setTimeout(() => controller.abort(), 3500);
         const pollRes = await fetch(SYNC_URL + '/json?poll=1', { signal: controller.signal });
         clearTimeout(tid);
         if (pollRes.ok) {
@@ -4510,7 +4543,8 @@
                 if (cloudData && cloudData.type === 'tkst_exam_generated' && cloudData.record) {
                   handleIncomingExamRecord(cloudData.record);
                   const r = cloudData.record;
-                  if (r.examId && (r.examId.toUpperCase() === clean || r.examId.toUpperCase() === baseCode)) {
+                  const rCode = String(r.examId || r.baseExamId || '').replace(/^#/, '').toUpperCase().split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+                  if (rCode === baseCode) {
                     return r;
                   }
                 }
@@ -4520,7 +4554,7 @@
         }
       } catch(e) {}
 
-      return this.getGeneratedExam(clean);
+      return this.getGeneratedExam(baseCode) || this.getGeneratedExam(clean);
     },
 
     deduplicateQuizSubmissions: deduplicateQuizSubmissions,

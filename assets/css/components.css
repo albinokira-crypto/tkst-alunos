@@ -1763,8 +1763,13 @@ body.login-view-active .content-body {
 
 .modal-container.quiz-modal-compact .modal-body {
   padding: 10px 18px 12px 18px;
-  overflow-y: auto;
-  max-height: calc(94vh - 48px);
+  max-height: calc(94vh - 44px);
+}
+
+@media (min-width: 769px) and (min-height: 480px) {
+  .modal-container.quiz-modal-compact .modal-body {
+    overflow-y: hidden;
+  }
 }
 
 .quiz-edit-grid {
