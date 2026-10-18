@@ -276,7 +276,7 @@
     </div>
   </div>
 
-  <script src="assets/js/data-quiz.js?v=273"></script>
+  <script src="assets/js/data-quiz.js?v=275"></script>
   <script>
     const SYNC_TOPIC = 'tkst_karate_sync_v3_live';
     const NTFY_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
@@ -310,7 +310,13 @@
       });
       if (Array.isArray(bank)) {
         bank.forEach(q => {
-          if (q && q.id && !deletedIds.includes(q.id)) map.set(q.id, q);
+          if (q && q.id && !deletedIds.includes(q.id)) {
+            const vaultQ = map.get(q.id);
+            if (vaultQ) {
+              q = { ...vaultQ, image: q.image || vaultQ.image };
+            }
+            map.set(q.id, q);
+          }
         });
       }
       return Array.from(map.values());
@@ -355,9 +361,9 @@
       });
 
       const alert = document.getElementById('statusAlert');
-      if (bank.length >= 166) {
+      if (bank.length >= 160) {
         alert.className = 'alert alert-success';
-        alert.innerHTML = `<i class="fas fa-check-circle"></i> Banco completo com ${bank.length} questões detectado neste aparelho!`;
+        alert.innerHTML = `<i class="fas fa-check-circle"></i> Banco oficial completo com ${bank.length} questões detectado neste aparelho!`;
         alert.style.display = 'flex';
       } else if (bank.length > 0) {
         alert.className = 'alert alert-warn';
@@ -587,9 +593,15 @@
                 if (incomingQuestions && incomingQuestions.length > 0) {
                   const current = getLocalBank();
                   const map = new Map();
-                  current.forEach(q => map.set(q.id, q));
+                  current.forEach(q => map.set(q.id, { ...q }));
                   incomingQuestions.forEach(q => {
-                    if (q && q.id && q.question) map.set(q.id, q);
+                    if (q && q.id && q.question) {
+                      const vaultQ = (window.TKST_DEFAULT_QUIZ_BANK || []).find(dq => dq.id === q.id);
+                      if (vaultQ) {
+                        q = { ...vaultQ, image: q.image || vaultQ.image };
+                      }
+                      map.set(q.id, q);
+                    }
                   });
                   const merged = Array.from(map.values());
                   localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(merged));

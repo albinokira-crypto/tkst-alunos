@@ -170,12 +170,24 @@
     defaultList.forEach(q => bankMap.set(q.id, { ...q }));
     if (Array.isArray(window.TKST_QUIZ_BANK)) {
       window.TKST_QUIZ_BANK.forEach(q => {
-        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+        if (!deletedIds.includes(q.id)) {
+          const vaultQ = bankMap.get(q.id);
+          if (vaultQ) {
+            q = { ...vaultQ, image: q.image || vaultQ.image };
+          }
+          bankMap.set(q.id, q);
+        }
       });
     }
     if (Array.isArray(savedBank) && savedBank.length > 0) {
       savedBank.forEach(q => {
-        if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+        if (!deletedIds.includes(q.id)) {
+          const vaultQ = bankMap.get(q.id);
+          if (vaultQ) {
+            q = { ...vaultQ, image: q.image || vaultQ.image };
+          }
+          bankMap.set(q.id, q);
+        }
       });
     }
     const merged = Array.from(bankMap.values());
@@ -299,7 +311,13 @@
       defaultList.forEach(q => bankMap.set(q.id, { ...q }));
       if (Array.isArray(localSaved)) {
         restoreDefaultImages(localSaved).forEach(q => {
-          if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+          if (!deletedIds.includes(q.id)) {
+            const vaultQ = bankMap.get(q.id);
+            if (vaultQ) {
+              q = { ...vaultQ, image: q.image || vaultQ.image };
+            }
+            bankMap.set(q.id, q);
+          }
         });
       }
 
@@ -361,7 +379,7 @@
 
   async function pullQuizBankFromCloud() {
     try {
-      const QUIZ_STAMP = 'tkst_quiz_stamp_v262_permanent';
+      const QUIZ_STAMP = 'tkst_quiz_stamp_v275_clean';
       if (localStorage.getItem('tkst_quiz_official_stamp') !== QUIZ_STAMP) {
         localStorage.setItem('tkst_quiz_official_stamp', QUIZ_STAMP);
       }
@@ -390,10 +408,16 @@
       // 1. Base default questions (questões oficiais com imagens do Sensei)
       defaultList.forEach(q => bankMap.set(q.id, { ...q }));
 
-      // 2. Overlay current local questions (never overwrite what was edited locally)
+      // 2. Overlay current local questions (preserva texto limpo oficial para questões do cofre)
       if (Array.isArray(localSaved)) {
         restoreDefaultImages(localSaved).forEach(q => {
-          if (!deletedIds.includes(q.id)) bankMap.set(q.id, q);
+          if (!deletedIds.includes(q.id)) {
+            const vaultQ = bankMap.get(q.id);
+            if (vaultQ) {
+              q = { ...vaultQ, image: q.image || vaultQ.image };
+            }
+            bankMap.set(q.id, q);
+          }
         });
       }
 
@@ -3208,6 +3232,10 @@
         if (Array.isArray(saved) && saved.length > 0) {
           saved.forEach(q => {
             if (q && q.id && !del.includes(q.id)) {
+              const vaultQ = bankMap.get(q.id);
+              if (vaultQ) {
+                q = { ...vaultQ, image: q.image || vaultQ.image };
+              }
               bankMap.set(q.id, q);
             }
           });
