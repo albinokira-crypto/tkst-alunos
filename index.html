@@ -32,8 +32,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=286">
-  <link rel="stylesheet" href="assets/css/components.css?v=286">
+  <link rel="stylesheet" href="assets/css/main.css?v=287">
+  <link rel="stylesheet" href="assets/css/components.css?v=287">
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
@@ -176,7 +176,7 @@
 
       <div class="nav-section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
         <span>Sessão & Conta</span>
-        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.86. Toque para atualizar o app.">V-2.86</span>
+        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.87. Toque para atualizar o app.">V-2.87</span>
       </div>
       <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
         <li class="nav-item">
@@ -628,69 +628,188 @@
       </div>
 
       <div class="modal-body" style="padding: 16px; overflow-y: auto; flex: 1;">
-        <!-- 1. CAPTURA / UPLOAD VIEW -->
-        <div id="omrCaptureView">
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;">
+        <!-- Stepper Indicador de Fases (Fase 1 -> Fase 2 -> Revisão) -->
+        <div id="omrPhaseStepper" style="display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+          <button type="button" id="omrStepTab1" onclick="window.TKST_APP.goToOmrPhase(1)" style="flex: 1; text-align: center; padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 800; background: rgba(245, 190, 0, 0.15); border: 1px solid var(--accent-gold); color: var(--accent-gold); cursor: pointer; transition: all 0.2s;">
+            <i class="fas fa-keyboard"></i> 1. Identificar Prova & Aluno
+          </button>
+          <button type="button" id="omrStepTab2" onclick="window.TKST_APP.goToOmrPhase(2)" style="flex: 1; text-align: center; padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: pointer; transition: all 0.2s;">
+            <i class="fas fa-camera"></i> 2. Ler Cartão (Câmera Nativa)
+          </button>
+        </div>
+
+        <!-- 1. FASE 1: IDENTIFICAÇÃO DO CÓDIGO DA PROVA POR DIGITAÇÃO -->
+        <div id="omrPhase1View">
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px;">
+            <div style="text-align: center; margin-bottom: 14px;">
+              <h4 style="font-size: 1.05rem; font-weight: 800; color: #FFF; margin-bottom: 4px;">
+                <i class="fas fa-barcode" style="color: var(--accent-gold);"></i> Digite o Código da Prova
+              </h4>
+              <p style="font-size: 0.80rem; color: #94A3B8; margin: 0;">
+                O código de 5 caracteres impresso no cabeçalho identifica automaticamente a prova, o aluno e o gabarito oficial.
+              </p>
+            </div>
+
+            <!-- Campo de Digitação com Botão -->
+            <div style="display: flex; gap: 8px; max-width: 440px; margin: 0 auto 10px auto;">
+              <input type="text" id="omrExamCodeInput" class="form-control" placeholder="Ex: 18ZK4 ou 1AR40" style="padding: 10px 14px; font-size: 1.25rem; font-weight: 900; font-family: monospace; text-transform: uppercase; letter-spacing: 2px; text-align: center; background: #07090E; border: 2px solid var(--accent-gold); color: #FFB703; border-radius: 8px;" oninput="window.TKST_APP.onOmrExamCodeInput(this.value)">
+              <button type="button" class="btn btn-gold" onclick="window.TKST_APP.searchOmrExamCode()" style="font-weight: 800; padding: 0 18px; white-space: nowrap; border-radius: 8px;">
+                <i class="fas fa-search"></i> Identificar
+              </button>
+            </div>
+
+            <!-- Atalhos de Provas Recentes -->
+            <div id="omrRecentExamsContainer" style="margin-bottom: 14px; text-align: center;">
+              <span style="font-size: 0.74rem; color: #94A3B8; margin-right: 6px;">Atalhos rápidos:</span>
+              <span id="omrRecentExamsChips" style="display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+                <!-- Preenchido via JS com badges clicáveis de provas recentes -->
+              </span>
+            </div>
+
+            <!-- Card de Identificação da Prova (Detalhes: Prova, Aluno, Gabarito) -->
+            <div id="omrExamIdentificationCard" style="display: none; background: #0B0E14; border: 1.5px solid #10B981; border-radius: 8px; padding: 14px; margin-bottom: 6px;">
+              <!-- Cabeçalho do Card Identificado -->
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="background: #065F46; color: #34D399; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 4px;">
+                    <i class="fas fa-check-circle"></i> PROVA IDENTIFICADA
+                  </span>
+                  <span id="omrIdentifiedCodeBadge" style="font-family: monospace; font-size: 1.05rem; font-weight: 900; color: var(--accent-gold);"></span>
+                </div>
+                <div id="omrIdentifiedDate" style="font-size: 0.75rem; color: #94A3B8;"></div>
+              </div>
+
+              <!-- Grid de Dados da Prova e Aluno -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                <!-- Bloco 1: Prova / Kyu -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px;">
+                  <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Prova / Graduação</div>
+                  <div id="omrIdentifiedBeltText" style="font-size: 0.92rem; font-weight: 800; color: #FFF;"></div>
+                  <div id="omrIdentifiedDojoText" style="font-size: 0.72rem; color: #64748B; margin-top: 2px;"></div>
+                </div>
+
+                <!-- Bloco 2: Aluno -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px;">
+                  <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Aluno Vinculado</div>
+                  <div id="omrIdentifiedStudentText" style="font-size: 0.92rem; font-weight: 800; color: #38BDF8;"></div>
+                  <div style="margin-top: 4px;">
+                    <select id="omrStudentSelect" class="form-control" style="width: 100%; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; background: #07090E; border: 1px solid var(--border-color); color: #CBD5E1;">
+                      <option value="">Confirmar ou alterar aluno...</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloco 3: Gabarito Oficial da Prova em Questão -->
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px 12px; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 0.75rem; font-weight: 800; color: #FFF; text-transform: uppercase;">
+                    <i class="fas fa-list-check" style="color: var(--accent-gold);"></i> Gabarito Oficial da Prova
+                  </span>
+                  <span style="font-size: 0.70rem; color: #34D399; font-weight: 700;">10 Questões Carregadas</span>
+                </div>
+                <div id="omrIdentifiedKeyGrid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; text-align: center;">
+                  <!-- Gerado via JS: Q01=A, Q02=B, etc. -->
+                </div>
+              </div>
+
+              <!-- Botão de Avanço para Fase 2 -->
+              <button type="button" id="omrAdvancePhaseBtn" class="btn btn-gold" onclick="window.TKST_APP.goToOmrPhase(2)" style="width: 100%; padding: 12px; font-size: 1rem; font-weight: 900; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #FFF; border: none; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                <span>Avançar para Leitura do Cartão (Fase 2)</span>
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+
+            <!-- Placeholder quando ainda não identificou -->
+            <div id="omrExamIdentificationPlaceholder" style="background: rgba(0,0,0,0.25); border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 24px 16px; text-align: center; color: #64748B;">
+              <i class="fas fa-keyboard" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.5;"></i>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #94A3B8;">Aguardando digitação do código da prova</div>
+              <div style="font-size: 0.75rem; margin-top: 4px;">Digite o código acima ou clique em um atalho para carregar o aluno e o gabarito.</div>
+            </div>
+
+            <!-- Kyu Select (sincronizado automaticamente) -->
+            <select id="omrKyuSelect" style="display:none;" onchange="window.TKST_APP.onOmrKyuChanged()">
+              <option value="6">6º Kyu (Branca para Amarela)</option>
+              <option value="5">5º Kyu (Amarela para Vermelha)</option>
+              <option value="4">4º Kyu (Vermelha para Laranja)</option>
+              <option value="3">3º Kyu (Laranja para Verde)</option>
+              <option value="2">2º Kyu (Verde para Roxa)</option>
+              <option value="1">1º Kyu (Roxa para Marrom)</option>
+              <option value="0">1º Dan (Marrom para Preta Shodan)</option>
+              <option value="-1">2º Dan (Nidan)</option>
+              <option value="-2">3º Dan (Sandan)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 2. FASE 2: LEITURA DO CARTÃO DE RESPOSTAS (CÂMERA NATIVA DO CELULAR) -->
+        <div id="omrPhase2View" style="display:none;">
+          <!-- Card Resumo da Prova Identificada -->
+          <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(245, 190, 0, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <div style="font-size: 0.70rem; color: #94A3B8; text-transform: uppercase; font-weight: 700;">Prova Selecionada</div>
+              <div style="font-size: 0.90rem; font-weight: 800; color: #FFF;">
+                <span id="omrPhase2ExamCode" style="color: var(--accent-gold); font-family: monospace; font-size: 1rem;"></span> • 
+                <span id="omrPhase2Belt"></span> • 
+                👤 <span id="omrPhase2Student" style="color: #38BDF8;"></span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.goToOmrPhase(1)" style="font-size: 0.75rem; padding: 5px 10px;">
+              <i class="fas fa-edit"></i> Alterar Prova
+            </button>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 14px;">
             <!-- Seletor de Modo de Captura -->
-            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; flex-wrap: wrap;">
-              <button type="button" id="omrModeCardBtn" class="btn btn-sm btn-primary" onclick="window.TKST_APP.setOmrCaptureMode('card')" style="font-size: 0.8rem; font-weight: 700;">
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 6px; flex-wrap: wrap;">
+              <button type="button" id="omrModeCardBtn" class="btn btn-sm btn-primary" onclick="window.TKST_APP.setOmrCaptureMode('card')" style="font-size: 0.8rem; font-weight: 700; background: var(--accent-gold); color: #000; border: 1px solid var(--accent-gold);">
                 🎯 Apenas Cartão de Respostas (Recomendado)
               </button>
-              <button type="button" id="omrModeSheetBtn" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.setOmrCaptureMode('sheet')" style="font-size: 0.8rem; font-weight: 700;">
+              <button type="button" id="omrModeSheetBtn" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.setOmrCaptureMode('sheet')" style="font-size: 0.8rem; font-weight: 700; background: rgba(255,255,255,0.06); color: #CBD5E1; border: 1px solid rgba(255,255,255,0.15);">
                 📄 Folha A4 Inteira
               </button>
             </div>
-            <div id="omrModeHelperText" style="font-size: 0.75rem; color: #94A3B8; text-align: center; margin-bottom: 12px;">
-              🎯 Modo Cartão: Aproxime a câmera e enquadre de perto apenas o Cartão de Respostas no cabeçalho da prova.
+            <div id="omrModeHelperText" style="font-size: 0.75rem; color: #94A3B8; text-align: center; margin-bottom: 14px;">
+              🎯 Aproxime a câmera focando diretamente no retângulo das bolhas de resposta (cabeçalho da prova).
             </div>
 
-            <div style="display: grid; grid-template-columns: 1.2fr 1fr 1.2fr; gap: 10px; margin-bottom: 12px;">
-              <div>
-                <label style="display: block; font-size: 0.80rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Faixa / Kyu do Exame</label>
-                <select id="omrKyuSelect" class="form-control" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;" onchange="window.TKST_APP.onOmrKyuChanged()">
-                  <option value="6">6º Kyu (Branca para Amarela)</option>
-                  <option value="5">5º Kyu (Amarela para Vermelha)</option>
-                  <option value="4">4º Kyu (Vermelha para Laranja)</option>
-                  <option value="3">3º Kyu (Laranja para Verde)</option>
-                  <option value="2">2º Kyu (Verde para Roxa)</option>
-                  <option value="1">1º Kyu (Roxa para Marrom)</option>
-                  <option value="0">1º Dan (Marrom para Preta Shodan)</option>
-                  <option value="-1">2º Dan (Nidan)</option>
-                  <option value="-2">3º Dan (Sandan)</option>
-                </select>
+            <!-- Bloco de Ação: Câmera Nativa do Celular -->
+            <div style="text-align: center; padding: 16px 12px; background: #07090E; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; margin-bottom: 14px;">
+              <div style="font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 8px;">
+                <i class="fas fa-camera"></i>
               </div>
-              <div>
-                <label style="display: block; font-size: 0.80rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Código da Prova</label>
-                <input type="text" id="omrExamCodeInput" class="form-control" placeholder="Ex: 18ZK4" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFB703; font-weight: 800; font-family: monospace; text-transform: uppercase;" oninput="window.TKST_APP.onOmrExamCodeInput(this.value)">
-              </div>
-              <div>
-                <label style="display: block; font-size: 0.80rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Aluno Avaliado (Opcional)</label>
-                <select id="omrStudentSelect" class="form-control" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-                  <option value="">Detectar automaticamente...</option>
-                </select>
-              </div>
-            </div>
+              <h4 style="font-size: 1.05rem; font-weight: 800; color: #FFF; margin-bottom: 4px;">Leitura do Cartão de Respostas</h4>
+              <p style="font-size: 0.80rem; color: #94A3B8; max-width: 440px; margin: 0 auto 16px auto;">
+                O botão abaixo aciona a <strong>câmera nativa do seu celular</strong> com autofoco, flash e máxima resolução de imagem.
+              </p>
 
-            <!-- Viewfinder Câmera -->
-            <div id="omrVideoContainer" style="display:none; position: relative; background: #000; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 14px; text-align: center;">
-              <video id="omrVideoElement" autoplay playsinline muted style="width: 100%; max-height: 380px; object-fit: cover;"></video>
-              <div style="position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; border: 2px dashed rgba(245, 190, 0, 0.7); pointer-events: none; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                <span id="omrViewfinderOverlayText" style="background: rgba(0,0,0,0.65); color: #FFD166; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Enquadre o Cartão de Respostas aqui</span>
-              </div>
-            </div>
-
-            <!-- Botões de Ação de Captura -->
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-              <button type="button" id="omrStartCameraBtn" class="btn btn-primary" onclick="window.TKST_APP.startOmrCamera()" style="font-weight: 700;">
-                <i class="fas fa-video"></i> Usar Câmera do Dispositivo
+              <!-- Botão Câmera Nativa Principal -->
+              <button type="button" class="btn btn-gold" onclick="window.TKST_APP.openOmrNativeCamera()" style="width: 100%; max-width: 360px; padding: 14px 20px; font-size: 1.05rem; font-weight: 900; background: linear-gradient(135deg, #F5BE00 0%, #D97706 100%); color: #000; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 16px rgba(245, 190, 0, 0.4); margin-bottom: 10px; cursor: pointer;">
+                <i class="fas fa-camera" style="font-size: 1.25rem;"></i> Abrir Câmera Nativa do Celular
               </button>
-              <button type="button" id="omrCaptureBtn" class="btn btn-gold" onclick="window.TKST_APP.captureOmrFrame()" style="display:none; font-weight: 800; background: #F5BE00; color: #000;">
-                <i class="fas fa-camera"></i> Capturar Foto da Prova
-              </button>
-              <label class="btn btn-secondary" style="margin: 0; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-                <i class="fas fa-file-image"></i> Escolher Foto do Arquivo
+              
+              <!-- Input Nativo com capture="environment" -->
+              <input type="file" id="omrNativeCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="window.TKST_APP.handleOmrFileUpload(event)">
+
+              <!-- Botão Secundário: Galeria / Arquivo -->
+              <div>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('omrFileInput').click()" style="width: 100%; max-width: 360px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                  <i class="fas fa-images"></i> Escolher Foto da Galeria / Arquivo
+                </button>
                 <input type="file" id="omrFileInput" accept="image/*" style="display:none;" onchange="window.TKST_APP.handleOmrFileUpload(event)">
-              </label>
+              </div>
+            </div>
+
+            <!-- Orientações para Foto Perfeita -->
+            <div style="background: rgba(245, 190, 0, 0.05); border: 1px solid rgba(245, 190, 0, 0.15); border-radius: 6px; padding: 10px 14px; font-size: 0.78rem; color: #CBD5E1;">
+              <div style="font-weight: 700; color: var(--accent-gold); margin-bottom: 4px;">
+                <i class="fas fa-lightbulb"></i> Instruções para Leitura Rápida:
+              </div>
+              <ul style="margin: 0; padding-left: 18px; line-height: 1.5;">
+                <li>Segure o celular paralelo à folha, enquadrando as 10 bolhas de resposta.</li>
+                <li>Garanta boa iluminação e evite reflexos ou sombras sobre as marcações.</li>
+                <li>Ao tirar a foto e confirmar no seu celular, a leitura OMR iniciará imediatamente.</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -741,10 +860,15 @@
           </div>
 
           <!-- Rodapé de Confirmação -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 14px;">
-            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.resetOmrScanner()">
-              <i class="fas fa-redo"></i> Escanear Outra Prova
-            </button>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 14px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.goToOmrPhase(2)" style="font-size: 0.82rem; font-weight: 700;">
+                <i class="fas fa-camera"></i> Tirar Outra Foto
+              </button>
+              <button type="button" class="btn btn-outline" onclick="window.TKST_APP.resetOmrScanner()" style="font-size: 0.82rem; color: #94A3B8; border-color: rgba(255,255,255,0.15);">
+                <i class="fas fa-keyboard"></i> Nova Prova (Fase 1)
+              </button>
+            </div>
             <button type="button" id="omrSaveGradeBtn" class="btn btn-primary" onclick="window.TKST_APP.saveOmrOfficialGrade()" style="font-weight: 800; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none;">
               <i class="fas fa-save"></i> Salvar Nota no Histórico do Aluno
             </button>
@@ -763,19 +887,19 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=286"></script>
-  <script src="assets/js/data-curriculum.js?v=286"></script>
-  <script src="assets/js/data-katas.js?v=286"></script>
-  <script src="assets/js/data-kumite.js?v=286"></script>
-  <script src="assets/js/data-glossary.js?v=286"></script>
-  <script src="assets/js/data-quiz.js?v=286"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=286"></script>
-  <script src="assets/js/data-media.js?v=286"></script>
-  <script src="assets/js/data-exams.js?v=286"></script>
-  <script src="assets/js/omr-engine.js?v=286"></script>
-  <script src="assets/js/qr-generator.js?v=286"></script>
-  <script src="assets/js/auth.js?v=286"></script>
-  <script src="assets/js/app.js?v=286"></script>
+  <script src="assets/js/jsqr.min.js?v=287"></script>
+  <script src="assets/js/data-curriculum.js?v=287"></script>
+  <script src="assets/js/data-katas.js?v=287"></script>
+  <script src="assets/js/data-kumite.js?v=287"></script>
+  <script src="assets/js/data-glossary.js?v=287"></script>
+  <script src="assets/js/data-quiz.js?v=287"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=287"></script>
+  <script src="assets/js/data-media.js?v=287"></script>
+  <script src="assets/js/data-exams.js?v=287"></script>
+  <script src="assets/js/omr-engine.js?v=287"></script>
+  <script src="assets/js/qr-generator.js?v=287"></script>
+  <script src="assets/js/auth.js?v=287"></script>
+  <script src="assets/js/app.js?v=287"></script>
 
   <!-- PWA Service Worker Registration com verificação de atualização e recarregamento automático -->
   <script>
@@ -788,7 +912,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=286', { updateViaCache: 'none' }).then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=287', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;

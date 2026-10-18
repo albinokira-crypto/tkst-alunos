@@ -107,14 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.86';
+  const APP_DISPLAY_VERSION = 'V-2.87';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.86. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.87. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.86)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.87)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
         } catch(e) {}
@@ -15410,12 +15410,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (!modal) return;
 
       // Popula lista de alunos matriculados
-      const sel = document.getElementById('omrStudentSelect');
-      if (sel && window.TKST_AUTH && typeof window.TKST_AUTH.getAllStudents === 'function') {
-        const students = window.TKST_AUTH.getAllStudents() || [];
-        sel.innerHTML = '<option value="">Detectar automaticamente ou selecionar...</option>' +
-          students.map(s => `<option value="${s.id}">${s.name || s.username} (${s.dojo || 'TKST'})</option>`).join('');
-      }
+      this.populateOmrStudentsList();
+
+      // Renderiza atalhos rápidos de provas recentes
+      this.renderOmrRecentExams();
 
       const kyuSelect = document.getElementById('omrKyuSelect');
       if (kyuSelect && kyu !== undefined && kyu !== null) {
@@ -15427,12 +15425,310 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       modal.style.display = 'flex';
     },
 
+    populateOmrStudentsList: function(selectedStudentId) {
+      const sel = document.getElementById('omrStudentSelect');
+      if (!sel) return;
+      let students = [];
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.getAllStudents === 'function') {
+        students = window.TKST_AUTH.getAllStudents() || [];
+      }
+      sel.innerHTML = '<option value="">Confirmar ou alterar aluno...</option>' +
+        students.map(s => {
+          const isSelected = selectedStudentId && (s.id === selectedStudentId);
+          return `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.name || s.username} (${s.dojo || 'TKST'})</option>`;
+        }).join('');
+    },
+
+    renderOmrRecentExams: function() {
+      const container = document.getElementById('omrRecentExamsChips');
+      if (!container) return;
+
+      let examsMap = {};
+      if (window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.KNOWN_EXAMS) {
+        Object.assign(examsMap, window.TKST_EXAM_GENERATOR.KNOWN_EXAMS);
+      }
+      try {
+        const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+        Object.assign(examsMap, store);
+      } catch(e) {}
+
+      const codes = Object.keys(examsMap);
+      if (codes.length === 0) {
+        container.innerHTML = '<span style="font-size: 0.72rem; color: #64748B;">Nenhuma prova cadastrada ainda.</span>';
+        return;
+      }
+
+      // Filtra códigos únicos (máximo 6 mais recentes)
+      const uniqueExams = [];
+      const seen = new Set();
+      for (let i = codes.length - 1; i >= 0 && uniqueExams.length < 6; i--) {
+        const c = codes[i].trim().toUpperCase();
+        if (!seen.has(c) && examsMap[c]) {
+          seen.add(c);
+          uniqueExams.push(examsMap[c]);
+        }
+      }
+
+      container.innerHTML = uniqueExams.map(ex => {
+        const label = `${ex.examId} (${ex.studentAbbr || ex.studentName || 'Exame'} - ${ex.kyu}º Kyu)`;
+        return `<button type="button" class="btn btn-sm" onclick="window.TKST_APP.selectOmrRecentExam('${ex.examId}')" style="background: rgba(245, 190, 0, 0.12); border: 1px solid rgba(245, 190, 0, 0.35); color: #FFB703; font-weight: 700; font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; cursor: pointer;">
+          <i class="fas fa-file-lines" style="font-size: 0.68rem;"></i> ${label}
+        </button>`;
+      }).join(' ');
+    },
+
+    selectOmrRecentExam: function(code) {
+      const input = document.getElementById('omrExamCodeInput');
+      if (input) {
+        input.value = code;
+        this.searchOmrExamCode();
+      }
+    },
+
+    goToOmrPhase: function(phase) {
+      omrCurrentPhase = phase;
+      const phase1View = document.getElementById('omrPhase1View');
+      const phase2View = document.getElementById('omrPhase2View');
+      const procView = document.getElementById('omrProcessingView');
+      const reviewView = document.getElementById('omrReviewView');
+      const tab1 = document.getElementById('omrStepTab1');
+      const tab2 = document.getElementById('omrStepTab2');
+
+      if (phase === 1) {
+        if (phase1View) phase1View.style.display = 'block';
+        if (phase2View) phase2View.style.display = 'none';
+        if (procView) procView.style.display = 'none';
+        if (reviewView) reviewView.style.display = 'none';
+
+        if (tab1) {
+          tab1.style.background = 'rgba(245, 190, 0, 0.15)';
+          tab1.style.borderColor = 'var(--accent-gold)';
+          tab1.style.color = 'var(--accent-gold)';
+          tab1.style.fontWeight = '800';
+        }
+        if (tab2) {
+          tab2.style.background = 'rgba(255,255,255,0.04)';
+          tab2.style.borderColor = 'rgba(255,255,255,0.1)';
+          tab2.style.color = '#94A3B8';
+          tab2.style.fontWeight = '700';
+        }
+        const input = document.getElementById('omrExamCodeInput');
+        if (input) setTimeout(() => input.focus(), 100);
+      } else if (phase === 2) {
+        if (!omrCurrentIdentifiedExam || !omrCurrentExpectedKey || omrCurrentExpectedKey.length < 10) {
+          alert('Por favor, informe e identifique o código da prova na Fase 1 primeiro.');
+          this.goToOmrPhase(1);
+          return;
+        }
+
+        // Atualiza cabeçalho de resumo na Fase 2
+        const p2Code = document.getElementById('omrPhase2ExamCode');
+        const p2Belt = document.getElementById('omrPhase2Belt');
+        const p2Student = document.getElementById('omrPhase2Student');
+
+        if (p2Code) p2Code.textContent = omrCurrentIdentifiedExam.examId;
+        if (p2Belt) p2Belt.textContent = getBeltNameFromKyu(omrCurrentIdentifiedExam.kyu);
+
+        // Aluno selecionado
+        const studentSelect = document.getElementById('omrStudentSelect');
+        let studentLabel = omrCurrentIdentifiedExam.studentName || 'Aluno TKST';
+        if (studentSelect && studentSelect.selectedIndex > 0) {
+          studentLabel = studentSelect.options[studentSelect.selectedIndex].text;
+        }
+        if (p2Student) p2Student.textContent = studentLabel;
+
+        if (phase1View) phase1View.style.display = 'none';
+        if (phase2View) phase2View.style.display = 'block';
+        if (procView) procView.style.display = 'none';
+        if (reviewView) reviewView.style.display = 'none';
+
+        if (tab1) {
+          tab1.style.background = 'rgba(16, 185, 129, 0.12)';
+          tab1.style.borderColor = '#10B981';
+          tab1.style.color = '#34D399';
+          tab1.style.fontWeight = '700';
+        }
+        if (tab2) {
+          tab2.style.background = 'rgba(245, 190, 0, 0.15)';
+          tab2.style.borderColor = 'var(--accent-gold)';
+          tab2.style.color = 'var(--accent-gold)';
+          tab2.style.fontWeight = '800';
+        }
+      }
+    },
+
+    searchOmrExamCode: function() {
+      const input = document.getElementById('omrExamCodeInput');
+      const val = input ? input.value : '';
+      this.identifyExamByCode(val, true);
+    },
+
+    onOmrExamCodeInput: function(code) {
+      const clean = (code || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+      if (clean.length >= 4) {
+        this.identifyExamByCode(clean, false);
+      } else {
+        const card = document.getElementById('omrExamIdentificationCard');
+        const placeholder = document.getElementById('omrExamIdentificationPlaceholder');
+        if (card) card.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'block';
+        omrCurrentIdentifiedExam = null;
+      }
+    },
+
+    identifyExamByCode: function(codeStr, isExplicitSearch = false) {
+      if (!codeStr) return;
+      const clean = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+      const baseCode = clean.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+
+      let exam = null;
+
+      // 1. Busca via TKST_EXAM_GENERATOR.getSavedExamById
+      if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getSavedExamById === 'function') {
+        exam = window.TKST_EXAM_GENERATOR.getSavedExamById(clean) || window.TKST_EXAM_GENERATOR.getSavedExamById(baseCode);
+      }
+
+      // 2. Busca em KNOWN_EXAMS
+      if (!exam && window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.KNOWN_EXAMS) {
+        exam = window.TKST_EXAM_GENERATOR.KNOWN_EXAMS[clean] || window.TKST_EXAM_GENERATOR.KNOWN_EXAMS[baseCode];
+      }
+
+      // 3. Busca em localStorage
+      if (!exam) {
+        try {
+          const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+          exam = store[clean] || store[baseCode];
+          if (!exam) {
+            const foundKey = Object.keys(store).find(k => k.trim().toUpperCase() === clean || k.trim().toUpperCase() === baseCode);
+            if (foundKey) exam = store[foundKey];
+          }
+        } catch(e) {}
+      }
+
+      // 4. Decodificação matemática offline (fallback)
+      if (!exam && window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
+        const decoded = window.TKST_EXAM_GENERATOR.decodeCompactExamCode(clean);
+        if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
+          exam = {
+            kyu: decoded.kyu,
+            examId: decoded.fullExamId || decoded.examId,
+            answers: decoded.answers,
+            studentName: decoded.studentTag || '',
+            date: new Date().toLocaleDateString('pt-BR'),
+            _isMathFallback: true
+          };
+        }
+      }
+
+      const card = document.getElementById('omrExamIdentificationCard');
+      const placeholder = document.getElementById('omrExamIdentificationPlaceholder');
+
+      if (exam && Array.isArray(exam.answers) && exam.answers.length === 10) {
+        omrCurrentIdentifiedExam = exam;
+        omrCurrentExpectedKey = exam.answers;
+
+        const kyuNum = (exam.kyu !== undefined && exam.kyu !== null) ? Number(exam.kyu) : 4;
+        const beltName = getBeltNameFromKyu(kyuNum);
+
+        // Sincroniza select de Kyu
+        const kyuSelect = document.getElementById('omrKyuSelect');
+        if (kyuSelect) kyuSelect.value = String(kyuNum);
+
+        // Preenche dados da identificação
+        const codeBadge = document.getElementById('omrIdentifiedCodeBadge');
+        if (codeBadge) codeBadge.textContent = exam.examId || baseCode;
+
+        const beltEl = document.getElementById('omrIdentifiedBeltText');
+        if (beltEl) beltEl.textContent = beltName;
+
+        const dojoEl = document.getElementById('omrIdentifiedDojoText');
+        if (dojoEl) dojoEl.textContent = exam.dojoName || 'Dojô TKST (Oficial)';
+
+        const dateEl = document.getElementById('omrIdentifiedDate');
+        if (dateEl) dateEl.textContent = `Data: ${exam.date || new Date().toLocaleDateString('pt-BR')}`;
+
+        // Aluno
+        const studentEl = document.getElementById('omrIdentifiedStudentText');
+        const studentName = exam.studentName || exam.studentAbbr || '';
+        if (studentEl) {
+          studentEl.textContent = studentName || 'Aluno não vinculado (selecione abaixo)';
+        }
+
+        // Tenta selecionar o aluno na lista
+        const studentSelect = document.getElementById('omrStudentSelect');
+        if (studentSelect) {
+          let matched = false;
+          if (exam.studentId) {
+            for (let i = 0; i < studentSelect.options.length; i++) {
+              if (studentSelect.options[i].value === exam.studentId) {
+                studentSelect.selectedIndex = i;
+                matched = true;
+                break;
+              }
+            }
+          }
+          if (!matched && studentName) {
+            const lowName = studentName.toLowerCase().trim();
+            for (let i = 0; i < studentSelect.options.length; i++) {
+              if (studentSelect.options[i].text.toLowerCase().includes(lowName) ||
+                  lowName.includes(studentSelect.options[i].text.toLowerCase())) {
+                studentSelect.selectedIndex = i;
+                matched = true;
+                break;
+              }
+            }
+          }
+          if (!matched && studentName) {
+            // Adiciona opção com o nome encontrado
+            const opt = document.createElement('option');
+            opt.value = exam.studentId || 'identified_name';
+            opt.textContent = `${studentName} (Identificado na Prova)`;
+            opt.selected = true;
+            studentSelect.appendChild(opt);
+          }
+        }
+
+        // Preenche o Gabarito Oficial (10 Questões)
+        const grid = document.getElementById('omrIdentifiedKeyGrid');
+        if (grid) {
+          grid.innerHTML = exam.answers.map((ans, idx) => `
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; border-radius: 6px; padding: 4px 2px;">
+              <div style="font-size: 0.65rem; color: #94A3B8; font-weight: 700;">Q${idx + 1}</div>
+              <div style="font-size: 0.95rem; font-weight: 900; color: #34D399;">${ans}</div>
+            </div>
+          `).join('');
+        }
+
+        if (card) card.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+
+        if (typeof showToast === 'function') {
+          showToast(`✅ Prova ${exam.examId || baseCode} identificada: ${studentName || beltName}!`, 'success', 2800);
+        }
+      } else {
+        if (card) card.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'block';
+        omrCurrentIdentifiedExam = null;
+
+        if (isExplicitSearch) {
+          alert(`Código de prova "${clean}" não encontrado. Verifique os caracteres e tente novamente.`);
+        }
+      }
+    },
+
+    openOmrNativeCamera: function() {
+      const input = document.getElementById('omrNativeCameraInput');
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    },
+
     closeExamCameraScanner: function() {
       this.closeExamOmrModal();
     },
 
     closeExamOmrModal: function() {
-      this.stopOmrCamera();
       const modal = document.getElementById('examOmrScannerModal');
       if (modal) {
         modal.classList.remove('active');
@@ -15444,8 +15740,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       omrCaptureMode = mode === 'sheet' ? 'sheet' : 'card';
       const cardBtn = document.getElementById('omrModeCardBtn');
       const sheetBtn = document.getElementById('omrModeSheetBtn');
-      const hint = document.getElementById('omrModeHint');
-      const frame = document.getElementById('omrCardTargetFrame');
+      const hint = document.getElementById('omrModeHelperText');
 
       if (cardBtn && sheetBtn) {
         if (omrCaptureMode === 'card') {
@@ -15470,120 +15765,6 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           ? '🎯 Modo Cartão (Recomendado): Aproxime a câmera focando apenas no retângulo do gabarito (9x4 cm).'
           : '📄 Modo Folha A4: Enquadre a folha inteira na vertical com boa iluminação e sobre fundo escuro.';
       }
-
-      if (frame) {
-        frame.style.aspectRatio = omrCaptureMode === 'card' ? '2.14 / 1' : '1 / 1.41';
-        frame.style.maxHeight = omrCaptureMode === 'card' ? '200px' : '360px';
-      }
-    },
-
-    onOmrExamCodeInput: function(code) {
-      const clean = (code || '').trim().toUpperCase();
-      if (!clean) return;
-
-      if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
-        const decoded = window.TKST_EXAM_GENERATOR.decodeCompactExamCode(clean);
-        if (decoded && decoded.valid) {
-          const kyuSelect = document.getElementById('omrKyuSelect');
-          if (kyuSelect && decoded.kyu !== undefined) {
-            kyuSelect.value = String(decoded.kyu);
-          }
-          if (Array.isArray(decoded.key) && decoded.key.length === 10) {
-            omrCurrentExpectedKey = decoded.key;
-            if (typeof showToast === 'function') {
-              showToast(`🎯 Prova decodificada: Kyu ${decoded.kyu} | Gabarito auto-carregado!`, 'success', 3000);
-            }
-            if (omrCurrentScanResult) {
-              this.recalculateOmrScore();
-            }
-          }
-        }
-      }
-    },
-
-    startOmrCamera: async function() {
-      try {
-        const video = document.getElementById('omrVideoElement');
-        const container = document.getElementById('omrVideoContainer');
-        const captureBtn = document.getElementById('omrCaptureBtn');
-        const startBtn = document.getElementById('omrStartCameraBtn');
-
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          alert('Seu navegador ou dispositivo não suporta acesso direto à câmera. Utilize a opção "Escolher Foto do Arquivo".');
-          return;
-        }
-
-        if (video) {
-          video.muted = true;
-          video.setAttribute('playsinline', 'true');
-          video.setAttribute('webkit-playsinline', 'true');
-        }
-
-        let stream = null;
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: { ideal: 'environment' },
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            },
-            audio: false
-          });
-        } catch (firstErr) {
-          console.warn('Tentativa com ideal environment falhou, tentando fallback genérico de vídeo:', firstErr);
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false
-          });
-        }
-
-        omrCameraStream = stream;
-        if (video) {
-          video.srcObject = stream;
-          try {
-            await video.play();
-          } catch(playErr) {
-            console.warn('video.play() precisou de fallback:', playErr);
-          }
-        }
-        if (container) container.style.display = 'block';
-        if (captureBtn) captureBtn.style.display = 'inline-flex';
-        if (startBtn) startBtn.style.display = 'none';
-      } catch(err) {
-        console.error('Erro ao acessar câmera para OMR:', err);
-        alert('Não foi possível acessar a câmera (' + (err.message || err.name || 'Permissão negada') + '). Verifique as permissões do navegador ou utilize o botão "Escolher Foto do Arquivo".');
-      }
-    },
-
-    stopOmrCamera: function() {
-      if (omrCameraStream) {
-        omrCameraStream.getTracks().forEach(track => {
-          try { track.stop(); } catch(e) {}
-        });
-        omrCameraStream = null;
-      }
-      const video = document.getElementById('omrVideoElement');
-      if (video) video.srcObject = null;
-      const container = document.getElementById('omrVideoContainer');
-      if (container) container.style.display = 'none';
-      const captureBtn = document.getElementById('omrCaptureBtn');
-      if (captureBtn) captureBtn.style.display = 'none';
-      const startBtn = document.getElementById('omrStartCameraBtn');
-      if (startBtn) startBtn.style.display = 'inline-flex';
-    },
-
-    captureOmrFrame: function() {
-      const video = document.getElementById('omrVideoElement');
-      if (!video || !video.videoWidth) return;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      this.stopOmrCamera();
-      this.processOmrImage(canvas.toDataURL('image/jpeg', 0.92));
     },
 
     handleOmrFileUpload: function(event) {
@@ -15592,7 +15773,6 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         const file = input.files[0];
         const reader = new FileReader();
         reader.onload = (e) => {
-          this.stopOmrCamera();
           this.processOmrImage(e.target.result);
         };
         reader.readAsDataURL(file);
@@ -15629,24 +15809,28 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     processOmrImage: async function(imageSrc, forceAi = false) {
       omrCurrentSourceImage = imageSrc;
 
-      const captureView = document.getElementById('omrCaptureView');
+      const phase1View = document.getElementById('omrPhase1View');
+      const phase2View = document.getElementById('omrPhase2View');
       const processingView = document.getElementById('omrProcessingView');
       const reviewView = document.getElementById('omrReviewView');
 
-      if (captureView) captureView.style.display = 'none';
+      if (phase1View) phase1View.style.display = 'none';
+      if (phase2View) phase2View.style.display = 'none';
       if (reviewView) reviewView.style.display = 'none';
       if (processingView) processingView.style.display = 'block';
 
-      const kyuSelect = document.getElementById('omrKyuSelect');
-      const kyu = kyuSelect ? Number(kyuSelect.value) : 6;
-      const examCodeInput = document.getElementById('omrExamCodeInput');
-      const examCode = examCodeInput ? examCodeInput.value.trim() : '';
+      const examCode = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.examId) || 
+                       (document.getElementById('omrExamCodeInput') ? document.getElementById('omrExamCodeInput').value.trim() : '');
+      const kyu = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.kyu !== undefined) 
+        ? Number(omrCurrentIdentifiedExam.kyu) 
+        : (document.getElementById('omrKyuSelect') ? Number(document.getElementById('omrKyuSelect').value) : 4);
 
-      if (examCode) {
-        this.onOmrExamCodeInput(examCode);
-      }
       if (!omrCurrentExpectedKey || omrCurrentExpectedKey.length < 10) {
-        omrCurrentExpectedKey = this.getExpectedKeyForKyu(kyu);
+        if (omrCurrentIdentifiedExam && Array.isArray(omrCurrentIdentifiedExam.answers)) {
+          omrCurrentExpectedKey = omrCurrentIdentifiedExam.answers;
+        } else {
+          omrCurrentExpectedKey = this.getExpectedKeyForKyu(kyu);
+        }
       }
 
       try {
@@ -15679,7 +15863,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       } catch(err) {
         console.error('Erro no processamento OMR:', err);
         if (processingView) processingView.style.display = 'none';
-        if (captureView) captureView.style.display = 'block';
+        if (phase2View) phase2View.style.display = 'block';
         alert('Ocorreu um erro ao processar a prova: ' + (err.message || err));
       }
     },
@@ -15796,23 +15980,26 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     },
 
     resetOmrScanner: function() {
-      this.stopOmrCamera();
       omrCurrentScanResult = null;
       omrCurrentSourceImage = null;
-
-      const captureView = document.getElementById('omrCaptureView');
-      const processingView = document.getElementById('omrProcessingView');
-      const reviewView = document.getElementById('omrReviewView');
-
-      if (captureView) captureView.style.display = 'block';
-      if (processingView) processingView.style.display = 'none';
-      if (reviewView) reviewView.style.display = 'none';
+      omrCurrentIdentifiedExam = null;
+      omrCurrentExpectedKey = [];
 
       const fileInput = document.getElementById('omrFileInput');
       if (fileInput) fileInput.value = '';
 
+      const nativeInput = document.getElementById('omrNativeCameraInput');
+      if (nativeInput) nativeInput.value = '';
+
       const examCodeInput = document.getElementById('omrExamCodeInput');
       if (examCodeInput) examCodeInput.value = '';
+
+      const card = document.getElementById('omrExamIdentificationCard');
+      const placeholder = document.getElementById('omrExamIdentificationPlaceholder');
+      if (card) card.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'block';
+
+      this.goToOmrPhase(1);
     },
 
     saveOmrOfficialGrade: async function() {
@@ -15822,7 +16009,9 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
 
       const kyuSelect = document.getElementById('omrKyuSelect');
-      const kyu = kyuSelect ? Number(kyuSelect.value) : 6;
+      const kyu = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.kyu !== undefined)
+        ? Number(omrCurrentIdentifiedExam.kyu)
+        : (kyuSelect ? Number(kyuSelect.value) : 4);
       const beltName = typeof getBeltNameFromKyu === 'function' ? getBeltNameFromKyu(kyu) : `Kyu ${kyu}`;
 
       let hits = 0;
@@ -15831,19 +16020,23 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       });
 
       const studentSelect = document.getElementById('omrStudentSelect');
-      const studentId = studentSelect ? studentSelect.value : '';
+      const studentId = studentSelect ? studentSelect.value : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : '');
       const allStudents = window.TKST_AUTH ? window.TKST_AUTH.getAllStudents() : [];
-      const student = allStudents.find(s => s && s.id === studentId);
+      let student = allStudents.find(s => s && s.id === studentId);
+
+      const resolvedStudentName = student 
+        ? (student.name || student.username) 
+        : ((omrCurrentIdentifiedExam && (omrCurrentIdentifiedExam.studentName || omrCurrentIdentifiedExam.studentAbbr)) || 'Aluno TKST');
 
       const submissionData = {
         score: hits,
         total: 10,
         beltLevel: beltName,
         beltKyu: kyu,
-        studentId: student ? student.id : null,
-        studentName: student ? (student.name || student.username) : 'Aluno TKST',
+        studentId: student ? student.id : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : null),
+        studentName: resolvedStudentName,
         isOmr: true,
-        examCode: omrCurrentScanResult.examCode || '',
+        examCode: (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.examId) || omrCurrentScanResult.examCode || '',
         overallConfidence: omrCurrentScanResult.overallConfidence,
         details: omrCurrentScanResult.questions.map((q, idx) => ({
           num: q.num,
@@ -15858,7 +16051,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
       if (window.TKST_AUTH && typeof window.TKST_AUTH.saveQuizSubmission === 'function') {
         window.TKST_AUTH.saveQuizSubmission(submissionData);
-        showToast(`✅ Avaliação OMR salva: Nota ${hits},0 registrada com sucesso!`, 'success', 3500);
+        showToast(`✅ Avaliação OMR salva: Nota ${hits},0 registrada para ${resolvedStudentName}!`, 'success', 3500);
         this.closeExamOmrModal();
         if (typeof renderAdminMaster === 'function') {
           renderAdminMaster();
@@ -15874,6 +16067,8 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
   let omrCurrentSourceImage = null;
   let omrCurrentExpectedKey = [];
   let omrCaptureMode = 'card';
+  let omrCurrentPhase = 1;
+  let omrCurrentIdentifiedExam = null;
 
   // Helper para parar imediatamente qualquer áudio / vídeo em execução dentro de modais
   function stopModalMedia(modalElement) {

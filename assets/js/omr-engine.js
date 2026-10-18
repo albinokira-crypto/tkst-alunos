@@ -386,9 +386,20 @@
 
     // 1. Carrega imagem
     const img = await loadImage(imageSource);
-    let workCanvas = createCanvas(img.naturalWidth || img.width, img.naturalHeight || img.height);
+    let origW = img.naturalWidth || img.width;
+    let origH = img.naturalHeight || img.height;
+    const maxDim = 2048;
+    let scale = 1;
+    if (origW > maxDim || origH > maxDim) {
+      scale = Math.min(maxDim / origW, maxDim / origH);
+    }
+    const finalW = Math.max(1, Math.round(origW * scale));
+    const finalH = Math.max(1, Math.round(origH * scale));
+    let workCanvas = createCanvas(finalW, finalH);
     const workCtx = workCanvas.getContext('2d');
-    workCtx.drawImage(img, 0, 0);
+    workCtx.imageSmoothingEnabled = true;
+    workCtx.imageSmoothingQuality = 'high';
+    workCtx.drawImage(img, 0, 0, finalW, finalH);
 
     // 2. Pré-processamento: Rotação Correta (0/90/180/270)
     let orientationInfo = { angle: 0, qrData: null };
