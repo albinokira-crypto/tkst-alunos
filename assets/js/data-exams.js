@@ -842,13 +842,11 @@ window.TKST_EXAM_GENERATOR = {
     return `${primeiro}.${ultimo[0]}`;
   },
 
-  // Decodifica o código Base36 (5 caracteres) + tag opcional do aluno (ex: 19EKS-PIETRO) 100% offline
+  // Decodifica o código Base36 (estritamente 5 caracteres alfanuméricos) 100% offline
   decodeCompactExamCode: function(codeStr) {
     if (!codeStr) return null;
     const cleanRaw = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
-    const parts = cleanRaw.split('-');
-    const clean = parts[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
-    const studentTag = parts.length > 1 ? parts.slice(1).join('-').replace(/[^0-9A-Z]/g, '').trim() : '';
+    const clean = cleanRaw.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
     if (clean.length < 5) return null; // Exige exatamente 5 caracteres para o gabarito
     try {
       const totalVal = parseInt(clean, 36);
@@ -861,7 +859,7 @@ window.TKST_EXAM_GENERATOR = {
         const val = (Math.floor(ansVal / Math.pow(4, i))) % 4;
         answers.push(['A', 'B', 'C', 'D'][val]);
       }
-      return { kyu, answers, examId: clean, fullExamId: cleanRaw, studentTag };
+      return { kyu, answers, examId: clean };
     } catch(e) {
       return null;
     }
@@ -869,19 +867,7 @@ window.TKST_EXAM_GENERATOR = {
 
   KNOWN_EXAMS: {
     "18ZK4": {
-      examId: "18ZK4-PIETRO",
-      baseExamId: "18ZK4",
-      kyu: 4,
-      answers: ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"],
-      studentName: "Pietro dos Santos Henrique Januário Campista",
-      studentAbbr: "Pietro S. H. J. Campista",
-      studentId: "std_1787063008306_96bzm",
-      dojoName: "QG TKST ( Capela )",
-      date: "18/10/2026",
-      timestamp: 1771370000000
-    },
-    "18ZK4-PIETRO": {
-      examId: "18ZK4-PIETRO",
+      examId: "18ZK4",
       baseExamId: "18ZK4",
       kyu: 4,
       answers: ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"],
@@ -893,19 +879,7 @@ window.TKST_EXAM_GENERATOR = {
       timestamp: 1771370000000
     },
     "1AR40": {
-      examId: "1AR40-PIETRO",
-      baseExamId: "1AR40",
-      kyu: 4,
-      answers: ["A", "A", "A", "D", "A", "C", "A", "B", "B", "A"],
-      studentName: "Pietro dos Santos Henrique Januário Campista",
-      studentAbbr: "Pietro S. H. J. Campista",
-      studentId: "std_1787063008306_96bzm",
-      dojoName: "QG TKST ( Capela )",
-      date: "18/10/2026",
-      timestamp: 1771370000000
-    },
-    "1AR40-PIETRO": {
-      examId: "1AR40-PIETRO",
+      examId: "1AR40",
       baseExamId: "1AR40",
       kyu: 4,
       answers: ["A", "A", "A", "D", "A", "C", "A", "B", "B", "A"],
@@ -917,19 +891,7 @@ window.TKST_EXAM_GENERATOR = {
       timestamp: 1771370000000
     },
     "19EKS": {
-      examId: "19EKS-PIETRO",
-      baseExamId: "19EKS",
-      kyu: 4,
-      answers: ["A", "D", "B", "D", "B", "B", "C", "D", "A", "A"],
-      studentName: "Pietro dos Santos Henrique Januário Campista",
-      studentAbbr: "Pietro S. H. J. Campista",
-      studentId: "std_1787063008306_96bzm",
-      dojoName: "QG TKST ( Capela )",
-      date: "18/10/2026",
-      timestamp: 1771370000000
-    },
-    "19EKS-PIETRO": {
-      examId: "19EKS-PIETRO",
+      examId: "19EKS",
       baseExamId: "19EKS",
       kyu: 4,
       answers: ["A", "D", "B", "D", "B", "B", "C", "D", "A", "A"],
@@ -949,38 +911,36 @@ window.TKST_EXAM_GENERATOR = {
     if (cleanId === '140' || cleanId === '1-40' || cleanId === '1AR4' || cleanId === 'AR40' || cleanId === '1AR0' || cleanId === '1A40' || cleanId === 'IAR40' || cleanId === '1AR4O') {
       cleanId = '1AR40';
     }
-    const parts = cleanId.split('-');
-    const baseCode = parts[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
-    const studentTag = parts.length > 1 ? parts.slice(1).join('-').replace(/[^0-9A-Z]/g, '').trim() : '';
+    const clean5 = cleanId.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
 
     if (this.KNOWN_EXAMS) {
+      if (this.KNOWN_EXAMS[clean5]) return this.KNOWN_EXAMS[clean5];
       if (this.KNOWN_EXAMS[cleanId]) return this.KNOWN_EXAMS[cleanId];
-      if (this.KNOWN_EXAMS[baseCode]) return this.KNOWN_EXAMS[baseCode];
       const matchKey = Object.keys(this.KNOWN_EXAMS).find(k => {
         const ku = k.trim().toUpperCase();
-        return ku === cleanId || ku === baseCode || ku.startsWith(baseCode + '-');
+        return ku === clean5 || ku === cleanId || ku.startsWith(clean5 + '-');
       });
       if (matchKey && this.KNOWN_EXAMS[matchKey]) return this.KNOWN_EXAMS[matchKey];
     }
 
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+      if (store[clean5]) return store[clean5];
       if (store[cleanId]) return store[cleanId];
-      if (store[baseCode]) return store[baseCode];
       const foundKey = Object.keys(store).find(k => {
         const ku = k.trim().toUpperCase();
-        return ku === cleanId || ku === baseCode || ku.startsWith(baseCode + '-');
+        return ku === clean5 || ku === cleanId || ku.startsWith(clean5 + '-');
       });
       if (foundKey && store[foundKey]) return store[foundKey];
     } catch(e) {}
 
     try {
       if (window.TKST_GENERATED_EXAMS_CACHE) {
+        if (window.TKST_GENERATED_EXAMS_CACHE[clean5]) return window.TKST_GENERATED_EXAMS_CACHE[clean5];
         if (window.TKST_GENERATED_EXAMS_CACHE[cleanId]) return window.TKST_GENERATED_EXAMS_CACHE[cleanId];
-        if (window.TKST_GENERATED_EXAMS_CACHE[baseCode]) return window.TKST_GENERATED_EXAMS_CACHE[baseCode];
         const cacheKey = Object.keys(window.TKST_GENERATED_EXAMS_CACHE).find(k => {
           const ku = k.trim().toUpperCase();
-          return ku === cleanId || ku === baseCode || ku.startsWith(baseCode + '-');
+          return ku === clean5 || ku === cleanId || ku.startsWith(clean5 + '-');
         });
         if (cacheKey && window.TKST_GENERATED_EXAMS_CACHE[cacheKey]) return window.TKST_GENERATED_EXAMS_CACHE[cacheKey];
       }
@@ -988,36 +948,21 @@ window.TKST_EXAM_GENERATOR = {
 
     try {
       if (window.TKST_AUTH && typeof window.TKST_AUTH.getGeneratedExam === 'function') {
-        const fromAuth = window.TKST_AUTH.getGeneratedExam(cleanId) || window.TKST_AUTH.getGeneratedExam(baseCode);
+        const fromAuth = window.TKST_AUTH.getGeneratedExam(clean5) || window.TKST_AUTH.getGeneratedExam(cleanId);
         if (fromAuth) return fromAuth;
       }
     } catch(e) {}
 
     // Decodificação matemática instantânea (sem internet / gerada em outro computador)
-    const decoded = this.decodeCompactExamCode(cleanId) || this.decodeCompactExamCode(baseCode);
+    const decoded = this.decodeCompactExamCode(clean5);
     if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
-      let resolvedStudentName = decoded.studentTag || studentTag || '';
-      let resolvedStudentId = '';
-      const tagToMatch = (decoded.studentTag || studentTag || '').toUpperCase();
-      if (tagToMatch && window.TKST_AUTH && typeof window.TKST_AUTH.getAllStudents === 'function') {
-        const all = window.TKST_AUTH.getAllStudents() || [];
-        const match = all.find(s => {
-          const sName = (s.name || s.username || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
-          return sName.includes(tagToMatch) || tagToMatch.includes(sName.split(' ')[0]);
-        });
-        if (match) {
-          resolvedStudentName = match.name || match.username;
-          resolvedStudentId = match.id;
-        }
-      }
       return {
         kyu: decoded.kyu,
-        examId: decoded.fullExamId || cleanId,
-        baseExamId: decoded.examId,
-        studentTag: decoded.studentTag || studentTag,
-        studentName: resolvedStudentName,
-        studentAbbr: resolvedStudentName,
-        studentId: resolvedStudentId,
+        examId: clean5,
+        baseExamId: clean5,
+        studentName: '',
+        studentAbbr: '',
+        studentId: '',
         answers: decoded.answers,
         date: new Date().toLocaleDateString('pt-BR'),
         timestamp: Date.now(),
@@ -1178,37 +1123,24 @@ window.TKST_EXAM_GENERATOR = {
     const answerLetters = sanitizedQuestions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const compactCode = this.encodeCompactExamCode(kyu, answerLetters);
 
-    // Extrai tag identificadora limpa do aluno para embutir diretamente no código da prova (ex: 19EKS-PIETRO)
-    let studentTag = '';
-    const rawStudent = rawStudentName || studentName || '';
-    if (rawStudent) {
-      const firstWord = rawStudent.trim().split(/\s+/)[0]
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-      if (firstWord) {
-        studentTag = firstWord.slice(0, 10);
-      }
-    }
-
-    const fullCode = studentTag ? `${compactCode}-${studentTag}` : compactCode;
-    const examId = fullCode;
+    // Código da prova: estritamente 5 caracteres alfanuméricos (ex: 19EKS ou 18ZK4)
+    const examId = compactCode;
 
     // Registra a prova gerada no armazenamento persistente do Sensei para conferência imediata e offline
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-      const existingRecord = store[fullCode] || store[compactCode]
-        || (window.TKST_GENERATED_EXAMS_CACHE && (window.TKST_GENERATED_EXAMS_CACHE[fullCode] || window.TKST_GENERATED_EXAMS_CACHE[compactCode]));
+      const existingRecord = store[compactCode]
+        || (window.TKST_GENERATED_EXAMS_CACHE && window.TKST_GENERATED_EXAMS_CACHE[compactCode]);
 
-      const effectiveStudentName = rawStudentName || (existingRecord && existingRecord.studentName) || (studentTag ? studentTag : "");
+      const effectiveStudentName = rawStudentName || (existingRecord && existingRecord.studentName) || "";
       const effectiveStudentAbbr = studentName || (existingRecord && existingRecord.studentAbbr) || effectiveStudentName;
       const effectiveStudentId = studentId || (existingRecord && existingRecord.studentId) || "";
       const effectiveDojoName = dojoName || (existingRecord && existingRecord.dojoName) || "";
 
       const examRecord = {
         kyu: Number(kyu),
-        examId: fullCode,
+        examId: compactCode,
         baseExamId: compactCode,
-        studentTag: studentTag,
         answers: answerLetters,
         date: dateStr,
         studentName: effectiveStudentName,
@@ -1217,9 +1149,7 @@ window.TKST_EXAM_GENERATOR = {
         dojoName: effectiveDojoName,
         timestamp: Date.now()
       };
-      store[fullCode] = examRecord;
       store[compactCode] = examRecord;
-      store[fullCode.toUpperCase()] = examRecord;
       store[compactCode.toUpperCase()] = examRecord;
       const keys = Object.keys(store);
       if (keys.length > 300) {
@@ -1227,7 +1157,6 @@ window.TKST_EXAM_GENERATOR = {
       }
       localStorage.setItem('tkst_generated_exams', JSON.stringify(store));
       if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
-      window.TKST_GENERATED_EXAMS_CACHE[fullCode] = examRecord;
       window.TKST_GENERATED_EXAMS_CACHE[compactCode] = examRecord;
       if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastGeneratedExam === 'function') {
         window.TKST_AUTH.broadcastGeneratedExam(examRecord);
@@ -1336,7 +1265,7 @@ window.TKST_EXAM_GENERATOR = {
             <div class="exam-header-code-row">
               <div class="exam-code-badge" style="background: #000000 !important; color: #FFFFFF !important; padding: 4px 14px !important; border-radius: 6px !important; display: inline-flex !important; align-items: center !important; gap: 8px !important; border: 2px solid #000000 !important;">
                 <span class="exam-code-lbl" style="font-size: 9pt !important; font-weight: 900 !important; color: #F5BE00 !important; letter-spacing: 1px !important; text-transform: uppercase !important;">CÓDIGO:</span>
-                <span class="exam-code-val" style="font-size: 18pt !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: 2px !important; font-family: 'Consolas', 'Courier New', monospace, sans-serif !important; line-height: 1 !important;">${fullCode}</span>
+                <span class="exam-code-val" style="font-size: 20pt !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: 3px !important; font-family: 'Consolas', 'Courier New', monospace, sans-serif !important; line-height: 1 !important;">${compactCode}</span>
               </div>
               <div class="exam-instruction-tag">
                 ✏️ <strong>Atenção Aluno:</strong> Transfira suas respostas marcando totalmente o quadradinho no <strong>Cartão Oficial ao lado</strong>.
