@@ -243,7 +243,7 @@ Retorne estritamente um JSON:
     });
 
     // Chamada à API Gemini Multimodal com modelos oficiais de alta disponibilidade
-    const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b'];
+    const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b'];
     let geminiResult = null;
 
     for (const modelName of candidateModels) {
@@ -255,7 +255,8 @@ Retorne estritamente um JSON:
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Content-Length': Buffer.byteLength(requestPayload)
+              'Content-Length': Buffer.byteLength(requestPayload),
+              'x-goog-api-key': apiKey
             }
           };
 
@@ -273,7 +274,7 @@ Retorne estritamente um JSON:
           });
 
           request.on('error', reject);
-          request.setTimeout(18000, () => {
+          request.setTimeout(10000, () => {
             request.destroy(new Error('Timeout ao conectar com Gemini API'));
           });
           request.write(requestPayload);
@@ -291,7 +292,6 @@ Retorne estritamente um JSON:
 
     if (!geminiResult || geminiResult.statusCode !== 200) {
       console.warn('Gemini API Error:', geminiResult ? (geminiResult.body || geminiResult.raw) : 'Sem resposta');
-      console.warn('Gemini API Error:', geminiResult.body || geminiResult.raw);
       return res.status(200).json({
         success: true,
         aiAvailable: false,

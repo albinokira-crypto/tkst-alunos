@@ -15601,10 +15601,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (!image) return null;
       const clientApiKey = (typeof localStorage !== 'undefined' && localStorage.getItem('tkst_gemini_api_key')) || atob('QVEuQWI4Uk42SlhPWlZOaHdwNC02WEg0bXFKOHRRMWpBT25Fdnl3VkNKTnIzZzBZWEJLYVE=');
 
-      // 1. Tenta endpoint da Cloudflare Pages Functions / Vercel Serverless
+      // 1. Tenta endpoint da Cloudflare Pages Functions / Vercel Serverless (com timeout ampliado de 25s)
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
         const resp = await fetch('/api/grade-exam', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -15624,13 +15624,20 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           const contentType = resp.headers.get('content-type') || '';
           if (contentType.includes('application/json')) {
             const json = await resp.json();
-            if (json && (json.aiAvailable || json.codigo_prova || json.examId)) {
-              return json;
+            if (json) {
+              if (step === 'code' || step === 'badge') {
+                if (json.codigo_prova || (json.aiAvailable && json.examId)) return json;
+              } else {
+                // Para leitura de respostas (step 2), só aceita do servidor se a IA realmente processou com sucesso as respostas
+                if (json.aiAvailable && Array.isArray(json.detectedAnswers) && json.detectedAnswers.length === 10) {
+                  return json;
+                }
+              }
             }
           }
         }
       } catch(netErr) {
-        console.warn('API /api/grade-exam indisponível ou estática, acionando Gemini Multimodal client-side:', netErr);
+        console.warn('API /api/grade-exam indisponível ou timeout, acionando Gemini Multimodal client-side:', netErr);
       }
 
       // 2. Motor Direto Gemini Multimodal Vision no Client-Side (Fallback de Alta Resiliência)
@@ -15651,102 +15658,61 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         if (step === 'code' || step === 'badge') {
           promptText = `
 Você é um especialista em OCR e visão computacional de alta precisão.
-Esta foto mostra o badge com o CÓDIGO de 5 caracteres alfanuméricos de uma avaliação de karatê (fundo preto e letras brancas no cabeçalho, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "5M4X7", "1M2OS").
+Esta foto mostra o badge com o CÓDIGO de uma avaliação oficial de karatê (fundo escuro e letras/números no cabeçalho, por exemplo: "184", "0IZ96", "5M4X7", "#184", "CÓDIGO: 184").
 Também pode conter próximo o campo "Nome:" com o nome do aluno impresso ou escrito.
 
 SUA TAREFA:
-1. Extrair os 5 caracteres alfanuméricos que formam o código da prova (ignore palavras como "CÓDIGO", "CODIGO", "PROVA", "#", espaços e dois-pontos).
+1. Extrair os caracteres que formam o código da prova (ignore palavras como "CÓDIGO", "CODIGO", "PROVA", "#", espaços e dois-pontos).
 2. Se visível na foto, extrair o Nome do Aluno no campo "Nome:".
 
 Retorne estritamente um JSON no seguinte formato:
 {
-  "codigo_prova": "0IZ96",
-  "examId": "0IZ96",
+  "codigo_prova": "184",
+  "examId": "184",
   "aluno": "Nome do Aluno (ou string vazia se não visível)"
 }
 `.trim();
-        } else if (Number(step) === 1) {
-          promptText = `
-Você é um desenvolvedor sênior especialista em visão computacional e correção de avaliações de karatê.
-Esta foto mostra especificamente o CABEÇALHO oficial da prova de karatê, composto por:
-- LADO ESQUERDO:
-  1. Código da Prova no badge em destaque com 5 caracteres alfanuméricos (ex: "CÓDIGO: 5M4X7", "0IZ96", "1M2OS").
-  2. Nome do aluno impresso ou escrito à mão no campo "Nome:".
-  3. Descrição da avaliação (ex: "Avaliação Teórica: Faixa Branca para Faixa Amarela").
-- LADO DIREITO:
-  4. "CARTÃO DE RESPOSTAS" oficial contendo as 10 questões (Q01 a Q05 na esquerda, Q06 a Q10 na direita) com quadradinhos [A] [B] [C] [D] pintados a lápis ou caneta pelo aluno.
-
-REGRAS ESTRITAS DE PREENCHIMENTO:
-1. REGRA ABSOLUTA PARA PROVAS EM BRANCO: Se o aluno NÃO pintou nenhum quadradinho em uma questão do Cartão de Respostas, retorne OBRIGATORIAMENTE "EM_BRANCO" para essa questão. NUNCA presuma ou invente letras para questões vazias!
-2. SE O QUADRADINHO ESTIVER PINTADO: Retorne a letra correspondente ("A", "B", "C" ou "D") somente se houver preenchimento evidente a lápis ou caneta.
-3. SE HOUVER RASURA OU MARCAÇÃO DUPLA: Retorne "ANULADA" e aponte no array "questoes_duvidosas_rasura".
-
-Retorne estritamente um JSON no seguinte formato:
-{
-  "sucesso_leitura_cabecalho": true,
-  "codigo_prova": "5M4X7",
-  "examId": "5M4X7",
-  "aluno": "Nome do Aluno (ou string vazia se em branco)",
-  "graduacao": "Faixa Branca para Faixa Amarela",
-  "respostas_aluno": {
-    "1": "EM_BRANCO",
-    "2": "EM_BRANCO",
-    "3": "EM_BRANCO",
-    "4": "EM_BRANCO",
-    "5": "EM_BRANCO",
-    "6": "EM_BRANCO",
-    "7": "EM_BRANCO",
-    "8": "EM_BRANCO",
-    "9": "EM_BRANCO",
-    "10": "EM_BRANCO"
-  },
-  "questoes_duvidosas_rasura": []
-}
-`.trim();
         } else {
-          const verifiedCode = (examId && String(examId).trim().length >= 4 && !['SENSEI', 'EXAM'].includes(String(examId).trim().toUpperCase()))
+          const verifiedCode = (examId && String(examId).trim().length >= 1 && !['SENSEI', 'EXAM'].includes(String(examId).trim().toUpperCase()))
             ? String(examId).trim().toUpperCase()
             : '';
           promptText = `
-Você é um desenvolvedor sênior especialista em visão computacional e correção de gabaritos escolares e de artes marciais (OMR).
+Você é um especialista sênior em visão computacional e correção de gabaritos oficiais de karatê (OMR).
 Esta imagem mostra o cabeçalho e o CARTÃO DE RESPOSTAS oficial da avaliação de karatê.
-${verifiedCode ? `O código desta avaliação já foi autenticado e confirmado como: "${verifiedCode}".` : ''}
+${verifiedCode ? `O código desta avaliação é: "${verifiedCode}".` : ''}
 
-ATENÇÃO CRÍTICA À ORIENTAÇÃO E ROTAÇÃO DA FOTO:
-- A foto tirada pelo celular pode estar em qualquer orientação (ex: deitada em 90°, 180°, 270°, na vertical ou horizontal).
-- Gire mentalmente a imagem para ler o cabeçalho "CARTÃO DE RESPOSTAS Pinte [ ■ ]" e "NOTA: ___ / 10,0" na orientação correta de leitura humana.
-
-ESTRUTURA DO CABEÇALHO E CARTÃO:
+ESTRUTURA DO CARTÃO DE RESPOSTAS:
 1. No cabeçalho (lado esquerdo ou superior):
-   - Código da Prova de 5 caracteres no badge escuro (${verifiedCode ? `confirmado: "${verifiedCode}"` : 'ex: "0IZ96"'});
-   - Campo "Nome:" com o nome do aluno impresso ou escrito à mão.
-2. No Cartão de Respostas (10 questões numeradas de 01 a 10 em duas colunas):
+   - Código da Prova (${verifiedCode ? `confirmado: "${verifiedCode}"` : 'ex: "184", "0IZ96"'});
+   - Campo "Nome:" com o nome do aluno impresso ou manuscrito.
+2. No Cartão de Respostas oficial (10 questões numeradas de 01 a 10):
    - Coluna 1 (esquerda): Questões 01 a 05
    - Coluna 2 (direita): Questões 06 a 10
-   - Em cada linha há 4 opções: [A] [B] [C] [D].
+   - Em cada questão há 4 quadradinhos com as alternativas: [A] [B] [C] [D].
 
-INSTRUÇÃO DE LEITURA:
-- Identifique o Nome do Aluno no campo "Nome:".
-- Para cada questão de 1 a 10, verifique qual alternativa [A], [B], [C] ou [D] foi pintada/preenchida com lápis ou caneta.
-- Se nenhuma marcação: "EM_BRANCO".
-- Se rasura ou dupla marcação: "ANULADA" e aponte em questoes_duvidosas_rasura.
+INSTRUÇÕES ESTRITAS DE LEITURA DAS MARCAÇÕES:
+1. Identifique o Nome do Aluno no campo "Nome:" se visível.
+2. Para CADA questão de 1 a 10:
+   - Se o quadradinho [A], [B], [C] ou [D] estiver PINTADO/PREENCHIDO a lápis ou caneta, retorne a letra correspondente ("A", "B", "C" ou "D").
+   - Se o aluno NÃO marcou nenhum quadradinho nessa questão, retorne OBRIGATORIAMENTE "EM_BRANCO". NUNCA invente marcações para questões vazias!
+   - Se houver rasura com borracha ou dupla marcação, retorne "ANULADA" e aponte no array "questoes_duvidosas_rasura".
 
-Retorne estritamente um JSON no seguinte formato:
+Retorne ESTRITAMENTE um JSON no seguinte formato (sem texto antes ou depois):
 {
   "codigo_prova": "${verifiedCode || 'EXAM'}",
   "examId": "${verifiedCode || 'EXAM'}",
-  "aluno": "Nome do Aluno impresso ou manuscrito (ou string vazia se em branco)",
+  "aluno": "Nome do Aluno (ou string vazia se em branco)",
   "respostas_aluno": {
-    "1": "B",
-    "2": "A",
-    "3": "B",
-    "4": "B",
+    "1": "A",
+    "2": "B",
+    "3": "C",
+    "4": "D",
     "5": "A",
-    "6": "A",
-    "7": "D",
-    "8": "C",
-    "9": "B",
-    "10": "D"
+    "6": "B",
+    "7": "C",
+    "8": "D",
+    "9": "A",
+    "10": "B"
   },
   "questoes_duvidosas_rasura": []
 }
@@ -15774,14 +15740,17 @@ Retorne estritamente um JSON no seguinte formato:
           }
         };
 
-        const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b'];
+        const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b'];
         let geminiData = null;
 
         for (const model of candidateModels) {
           try {
             const directResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${clientApiKey}`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': clientApiKey
+              },
               body: JSON.stringify(payload)
             });
             if (directResp.ok) {
@@ -15794,7 +15763,16 @@ Retorne estritamente um JSON no seguinte formato:
         if (!geminiData) return null;
 
         const candidateText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const parsedAi = JSON.parse(candidateText.trim());
+        let parsedAi = null;
+        try {
+          let cleanJsonText = candidateText.trim();
+          if (cleanJsonText.startsWith('```json')) cleanJsonText = cleanJsonText.slice(7);
+          if (cleanJsonText.startsWith('```')) cleanJsonText = cleanJsonText.slice(3);
+          if (cleanJsonText.endsWith('```')) cleanJsonText = cleanJsonText.slice(0, -3);
+          parsedAi = JSON.parse(cleanJsonText.trim());
+        } catch(e) {
+          return null;
+        }
         if (!parsedAi) return null;
 
         if (step === 'code' || step === 'badge') {
@@ -15819,11 +15797,32 @@ Retorne estritamente um JSON no seguinte formato:
         const ambiguousQuestions = [];
         const respostasMap = parsedAi.respostas_aluno || parsedAi.respostas || parsedAi;
 
-        if (respostasMap && typeof respostasMap === 'object') {
+        if (Array.isArray(respostasMap)) {
+          for (let i = 0; i < 10; i++) {
+            const item = respostasMap[i];
+            const val = (item && typeof item === 'object') ? (item.resposta || item.opcao || item.letra || item.answer) : item;
+            const cleanVal = typeof val === 'string' ? val.trim().toUpperCase() : '';
+            if (!val || cleanVal === 'EM_BRANCO' || cleanVal === 'BRANCO' || cleanVal === 'VAZIO' || cleanVal === 'NULL') {
+              detectedAnswers.push(null);
+            } else if (cleanVal === 'ANULADA' || cleanVal === 'DUVIDOSA' || cleanVal === 'RASURA') {
+              ambiguousQuestions.push(i + 1);
+              detectedAnswers.push(null);
+            } else if (['A', 'B', 'C', 'D'].includes(cleanVal)) {
+              detectedAnswers.push(cleanVal);
+            } else {
+              detectedAnswers.push(null);
+            }
+          }
+        } else if (respostasMap && typeof respostasMap === 'object') {
           for (let i = 1; i <= 10; i++) {
             const key2d = String(i).padStart(2, '0');
             const key1d = String(i);
-            const val = respostasMap[key2d] !== undefined ? respostasMap[key2d] : (respostasMap[key1d] !== undefined ? respostasMap[key1d] : respostasMap[i]);
+            const keyQ = 'Q' + key2d;
+            const keyQ1 = 'Q' + key1d;
+            const val = respostasMap[key2d] !== undefined ? respostasMap[key2d]
+              : (respostasMap[key1d] !== undefined ? respostasMap[key1d]
+              : (respostasMap[keyQ] !== undefined ? respostasMap[keyQ]
+              : (respostasMap[keyQ1] !== undefined ? respostasMap[keyQ1] : respostasMap[i])));
             const cleanVal = typeof val === 'string' ? val.trim().toUpperCase() : '';
             if (!val || cleanVal === 'EM_BRANCO' || cleanVal === 'BRANCO' || cleanVal === 'VAZIO' || cleanVal === 'VAZIA' || cleanVal === 'NULL' || cleanVal === 'NULO') {
               detectedAnswers.push(null);
@@ -15851,7 +15850,7 @@ Retorne estritamente um JSON no seguinte formato:
           });
         }
 
-        const clientHasValidId = (examId && String(examId).trim().length >= 4 && !['SENSEI', 'EXAM'].includes(String(examId).trim().toUpperCase()));
+        const clientHasValidId = (examId && String(examId).trim().length >= 1 && !['SENSEI', 'EXAM'].includes(String(examId).trim().toUpperCase()));
         if (!clientHasValidId) {
           const aiExamCode = parsedAi.codigo_prova || parsedAi.examId || (parsedAi.dados_prova && parsedAi.dados_prova.exam_id) || '';
           if (aiExamCode) {
@@ -15877,12 +15876,15 @@ Retorne estritamente um JSON no seguinte formato:
         }
 
         const studentName = parsedAi.aluno || parsedAi.studentName || null;
+        const cleanStudentName = (studentName && !/^(nome|aluno|nome do aluno|estudante|string vazia|null|undefined)$/i.test(String(studentName).trim()))
+          ? String(studentName).trim()
+          : null;
 
         return {
           success: true,
           aiAvailable: true,
-          aluno: studentName,
-          studentName: studentName,
+          aluno: cleanStudentName,
+          studentName: cleanStudentName,
           respostas_aluno: parsedAi.respostas_aluno || null,
           detectedAnswers: detectedAnswers,
           ambiguousQuestions: ambiguousQuestions,
@@ -16007,15 +16009,15 @@ Retorne estritamente um JSON no seguinte formato:
       }
     },
 
-    // Digitação direta do código de 5 caracteres (ex: 0IZ96) impresso no cabeçalho da prova
+    // Digitação direta do código de 5 caracteres (ex: 184, 0IZ96) impresso no cabeçalho da prova
     submitManualExamCode: async function(optCode) {
       const inputEl = document.getElementById('examManualCodeInput');
       const rawCode = optCode || (inputEl ? inputEl.value : '');
       const cleanCode = String(rawCode || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase().slice(0, 5);
 
-      if (!cleanCode || cleanCode.length < 3) {
+      if (!cleanCode || cleanCode.length < 2) {
         if (typeof showToast === 'function') {
-          showToast('⚠️ Digite o código de 5 caracteres da prova (ex: 0IZ96)', 'warning');
+          showToast('⚠️ Digite o código da prova (ex: 184, 0IZ96)', 'warning');
         }
         if (inputEl) inputEl.focus();
         return;
@@ -16029,6 +16031,25 @@ Retorne estritamente um JSON no seguinte formato:
       }
 
       try {
+        // Assegura cache de candidatos do DojôBook carregado
+        if (!dojobookCandidatesCache) {
+          try {
+            const cached = localStorage.getItem('tkst_dojobook_candidates_cache');
+            if (cached) dojobookCandidatesCache = JSON.parse(cached);
+          } catch(e) {}
+        }
+        if (!dojobookCandidatesCache && typeof window.TKST_APP.fetchDojobookCandidatesBackground === 'function') {
+          try {
+            await Promise.race([
+              window.TKST_APP.fetchDojobookCandidatesBackground(),
+              new Promise(r => setTimeout(r, 600))
+            ]);
+          } catch(e) {}
+        }
+
+        const todosDojobook = dojobookCandidatesCache ? [...(dojobookCandidatesCache.candidatos || []), ...(dojobookCandidatesCache.alunos || [])] : [];
+        const allAppStudents = (window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || [];
+
         // 1. Tenta decodificação matemática compacta Base36 (100% offline, instantânea)
         let decoded = null;
         if (typeof window.TKST_APP.decodeCompactExamCode === 'function') {
@@ -16062,7 +16083,6 @@ Retorne estritamente um JSON no seguinte formato:
         }
 
         // 3. Se ainda não possui o nome do aluno, tenta busca rápida na nuvem com timeout rígido de 800ms
-        // (Nunca trava o avanço para a etapa 2!)
         if ((!matchedExam || (!matchedExam.studentName && !matchedExam.studentAbbr)) && window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
           try {
             const cloudPromise = window.TKST_AUTH.fetchExamFromCloud(cleanCode);
@@ -16074,22 +16094,52 @@ Retorne estritamente um JSON no seguinte formato:
           } catch(e) {}
         }
 
-        // 4. Fallback se não foi encontrado registro completo: usa decodificação matemática ou registros conhecidos
-        if (!matchedExam && cleanCode === '18ZK4') {
-          matchedExam = {
-            examId: "18ZK4",
-            kyu: 4,
-            answers: ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"],
-            studentName: "Pietro S.H.J. Campista",
-            studentAbbr: "Pietro S.H.J. Campista",
-            studentId: "std_1787063008306_96bzm",
-            dojoName: "QG TKST ( Capela )",
-            date: "18/10/2026",
-            timestamp: 1771370000000
-          };
+        // 4. Busca direta pelo código nos candidatos do DojôBook e nos alunos do App TKST
+        let matchedDojoStudent = null;
+        let matchedAppStudent = null;
+
+        // Procura em todosDojobook por ID numérico (ex: 184), candidato_id, matricula ou exame_id
+        matchedDojoStudent = todosDojobook.find(c =>
+          String(c.id) === cleanCode ||
+          String(c.candidato_id) === cleanCode ||
+          String(c.matricula) === cleanCode ||
+          String(c.exame_id) === cleanCode ||
+          String(c.numero_inscricao) === cleanCode
+        ) || null;
+
+        // Se não achou no DojôBook, procura nos alunos matriculados no App TKST
+        if (!matchedDojoStudent) {
+          matchedAppStudent = allAppStudents.find(s =>
+            String(s.id) === cleanCode ||
+            String(s.id) === ('std_' + cleanCode) ||
+            String(s.matricula) === cleanCode ||
+            String(s.username).toUpperCase() === cleanCode
+          ) || null;
         }
-        if (!matchedExam && examGen && examGen.getSavedExamById) {
-          matchedExam = examGen.getSavedExamById(cleanCode);
+
+        // 5. Se encontrou registro de prova salvo ou decodificado com studentId/nome, tenta vincular ao aluno
+        const searchStudentId = (matchedExam && matchedExam.studentId) || (matchedDojoStudent && matchedDojoStudent.id) || (matchedAppStudent && matchedAppStudent.id);
+        const searchStudentName = (matchedExam && (matchedExam.studentName || matchedExam.studentAbbr)) || (matchedDojoStudent && matchedDojoStudent.nome) || (matchedAppStudent && matchedAppStudent.name) || (decoded && decoded.studentTag);
+
+        if (!matchedDojoStudent && !matchedAppStudent && searchStudentId) {
+          matchedDojoStudent = todosDojobook.find(c => String(c.id) === String(searchStudentId)) || null;
+          if (!matchedDojoStudent) {
+            matchedAppStudent = allAppStudents.find(s => String(s.id) === String(searchStudentId)) || null;
+          }
+        }
+        if (!matchedDojoStudent && !matchedAppStudent && searchStudentName) {
+          const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+          const targetNorm = norm(searchStudentName);
+          matchedDojoStudent = todosDojobook.find(c => norm(c.nome) === targetNorm || norm(c.nome).includes(targetNorm)) || null;
+          if (!matchedDojoStudent) {
+            matchedAppStudent = allAppStudents.find(s => norm(s.name) === targetNorm || norm(s.name).includes(targetNorm)) || null;
+          }
+        }
+
+        // Prova modelo 18ZK4 vinculada a Pietro
+        if (cleanCode === '18ZK4') {
+          const pietro = allAppStudents.find(s => s && (s.id === 'std_1787063008306_96bzm' || (s.name && s.name.toLowerCase().includes('pietro'))));
+          if (pietro) matchedAppStudent = pietro;
         }
 
         let kyu = 6;
@@ -16102,9 +16152,21 @@ Retorne estritamente um JSON no seguinte formato:
           kyu = decoded.kyu;
           answers = decoded.answers;
         } else {
-          // Se não conseguiu decodificar matematicamente, associa à graduação selecionada no menu
+          // Se o aluno vinculado do DojôBook tiver faixa de destino definida
+          if (matchedDojoStudent && (matchedDojoStudent.vai_para || matchedDojoStudent.graduacao_destino)) {
+            const destName = matchedDojoStudent.vai_para || matchedDojoStudent.graduacao_destino;
+            if (typeof getKyuFromBeltName === 'function') {
+              const k = getKyuFromBeltName(destName);
+              if (k !== null && k !== undefined) kyu = k;
+            }
+          }
           const kyuSelect = document.getElementById('examCorrectionKyuSelect');
-          kyu = kyuSelect ? Number(kyuSelect.value) : (examGeneratorSelectedKyu !== undefined ? examGeneratorSelectedKyu : 6);
+          if (kyuSelect && !matchedDojoStudent) {
+            kyu = Number(kyuSelect.value);
+          } else if (kyu === undefined || kyu === null) {
+            kyu = (examGeneratorSelectedKyu !== undefined ? examGeneratorSelectedKyu : 6);
+          }
+
           if (examGen && examGen.getRandomQuizQuestionsForKyu) {
             const questions = examGen.getRandomQuizQuestionsForKyu(kyu, 10);
             answers = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
@@ -16114,17 +16176,9 @@ Retorne estritamente um JSON no seguinte formato:
           }
         }
 
-        let stName = (matchedExam && (matchedExam.studentName || matchedExam.studentAbbr)) || (decoded && decoded.studentTag) || '';
-        let stId = (matchedExam && matchedExam.studentId) || '';
-        let stDojo = (matchedExam && matchedExam.dojoName) || '';
-
-        if (cleanCode === '18ZK4') {
-          kyu = 4;
-          answers = ['A', 'B', 'A', 'A', 'D', 'B', 'A', 'A', 'A', 'A'];
-          stName = stName || 'Pietro S.H.J. Campista';
-          stId = stId || 'std_1787063008306_96bzm';
-          stDojo = stDojo || 'QG TKST ( Capela )';
-        }
+        let stName = (matchedDojoStudent && matchedDojoStudent.nome) || (matchedAppStudent && matchedAppStudent.name) || searchStudentName || '';
+        let stId = (matchedDojoStudent && matchedDojoStudent.id) || (matchedAppStudent && matchedAppStudent.id) || searchStudentId || '';
+        let stDojo = (matchedDojoStudent && matchedDojoStudent.dojo_nome) || (matchedAppStudent && (matchedAppStudent.dojo || matchedAppStudent.unit)) || (matchedExam && matchedExam.dojoName) || '';
 
         examScannerDetectedData = {
           kyu: kyu,
@@ -16132,7 +16186,11 @@ Retorne estritamente um JSON no seguinte formato:
           answers: answers,
           studentName: stName,
           studentId: stId,
-          dojoName: stDojo
+          dojoName: stDojo,
+          matchedDojoStudent: matchedDojoStudent,
+          matchedAppStudent: matchedAppStudent,
+          selectedDojobookStudent: matchedDojoStudent,
+          selectedAppStudent: matchedAppStudent
         };
 
         // Persiste localmente e propaga via sync
@@ -16533,13 +16591,13 @@ Retorne estritamente um JSON no seguinte formato:
             </div>
 
             <!-- Aluno Vinculado com Destaque -->
-            <div style="background: rgba(245, 190, 0, 0.12); border: 1.5px solid var(--accent-gold); border-radius: 6px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+            <div style="background: ${detected.studentName ? 'rgba(245, 190, 0, 0.12)' : 'rgba(255, 255, 255, 0.05)'}; border: 1.5px solid ${detected.studentName ? 'var(--accent-gold)' : 'rgba(255,255,255,0.15)'}; border-radius: 6px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 8px; font-size: 0.92rem; color: #FFF; font-weight: 800;">
-                <i class="fas fa-user-graduate" style="color: var(--accent-gold); font-size: 1.15rem;"></i>
-                <span>Aluno: <strong style="color: #FDE047;">${detected.studentName || 'Pietro S.H.J. Campista'}</strong> ${detected.dojoName ? `<span style="color: #94A3B8; font-weight: 600; font-size: 0.8rem;">(${detected.dojoName})</span>` : ''}</span>
+                <i class="fas fa-user-graduate" style="color: ${detected.studentName ? 'var(--accent-gold)' : '#94A3B8'}; font-size: 1.15rem;"></i>
+                <span>Aluno: <strong style="color: ${detected.studentName ? '#FDE047' : '#94A3B8'};">${detected.studentName || 'Não identificado (vincular na conferência)'}</strong> ${detected.dojoName ? `<span style="color: #94A3B8; font-weight: 600; font-size: 0.8rem;">(${detected.dojoName})</span>` : ''}</span>
               </div>
-              <span class="badge badge-gold" style="font-size: 0.72rem; font-weight: 900; padding: 3px 8px;">
-                VINCULADO
+              <span class="badge ${detected.studentName ? 'badge-gold' : 'badge-secondary'}" style="font-size: 0.72rem; font-weight: 900; padding: 3px 8px;">
+                ${detected.studentName ? 'VINCULADO' : 'PENDENTE'}
               </span>
             </div>
 
@@ -17230,10 +17288,10 @@ Retorne estritamente um JSON no seguinte formato:
             const boxLeft = slotCenterX - (boxW / 2);
             const boxTop = slotCenterY - (boxH / 2);
 
-            // 1. MARGEM INTERNA DE AMOSTRAGEM (INSET DE 28% NAS 4 BORDAS)
-            // Extrai a Região de Interesse (ROI) restrita ao miolo interno, eliminando
-            // 100% da borda preta de 1.5px do .omr-sq e evitando a letra impressa periférica
-            const insetFactor = 0.28; // Recuo de 28% em cada borda (analisa o miolo central)
+            // 1. MARGEM INTERNA DE AMOSTRAGEM (INSET DE 35% NAS 4 BORDAS)
+            // Extrai a Região de Interesse (ROI) estritamente do miolo central, eliminando
+            // 100% da borda preta do quadradinho e qualquer texto ou sombra periférica
+            const insetFactor = 0.35;
             const baseRoiX = Math.round(boxLeft + (boxW * insetFactor));
             const baseRoiY = Math.round(boxTop + (boxH * insetFactor));
             const baseRoiW = Math.max(3, Math.round(boxW * (1 - 2 * insetFactor)));
@@ -17310,17 +17368,17 @@ Retorne estritamente um JSON no seguinte formato:
 
           let chosen = null;
 
-          // Critério robusto de marcação relativa para grafite/caneta:
-          // A opção deve ser perceptivelmente mais escura que as outras 3 da mesma linha
-          const isTop1Marked = (relativeContrast >= 12 && relativeDensityRatio >= 1.55)
-            || (relativeContrast >= 20)
-            || (top1.darkRatio >= 0.28 && relativeDensityRatio >= 1.75);
+          // Critério rigoroso de preenchimento a grafite/caneta:
+          // A opção preenchida DEVE ter contraste nítido em relação às demais e separação de luma em relação ao top2
+          const isTop1Marked = (relativeContrast >= 28 && relativeDensityRatio >= 1.8 && diffTop1Top2Luma >= 18)
+            || (relativeContrast >= 38 && diffTop1Top2Luma >= 22)
+            || (top1.darkRatio >= 0.40 && relativeDensityRatio >= 2.2 && diffTop1Top2Luma >= 15);
 
           if (isTop1Marked) {
             // 3. DETECÇÃO DE RASURA OU MARCAÇÃO DUPLA (FALLBACK MANUAL)
-            // Se a 2ª alternativa mais escura também tiver marcação considerável e estiver próxima da 1ª
-            const isTop2AlsoMarked = (top2ContrastToClean >= 11 && diffTop1Top2Luma < 15)
-              || (top2.darkRatio >= 0.22 && diffTop1Top2Luma < 18);
+            // Se a 2ª alternativa mais escura também tiver marcação considerável e estiver muito próxima da 1ª
+            const isTop2AlsoMarked = (top2ContrastToClean >= 18 && diffTop1Top2Luma < 12)
+              || (top2.darkRatio >= 0.30 && diffTop1Top2Luma < 14);
 
             if (isTop2AlsoMarked) {
               ambiguousQuestions.push(qIdx + 1);
@@ -17337,16 +17395,28 @@ Retorne estritamente um JSON no seguinte formato:
           detectedAnswers.push(chosen);
         }
 
+        // DETECTOR DE VIÉS DE BORDA / ARTEFATO DE DESALINHAMENTO
+        // Se 6 ou mais questões tiverem exatamente a mesma letra (ex: todas 'D' por colisão com a borda direita),
+        // trata-se de desalinhamento de grade tocando a borda preta do cartão. Desqualifica o layout!
+        const letterCounts = { A: 0, B: 0, C: 0, D: 0 };
+        detectedAnswers.forEach(ans => {
+          if (ans && letterCounts[ans] !== undefined) letterCounts[ans]++;
+        });
+        const maxUniform = Math.max(...Object.values(letterCounts));
+        if (maxUniform >= 6) {
+          totalConfidence = -9999;
+          markedCount = 0;
+        }
+
         return {
-          detectedAnswers: detectedAnswers,
+          detectedAnswers: maxUniform >= 6 ? new Array(10).fill(null) : detectedAnswers,
           ambiguousQuestions: ambiguousQuestions,
-          markedCount: markedCount,
+          markedCount: maxUniform >= 6 ? 0 : markedCount,
           totalConfidence: totalConfidence
         };
       }
 
       // Testa automaticamente orientações (90° horário, 0° original e 270° anti-horário)
-      // Fotos de celular tiradas com folha deitada normalmente precisam de rotação de 90° no sentido horário!
       const testAngles = (canvas.height > canvas.width) ? [90, 0, 270] : [0, 90, 270];
       const boxConfigs = [
         { xStart: 0.02, xEnd: 0.98, yStart: 0.12, yEnd: 0.96 }, // Foto aproximada do cartão
@@ -17355,14 +17425,14 @@ Retorne estritamente um JSON no seguinte formato:
       ];
 
       let bestResult = null;
-      let maxMarked = -1;
-      let maxConfidence = -1;
+      let maxMarked = 0;
+      let maxConfidence = 0;
 
       for (const angle of testAngles) {
         const testCanvas = createRotatedCanvas(canvas, angle);
         for (const cfg of boxConfigs) {
           const res = evaluateCardLayout(testCanvas, cfg.xStart, cfg.xEnd, cfg.yStart, cfg.yEnd);
-          if (res.markedCount > maxMarked || (res.markedCount === maxMarked && res.totalConfidence > maxConfidence)) {
+          if (res.totalConfidence > 0 && (res.markedCount > maxMarked || (res.markedCount === maxMarked && res.totalConfidence > maxConfidence))) {
             maxMarked = res.markedCount;
             maxConfidence = res.totalConfidence;
             bestResult = res;
@@ -17423,7 +17493,10 @@ Retorne estritamente um JSON no seguinte formato:
         detectedAnswers: new Array(10).fill(null),
         ambiguousQuestions: [],
         studentName: detected.studentName || '',
+        studentId: detected.studentId || '',
         dojo: detected.dojoName || '',
+        selectedDojobookStudent: detected.selectedDojobookStudent || detected.matchedDojoStudent || null,
+        selectedAppStudent: detected.selectedAppStudent || detected.matchedAppStudent || null,
         kyu: detected.kyu,
         examId: detected.examId,
         answerKey: detected.answers
@@ -17497,13 +17570,20 @@ Retorne estritamente um JSON no seguinte formato:
       }
 
       // GARANTIA ABSOLUTA DE INTEGRIDADE:
-      // Se a prova já foi autenticada na Etapa 1 (ex: 18ZK4), NUNCA permite que
+      // Se a prova já foi autenticada na Etapa 1 (ex: 184, 18ZK4), NUNCA permite que
       // a foto da Etapa 2 sobrescreva o código da prova, graduação ou gabarito oficial!
       if (detected.examId && !['SENSEI', 'EXAM'].includes(detected.examId)) {
         finalResult.examId = detected.examId;
         finalResult.kyu = detected.kyu;
         finalResult.answerKey = detected.answers;
         if (detected.studentName) finalResult.studentName = detected.studentName;
+        if (detected.studentId) finalResult.studentId = detected.studentId;
+        if (detected.matchedDojoStudent || detected.selectedDojobookStudent) {
+          finalResult.selectedDojobookStudent = detected.matchedDojoStudent || detected.selectedDojobookStudent;
+        }
+        if (detected.matchedAppStudent || detected.selectedAppStudent) {
+          finalResult.selectedAppStudent = detected.matchedAppStudent || detected.selectedAppStudent;
+        }
         if (detected.dojoName) finalResult.dojo = detected.dojoName;
       }
       if (detected.examId === '18ZK4' || finalResult.examId === '18ZK4') {
@@ -17624,15 +17704,15 @@ Retorne estritamente um JSON no seguinte formato:
       const savedExam = (examGen && examGen.getSavedExamById ? examGen.getSavedExamById(cleanExamId) : null)
         || (window.TKST_AUTH && window.TKST_AUTH.getGeneratedExam ? window.TKST_AUTH.getGeneratedExam(cleanExamId) : null)
         || (window.TKST_GENERATED_EXAMS_CACHE && (window.TKST_GENERATED_EXAMS_CACHE[cleanExamId] || window.TKST_GENERATED_EXAMS_CACHE[cleanExamId.toUpperCase()]));
-      let initialDetectedName = (detectedMeta && detectedMeta.studentName) 
+      let initialDetectedName = (result && (result.studentName || result.aluno))
+        || (detectedMeta && detectedMeta.studentName) 
         || (savedExam && (savedExam.studentName || savedExam.studentAbbr)) 
-        || (result && (result.studentName || result.aluno)) 
         || '';
       if (!initialDetectedName && (cleanExamId === '18ZK4' || (detectedMeta && detectedMeta.examId === '18ZK4'))) {
         initialDetectedName = 'Pietro S.H.J. Campista';
       }
 
-      // Salva estado para edições e gravação
+      // Salva estado para edições e gravação (preserva selectedDojobookStudent / selectedAppStudent)
       examGradingPendingResult = {
         kyu: kyu,
         beltName: beltName,
@@ -17643,8 +17723,8 @@ Retorne estritamente um JSON no seguinte formato:
         imagePreviewUrl: imagePreviewUrl,
         detectedName: initialDetectedName,
         detectedDojo: (savedExam && savedExam.dojoName) || (detectedMeta && detectedMeta.dojoName) || (result && result.dojo) || '',
-        selectedDojobookStudent: null,
-        selectedAppStudent: null
+        selectedDojobookStudent: (result && result.selectedDojobookStudent) || (detectedMeta && (detectedMeta.selectedDojobookStudent || detectedMeta.matchedDojoStudent)) || null,
+        selectedAppStudent: (result && result.selectedAppStudent) || (detectedMeta && (detectedMeta.selectedAppStudent || detectedMeta.matchedAppStudent)) || null
       };
 
       // Garante cache do DojôBook carregado
@@ -17671,12 +17751,39 @@ Retorne estritamente um JSON no seguinte formato:
           examGradingPendingResult.detectedName = pietro.name;
         }
       }
+
+      // 1. Tenta vinculação direta pelo código da prova (ex: 184 como ID de candidato no DojôBook ou matrícula)
+      if (!examGradingPendingResult.selectedDojobookStudent && !examGradingPendingResult.selectedAppStudent && cleanExamId) {
+        const dojoById = todosDojobook.find(t =>
+          String(t.id) === String(cleanExamId) ||
+          String(t.candidato_id) === String(cleanExamId) ||
+          String(t.matricula) === String(cleanExamId) ||
+          String(t.exame_id) === String(cleanExamId) ||
+          String(t.numero_inscricao) === String(cleanExamId)
+        );
+        if (dojoById) {
+          examGradingPendingResult.selectedDojobookStudent = dojoById;
+          examGradingPendingResult.detectedName = dojoById.nome;
+        } else {
+          const appById = allAppStudents.find(s =>
+            String(s.id) === String(cleanExamId) ||
+            String(s.id) === ('std_' + cleanExamId) ||
+            String(s.matricula) === String(cleanExamId) ||
+            String(s.username).toUpperCase() === String(cleanExamId).toUpperCase()
+          );
+          if (appById) {
+            examGradingPendingResult.selectedAppStudent = appById;
+            examGradingPendingResult.detectedName = appById.name;
+          }
+        }
+      }
+
       const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
       const detNorm = norm(examGradingPendingResult.detectedName);
 
-      // 1. Se veio do savedExam ou detectedMeta com studentId, vincula diretamente
-      const targetStudentId = (savedExam && savedExam.studentId) || (detectedMeta && detectedMeta.studentId);
-      if (targetStudentId) {
+      // 2. Se veio do savedExam ou detectedMeta com studentId, vincula diretamente
+      const targetStudentId = (savedExam && savedExam.studentId) || (detectedMeta && detectedMeta.studentId) || (result && result.studentId);
+      if (!examGradingPendingResult.selectedDojobookStudent && !examGradingPendingResult.selectedAppStudent && targetStudentId) {
         const dMatch = todosDojobook.find(t => String(t.id) === String(targetStudentId));
         if (dMatch) {
           examGradingPendingResult.selectedDojobookStudent = dMatch;
@@ -17690,7 +17797,7 @@ Retorne estritamente um JSON no seguinte formato:
         }
       }
 
-      // 2. Se ainda não vinculou, tenta pelo nome detectado
+      // 3. Se ainda não vinculou, tenta pelo nome detectado
       if (!examGradingPendingResult.selectedDojobookStudent && !examGradingPendingResult.selectedAppStudent && detNorm) {
         let autoMatch = todosDojobook.find(a => norm(a.nome) === detNorm);
         if (!autoMatch && detNorm.length > 3) {
@@ -17721,7 +17828,7 @@ Retorne estritamente um JSON no seguinte formato:
         }
       }
 
-      // 3. Se ainda não vinculou mas temos nome do aluno salvo na prova, pré-vincula como aluno customizado
+      // 4. Se ainda não vinculou mas temos nome do aluno detectado na foto ou na prova, pré-vincula como aluno customizado
       if (!examGradingPendingResult.selectedDojobookStudent && !examGradingPendingResult.selectedAppStudent && (examGradingPendingResult.detectedName || (savedExam && savedExam.studentName) || (detectedMeta && detectedMeta.studentName))) {
         const studentDisplayName = examGradingPendingResult.detectedName || (savedExam && savedExam.studentName) || (detectedMeta && detectedMeta.studentName);
         examGradingPendingResult.selectedDojobookStudent = {
