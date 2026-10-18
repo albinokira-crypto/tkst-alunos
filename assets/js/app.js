@@ -107,14 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.85';
+  const APP_DISPLAY_VERSION = 'V-2.86';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.85. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.86. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.85)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.86)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
         } catch(e) {}
@@ -11606,103 +11606,109 @@ document.addEventListener('DOMContentLoaded', () => {
       const w2Text = typeof initialQuestion === 'object' ? (initialQuestion.wrongAnswers?.[1] || '') : '';
       const w3Text = typeof initialQuestion === 'object' ? (initialQuestion.wrongAnswers?.[2] || '') : '';
 
-      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Nova Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.7rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> Edição Protegida</span></div>`;
+      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-plus-circle" style="color: var(--accent-gold);"></i> Nova Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.68rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> Edição Protegida</span></div>`;
 
       modalBody.innerHTML = `
-        <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddQuizQuestion(${kyu});" style="display: flex; flex-direction: column; gap: 12px;">
-          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.80rem; color: #E2E8F0;">
-            <i class="fas fa-shield-alt" style="color: var(--accent-gold); margin-right: 6px;"></i> <strong>Modo Seguro:</strong> Cadastre o enunciado, a resposta correta e as 3 respostas erradas.
-          </div>
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitAddQuizQuestion(${kyu});" style="display: flex; flex-direction: column; gap: 8px; margin: 0;">
+          <div class="quiz-edit-grid">
+            <!-- Coluna 1: Enunciado e Imagem -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                  <label class="form-label" style="font-size: 0.78rem; margin-bottom: 0; font-weight: 700; color: #E2E8F0;">
+                    <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 5px;"></i> Pergunta / Enunciado:
+                  </label>
+                  <div style="display: flex; gap: 5px;">
+                    <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.openBatchSuggestQuestionsModal(${kyu})" style="font-size: 0.68rem; padding: 2px 7px; font-weight: 700; color: #000;" title="Sugerir 5 perguntas em lote">
+                      <i class="fas fa-layer-group"></i> Lote (5)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.suggestQuizQuestion(${kyu}, 'newQuizQuestionInput')" style="font-size: 0.68rem; padding: 2px 7px; font-weight: 700;" title="Sugerir pergunta inédita para esta faixa">
+                      <i class="fas fa-lightbulb"></i> Sugerir 1
+                    </button>
+                  </div>
+                </div>
+                <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite sua pergunta aqui..." style="resize: vertical; font-size: 0.84rem; min-height: 62px; max-height: 100px; padding: 6px 9px; line-height: 1.35;">${escapeHtml(qText)}</textarea>
+              </div>
 
-          <div class="form-group">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 6px;">
-              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0;">
-                <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
-              </label>
-              <div style="display: flex; gap: 6px;">
-                <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.openBatchSuggestQuestionsModal(${kyu})" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700; color: #000;" title="Sugerir 5 perguntas em lote">
-                  <i class="fas fa-layer-group"></i> Lote (5)
-                </button>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.suggestQuizQuestion(${kyu}, 'newQuizQuestionInput')" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700;" title="Sugerir pergunta inédita para esta faixa">
-                  <i class="fas fa-lightbulb"></i> Sugerir 1
-                </button>
+              <div class="form-group" style="margin-bottom: 0; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 7px 9px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                  <label class="form-label" style="font-size: 0.76rem; margin-bottom: 0; font-weight: 600; color: #CBD5E1;">
+                    <i class="fas fa-image" style="color: var(--accent-gold); margin-right: 5px;"></i> Imagem Ilustrativa (Opcional):
+                  </label>
+                </div>
+
+                <div id="quizModalImagePreviewBox" style="display: none; align-items: center; gap: 8px; margin-bottom: 5px; background: rgba(0,0,0,0.4); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 4px 8px;">
+                  <img id="quizModalImagePreview" src="" style="height: 48px; width: 64px; object-fit: contain; border-radius: 4px; background: #000; border: 1px solid #334155;">
+                  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.70rem; color: #94A3B8;"><i class="fas fa-check" style="color: var(--accent-emerald);"></i> Imagem ativa</span>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeQuizModalImage()" style="font-size: 0.68rem; padding: 2px 7px;">
+                      <i class="fas fa-trash"></i> Remover
+                    </button>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 5px; align-items: center;">
+                  <label class="btn btn-secondary" style="font-size: 0.72rem; padding: 4px 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; margin-bottom: 0;">
+                    <i class="fas fa-camera"></i> Foto/Arquivo
+                    <input type="file" accept="image/*" id="quizModalFileInput" style="display: none;" onchange="window.TKST_APP.handleQuizModalImageUpload(this)">
+                  </label>
+                  <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou link (https://...)" oninput="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; font-size: 0.74rem; padding: 4px 8px; min-width: 0;">
+                </div>
               </div>
             </div>
-            <textarea id="newQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite sua pergunta aqui ou clique em 'Sugerir Pergunta' acima..." style="resize: vertical; font-size: 0.88rem;">${escapeHtml(qText)}</textarea>
-            <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px;">
-              <i class="fas fa-keyboard"></i> Você pode digitar livremente sua própria pergunta ou usar a sugestão baseada no Plano de Estudos.
-            </div>
-          </div>
 
-          <div class="form-group">
-            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-image" style="color: var(--accent-gold); margin-right: 6px;"></i> Imagem Ilustrativa (Opcional):
-            </label>
-            
-            <div id="quizModalImagePreviewBox" style="display: none; margin-bottom: 8px; background: rgba(0,0,0,0.35); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 8px; text-align: center;">
-              <img id="quizModalImagePreview" src="" style="max-height: 140px; max-width: 100%; object-fit: contain; border-radius: 4px; margin-bottom: 6px;">
-              <div>
-                <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeQuizModalImage()" style="font-size: 0.72rem; padding: 3px 8px;">
-                  <i class="fas fa-trash"></i> Remover Imagem
-                </button>
+            <!-- Coluna 2: Resposta Correta e 3 Alternativas Erradas -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Resposta Correta -->
+              <div class="form-group" style="margin-bottom: 0; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 6px 9px;">
+                <label class="form-label" style="font-size: 0.76rem; margin-bottom: 3px; color: #6EE7B7; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta (Gabarito Oficial):
+                </label>
+                <input type="text" id="newQuizCorrectAnswerInput" class="form-input" value="${escapeHtml(cText)}" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.82rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.45); border-color: rgba(16, 185, 129, 0.4); padding: 5px 8px;">
+              </div>
+
+              <!-- 3 Alternativas Erradas -->
+              <div class="form-group" style="margin-bottom: 0; background: rgba(230, 57, 70, 0.06); border: 1px solid rgba(230, 57, 70, 0.3); border-radius: var(--radius-sm); padding: 6px 9px; display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <label class="form-label" style="font-size: 0.76rem; margin-bottom: 0; color: #FCA5A5; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-times-circle" style="color: var(--accent-crimson);"></i> 3 Alternativas Incorretas (Erradas):
+                  </label>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.autoFillWrongOptionsFromInputs('add')" style="font-size: 0.66rem; padding: 1px 6px; font-weight: 600;" title="Preencher com sugestões automáticas">
+                    <i class="fas fa-magic"></i> Auto-sugerir
+                  </button>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 2px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.70rem; color: #F87171; font-weight: 700; width: 14px; text-align: center;">B</span>
+                    <input type="text" id="newQuizWrong1Input" class="form-input" value="${escapeHtml(w1Text)}" placeholder="1ª alternativa errada..." style="flex: 1; font-size: 0.80rem; padding: 4px 7px; background: rgba(0,0,0,0.35);">
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.70rem; color: #F87171; font-weight: 700; width: 14px; text-align: center;">C</span>
+                    <input type="text" id="newQuizWrong2Input" class="form-input" value="${escapeHtml(w2Text)}" placeholder="2ª alternativa errada..." style="flex: 1; font-size: 0.80rem; padding: 4px 7px; background: rgba(0,0,0,0.35);">
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.70rem; color: #F87171; font-weight: 700; width: 14px; text-align: center;">D</span>
+                    <input type="text" id="newQuizWrong3Input" class="form-input" value="${escapeHtml(w3Text)}" placeholder="3ª alternativa errada..." style="flex: 1; font-size: 0.80rem; padding: 4px 7px; background: rgba(0,0,0,0.35);">
+                  </div>
+                </div>
               </div>
             </div>
-
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <label class="btn btn-secondary" style="font-size: 0.76rem; padding: 6px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-                <i class="fas fa-camera"></i> Escolher ou Tirar Foto
-                <input type="file" accept="image/*" id="quizModalFileInput" style="display: none;" onchange="window.TKST_APP.handleQuizModalImageUpload(this)">
-              </label>
-              <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou cole o link da imagem (https://...)" oninput="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; min-width: 160px; font-size: 0.78rem;">
-            </div>
           </div>
 
-          <!-- Resposta Correta -->
-          <div class="form-group" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 10px 12px;">
-            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #6EE7B7; font-weight: 700;">
-              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito Oficial):
-            </label>
-            <input type="text" id="newQuizCorrectAnswerInput" class="form-input" value="${escapeHtml(cText)}" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.88rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.4); border-color: rgba(16, 185, 129, 0.4);">
-          </div>
-
-          <!-- 3 Respostas Erradas -->
-          <div class="form-group" style="background: rgba(230, 57, 70, 0.06); border: 1px solid rgba(230, 57, 70, 0.25); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0; color: #FCA5A5; font-weight: 700;">
-                <i class="fas fa-times-circle" style="color: var(--accent-crimson); margin-right: 6px;"></i> 3 Alternativas Incorretas (Respostas Erradas):
-              </label>
-              <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.autoFillWrongOptionsFromInputs('add')" style="font-size: 0.70rem; padding: 2px 7px;" title="Preencher com sugestões automáticas">
-                <i class="fas fa-magic"></i> Auto-sugerir
-              </button>
-            </div>
-
-            <div>
-              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 1:</span>
-              <input type="text" id="newQuizWrong1Input" class="form-input" value="${escapeHtml(w1Text)}" placeholder="Digite a 1ª alternativa errada (ou use Auto-sugerir)..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
-            </div>
-
-            <div>
-              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 2:</span>
-              <input type="text" id="newQuizWrong2Input" class="form-input" value="${escapeHtml(w2Text)}" placeholder="Digite a 2ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
-            </div>
-
-            <div>
-              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 3:</span>
-              <input type="text" id="newQuizWrong3Input" class="form-input" value="${escapeHtml(w3Text)}" placeholder="Digite a 3ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 10px; margin-top: 6px;">
-            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.cancelModalEdit()" style="flex: 1; padding: 10px;">
+          <div style="display: flex; gap: 8px; margin-top: 4px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.cancelModalEdit()" style="flex: 1; padding: 7px 12px; font-size: 0.82rem;">
               Cancelar
             </button>
-            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 10px; font-weight: 700;">
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 7px 16px; font-size: 0.84rem; font-weight: 700;">
               <i class="fas fa-plus-circle"></i> Cadastrar Questão
             </button>
           </div>
         </form>
       `;
 
+      const container = detailModal.querySelector('.modal-container');
+      if (container) container.classList.add('quiz-modal-compact');
       detailModal.setAttribute('data-prevent-outside-close', 'true');
       detailModal.classList.add('active');
     },
@@ -11763,6 +11769,8 @@ document.addEventListener('DOMContentLoaded', () => {
         bank.push(newQuestion);
         window.TKST_AUTH.saveCustomQuizBank(bank);
         detailModal.classList.remove('active');
+        const modalContainer = detailModal.querySelector('.modal-container');
+        if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
         showToast('✅ Nova questão cadastrada e salva no simulado! Sincronizando...', 'sync');
         renderAdminMaster();
       } catch (err) {
@@ -11851,95 +11859,104 @@ document.addEventListener('DOMContentLoaded', () => {
       const w2Text = wrongList[1] || '';
       const w3Text = wrongList[2] || '';
 
-      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.7rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> ID: ${q.id}</span></div>`;
+      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.68rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> ID: ${q.id}</span></div>`;
 
       modalBody.innerHTML = `
-        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditQuizQuestion('${q.id}');" style="display: flex; flex-direction: column; gap: 12px;">
-          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.80rem; color: #E2E8F0;">
-            <i class="fas fa-edit" style="color: var(--accent-gold); margin-right: 6px;"></i> <strong>Edição da Questão:</strong> Altere os campos desejados e clique em Salvar Alterações.
-          </div>
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditQuizQuestion('${q.id}');" style="display: flex; flex-direction: column; gap: 8px; margin: 0;">
+          <div class="quiz-edit-grid">
+            <!-- Coluna 1: Enunciado e Imagem -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                  <label class="form-label" style="font-size: 0.78rem; margin-bottom: 0; font-weight: 700; color: #E2E8F0;">
+                    <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 5px;"></i> Pergunta / Enunciado:
+                  </label>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.suggestQuizQuestion(${qKyu}, 'editQuizQuestionInput')" style="font-size: 0.68rem; padding: 2px 7px; font-weight: 700;" title="Sugerir pergunta inédita para esta faixa">
+                    <i class="fas fa-lightbulb"></i> Sugerir Pergunta
+                  </button>
+                </div>
+                <textarea id="editQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite a pergunta..." style="resize: vertical; font-size: 0.84rem; min-height: 62px; max-height: 100px; padding: 6px 9px; line-height: 1.35;">${escapeHtml(qText)}</textarea>
+              </div>
 
-          <div class="form-group">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 6px;">
-              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0;">
-                <i class="fas fa-question-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> Pergunta / Enunciado:
-              </label>
-              <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.suggestQuizQuestion(${qKyu}, 'editQuizQuestionInput')" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700;" title="Sugerir pergunta inédita para esta faixa">
-                <i class="fas fa-lightbulb"></i> Sugerir Pergunta
-              </button>
-            </div>
-            <textarea id="editQuizQuestionInput" class="form-input" rows="3" required placeholder="Digite a pergunta..." style="resize: vertical; font-size: 0.88rem;">${escapeHtml(qText)}</textarea>
-          </div>
+              <div class="form-group" style="margin-bottom: 0; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 7px 9px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                  <label class="form-label" style="font-size: 0.76rem; margin-bottom: 0; font-weight: 600; color: #CBD5E1;">
+                    <i class="fas fa-image" style="color: var(--accent-gold); margin-right: 5px;"></i> Imagem Ilustrativa (Opcional):
+                  </label>
+                </div>
 
-          <div class="form-group">
-            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
-              <i class="fas fa-image" style="color: var(--accent-gold); margin-right: 6px;"></i> Imagem Ilustrativa (Opcional):
-            </label>
-            
-            <div id="quizModalImagePreviewBox" style="display: ${quizModalTempImage ? 'block' : 'none'}; margin-bottom: 8px; background: rgba(0,0,0,0.35); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 8px; text-align: center;">
-              <img id="quizModalImagePreview" src="${quizModalTempImage}" style="max-height: 140px; max-width: 100%; object-fit: contain; border-radius: 4px; margin-bottom: 6px;">
-              <div>
-                <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeQuizModalImage()" style="font-size: 0.72rem; padding: 3px 8px;">
-                  <i class="fas fa-trash"></i> Remover Imagem
-                </button>
+                <div id="quizModalImagePreviewBox" style="display: ${quizModalTempImage ? 'flex' : 'none'}; align-items: center; gap: 8px; margin-bottom: 5px; background: rgba(0,0,0,0.4); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 4px 8px;">
+                  <img id="quizModalImagePreview" src="${quizModalTempImage}" style="height: 48px; width: 64px; object-fit: contain; border-radius: 4px; background: #000; border: 1px solid #334155;">
+                  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.70rem; color: #94A3B8;"><i class="fas fa-check" style="color: var(--accent-emerald);"></i> Imagem ativa</span>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="window.TKST_APP.removeQuizModalImage()" style="font-size: 0.68rem; padding: 2px 7px;">
+                      <i class="fas fa-trash"></i> Remover
+                    </button>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 5px; align-items: center;">
+                  <label class="btn btn-secondary" style="font-size: 0.72rem; padding: 4px 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; margin-bottom: 0;">
+                    <i class="fas fa-camera"></i> Foto/Arquivo
+                    <input type="file" accept="image/*" id="quizModalFileInput" style="display: none;" onchange="window.TKST_APP.handleQuizModalImageUpload(this)">
+                  </label>
+                  <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou link (https://...)" oninput="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; font-size: 0.74rem; padding: 4px 8px; min-width: 0;">
+                </div>
               </div>
             </div>
 
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <label class="btn btn-secondary" style="font-size: 0.76rem; padding: 6px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-                <i class="fas fa-camera"></i> Escolher ou Tirar Foto
-                <input type="file" accept="image/*" id="quizModalFileInput" style="display: none;" onchange="window.TKST_APP.handleQuizModalImageUpload(this)">
-              </label>
-              <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou cole o link da imagem (https://...)" oninput="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; min-width: 160px; font-size: 0.78rem;">
+            <!-- Coluna 2: Resposta Correta e 3 Alternativas Erradas -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Resposta Correta -->
+              <div class="form-group" style="margin-bottom: 0; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 6px 9px;">
+                <label class="form-label" style="font-size: 0.76rem; margin-bottom: 3px; color: #6EE7B7; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta (Gabarito Oficial):
+                </label>
+                <input type="text" id="editQuizCorrectAnswerInput" class="form-input" value="${escapeHtml(cText)}" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.82rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.45); border-color: rgba(16, 185, 129, 0.4); padding: 5px 8px;">
+              </div>
+
+              <!-- 3 Alternativas Erradas -->
+              <div class="form-group" style="margin-bottom: 0; background: rgba(230, 57, 70, 0.06); border: 1px solid rgba(230, 57, 70, 0.3); border-radius: var(--radius-sm); padding: 6px 9px; display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <label class="form-label" style="font-size: 0.76rem; margin-bottom: 0; color: #FCA5A5; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-times-circle" style="color: var(--accent-crimson);"></i> 3 Alternativas Incorretas (Erradas):
+                  </label>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.autoFillWrongOptionsFromInputs('edit')" style="font-size: 0.66rem; padding: 1px 6px; font-weight: 600;" title="Preencher com sugestões automáticas">
+                    <i class="fas fa-magic"></i> Auto-sugerir
+                  </button>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 2px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.70rem; color: #F87171; font-weight: 700; width: 14px; text-align: center;">B</span>
+                    <input type="text" id="editQuizWrong1Input" class="form-input" value="${escapeHtml(w1Text)}" placeholder="1ª alternativa errada..." style="flex: 1; font-size: 0.80rem; padding: 4px 7px; background: rgba(0,0,0,0.35);">
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.70rem; color: #F87171; font-weight: 700; width: 14px; text-align: center;">C</span>
+                    <input type="text" id="editQuizWrong2Input" class="form-input" value="${escapeHtml(w2Text)}" placeholder="2ª alternativa errada..." style="flex: 1; font-size: 0.80rem; padding: 4px 7px; background: rgba(0,0,0,0.35);">
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.70rem; color: #F87171; font-weight: 700; width: 14px; text-align: center;">D</span>
+                    <input type="text" id="editQuizWrong3Input" class="form-input" value="${escapeHtml(w3Text)}" placeholder="3ª alternativa errada..." style="flex: 1; font-size: 0.80rem; padding: 4px 7px; background: rgba(0,0,0,0.35);">
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Resposta Correta -->
-          <div class="form-group" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 10px 12px;">
-            <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px; color: #6EE7B7; font-weight: 700;">
-              <i class="fas fa-check-circle" style="color: var(--accent-emerald); margin-right: 6px;"></i> Resposta Correta (Gabarito Oficial):
-            </label>
-            <input type="text" id="editQuizCorrectAnswerInput" class="form-input" value="${escapeHtml(cText)}" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.88rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.4); border-color: rgba(16, 185, 129, 0.4);">
-          </div>
-
-          <!-- 3 Respostas Erradas -->
-          <div class="form-group" style="background: rgba(230, 57, 70, 0.06); border: 1px solid rgba(230, 57, 70, 0.25); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 0; color: #FCA5A5; font-weight: 700;">
-                <i class="fas fa-times-circle" style="color: var(--accent-crimson); margin-right: 6px;"></i> 3 Alternativas Incorretas (Respostas Erradas):
-              </label>
-              <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.autoFillWrongOptionsFromInputs('edit')" style="font-size: 0.70rem; padding: 2px 7px;" title="Preencher com sugestões automáticas">
-                <i class="fas fa-magic"></i> Auto-sugerir
-              </button>
-            </div>
-
-            <div>
-              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 1:</span>
-              <input type="text" id="editQuizWrong1Input" class="form-input" value="${escapeHtml(w1Text)}" placeholder="Digite a 1ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
-            </div>
-
-            <div>
-              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 2:</span>
-              <input type="text" id="editQuizWrong2Input" class="form-input" value="${escapeHtml(w2Text)}" placeholder="Digite a 2ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
-            </div>
-
-            <div>
-              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 600;">Alternativa Errada 3:</span>
-              <input type="text" id="editQuizWrong3Input" class="form-input" value="${escapeHtml(w3Text)}" placeholder="Digite a 3ª alternativa errada..." style="font-size: 0.84rem; margin-top: 2px; background: rgba(0,0,0,0.35);">
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 10px; margin-top: 6px;">
-            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.cancelModalEdit()" style="flex: 1; padding: 10px;">
+          <div style="display: flex; gap: 8px; margin-top: 4px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.cancelModalEdit()" style="flex: 1; padding: 7px 12px; font-size: 0.82rem;">
               Cancelar
             </button>
-            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 10px; font-weight: 700;">
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 7px 16px; font-size: 0.84rem; font-weight: 700;">
               <i class="fas fa-save"></i> Salvar Alterações
             </button>
           </div>
         </form>
       `;
 
+      const container = detailModal.querySelector('.modal-container');
+      if (container) container.classList.add('quiz-modal-compact');
       detailModal.setAttribute('data-prevent-outside-close', 'true');
       detailModal.classList.add('active');
     },
@@ -12026,6 +12043,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.TKST_AUTH.saveCustomQuizBank(bank);
         detailModal.classList.remove('active');
+        const modalContainer = detailModal.querySelector('.modal-container');
+        if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
         showToast('✅ Questão atualizada com sucesso! Sincronizando...', 'sync');
         renderAdminMaster();
       } catch (err) {
@@ -14688,6 +14707,8 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (modal) {
         modal.removeAttribute('data-prevent-outside-close');
         modal.classList.remove('active');
+        const container = modal.querySelector('.modal-container');
+        if (container) container.classList.remove('quiz-modal-compact');
         stopModalMedia(modal);
       }
     },
@@ -14706,6 +14727,8 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (modal) {
         modal.removeAttribute('data-prevent-outside-close');
         modal.classList.remove('active');
+        const container = modal.querySelector('.modal-container');
+        if (container) container.classList.remove('quiz-modal-compact');
         stopModalMedia(modal);
       }
     },
