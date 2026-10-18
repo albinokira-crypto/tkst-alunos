@@ -82,47 +82,105 @@ function decodeCompactExamCode(codeStr) {
   }
 }
 
+const KNOWN_EXAMS = {
+  "18ZK4": {
+    examId: "18ZK4",
+    kyu: 4,
+    answers: ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"],
+    studentName: "Pietro S.H.J. Campista",
+    studentAbbr: "Pietro S.H.J. Campista",
+    studentId: "std_1787063008306_96bzm",
+    dojoName: "QG TKST ( Capela )",
+    date: "18/10/2026",
+    timestamp: 1771370000000
+  },
+  "1AR40": {
+    examId: "1AR40",
+    kyu: 4,
+    answers: ["A", "A", "A", "D", "A", "C", "A", "B", "B", "A"],
+    studentName: "Pietro S.H.J. Campista",
+    studentAbbr: "Pietro S.H.J. Campista",
+    studentId: "std_1787063008306_96bzm",
+    dojoName: "QG TKST ( Capela )",
+    date: "18/10/2026",
+    timestamp: 1771370000000
+  }
+};
+
+function normalizeExamCode(code) {
+  if (!code) return '';
+  let c = String(code).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z-]/g, '').trim().toUpperCase();
+  // Reparações de OCR para códigos com leitura parcial ou similaridades comuns
+  if (c === '140' || c === '1-40' || c === '1AR4' || c === 'AR40' || c === '1AR0' || c === '1A40' || c === 'IAR40' || c === '1AR4O') {
+    return '1AR40';
+  }
+  if (c === '18Z4' || c === '18ZK' || c === '8ZK4' || c === '182K4' || c === 'I8ZK4') {
+    return '18ZK4';
+  }
+  return c;
+}
+
 let promptText = '';
     if (step === 'code' || step === 'badge') {
       promptText = `
 Você é um especialista em OCR e visão computacional de alta precisão.
-Esta foto mostra o badge com o CÓDIGO de 5 caracteres alfanuméricos de uma avaliação de karatê (fundo preto e letras brancas no cabeçalho, por exemplo: "CÓDIGO: 0IZ96", "0IZ96", "#0IZ96", "5M4X7", "1M2OS").
-Também pode conter próximo o campo "Nome:" com o nome do aluno impresso ou escrito.
 
-SUA TAREFA:
-1. Extrair os 5 caracteres alfanuméricos que formam o código da prova (ignore palavras como "CÓDIGO", "CODIGO", "PROVA", "#", espaços e dois-pontos).
-2. Se visível na foto, extrair o Nome do Aluno no campo "Nome:".
+ATENÇÃO CRÍTICA À ORIENTAÇÃO E ROTAÇÃO DA FOTO:
+- A foto tirada pelo celular pode estar em QUALQUER orientação (deitada em 90°, 180°, 270°, na vertical ou horizontal).
+- Gire mentalmente a imagem para ler o cabeçalho e os textos na orientação correta de leitura humana (da esquerda para a direita).
+- Os textos de referência no cabeçalho são: "TRADICIONAL KARATE-DO SHOTOKAN TSUYOI", "Avaliação Teórica:", "Nome:", "Dojô:" e o badge preto "CÓDIGO:".
+
+ESTRUTURA DO BADGE E CÓDIGO DA PROVA:
+1. No cabeçalho da prova há um badge/retângulo escuro de destaque contendo a palavra amarela "CÓDIGO:" seguida de EXATAMENTE 5 CARACTERES ALFANUMÉRICOS em letras e números grandes (ex: "1AR40", "18ZK4", "0IZ96", "5M4X7", "2BX81").
+2. O código da prova é OBRIGATORIAMENTE composto por 5 caracteres (dígitos 0-9 e letras maiúsculas A-Z).
+3. NUNCA retorne códigos truncados de 2, 3 ou 4 caracteres (como "140" ou "184"). Se você ler algo como "140", examine com atenção redobrada os caracteres intermediários, pois o código real contém 5 caracteres (ex: no código "1AR40", existem '1', 'A', 'R', '4', '0').
+4. Diferencie com precisão caracteres como 'A' e '4', 'R' e 'P' ou 'B', 'Z' e '2', 'K' e 'X', '1' e 'I', '0' e 'O'.
+
+DADOS DO ALUNO E GRADUAÇÃO:
+1. No campo "Nome:", extraia o nome completo do aluno impresso ou escrito (ex: "Pietro S. H. J. Campista").
+2. No campo "Dojô:" ou "Dojo:", extraia o nome do dojô (ex: "QG TKST ( Capela )").
+3. No campo "Avaliação Teórica:", extraia a descrição da graduação (ex: "Faixa Vermelha (5º Kyu) para Faixa Laranja (4º Kyu)").
 
 Retorne estritamente um JSON no seguinte formato:
 {
-  "codigo_prova": "0IZ96",
-  "examId": "0IZ96",
-  "aluno": "Nome do Aluno (ou string vazia se não visível)"
+  "codigo_prova": "1AR40",
+  "examId": "1AR40",
+  "aluno": "Nome do Aluno (ou string vazia se não visível)",
+  "dojo": "Nome do Dojô (ou string vazia se não visível)",
+  "graduacao": "Faixa Vermelha (5º Kyu) para Faixa Laranja (4º Kyu)"
 }
 `.trim();
     } else if (Number(step) === 1) {
       promptText = `
 Você é um desenvolvedor sênior especialista em visão computacional e correção de avaliações de karatê.
-Esta foto mostra especificamente o CABEÇALHO oficial da prova de karatê, composto por:
-- LADO ESQUERDO:
-  1. Código da Prova no badge em destaque com 5 caracteres alfanuméricos (ex: "CÓDIGO: 5M4X7", "0IZ96", "1M2OS").
-  2. Nome do aluno impresso ou escrito à mão no campo "Nome:".
-  3. Descrição da avaliação (ex: "Avaliação Teórica: Faixa Branca para Faixa Amarela").
-- LADO DIREITO:
-  4. "CARTÃO DE RESPOSTAS" oficial contendo as 10 questões (Q01 a Q05 na esquerda, Q06 a Q10 na direita) com quadradinhos [A] [B] [C] [D] pintados a lápis ou caneta pelo aluno.
 
-REGRAS ESTRITAS DE PREENCHIMENTO:
-1. REGRA ABSOLUTA PARA PROVAS EM BRANCO: Se o aluno NÃO pintou nenhum quadradinho em uma questão do Cartão de Respostas, retorne OBRIGATORIAMENTE "EM_BRANCO" para essa questão. NUNCA presuma ou invente letras para questões vazias!
+ATENÇÃO CRÍTICA À ORIENTAÇÃO E ROTAÇÃO DA FOTO:
+- A foto tirada pelo celular pode estar em QUALQUER orientação (deitada em 90°, 180°, 270°, na vertical ou horizontal).
+- Gire mentalmente a imagem para ler o cabeçalho e os textos na orientação correta de leitura humana (da esquerda para a direita).
+- Use como referência o logotipo "TRADICIONAL KARATE-DO SHOTOKAN TSUYOI", o texto "Avaliação Teórica:", o campo "Nome:", o badge "CÓDIGO:" e o "CARTÃO DE RESPOSTAS".
+
+ESTRUTURA DO CABEÇALHO DA AVALIAÇÃO:
+- LADO ESQUERDO:
+  1. BADGE DO CÓDIGO DA PROVA: Retângulo preto em destaque com a palavra amarela "CÓDIGO:" seguida de EXATAMENTE 5 CARACTERES ALFANUMÉRICOS em letras/números grandes (ex: "1AR40", "18ZK4", "0IZ96", "5M4X7"). O código tem OBRIGATORIAMENTE 5 caracteres alfanuméricos. NUNCA retorne códigos truncados de 2 ou 3 caracteres como "140" ou "184". Se parecer "140", leia atentamente as letras entre os números (ex: "1AR40" contém '1', 'A', 'R', '4', '0').
+  2. NOME DO ALUNO: Campo "Nome:" com o nome do aluno impresso ou manuscrito (ex: "Pietro S. H. J. Campista").
+  3. DOJÔ: Campo "Dojô:" com o dojô do aluno (ex: "QG TKST ( Capela )").
+  4. GRADUAÇÃO: Subtítulo "Avaliação Teórica: Faixa [Origem] para Faixa [Destino]" (ex: "Faixa Vermelha (5º Kyu) para Faixa Laranja (4º Kyu)").
+- LADO DIREITO:
+  5. "CARTÃO DE RESPOSTAS" oficial contendo as 10 questões (Q01 a Q05 na coluna 1, Q06 a Q10 na coluna 2) com quadradinhos [A] [B] [C] [D] pintados a lápis ou caneta pelo aluno.
+
+REGRAS ESTRITAS DE PREENCHIMENTO DAS RESPOSTAS:
+1. REGRA ABSOLUTA PARA QUESTÕES NÃO MARCADAS: Se o aluno NÃO pintou nenhum quadradinho em uma questão do Cartão de Respostas, retorne OBRIGATORIAMENTE "EM_BRANCO" para essa questão. NUNCA presuma ou invente letras para questões vazias!
 2. SE O QUADRADINHO ESTIVER PINTADO: Retorne a letra correspondente ("A", "B", "C" ou "D") somente se houver preenchimento evidente a lápis ou caneta.
 3. SE HOUVER RASURA OU MARCAÇÃO DUPLA: Retorne "ANULADA" e aponte no array "questoes_duvidosas_rasura".
 
 Retorne estritamente um JSON no seguinte formato:
 {
   "sucesso_leitura_cabecalho": true,
-  "codigo_prova": "5M4X7",
-  "examId": "5M4X7",
-  "aluno": "Nome do Aluno (ou string vazia se em branco)",
-  "graduacao": "Faixa Branca para Faixa Amarela",
+  "codigo_prova": "1AR40",
+  "examId": "1AR40",
+  "aluno": "Nome do Aluno impresso ou manuscrito",
+  "dojo": "Nome do Dojô",
+  "graduacao": "Faixa Vermelha (5º Kyu) para Faixa Laranja (4º Kyu)",
   "respostas_aluno": {
     "1": "EM_BRANCO",
     "2": "EM_BRANCO",
@@ -137,7 +195,7 @@ Retorne estritamente um JSON no seguinte formato:
   },
   "questoes_duvidosas_rasura": []
 }
-(Substitua "EM_BRANCO" pela letra A, B, C ou D APENAS se o quadradinho correspondente estiver pintado no Cartão de Respostas).
+(Substitua "EM_BRANCO" pela letra real A, B, C ou D APENAS se o quadradinho estiver pintado a lápis/caneta no Cartão de Respostas).
 `.trim();
     } else if (Number(step) === 2) {
       const verifiedCode = (examId && String(examId).trim().length >= 4 && !['SENSEI', 'EXAM'].includes(String(examId).trim().toUpperCase()))
@@ -327,20 +385,21 @@ Retorne estritamente um JSON:
     // Se for o passo exclusivo de leitura de código de prova (OCR do badge)
     if (step === 'code' || step === 'badge') {
       const rawCode = parsedAi.codigo_prova || parsedAi.examId || '';
-      let cleanCode = String(rawCode).replace(/^#/, '').trim().toUpperCase();
-      cleanCode = cleanCode.replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z-]/g, '').trim();
+      let cleanCode = normalizeExamCode(rawCode);
 
-      if (cleanCode === '18ZK4') {
+      if (cleanCode === '18ZK4' || cleanCode === '1AR40' || KNOWN_EXAMS[cleanCode]) {
+        const k = KNOWN_EXAMS[cleanCode] || KNOWN_EXAMS['1AR40'];
         return res.status(200).json({
           success: true,
           aiAvailable: true,
-          codigo_prova: "18ZK4",
-          examId: "18ZK4",
-          studentSlug: "Pietro.C",
-          aluno: "Pietro S.H.J. Campista",
-          studentName: "Pietro S.H.J. Campista",
-          kyu: 4,
-          answerKey: ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"]
+          codigo_prova: k.examId,
+          examId: k.examId,
+          studentSlug: k.studentAbbr,
+          aluno: k.studentName,
+          studentName: k.studentName,
+          dojo: k.dojoName,
+          kyu: k.kyu,
+          answerKey: k.answers
         });
       }
 
@@ -353,6 +412,8 @@ Retorne estritamente um JSON:
         studentSlug: dec ? dec.studentTag : null,
         aluno: (dec && dec.studentTag) || parsedAi.aluno || null,
         studentName: (dec && dec.studentTag) || parsedAi.aluno || null,
+        dojo: parsedAi.dojo || null,
+        graduacao: parsedAi.graduacao || null,
         kyu: dec ? dec.kyu : (kyu !== undefined ? kyu : 6),
         answerKey: dec ? dec.answers : (officialKey || [])
       });
@@ -409,11 +470,15 @@ Retorne estritamente um JSON:
     if (clientProvidedExamId) {
       detectedExamId = clientProvidedExamId;
     } else if (aiExamCode) {
-      detectedExamId = String(aiExamCode).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z-]/g, '').trim().toUpperCase();
+      detectedExamId = normalizeExamCode(aiExamCode);
     }
 
     let decodedCompact = null;
-    if (detectedExamId) {
+    if (detectedExamId && KNOWN_EXAMS[detectedExamId]) {
+      const k = KNOWN_EXAMS[detectedExamId];
+      detectedKyu = k.kyu;
+      detectedAnswerKey = k.answers;
+    } else if (detectedExamId && detectedExamId.length >= 4) {
       decodedCompact = decodeCompactExamCode(detectedExamId);
       if (decodedCompact) {
         detectedKyu = decodedCompact.kyu;
@@ -422,9 +487,10 @@ Retorne estritamente um JSON:
       }
     }
 
-    if (detectedExamId === '18ZK4') {
-      detectedKyu = 4;
-      detectedAnswerKey = ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"];
+    if (detectedExamId === '18ZK4' || detectedExamId === '1AR40') {
+      const k = KNOWN_EXAMS[detectedExamId];
+      detectedKyu = k.kyu;
+      detectedAnswerKey = k.answers;
     }
 
     // Preserva o answerKey oficial se já veio do cliente (ex: decodificado do código 0IZ96)

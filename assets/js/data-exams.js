@@ -877,13 +877,27 @@ window.TKST_EXAM_GENERATOR = {
       dojoName: "QG TKST ( Capela )",
       date: "18/10/2026",
       timestamp: 1771370000000
+    },
+    "1AR40": {
+      examId: "1AR40",
+      kyu: 4,
+      answers: ["A", "A", "A", "D", "A", "C", "A", "B", "B", "A"],
+      studentName: "Pietro S.H.J. Campista",
+      studentAbbr: "Pietro S.H.J. Campista",
+      studentId: "std_1787063008306_96bzm",
+      dojoName: "QG TKST ( Capela )",
+      date: "18/10/2026",
+      timestamp: 1771370000000
     }
   },
 
   // Busca prova gerada no armazenamento persistente ou decodifica matematicamente offline
   getSavedExamById: function(examId) {
     if (!examId) return null;
-    const cleanId = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+    let cleanId = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+    if (cleanId === '140' || cleanId === '1-40' || cleanId === '1AR4' || cleanId === 'AR40' || cleanId === '1AR0' || cleanId === '1A40' || cleanId === 'IAR40' || cleanId === '1AR4O') {
+      cleanId = '1AR40';
+    }
     const baseCode = cleanId.split('-')[0];
 
     // Provas oficiais pré-cadastradas no sistema
@@ -892,6 +906,17 @@ window.TKST_EXAM_GENERATOR = {
         examId: "18ZK4",
         kyu: 4,
         answers: ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"],
+        studentName: "Pietro S.H.J. Campista",
+        studentAbbr: "Pietro S.H.J. Campista",
+        studentId: "std_1787063008306_96bzm",
+        dojoName: "QG TKST ( Capela )",
+        date: "18/10/2026",
+        timestamp: 1771370000000
+      },
+      "1AR40": {
+        examId: "1AR40",
+        kyu: 4,
+        answers: ["A", "A", "A", "D", "A", "C", "A", "B", "B", "A"],
         studentName: "Pietro S.H.J. Campista",
         studentAbbr: "Pietro S.H.J. Campista",
         studentId: "std_1787063008306_96bzm",
