@@ -4147,9 +4147,12 @@
       const local = this.getGeneratedExam(clean) || this.getGeneratedExam(baseCode);
       if (local && (local.studentName || local.studentAbbr)) return local;
 
-      // 2. Tenta buscar no Vercel /api/sync
+      // 2. Tenta buscar no Vercel /api/sync com timeout curto
       try {
-        const res = await fetch('/api/sync', { cache: 'no-store' });
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 1200);
+        const res = await fetch('/api/sync', { cache: 'no-store', signal: controller.signal });
+        clearTimeout(tid);
         if (res.ok) {
           const json = await res.json();
           if (json && json.success && json.data && json.data.generated_exams) {
@@ -4168,9 +4171,12 @@
         }
       } catch(e) {}
 
-      // 3. Fallback: faz poll no NTFY para capturar exames gerados recentemente
+      // 3. Fallback: faz poll no NTFY para capturar exames gerados recentemente com timeout
       try {
-        const pollRes = await fetch(SYNC_URL + '/json?poll=1');
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 1200);
+        const pollRes = await fetch(SYNC_URL + '/json?poll=1', { signal: controller.signal });
+        clearTimeout(tid);
         if (pollRes.ok) {
           const text = await pollRes.text();
           if (text && text.trim()) {

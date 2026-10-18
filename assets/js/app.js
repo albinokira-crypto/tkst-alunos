@@ -16004,7 +16004,7 @@ Retorne estritamente um JSON no seguinte formato:
       const rawCode = optCode || (inputEl ? inputEl.value : '');
       const cleanCode = String(rawCode || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase().slice(0, 5);
 
-      if (!cleanCode) {
+      if (!cleanCode || cleanCode.length < 3) {
         if (typeof showToast === 'function') {
           showToast('⚠️ Digite o código de 5 caracteres da prova (ex: 0IZ96)', 'warning');
         }
@@ -16012,108 +16012,123 @@ Retorne estritamente um JSON no seguinte formato:
         return;
       }
 
-      // 1. Tenta decodificação matemática compacta Base36 (100% offline, ex: 0IZ96 -> 885498)
-      let decoded = null;
-      if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
-        decoded = window.TKST_EXAM_GENERATOR.decodeCompactExamCode(cleanCode);
-      }
-      if (!decoded && typeof window.TKST_APP.decodeCompactExamCode === 'function') {
-        decoded = window.TKST_APP.decodeCompactExamCode(cleanCode);
+      // Visual feedback no botão
+      const btn = document.querySelector('#examManualCodeInput ~ button') || document.querySelector('button[onclick*="submitManualExamCode"]');
+      if (btn) {
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Avançando...</span>`;
+        btn.style.pointerEvents = 'none';
       }
 
-      let matchedExam = null;
-      const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
-
-      // 2. Busca no armazenamento persistente local (apenas registros reais com aluno ou respostas salvas)
-      if (examGen && examGen.getSavedExamById) {
-        const found = examGen.getSavedExamById(cleanCode);
-        if (found && !found._isMathFallback) {
-          matchedExam = found;
+      try {
+        // 1. Tenta decodificação matemática compacta Base36 (100% offline, instantânea)
+        let decoded = null;
+        if (typeof window.TKST_APP.decodeCompactExamCode === 'function') {
+          decoded = window.TKST_APP.decodeCompactExamCode(cleanCode);
         }
-      }
-      if (!matchedExam && window.TKST_AUTH && window.TKST_AUTH.getGeneratedExam) {
-        matchedExam = window.TKST_AUTH.getGeneratedExam(cleanCode);
-      }
-      if (!matchedExam && window.TKST_GENERATED_EXAMS_CACHE) {
-        matchedExam = window.TKST_GENERATED_EXAMS_CACHE[cleanCode] || window.TKST_GENERATED_EXAMS_CACHE[cleanCode.toUpperCase()] || null;
-      }
-      if (!matchedExam) {
-        try {
-          const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-          matchedExam = store[cleanCode] || store[cleanCode.toUpperCase()] || null;
-        } catch(e) {}
-      }
+        if (!decoded && window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
+          decoded = window.TKST_EXAM_GENERATOR.decodeCompactExamCode(cleanCode);
+        }
 
-      // 3. Se ainda não possui o nome do aluno, busca na nuvem instantaneamente (Vercel /api/sync e NTFY)
-      if ((!matchedExam || (!matchedExam.studentName && !matchedExam.studentAbbr)) && window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
-        try {
-          const cloudExam = await window.TKST_AUTH.fetchExamFromCloud(cleanCode);
-          if (cloudExam) {
-            matchedExam = cloudExam;
+        let matchedExam = null;
+        const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
+
+        // 2. Busca no armazenamento persistente local
+        if (examGen && examGen.getSavedExamById) {
+          const found = examGen.getSavedExamById(cleanCode);
+          if (found && !found._isMathFallback) {
+            matchedExam = found;
           }
-        } catch(e) {}
-      }
-
-      // 4. Fallback se não foi encontrado registro completo: usa decodificação matemática
-      if (!matchedExam && examGen && examGen.getSavedExamById) {
-        matchedExam = examGen.getSavedExamById(cleanCode);
-      }
-
-      let kyu = 6;
-      let answers = [];
-
-      if (matchedExam && matchedExam.kyu !== undefined && Array.isArray(matchedExam.answers) && matchedExam.answers.length === 10) {
-        kyu = matchedExam.kyu;
-        answers = matchedExam.answers;
-      } else if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
-        kyu = decoded.kyu;
-        answers = decoded.answers;
-      } else {
-        // Se não conseguiu decodificar matematicamente, associa à graduação selecionada no menu
-        const kyuSelect = document.getElementById('examCorrectionKyuSelect');
-        kyu = kyuSelect ? Number(kyuSelect.value) : (examGeneratorSelectedKyu !== undefined ? examGeneratorSelectedKyu : 6);
-        if (examGen && examGen.getRandomQuizQuestionsForKyu) {
-          const questions = examGen.getRandomQuizQuestionsForKyu(kyu, 10);
-          answers = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
         }
-        if (answers.length < 10) {
-          answers = ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
+        if (!matchedExam && window.TKST_AUTH && window.TKST_AUTH.getGeneratedExam) {
+          matchedExam = window.TKST_AUTH.getGeneratedExam(cleanCode);
         }
-      }
+        if (!matchedExam && window.TKST_GENERATED_EXAMS_CACHE) {
+          matchedExam = window.TKST_GENERATED_EXAMS_CACHE[cleanCode] || window.TKST_GENERATED_EXAMS_CACHE[cleanCode.toUpperCase()] || null;
+        }
+        if (!matchedExam) {
+          try {
+            const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+            matchedExam = store[cleanCode] || store[cleanCode.toUpperCase()] || null;
+          } catch(e) {}
+        }
 
-      const stName = (matchedExam && (matchedExam.studentName || matchedExam.studentAbbr)) || (decoded && decoded.studentTag) || '';
-      const stId = (matchedExam && matchedExam.studentId) || '';
-      const stDojo = (matchedExam && matchedExam.dojoName) || '';
+        // 3. Se ainda não possui o nome do aluno, tenta busca rápida na nuvem com timeout rígido de 800ms
+        // (Nunca trava o avanço para a etapa 2!)
+        if ((!matchedExam || (!matchedExam.studentName && !matchedExam.studentAbbr)) && window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
+          try {
+            const cloudPromise = window.TKST_AUTH.fetchExamFromCloud(cleanCode);
+            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 800));
+            const cloudExam = await Promise.race([cloudPromise, timeoutPromise]);
+            if (cloudExam) {
+              matchedExam = cloudExam;
+            }
+          } catch(e) {}
+        }
 
-      if (typeof showToast === 'function') {
-        if (stName) {
-          showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) vinculada ao aluno: ${stName}`, 'success');
+        // 4. Fallback se não foi encontrado registro completo: usa decodificação matemática
+        if (!matchedExam && examGen && examGen.getSavedExamById) {
+          matchedExam = examGen.getSavedExamById(cleanCode);
+        }
+
+        let kyu = 6;
+        let answers = [];
+
+        if (matchedExam && matchedExam.kyu !== undefined && Array.isArray(matchedExam.answers) && matchedExam.answers.length === 10) {
+          kyu = matchedExam.kyu;
+          answers = matchedExam.answers;
+        } else if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
+          kyu = decoded.kyu;
+          answers = decoded.answers;
         } else {
-          showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) carregada com sucesso!`, 'success');
+          // Se não conseguiu decodificar matematicamente, associa à graduação selecionada no menu
+          const kyuSelect = document.getElementById('examCorrectionKyuSelect');
+          kyu = kyuSelect ? Number(kyuSelect.value) : (examGeneratorSelectedKyu !== undefined ? examGeneratorSelectedKyu : 6);
+          if (examGen && examGen.getRandomQuizQuestionsForKyu) {
+            const questions = examGen.getRandomQuizQuestionsForKyu(kyu, 10);
+            answers = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
+          }
+          if (answers.length < 10) {
+            answers = ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
+          }
         }
-      }
 
-      examScannerDetectedData = {
-        kyu: kyu,
-        examId: cleanCode,
-        answers: answers,
-        studentName: stName,
-        studentId: stId,
-        dojoName: stDojo
-      };
+        const stName = (matchedExam && (matchedExam.studentName || matchedExam.studentAbbr)) || (decoded && decoded.studentTag) || '';
+        const stId = (matchedExam && matchedExam.studentId) || '';
+        const stDojo = (matchedExam && matchedExam.dojoName) || '';
 
-      window.TKST_APP.playChime();
-      if (navigator.vibrate) {
-        try { navigator.vibrate([40, 60, 100]); } catch(e) {}
-      }
+        examScannerDetectedData = {
+          kyu: kyu,
+          examId: cleanCode,
+          answers: answers,
+          studentName: stName,
+          studentId: stId,
+          dojoName: stDojo
+        };
 
-      examScannerStep = 2;
-      window.TKST_APP.renderExamCameraModalUI();
+        if (typeof showToast === 'function') {
+          if (stName) {
+            showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) vinculada ao aluno: ${stName}`, 'success');
+          } else {
+            showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) carregada com sucesso!`, 'success');
+          }
+        }
 
-      const videoEl = document.getElementById('examScannerVideoEl');
-      if (videoEl && examScannerStream) {
-        videoEl.srcObject = examScannerStream;
-        videoEl.play().catch(() => {});
+        window.TKST_APP.playChime();
+        if (navigator.vibrate) {
+          try { navigator.vibrate([40, 60, 100]); } catch(e) {}
+        }
+      } catch(err) {
+        console.warn('Erro ao processar código manual da prova:', err);
+      } finally {
+        // GARANTIA ABSOLUTA DE TRANSIÇÃO: Sempre avança para a Etapa 2
+        examScannerStep = 2;
+        window.TKST_APP.renderExamCameraModalUI();
+
+        const videoEl = document.getElementById('examScannerVideoEl');
+        if (videoEl && examScannerStream) {
+          videoEl.srcObject = examScannerStream;
+          videoEl.play().catch(() => {});
+        }
       }
     },
 
