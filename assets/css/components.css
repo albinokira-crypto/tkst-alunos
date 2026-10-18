@@ -6590,10 +6590,10 @@ body.login-view-active .content-body {
   box-sizing: border-box !important;
 }
 .exam-field-dojo {
-  flex: 1.15 !important;
+  flex: 0.95 !important;
   display: flex !important;
   align-items: flex-end !important;
-  gap: 4px !important;
+  gap: 3px !important;
   min-width: 0 !important;
   font-size: 8.5pt !important;
 }
@@ -6616,9 +6616,92 @@ body.login-view-active .content-body {
   white-space: nowrap !important;
   box-sizing: border-box !important;
 }
+.exam-field-date {
+  flex: 0.72 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  font-size: 8.5pt !important;
+}
+.exam-field-line-date {
+  flex: 1 !important;
+  min-width: 0 !important;
+  border-bottom: 1.2px solid #0F172A !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  line-height: 1.25 !important;
+  font-size: 8.2pt !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  padding-left: 2px !important;
+  padding-bottom: 1.5px !important;
+  display: inline-flex !important;
+  align-items: flex-end !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
 
+/* ==========================================================================
+   Responsividade e Correção de Estouro de Página no Scanner OMR Mobile
+   ========================================================================== */
+#examOmrScannerModal {
+  padding: 12px;
+}
+#examOmrScannerModal .modal-container {
+  max-width: 860px;
+  width: 96%;
+  max-height: 94dvh;
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+#examOmrScannerModal .modal-body {
+  padding: 14px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  box-sizing: border-box;
+}
 
-
-
-
-
+@media (max-width: 768px) {
+  #examOmrScannerModal {
+    padding: 6px !important;
+  }
+  #examOmrScannerModal .modal-container {
+    width: 100% !important;
+    max-height: 96dvh !important;
+    max-height: 96vh !important;
+    border-radius: var(--radius-md) !important;
+  }
+  #examOmrScannerModal .modal-header {
+    padding: 10px 14px !important;
+  }
+  #examOmrScannerModal .modal-header h3 {
+    font-size: 1rem !important;
+  }
+  #examOmrScannerModal .modal-body {
+    padding: 10px 8px !important;
+  }
+  #omrReviewSplitGrid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  #omrQuestionsReviewList {
+    max-height: 240px !important;
+  }
+  #omrIdentifiedKeyGrid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 4px !important;
+  }
+  #omrPhaseStepper button {
+    font-size: 0.74rem !important;
+    padding: 6px 4px !important;
+  }
+  #omrExamCodeInput {
+    font-size: 1.1rem !important;
+    padding: 8px 10px !important;
+  }
+}

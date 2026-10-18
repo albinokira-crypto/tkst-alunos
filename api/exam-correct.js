@@ -59,11 +59,12 @@ O cartão possui exatamente 10 questões numeradas de 1 a 10.
 Cada questão possui 4 opções em formato de quadradinhos ou bolhas: [A], [B], [C], [D].
 
 INSTRUÇÕES RIGOROSAS:
-1. Para cada questão de 1 a 10, determine qual opção (A, B, C ou D) o aluno preencheu/marcou com caneta ou lápis.
-2. Se a questão estiver sem nenhuma marcação visível (em branco), defina answer como null, doubt como false e confidence em 0.95.
-3. Se houver rasura evidente (ex: uma opção riscada com X e outra preenchida, ou tentativa de apagar), marque answer com a opção que representa a intenção final do aluno, mas defina doubt como true e reduza a confidence (ex: 0.45 a 0.60).
-4. Se houver dúvida real entre duas marcações fortes e não for possível decidir, marque answer com a mais escura, doubt como true e confidence baixa.
-5. Se a marcação estiver limpa e clara, defina doubt como false e confidence alta (0.90 a 1.00).
+1. ATENÇÃO MÁXIMA PARA MARCAÇÕES A LÁPIS (GRAFITE): Muitos alunos respondem usando lápis comum, que gera grafite cinza claro ou médio, traços diagonais, X ou preenchimento parcial. Você DEVE identificar com precisão as alternativas preenchidas a lápis, mesmo com grafite claro ou reflexos de luz. Se houver qualquer marcação intencional de lápis em uma alternativa, considere-a marcada.
+2. Para cada questão de 1 a 10, determine qual opção (A, B, C ou D) o aluno preencheu/marcou com caneta ou lápis.
+3. Se a questão estiver sem nenhuma marcação visível (em branco), defina answer como null, doubt como false e confidence em 0.95.
+4. Se houver rasura evidente (ex: uma opção riscada com X e outra preenchida, ou tentativa de apagar borracha), marque answer com a opção que representa a intenção final do aluno, mas defina doubt como true e reduza a confidence (ex: 0.45 a 0.60).
+5. Se houver dúvida real entre duas marcações fortes e não for possível decidir, marque answer com a mais escura, doubt como true e confidence baixa.
+6. Se a marcação estiver limpa e clara, defina doubt como false e confidence alta (0.90 a 1.00).
 
 Retorne a resposta estritamente no formato JSON abaixo, sem formatação markdown e sem texto antes ou depois:
 {

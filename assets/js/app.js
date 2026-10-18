@@ -1697,12 +1697,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!examCurrentRandomQuestions) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
+      const activeExamDate = (window.TKST_APP && typeof window.TKST_APP.getDojobookExamDateFormatted === 'function')
+        ? window.TKST_APP.getDojobookExamDateFormatted(examSelectedDojobookStudent)
+        : '13/12/2026';
       let studentOptions = {};
       if (examSelectedDojobookStudent) {
         studentOptions = {
           studentName: examSelectedDojobookStudent.nome,
           studentId: examSelectedDojobookStudent.id,
-          dojoName: examSelectedDojobookStudent.dojo_nome
+          dojoName: examSelectedDojobookStudent.dojo_nome,
+          date: activeExamDate
         };
       } else {
         const typedStudent = (document.getElementById('examDojobookStudentSearch')?.value || window._examTypedStudentName || '').trim();
@@ -1710,7 +1714,12 @@ document.addEventListener('DOMContentLoaded', () => {
           studentOptions = {
             studentName: typedStudent,
             studentId: 'std_typed_' + Date.now(),
-            dojoName: 'TKST'
+            dojoName: 'TKST',
+            date: activeExamDate
+          };
+        } else {
+          studentOptions = {
+            date: activeExamDate
           };
         }
       }
@@ -9971,6 +9980,8 @@ document.addEventListener('DOMContentLoaded', () => {
               existing.vai_para = c.vai_para || c.graduacao_destino || existing.vai_para;
               existing.dojo_nome = c.dojo_nome || existing.dojo_nome;
               if (c.foto_url) existing.foto_url = c.foto_url;
+              if (c.cod || c.codigo || c.matricula) existing.cod = c.cod || c.codigo || c.matricula;
+              if (c.exame_data) existing.exame_data = c.exame_data;
               existing.sourceLabel = 'DojôBook (Inscrito no Exame)';
               existing.sourceColor = '#F5BE00';
             }
@@ -9980,6 +9991,9 @@ document.addEventListener('DOMContentLoaded', () => {
           results.push({
             id: c.id,
             nome: c.nome,
+            cod: c.cod || c.codigo || c.matricula || '',
+            exame_data: c.exame_data || '',
+            exame_nome: c.exame_nome || '',
             graduacao_atual: c.graduacao_atual || 'Branca',
             vai_para: c.vai_para || c.graduacao_destino || 'Amarela',
             dojo_nome: c.dojo_nome || 'DojôBook',
@@ -9999,6 +10013,8 @@ document.addEventListener('DOMContentLoaded', () => {
           results.push({
             id: a.id,
             nome: a.nome,
+            cod: a.cod || a.codigo || a.matricula || '',
+            exame_data: a.exame_data || '',
             graduacao_atual: a.graduacao_atual || 'Branca',
             vai_para: a.vai_para || 'Próxima Faixa',
             dojo_nome: a.dojo_nome || 'DojôBook',
@@ -10012,6 +10028,53 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch(e) {}
 
       return results;
+    },
+
+    getDojobookExamDateFormatted: function(student = null) {
+      function formatRawDate(raw) {
+        if (!raw) return '';
+        const s = String(raw).trim();
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+          const parts = s.split('T')[0].split('-');
+          if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s;
+        return s;
+      }
+
+      // 1. Data do aluno/candidato selecionado
+      if (student) {
+        const directDate = student.exame_data || student.date || student.data_exame;
+        if (directDate) {
+          const f = formatRawDate(directDate);
+          if (f && f.length === 10) return f;
+        }
+      }
+
+      // 2. Data de candidatos ou exames do DojôBook em cache
+      try {
+        const cache = dojobookCandidatesCache || JSON.parse(localStorage.getItem('tkst_dojobook_candidates_cache') || 'null');
+        if (cache) {
+          if (Array.isArray(cache.candidatos) && cache.candidatos.length > 0) {
+            const withDate = cache.candidatos.find(c => c && c.exame_data);
+            if (withDate && withDate.exame_data) {
+              const f = formatRawDate(withDate.exame_data);
+              if (f && f.length === 10) return f;
+            }
+          }
+          if (Array.isArray(cache.exames) && cache.exames.length > 0) {
+            const ex = cache.exames[0];
+            const exD = ex.data || ex.exame_data || ex.data_exame;
+            if (exD) {
+              const f = formatRawDate(exD);
+              if (f && f.length === 10) return f;
+            }
+          }
+        }
+      } catch(e) {}
+
+      // 3. Data oficial padrão do exame marcado no DojôBook
+      return "13/12/2026";
     },
 
     onDojobookStudentSearchFocus: function(inputEl) {
@@ -10463,12 +10526,16 @@ document.addEventListener('DOMContentLoaded', () => {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
       const exam = window.TKST_EXAM_GENERATOR.getExamData(examGeneratorSelectedKyu);
+      const activeExamDate = (window.TKST_APP && typeof window.TKST_APP.getDojobookExamDateFormatted === 'function')
+        ? window.TKST_APP.getDojobookExamDateFormatted(examSelectedDojobookStudent)
+        : '13/12/2026';
       let studentOptions = {};
       if (examSelectedDojobookStudent) {
         studentOptions = {
           studentName: examSelectedDojobookStudent.nome,
           studentId: examSelectedDojobookStudent.id,
-          dojoName: examSelectedDojobookStudent.dojo_nome
+          dojoName: examSelectedDojobookStudent.dojo_nome,
+          date: activeExamDate
         };
       } else {
         const typedStudent = (document.getElementById('examDojobookStudentSearch')?.value || window._examTypedStudentName || '').trim();
@@ -10476,7 +10543,12 @@ document.addEventListener('DOMContentLoaded', () => {
           studentOptions = {
             studentName: typedStudent,
             studentId: 'std_typed_' + Date.now(),
-            dojoName: 'TKST'
+            dojoName: 'TKST',
+            date: activeExamDate
+          };
+        } else {
+          studentOptions = {
+            date: activeExamDate
           };
         }
       }
@@ -15398,7 +15470,18 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       const modal = document.getElementById('examOmrScannerModal');
       if (!modal) return;
 
-      // Popula lista de alunos matriculados
+      // Sincroniza em segundo plano exames gerados na nuvem para o celular ter todas as provas do PC
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
+        fetch('/api/sync', { cache: 'no-store' }).then(r => r.json()).then(data => {
+          const cloudData = (data && data.data) || data;
+          if (cloudData && cloudData.generated_exams && window.TKST_AUTH.applyCloudData) {
+            window.TKST_AUTH.applyCloudData(cloudData);
+            this.renderOmrRecentExams();
+          }
+        }).catch(() => {});
+      }
+
+      // Popula lista de alunos matriculados e candidatos do Dojobook
       this.populateOmrStudentsList();
 
       // Renderiza atalhos rápidos de provas recentes
@@ -15417,14 +15500,15 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     populateOmrStudentsList: function(selectedStudentId) {
       const sel = document.getElementById('omrStudentSelect');
       if (!sel) return;
-      let students = [];
-      if (window.TKST_AUTH && typeof window.TKST_AUTH.getAllStudents === 'function') {
-        students = window.TKST_AUTH.getAllStudents() || [];
-      }
+      const students = (typeof this.getAllAvailableStudentsForExam === 'function')
+        ? this.getAllAvailableStudentsForExam()
+        : ((window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || []);
       sel.innerHTML = '<option value="">Confirmar ou alterar aluno...</option>' +
         students.map(s => {
-          const isSelected = selectedStudentId && (s.id === selectedStudentId);
-          return `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.name || s.username} (${s.dojo || 'TKST'})</option>`;
+          const isSelected = selectedStudentId && (String(s.id) === String(selectedStudentId));
+          const dojo = s.dojo_nome || s.dojo || 'TKST';
+          const codLabel = s.cod ? ` [${s.cod}]` : '';
+          return `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.nome || s.name || s.username}${codLabel} (${dojo})</option>`;
         }).join('');
     },
 
@@ -15560,6 +15644,9 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       const code5 = clean.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
       if (code5.length === 5) {
         this.identifyExamByCode(code5, false);
+      } else if (clean.length >= 2) {
+        // Suporte imediato a números de matrícula, códigos de aluno (#140, 140, TKST-140) ou nomes
+        this.identifyExamByCode(clean, false);
       } else {
         const card = document.getElementById('omrExamIdentificationCard');
         const placeholder = document.getElementById('omrExamIdentificationPlaceholder');
@@ -15578,14 +15665,17 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
     onOmrStudentSelectChanged: function(studentId) {
       if (!studentId) return;
-      const allStudents = window.TKST_AUTH ? window.TKST_AUTH.getAllStudents() : [];
-      const s = allStudents.find(st => st.id === studentId);
+      const allStudents = (typeof this.getAllAvailableStudentsForExam === 'function')
+        ? this.getAllAvailableStudentsForExam()
+        : ((window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || []);
+      const s = allStudents.find(st => String(st.id) === String(studentId));
       if (s) {
-        const studentName = s.name || s.username;
+        const studentName = s.nome || s.name || s.username;
         if (omrCurrentIdentifiedExam) {
           omrCurrentIdentifiedExam.studentId = s.id;
           omrCurrentIdentifiedExam.studentName = studentName;
           omrCurrentIdentifiedExam.studentAbbr = studentName;
+          if (s.dojo_nome || s.dojo) omrCurrentIdentifiedExam.dojoName = s.dojo_nome || s.dojo;
         }
         const studentEl = document.getElementById('omrIdentifiedStudentText');
         if (studentEl) {
@@ -15604,37 +15694,67 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
     identifyExamByCode: async function(codeStr, isExplicitSearch = false) {
       if (!codeStr) return;
-      const clean = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+      const rawInput = String(codeStr).trim();
+      const clean = rawInput.replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
       const baseCode = clean.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
 
-      // Precisa ter estritamente 5 caracteres alfanuméricos
-      if (baseCode.length < 5) {
-        if (isExplicitSearch) {
-          alert('O código da prova deve conter exatamente 5 caracteres alfanuméricos (ex: 19EKS ou 18ZK4).');
-        }
-        return;
-      }
-
       let exam = null;
+      let matchedStudent = null;
 
-      // 1. Busca via TKST_EXAM_GENERATOR.getSavedExamById
-      if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getSavedExamById === 'function') {
-        exam = window.TKST_EXAM_GENERATOR.getSavedExamById(baseCode);
+      // 1. Procura aluno correspondente em todas as bases (DojôBook + Portal TKST)
+      const allAvailable = (typeof this.getAllAvailableStudentsForExam === 'function')
+        ? this.getAllAvailableStudentsForExam()
+        : [];
+
+      const numMatch = clean.match(/\d+/);
+      const inputDigits = numMatch ? numMatch[0] : '';
+
+      matchedStudent = allAvailable.find(s => {
+        if (!s) return false;
+        const sCod = String(s.cod || '').toUpperCase().trim();
+        const sId = String(s.id || '').toUpperCase().trim();
+        const sNome = String(s.nome || s.name || '').toUpperCase().trim();
+
+        // Casos como "TKST-140" igual a "140", "#140" ou "TKST-140"
+        if (sCod && (sCod === clean || sCod === `TKST-${clean}` || (inputDigits && sCod.endsWith(`-${inputDigits}`)))) return true;
+        if (sId && (sId === clean || (inputDigits && sId === inputDigits))) return true;
+        if (clean.length >= 3 && sNome.includes(clean)) return true;
+        return false;
+      });
+
+      // 2. Se baseCode tem 5 caracteres, busca o exame cadastrado diretamente
+      if (baseCode && baseCode.length === 5) {
+        if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getSavedExamById === 'function') {
+          exam = window.TKST_EXAM_GENERATOR.getSavedExamById(baseCode);
+        }
+        if (!exam && window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.KNOWN_EXAMS) {
+          exam = window.TKST_EXAM_GENERATOR.KNOWN_EXAMS[baseCode];
+        }
+        if (!exam) {
+          try {
+            const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+            exam = store[baseCode];
+            if (!exam) {
+              const foundKey = Object.keys(store).find(k => k.trim().toUpperCase().split('-')[0] === baseCode);
+              if (foundKey) exam = store[foundKey];
+            }
+          } catch(e) {}
+        }
       }
 
-      // 2. Busca em KNOWN_EXAMS
-      if (!exam && window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.KNOWN_EXAMS) {
-        exam = window.TKST_EXAM_GENERATOR.KNOWN_EXAMS[baseCode];
-      }
-
-      // 3. Busca em localStorage
-      if (!exam) {
+      // 3. Se identificou o aluno (ex: #140), busca exame nominal já gerado para este aluno
+      if (!exam && matchedStudent) {
         try {
           const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-          exam = store[baseCode];
-          if (!exam) {
-            const foundKey = Object.keys(store).find(k => k.trim().toUpperCase().split('-')[0] === baseCode);
-            if (foundKey) exam = store[foundKey];
+          const cache = window.TKST_GENERATED_EXAMS_CACHE || {};
+          const allExams = { ...cache, ...store };
+          const sNameUp = (matchedStudent.nome || matchedStudent.name || '').toUpperCase().trim();
+          for (const k of Object.keys(allExams)) {
+            const ex = allExams[k];
+            if (ex && (String(ex.studentId) === String(matchedStudent.id) || (ex.studentName && ex.studentName.toUpperCase().trim() === sNameUp))) {
+              exam = ex;
+              break;
+            }
           }
         } catch(e) {}
       }
@@ -15642,25 +15762,52 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       // 4. Busca instantânea na nuvem (/api/sync) se não tiver aluno local
       if ((!exam || !(exam.studentName || exam.studentAbbr)) && window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
         try {
-          const cloudExam = await window.TKST_AUTH.fetchExamFromCloud(baseCode);
+          const qCode = (exam && exam.examId) || (baseCode.length === 5 ? baseCode : clean);
+          const cloudExam = await window.TKST_AUTH.fetchExamFromCloud(qCode);
           if (cloudExam) exam = cloudExam;
         } catch(e) {}
       }
 
-      // Se o exame tiver studentId mas não tiver nome de aluno preenchido, localiza na base de matriculados
-      if (exam && (!exam.studentName || !exam.studentName.trim()) && exam.studentId && window.TKST_AUTH && typeof window.TKST_AUTH.getAllStudents === 'function') {
-        try {
-          const allSt = window.TKST_AUTH.getAllStudents() || [];
-          const matchedSt = allSt.find(s => s.id === exam.studentId);
-          if (matchedSt) {
-            exam.studentName = matchedSt.name || matchedSt.username;
-            exam.studentAbbr = exam.studentName;
-          }
-        } catch(e) {}
+      // 5. Se o aluno foi identificado mas não tem prova sorteada salva, cria gabarito oficial para a faixa dele
+      if (!exam && matchedStudent) {
+        const targetBelt = matchedStudent.vai_para || matchedStudent.graduacao_destino || matchedStudent.graduacao_atual || '';
+        const s = String(targetBelt).toLowerCase();
+        let targetKyu = 6;
+        if (s.includes('amarela') || s.includes('6º') || s.includes('6o')) targetKyu = 6;
+        else if (s.includes('vermelha') || s.includes('5º') || s.includes('5o')) targetKyu = 5;
+        else if (s.includes('laranja') || s.includes('4º') || s.includes('4o')) targetKyu = 4;
+        else if (s.includes('verde') || s.includes('3º') || s.includes('3o')) targetKyu = 3;
+        else if (s.includes('roxa') || s.includes('2º') || s.includes('2o')) targetKyu = 2;
+        else if (s.includes('marrom') || s.includes('1º') || s.includes('1o')) targetKyu = 1;
+        else if (s.includes('shodan') || s.includes('1º dan') || (s.includes('preta') && !s.includes('2') && !s.includes('3'))) targetKyu = 0;
+        else if (s.includes('nidan') || s.includes('2º dan')) targetKyu = -1;
+        else if (s.includes('sandan') || s.includes('3º dan')) targetKyu = -2;
+
+        const defaultKey = (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu === 'function')
+          ? window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(targetKyu, 10).map(q => String.fromCharCode(65 + (q.correctIndex || 0)))
+          : this.getExpectedKeyForKyu(targetKyu);
+
+        const examDateStr = this.getDojobookExamDateFormatted(matchedStudent);
+        const generatedCode = (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.encodeCompactExamCode === 'function')
+          ? window.TKST_EXAM_GENERATOR.encodeCompactExamCode(targetKyu, defaultKey)
+          : (matchedStudent.cod || `ST${String(matchedStudent.id).slice(-3)}`);
+
+        exam = {
+          kyu: targetKyu,
+          examId: generatedCode,
+          baseExamId: generatedCode,
+          answers: defaultKey,
+          studentName: matchedStudent.nome || matchedStudent.name,
+          studentAbbr: matchedStudent.nome || matchedStudent.name,
+          studentId: matchedStudent.id,
+          dojoName: matchedStudent.dojo_nome || 'DojôBook',
+          date: examDateStr,
+          _isStudentFallback: true
+        };
       }
 
-      // 5. Decodificação matemática offline (fallback)
-      if (!exam && window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
+      // 6. Decodificação matemática offline (fallback) para código alfanumérico de 5 caracteres
+      if (!exam && baseCode.length === 5 && window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
         const decoded = window.TKST_EXAM_GENERATOR.decodeCompactExamCode(baseCode);
         if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
           exam = {
@@ -15670,9 +15817,26 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             studentName: '',
             studentAbbr: '',
             studentId: '',
-            date: new Date().toLocaleDateString('pt-BR'),
+            date: this.getDojobookExamDateFormatted(),
             _isMathFallback: true
           };
+        }
+      }
+
+      // 7. Se o exame não tem o nome do aluno preenchido mas temos aluno identificado:
+      if (exam && (!exam.studentName || !exam.studentName.trim())) {
+        if (matchedStudent) {
+          exam.studentName = matchedStudent.nome || matchedStudent.name;
+          exam.studentAbbr = exam.studentName;
+          exam.studentId = matchedStudent.id;
+          if (matchedStudent.dojo_nome) exam.dojoName = matchedStudent.dojo_nome;
+        } else if (exam.studentId) {
+          const stMatch = allAvailable.find(s => String(s.id) === String(exam.studentId));
+          if (stMatch) {
+            exam.studentName = stMatch.nome || stMatch.name;
+            exam.studentAbbr = exam.studentName;
+            if (stMatch.dojo_nome || stMatch.dojo) exam.dojoName = stMatch.dojo_nome || stMatch.dojo;
+          }
         }
       }
 
@@ -15683,6 +15847,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         omrCurrentIdentifiedExam = exam;
         omrCurrentExpectedKey = exam.answers;
 
+        const effectiveCode = exam.examId || baseCode || clean;
         const kyuNum = (exam.kyu !== undefined && exam.kyu !== null) ? Number(exam.kyu) : 4;
         const beltName = getBeltNameFromKyu(kyuNum);
 
@@ -15690,9 +15855,9 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         const kyuSelect = document.getElementById('omrKyuSelect');
         if (kyuSelect) kyuSelect.value = String(kyuNum);
 
-        // Preenche dados da identificação (código de exatamente 5 caracteres)
+        // Preenche dados da identificação
         const codeBadge = document.getElementById('omrIdentifiedCodeBadge');
-        if (codeBadge) codeBadge.textContent = baseCode;
+        if (codeBadge) codeBadge.textContent = effectiveCode;
 
         const beltEl = document.getElementById('omrIdentifiedBeltText');
         if (beltEl) beltEl.textContent = beltName;
@@ -15701,9 +15866,9 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         if (dojoEl) dojoEl.textContent = exam.dojoName || 'Dojô TKST (Oficial)';
 
         const dateEl = document.getElementById('omrIdentifiedDate');
-        if (dateEl) dateEl.textContent = `Data: ${exam.date || new Date().toLocaleDateString('pt-BR')}`;
+        if (dateEl) dateEl.textContent = `Data: ${exam.date || this.getDojobookExamDateFormatted(exam)}`;
 
-        // Aluno vinculado diretamente pelo código
+        // Aluno vinculado diretamente
         const studentEl = document.getElementById('omrIdentifiedStudentText');
         const studentSub = document.getElementById('omrIdentifiedStudentSub');
         const studentName = exam.studentName || exam.studentAbbr || '';
@@ -15716,7 +15881,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             studentSub.innerHTML = '<i class="fas fa-check-circle" style="color: #10B981;"></i> Vinculado automaticamente pelo código da prova';
             studentSub.style.display = 'block';
           } else {
-            studentSub.innerHTML = '<span style="color: #94A3B8;">Código avulso (sem aluno vinculado)</span>';
+            studentSub.innerHTML = '<span style="color: #94A3B8;">Código avulso (vincular aluno abaixo se desejar)</span>';
             studentSub.style.display = 'block';
           }
         }
@@ -15727,7 +15892,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           let matched = false;
           if (exam.studentId) {
             for (let i = 0; i < studentSelect.options.length; i++) {
-              if (studentSelect.options[i].value === exam.studentId) {
+              if (String(studentSelect.options[i].value) === String(exam.studentId)) {
                 studentSelect.selectedIndex = i;
                 matched = true;
                 break;
@@ -16088,11 +16253,13 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
       const studentSelect = document.getElementById('omrStudentSelect');
       const studentId = studentSelect ? studentSelect.value : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : '');
-      const allStudents = window.TKST_AUTH ? window.TKST_AUTH.getAllStudents() : [];
-      let student = allStudents.find(s => s && s.id === studentId);
+      const allStudents = (typeof this.getAllAvailableStudentsForExam === 'function')
+        ? this.getAllAvailableStudentsForExam()
+        : ((window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || []);
+      let student = allStudents.find(s => s && (String(s.id) === String(studentId) || (s.nome && s.nome === (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.studentName))));
 
       const resolvedStudentName = student 
-        ? (student.name || student.username) 
+        ? (student.nome || student.name || student.username) 
         : ((omrCurrentIdentifiedExam && (omrCurrentIdentifiedExam.studentName || omrCurrentIdentifiedExam.studentAbbr)) || 'Aluno TKST');
 
       const submissionData = {

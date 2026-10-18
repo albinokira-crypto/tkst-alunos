@@ -1113,7 +1113,14 @@ window.TKST_EXAM_GENERATOR = {
   // Gera HTML da Folha 1 (Prova de Múltipla Escolha com Cartão de Respostas no Cabeçalho)
   buildQuizExamSheetHtml: function(kyu, questions, options = {}) {
     const exam = this.getExamData(kyu);
-    const dateStr = options.date || "_____/_____/2026";
+    let dateStr = options.date;
+    if (!dateStr || dateStr.includes('_____')) {
+      if (typeof window !== 'undefined' && window.TKST_APP && typeof window.TKST_APP.getDojobookExamDateFormatted === 'function') {
+        dateStr = window.TKST_APP.getDojobookExamDateFormatted(options);
+      } else {
+        dateStr = "13/12/2026";
+      }
+    }
     const rawStudentName = this.sanitizePtBrText(options.studentName || options.name || "");
     const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 26);
     const dojoName = this.sanitizePtBrText(options.dojoName || options.dojo || "");
@@ -1250,15 +1257,13 @@ window.TKST_EXAM_GENERATOR = {
                   Avaliação Teórica: ${exam.fromBeltWithKyu} para ${exam.toBeltWithKyu}
                 </div>
               </div>
-              <div class="exam-header-date-badge">
-                <strong>Data:</strong> <span class="exam-date-val">${dateStr}</span>
-              </div>
             </div>
 
-            <!-- IDENTIFICAÇÃO DO ALUNO (NOME E DOJÔ LADO A LADO COM ALTURA AMPLA) -->
+            <!-- IDENTIFICAÇÃO DO ALUNO (NOME, DOJÔ E DATA LADO A LADO - LOGO 100% LIVRE) -->
             <div class="exam-portrait-student-line">
               <div class="exam-field-name"><strong>Nome:</strong> <span class="exam-field-line-name" title="${rawStudentName || ''}">${studentName || ''}</span></div>
               <div class="exam-field-dojo"><strong>Dojô:</strong> <span class="exam-field-line-dojo" title="${dojoName || ''}">${dojoName || ''}</span></div>
+              <div class="exam-field-date"><strong>Data:</strong> <span class="exam-field-line-date">${dateStr}</span></div>
             </div>
 
             <!-- CÓDIGO DA PROVA DESTACADO (EXATAMENTE 5 CARACTERES) -->
@@ -1763,23 +1768,10 @@ window.TKST_EXAM_GENERATOR = {
         margin-top: 1px !important;
       }
       .exam-header-date-badge {
-        position: absolute !important;
-        right: 0 !important;
-        top: 6px !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 2.5px !important;
-        font-size: 7.4pt !important;
-        font-weight: 800 !important;
-        color: #0F172A !important;
-        background: #F1F5F9 !important;
-        border: 1px solid #CBD5E1 !important;
-        border-radius: 3px !important;
-        padding: 1.5px 5px !important;
-        white-space: nowrap !important;
+        display: none !important;
       }
 
-      /* IDENTIFICAÇÃO DO ALUNO (NOME E DOJÔ LADO A LADO COM ALTURA SUFICIENTE SEM CORTES) */
+      /* IDENTIFICAÇÃO DO ALUNO (NOME, DOJÔ E DATA LADO A LADO COM ALTURA SUFICIENTE SEM CORTES) */
       .exam-portrait-student-line {
         border: 1.2px solid #0F172A !important;
         border-radius: 3px !important;
@@ -1789,7 +1781,7 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        gap: 8px !important;
+        gap: 6px !important;
         box-sizing: border-box !important;
         white-space: nowrap !important;
       }
@@ -1797,7 +1789,7 @@ window.TKST_EXAM_GENERATOR = {
         flex: 1.35 !important;
         display: flex !important;
         align-items: flex-end !important;
-        gap: 4px !important;
+        gap: 3px !important;
         min-width: 0 !important;
         font-size: 8.5pt !important;
       }
@@ -1821,10 +1813,10 @@ window.TKST_EXAM_GENERATOR = {
         box-sizing: border-box !important;
       }
       .exam-field-dojo {
-        flex: 1.15 !important;
+        flex: 0.95 !important;
         display: flex !important;
         align-items: flex-end !important;
-        gap: 4px !important;
+        gap: 3px !important;
         min-width: 0 !important;
         font-size: 8.5pt !important;
       }
@@ -1844,6 +1836,31 @@ window.TKST_EXAM_GENERATOR = {
         align-items: flex-end !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+      }
+      .exam-field-date {
+        flex: 0.72 !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        gap: 3px !important;
+        min-width: 0 !important;
+        font-size: 8.5pt !important;
+      }
+      .exam-field-line-date {
+        flex: 1 !important;
+        min-width: 0 !important;
+        border-bottom: 1.2px solid #0F172A !important;
+        height: 18px !important;
+        min-height: 18px !important;
+        line-height: 1.25 !important;
+        font-size: 8.2pt !important;
+        font-weight: 800 !important;
+        color: #000000 !important;
+        padding-left: 2px !important;
+        padding-bottom: 1.5px !important;
+        display: inline-flex !important;
+        align-items: flex-end !important;
         white-space: nowrap !important;
         box-sizing: border-box !important;
       }

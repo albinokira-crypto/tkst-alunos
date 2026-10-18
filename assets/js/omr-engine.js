@@ -84,39 +84,42 @@
     return { canvas: sourceCanvas, angle: 0, qrData: null };
   }
 
-  // Converte imagem em escala de cinza e aplica contraste adaptativo
+  // Converte imagem em escala de cinza e aplica contraste adaptativo calibrado para caneta e lápis (grafite)
   function applyAdaptiveContrast(ctx, width, height) {
     const imgData = ctx.getImageData(0, 0, width, height);
     const d = imgData.data;
     const totalPixels = width * height;
 
-    // 1. Calcula histograma de cinza
+    // 1. Calcula histograma de cinza e preserva mapa de luminância original
     let sumLuminance = 0;
-    for (let i = 0; i < d.length; i += 4) {
-      const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-      d[i] = gray;
-      d[i + 1] = gray;
-      d[i + 2] = gray;
+    const grayData = new Uint8Array(totalPixels);
+    for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+      const gray = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+      grayData[p] = gray;
       sumLuminance += gray;
     }
     const meanLuminance = sumLuminance / totalPixels;
 
-    // 2. Limiar adaptativo dinâmico (Otsu com ponderação local)
-    const threshold = Math.max(70, Math.min(185, meanLuminance * 0.82));
+    // 2. Limiar adaptativo calibrado:
+    // Lápis (grafite) reflete luz da câmera e tem cinza entre 110 e 195 em fundo branco (220-255).
+    // Usamos limiar dinâmico expandido para capturar traços de grafite.
+    const thresholdPencil = Math.max(80, Math.min(212, meanLuminance * 0.90));
+    const thresholdPen = Math.max(65, Math.min(185, meanLuminance * 0.80));
 
     const binaryData = new Uint8Array(totalPixels);
-    for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-      const g = d[i];
-      const isDark = g < threshold ? 1 : 0;
+    for (let p = 0; p < totalPixels; p++) {
+      const g = grayData[p];
+      const isDark = g < thresholdPencil ? 1 : 0;
       binaryData[p] = isDark;
       const val = isDark ? 0 : 255;
-      d[i] = val;
-      d[i + 1] = val;
-      d[i + 2] = val;
+      const idx = p * 4;
+      d[idx] = val;
+      d[idx + 1] = val;
+      d[idx + 2] = val;
     }
 
     ctx.putImageData(imgData, 0, 0);
-    return { binaryData, threshold, meanLuminance };
+    return { binaryData, grayData, thresholdPencil, thresholdPen, meanLuminance };
   }
 
   // Localiza e extrai o Cartão de Respostas (OMR Card) com correção de enquadramento
@@ -173,8 +176,8 @@
     const w = cardCanvas.width;
     const h = cardCanvas.height;
 
-    // Aplica binarização adaptativa no cartão
-    const { binaryData } = applyAdaptiveContrast(ctx, w, h);
+    // Aplica binarização adaptativa e mapa de cinza preservado
+    const { binaryData, grayData, meanLuminance } = applyAdaptiveContrast(ctx, w, h);
 
     // Mapeamento exato da grade do Cartão Oficial TKST:
     // 2 colunas: Coluna 1 (Q01 a Q05 na esquerda) e Coluna 2 (Q06 a Q10 na direita)
@@ -206,6 +209,7 @@
       const y = rowStartY + (rowIndex + 0.5) * rowHeight;
 
       const fillRatios = {};
+      const darknessScores = {};
       const sampleBoxes = {};
       const sampleRadius = Math.round(w * 0.034); // ~17px de raio em 500px
 
@@ -214,6 +218,7 @@
         const optCenterY = y;
 
         let darkPixels = 0;
+        let sumLuminance = 0;
         let totalSampled = 0;
 
         for (let dy = -sampleRadius; dy <= sampleRadius; dy++) {
@@ -224,6 +229,7 @@
               if (px >= 0 && px < w && py >= 0 && py < h) {
                 const idx = py * w + px;
                 if (binaryData[idx] === 1) darkPixels++;
+                if (grayData) sumLuminance += grayData[idx];
                 totalSampled++;
               }
             }
@@ -231,53 +237,76 @@
         }
 
         const ratio = totalSampled > 0 ? darkPixels / totalSampled : 0;
+        const avgGray = totalSampled > 0 ? (sumLuminance / totalSampled) : meanLuminance;
+        // Mede o escurecimento relativo do quadradinho em relação ao papel de fundo (grafite do lápis)
+        const darkness = Math.max(0, meanLuminance - avgGray);
+
         fillRatios[opt] = ratio;
+        darknessScores[opt] = darkness;
         sampleBoxes[opt] = {
           x: optCenterX - sampleRadius,
           y: optCenterY - sampleRadius,
           size: sampleRadius * 2,
-          ratio
+          ratio,
+          darkness
         };
       });
 
-      // Ordena opções pela densidade de preenchimento decrescente
-      const sorted = Object.entries(fillRatios).sort((a, b) => b[1] - a[1]);
-      const [topOpt, topRatio] = sorted[0];
-      const [secondOpt, secondRatio] = sorted[1];
+      // Pontuação combinada ponderada (binário + profundidade do grafite)
+      const combinedScores = {};
+      ['A', 'B', 'C', 'D'].forEach(opt => {
+        combinedScores[opt] = (fillRatios[opt] * 0.65) + ((darknessScores[opt] / 100) * 0.35);
+      });
+
+      // Ordena opções pela pontuação combinada decrescente
+      const sorted = Object.entries(combinedScores).sort((a, b) => b[1] - a[1]);
+      const [topOpt, topCombined] = sorted[0];
+      const [secondOpt, secondCombined] = sorted[1];
+      const topRatio = fillRatios[topOpt];
+      const secondRatio = fillRatios[secondOpt];
+      const topDarkness = darknessScores[topOpt];
+      const secondDarkness = darknessScores[secondOpt];
 
       let detectedAnswer = null;
       let confidence = 0.5;
       let doubt = false;
       let notes = '';
 
-      // Regras de Decisão OMR para caneta preta/azul e lápis:
-      // 1. Marcação Clara e Nítida
-      if (topRatio >= 0.28 && topRatio >= secondRatio * 1.60) {
+      // Regras de Decisão OMR com suporte total a CANETA e LÁPIS (GRAFITE):
+      // 1. Marcação Clara e Nítida (Caneta escura ou lápis bem preenchido)
+      if ((topRatio >= 0.22 && topRatio >= secondRatio * 1.45) || (topDarkness >= 28 && topDarkness >= secondDarkness * 1.50)) {
         detectedAnswer = topOpt;
-        confidence = Math.min(0.99, 0.78 + (topRatio - secondRatio) * 0.5);
+        confidence = Math.min(0.99, 0.82 + (topRatio - secondRatio) * 0.4);
         doubt = false;
-        notes = 'Marcação limpa e nítida';
+        notes = 'Marcação nítida';
       }
-      // 2. Questão em Branco (nenhuma opção marcada)
-      else if (topRatio < 0.17) {
+      // 2. Marcação a Lápis (Grafite mais claro, traços médios ou sombreamento)
+      else if ((topRatio >= 0.14 || topDarkness >= 18) && (topCombined >= secondCombined * 1.30)) {
+        detectedAnswer = topOpt;
+        confidence = Math.min(0.96, 0.78 + (topDarkness / 120));
+        doubt = false;
+        notes = `Marcação a lápis detectada em [${topOpt}]`;
+      }
+      // 3. Questão em Branco (sem marcação evidente em nenhuma alternativa)
+      else if (topRatio < 0.10 && topDarkness < 12) {
         detectedAnswer = null;
-        confidence = 0.92;
+        confidence = 0.94;
         doubt = false;
         notes = 'Questão em branco (sem preenchimento)';
       }
-      // 3. Possível Rasura ou Dupla Marcação
-      else if (topRatio >= 0.22 && secondRatio >= 0.18) {
+      // 4. Possível Rasura ou Dupla Marcação
+      else if ((topRatio >= 0.18 && secondRatio >= 0.14) || (topDarkness >= 22 && secondDarkness >= 18)) {
         detectedAnswer = topOpt;
-        confidence = 0.45;
+        confidence = 0.48;
         doubt = true;
-        notes = `Possível rasura entre [${topOpt}] (${Math.round(topRatio * 100)}%) e [${secondOpt}] (${Math.round(secondRatio * 100)}%)`;
+        notes = `Possível rasura entre [${topOpt}] e [${secondOpt}]`;
       }
-      // 4. Marca Fraca ou Marcação Parcial
-      else if (topRatio >= 0.17 && topRatio < 0.28) {
+      // 5. Marcação Leve / Toque de Lápis
+      else if (topRatio >= 0.10 || topDarkness >= 12) {
         detectedAnswer = topOpt;
-        confidence = 0.62;
+        confidence = 0.65;
         doubt = true;
-        notes = `Marcação fraca em [${topOpt}] (${Math.round(topRatio * 100)}%)`;
+        notes = `Marcação leve em [${topOpt}] (${Math.round(topRatio * 100)}%)`;
       } else {
         detectedAnswer = topOpt;
         confidence = 0.55;
@@ -292,6 +321,7 @@
         doubt,
         notes,
         fillRatios,
+        darknessScores,
         sampleBoxes
       });
     }

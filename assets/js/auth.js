@@ -1996,10 +1996,10 @@
           }
         });
         const exStr = JSON.stringify(mergedExams);
+        if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+        Object.assign(window.TKST_GENERATED_EXAMS_CACHE, mergedExams);
         if (localStorage.getItem('tkst_generated_exams') !== exStr) {
           safeLocalStorageSet('tkst_generated_exams', exStr);
-          if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
-          Object.assign(window.TKST_GENERATED_EXAMS_CACHE, mergedExams);
         }
       } catch(e) {}
     }
