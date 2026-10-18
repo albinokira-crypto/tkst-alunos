@@ -17032,6 +17032,10 @@ Retorne estritamente um JSON no seguinte formato:
     // CLIENT-SIDE CANVAS OMR (OPTICAL MARK RECOGNITION)
     // Lê os quadradinhos marcados a LÁPIS (grafite) ou caneta nas 10 questões
     // =========================================================================
+    // =========================================================================
+    // CLIENT-SIDE CANVAS OMR (OPTICAL MARK RECOGNITION)
+    // Refatorado com Inset de 28% no ROI e Comparação Relativa por Linha (Luma & Density Ratio)
+    // =========================================================================
     analyzeExamMarksOMR: function(canvas, officialKey) {
       // Cria versão rotacionada do canvas para neutralizar fotos de celular tiradas na vertical
       function createRotatedCanvas(srcCanvas, deg) {
@@ -17056,7 +17060,7 @@ Retorne estritamente um JSON no seguinte formato:
         const ch = targetCanvas.height;
         const ctx = targetCanvas.getContext('2d', { willReadFrequently: true });
 
-        // Amostra luminosidade média do papel branco
+        // Amostra luminosidade média do papel branco como referência inicial
         let paperBgLuma = 220;
         try {
           const bgSample = ctx.getImageData(Math.round(cw * 0.5), Math.round(ch * 0.5), 16, 16).data;
@@ -17067,7 +17071,7 @@ Retorne estritamente um JSON no seguinte formato:
           paperBgLuma = Math.max(160, sum / (bgSample.length / 4));
         } catch(e) {}
 
-        const darkThreshold = paperBgLuma * 0.84;
+        const globalDarkThreshold = paperBgLuma * 0.84;
 
         const cardStartX = boxXStart * cw;
         const cardEndX = boxXEnd * cw;
@@ -17091,50 +17095,65 @@ Retorne estritamente um JSON no seguinte formato:
           const colX = isCol2 ? (cardStartX + colWidth + colGap) : cardStartX;
           const rowY = cardTopY + (rowIdx * rowH);
 
-          // Posição dos 4 quadradinhos [A] [B] [C] [D]
+          // Posição teórica dos 4 quadradinhos [A] [B] [C] [D]
           const optsStartX = colX + (colWidth * 0.18);
-          const optWidth = (colWidth * 0.80) / 4;
+          const optSlotWidth = (colWidth * 0.80) / 4;
+          const optBoxSize = Math.min(optSlotWidth * 0.82, rowH * 0.72);
 
-          const optionScores = [];
+          const optionMetrics = [];
+
           for (let optIdx = 0; optIdx < 4; optIdx++) {
-            const optCenterX = optsStartX + (optIdx * optWidth) + (optWidth * 0.5);
-            const optCenterY = rowY + (rowH * 0.5);
-            const sampleSize = Math.max(5, Math.round(Math.min(optWidth, rowH) * 0.42));
+            const letter = ['A', 'B', 'C', 'D'][optIdx];
+            const slotCenterX = optsStartX + (optIdx * optSlotWidth) + (optSlotWidth * 0.5);
+            const slotCenterY = rowY + (rowH * 0.5);
 
+            // Bounding box do componente quadrado .omr-sq
+            const boxW = optBoxSize;
+            const boxH = optBoxSize;
+            const boxLeft = slotCenterX - (boxW / 2);
+            const boxTop = slotCenterY - (boxH / 2);
+
+            // 1. MARGEM INTERNA DE AMOSTRAGEM (INSET DE 28% NAS 4 BORDAS)
+            // Extrai a Região de Interesse (ROI) restrita ao miolo interno, eliminando
+            // 100% da borda preta de 1.5px do .omr-sq e evitando a letra impressa periférica
+            const insetFactor = 0.28; // Recuo de 28% em cada borda (analisa o miolo central)
+            const baseRoiX = Math.round(boxLeft + (boxW * insetFactor));
+            const baseRoiY = Math.round(boxTop + (boxH * insetFactor));
+            const baseRoiW = Math.max(3, Math.round(boxW * (1 - 2 * insetFactor)));
+            const baseRoiH = Math.max(3, Math.round(boxH * (1 - 2 * insetFactor)));
+
+            // Micro-amostragem com offsets sutis para máxima estabilidade posicional
             let bestDarkRatio = 0;
-            let bestDarkSum = 0;
             let minMeanLuma = 255;
 
-            const offsets = [-2, 0, 2];
+            const offsets = [-1, 0, 1];
             for (const dy of offsets) {
               for (const dx of offsets) {
-                const sX = Math.max(0, Math.round(optCenterX - (sampleSize / 2) + dx));
-                const sY = Math.max(0, Math.round(optCenterY - (sampleSize / 2) + dy));
-                const sW = Math.min(cw - sX, sampleSize);
-                const sH = Math.min(ch - sY, sampleSize);
+                const sX = Math.max(0, Math.min(cw - 3, baseRoiX + dx));
+                const sY = Math.max(0, Math.min(ch - 3, baseRoiY + dy));
+                const sW = Math.min(cw - sX, baseRoiW);
+                const sH = Math.min(ch - sY, baseRoiH);
 
-                if (sW > 2 && sH > 2) {
+                if (sW >= 2 && sH >= 2) {
                   try {
                     const imgData = ctx.getImageData(sX, sY, sW, sH).data;
-                    const totalPixels = imgData.length / 4;
+                    const numPixels = imgData.length / 4;
                     let darkCount = 0;
-                    let darkSum = 0;
                     let lumaSum = 0;
 
                     for (let p = 0; p < imgData.length; p += 4) {
                       const luma = imgData[p] * 0.299 + imgData[p+1] * 0.587 + imgData[p+2] * 0.114;
                       lumaSum += luma;
-                      if (luma < darkThreshold) {
+                      if (luma < globalDarkThreshold) {
                         darkCount++;
-                        darkSum += (darkThreshold - luma);
                       }
                     }
 
-                    const darkRatio = darkCount / totalPixels;
-                    const meanLuma = lumaSum / totalPixels;
+                    const darkRatio = darkCount / numPixels;
+                    const meanLuma = lumaSum / numPixels;
+
                     if (darkRatio > bestDarkRatio || meanLuma < minMeanLuma) {
                       bestDarkRatio = Math.max(bestDarkRatio, darkRatio);
-                      bestDarkSum = Math.max(bestDarkSum, darkSum);
                       minMeanLuma = Math.min(minMeanLuma, meanLuma);
                     }
                   } catch(e) {}
@@ -17142,33 +17161,62 @@ Retorne estritamente um JSON no seguinte formato:
               }
             }
 
-            const lumaContrast = Math.max(0, paperBgLuma - minMeanLuma);
-            optionScores.push({
-              letter: ['A', 'B', 'C', 'D'][optIdx],
+            optionMetrics.push({
+              letter: letter,
+              meanLuma: minMeanLuma,
               darkRatio: bestDarkRatio,
-              lumaContrast: lumaContrast,
-              score: (lumaContrast * 1.6) + (bestDarkRatio * 100 * 2.2)
+              optIndex: optIdx
             });
           }
 
-          optionScores.sort((a, b) => b.score - a.score);
-          const top1 = optionScores[0];
-          const top2 = optionScores[1];
+          // 2. COMPARAÇÃO RELATIVA POR LINHA (LUMA & DENSITY RATIO)
+          // Ordena as 4 alternativas da MESMA questão pela luminosidade crescente (mais escura primeiro)
+          const sorted = [...optionMetrics].sort((a, b) => a.meanLuma - b.meanLuma);
+          const top1 = sorted[0]; // Alternativa mais escura (mais preenchida)
+          const top2 = sorted[1]; // Segunda mais escura
+          const top3 = sorted[2];
+          const top4 = sorted[3];
+
+          // Linha de base da questão: média das outras 3 opções (que teoricamente são papel branco não marcado)
+          const other3 = sorted.slice(1);
+          const avgOtherLuma = (other3[0].meanLuma + other3[1].meanLuma + other3[2].meanLuma) / 3;
+          const avgOtherDarkRatio = (other3[0].darkRatio + other3[1].darkRatio + other3[2].darkRatio) / 3;
+
+          // Contraste e razão de densidade relativa à própria linha (neutraliza sombras e gradientes de luz)
+          const relativeContrast = Math.max(0, avgOtherLuma - top1.meanLuma);
+          const relativeDensityRatio = (top1.darkRatio + 0.04) / (avgOtherDarkRatio + 0.04);
+
+          // Contraste do 2º colocado em relação às opções sabidamente limpas (top3 e top4)
+          const cleanLuma = (top3.meanLuma + top4.meanLuma) / 2;
+          const top2ContrastToClean = Math.max(0, cleanLuma - top2.meanLuma);
+          const diffTop1Top2Luma = top2.meanLuma - top1.meanLuma;
 
           let chosen = null;
-          // Critério robusto para grafite de lápis
-          if (top1.score >= 18 || top1.darkRatio >= 0.09 || top1.lumaContrast >= 8) {
-            if (top2.score >= 22 && (top1.score - top2.score < 12) && top2.darkRatio >= 0.16) {
+
+          // Critério robusto de marcação relativa para grafite/caneta:
+          // A opção deve ser perceptivelmente mais escura que as outras 3 da mesma linha
+          const isTop1Marked = (relativeContrast >= 12 && relativeDensityRatio >= 1.55)
+            || (relativeContrast >= 20)
+            || (top1.darkRatio >= 0.28 && relativeDensityRatio >= 1.75);
+
+          if (isTop1Marked) {
+            // 3. DETECÇÃO DE RASURA OU MARCAÇÃO DUPLA (FALLBACK MANUAL)
+            // Se a 2ª alternativa mais escura também tiver marcação considerável e estiver próxima da 1ª
+            const isTop2AlsoMarked = (top2ContrastToClean >= 11 && diffTop1Top2Luma < 15)
+              || (top2.darkRatio >= 0.22 && diffTop1Top2Luma < 18);
+
+            if (isTop2AlsoMarked) {
               ambiguousQuestions.push(qIdx + 1);
-              chosen = null;
+              chosen = null; // Encaminha para confirmação visual do professor no modal
             } else {
               chosen = top1.letter;
               markedCount++;
-              totalConfidence += (top1.score - top2.score);
+              totalConfidence += relativeContrast + (relativeDensityRatio * 8);
             }
           } else {
-            chosen = null;
+            chosen = null; // Questão em branco (não respondida pelo aluno)
           }
+
           detectedAnswers.push(chosen);
         }
 
