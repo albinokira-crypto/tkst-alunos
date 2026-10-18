@@ -1727,6 +1727,10 @@
               const item = JSON.parse(lines[i]);
               const cloudData = await parseNtfyItem(item);
               if (cloudData) {
+                if (cloudData.type === 'tkst_exam_generated' && cloudData.record) {
+                  handleIncomingExamRecord(cloudData.record);
+                  continue;
+                }
                 if (cloudData.type === 'tkst_quiz_chunk') {
                   handleIncomingQuizChunk(cloudData);
                   continue;
@@ -1751,6 +1755,21 @@
     }
   }
 
+  function handleIncomingExamRecord(rec) {
+    if (!rec || !rec.examId) return;
+    try {
+      const cleanId = String(rec.examId).trim().toUpperCase();
+      if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+      window.TKST_GENERATED_EXAMS_CACHE[rec.examId] = rec;
+      window.TKST_GENERATED_EXAMS_CACHE[cleanId] = rec;
+      let localExams = {};
+      try { localExams = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
+      localExams[rec.examId] = rec;
+      localExams[cleanId] = rec;
+      safeLocalStorageSet('tkst_generated_exams', JSON.stringify(localExams));
+    } catch(e) {}
+  }
+
   function initRealtimeStream() {
     try {
       if (typeof EventSource !== 'undefined') {
@@ -1761,7 +1780,9 @@
             if (parsed) {
               const cloudData = await parseNtfyItem(parsed);
               if (cloudData) {
-                if (cloudData.type === 'tkst_quiz_chunk') {
+                if (cloudData.type === 'tkst_exam_generated' && cloudData.record) {
+                  handleIncomingExamRecord(cloudData.record);
+                } else if (cloudData.type === 'tkst_quiz_chunk') {
                   handleIncomingQuizChunk(cloudData);
                 } else if (cloudData.type === 'quiz_sync_broadcast' && Array.isArray(cloudData.bank)) {
                   handleIncomingQuizChunk({ questions: cloudData.bank });
@@ -4021,11 +4042,30 @@
     broadcastGeneratedExam: function(record) {
       if (!record || !record.examId) return;
       try {
+        const cleanId = String(record.examId).trim().toUpperCase();
         if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
         window.TKST_GENERATED_EXAMS_CACHE[record.examId] = record;
-        const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+        window.TKST_GENERATED_EXAMS_CACHE[cleanId] = record;
+        let store = {};
+        try { store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
         store[record.examId] = record;
+        store[cleanId] = record;
         safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
+
+        // Transmissão instantânea ultra-leve via NTFY (< 300 bytes) para sincronizar com o celular/PC imediatamente
+        fetch(SYNC_URL, {
+          method: 'POST',
+          headers: {
+            'Title': 'TKST_EXAM_GENERATED',
+            'Content-Type': 'text/plain; charset=utf-8'
+          },
+          body: JSON.stringify({
+            type: 'tkst_exam_generated',
+            record: record,
+            timestamp: Date.now()
+          })
+        }).catch(() => {});
+
         pushToCloud();
       } catch(e) {}
     },
@@ -4033,12 +4073,19 @@
     getGeneratedExam: function(examId) {
       if (!examId) return null;
       const clean = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+      const baseCode = clean.split('-')[0];
       try {
-        if (window.TKST_GENERATED_EXAMS_CACHE && window.TKST_GENERATED_EXAMS_CACHE[clean]) {
-          return window.TKST_GENERATED_EXAMS_CACHE[clean];
+        if (window.TKST_GENERATED_EXAMS_CACHE) {
+          if (window.TKST_GENERATED_EXAMS_CACHE[clean]) return window.TKST_GENERATED_EXAMS_CACHE[clean];
+          if (window.TKST_GENERATED_EXAMS_CACHE[baseCode]) return window.TKST_GENERATED_EXAMS_CACHE[baseCode];
+          const cacheKey = Object.keys(window.TKST_GENERATED_EXAMS_CACHE).find(k => k.trim().toUpperCase() === clean || k.trim().toUpperCase() === baseCode);
+          if (cacheKey && window.TKST_GENERATED_EXAMS_CACHE[cacheKey]) return window.TKST_GENERATED_EXAMS_CACHE[cacheKey];
         }
         const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
         if (store[clean]) return store[clean];
+        if (store[baseCode]) return store[baseCode];
+        const foundKey = Object.keys(store).find(k => k.trim().toUpperCase() === clean || k.trim().toUpperCase() === baseCode);
+        if (foundKey && store[foundKey]) return store[foundKey];
       } catch(e) {}
       return null;
     },

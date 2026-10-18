@@ -699,6 +699,79 @@ window.TKST_EXAM_GENERATOR = {
     return totalVal.toString(36).toUpperCase().padStart(5, '0');
   },
 
+  // Higieniza e repara automaticamente caracteres com acentuação corrompida (\uFFFD / ) do banco de questões
+  sanitizePtBrText: function(str) {
+    if (!str || typeof str !== 'string') return str || '';
+    let s = str;
+    // Padrões de palavras corrompidas com  ou \uFFFD
+    s = s.replace(/ilustra[\uFFFD]+o/gi, 'ilustração');
+    s = s.replace(/tradu[\uFFFD]+o/gi, 'tradução');
+    s = s.replace(/posi[\uFFFD]+es/gi, 'posições');
+    s = s.replace(/posi[\uFFFD]+o/gi, 'posição');
+    s = s.replace(/repeti[\uFFFD]+es/gi, 'repetições');
+    s = s.replace(/repeti[\uFFFD]+o/gi, 'repetição');
+    s = s.replace(/movimenta[\uFFFD]+o/gi, 'movimentação');
+    s = s.replace(/dire[\uFFFD]+o/gi, 'direção');
+    s = s.replace(/aten[\uFFFD]+o/gi, 'atenção');
+    s = s.replace(/avan[\uFFFD]+a/gi, 'avança');
+    s = s.replace(/antebra[\uFFFD]+o/gi, 'antebraço');
+    s = s.replace(/bra[\uFFFD]+o/gi, 'braço');
+    s = s.replace(/cabe[\uFFFD]+a/gi, 'cabeça');
+    s = s.replace(/come[\uFFFD]+a/gi, 'começa');
+    s = s.replace(/for[\uFFFD]+a/gi, 'força');
+    s = s.replace(/fa[\uFFFD]+a/gi, 'faça');
+    s = s.replace(/a[\uFFFD]+o/gi, 'ação');
+    s = s.replace(/t[\uFFFD]+cnicas/gi, 'técnicas');
+    s = s.replace(/t[\uFFFD]+cnica/gi, 'técnica');
+    s = s.replace(/m[\uFFFD]+dios/gi, 'médios');
+    s = s.replace(/m[\uFFFD]+dio/gi, 'médio');
+    s = s.replace(/m[\uFFFD]+dia/gi, 'média');
+    s = s.replace(/n[\uFFFD]+veis/gi, 'níveis');
+    s = s.replace(/n[\uFFFD]+vel/gi, 'nível');
+    s = s.replace(/curr[\uFFFD]+culo/gi, 'currículo');
+    s = s.replace(/b[\uFFFD]+sicas/gi, 'básicas');
+    s = s.replace(/b[\uFFFD]+sica/gi, 'básica');
+    s = s.replace(/b[\uFFFD]+sicos/gi, 'básicos');
+    s = s.replace(/b[\uFFFD]+sico/gi, 'básico');
+    s = s.replace(/pr[\uFFFD]+tica/gi, 'prática');
+    s = s.replace(/abd[\uFFFD]+men/gi, 'abdômen');
+    s = s.replace(/Karat[\uFFFD]+/gi, 'Karatê');
+    s = s.replace(/Doj[\uFFFD]+/gi, 'Dojô');
+    s = s.replace(/voc[\uFFFD]+/gi, 'você');
+    s = s.replace(/tr[\uFFFD]+s/gi, 'três');
+    s = s.replace(/m[\uFFFD]+os/gi, 'mãos');
+    s = s.replace(/p[\uFFFD]+s/gi, 'pés');
+    s = s.replace(/\bp[\uFFFD]+\b/gi, 'pé');
+    s = s.replace(/do p[\uFFFD]+/gi, 'do pé');
+    s = s.replace(/no p[\uFFFD]+/gi, 'no pé');
+    s = s.replace(/ao p[\uFFFD]+/gi, 'ao pé');
+    s = s.replace(/\bs[\uFFFD]+o\b/gi, 'são');
+    s = s.replace(/\b[\uFFFD]+\s+executada\b/gi, 'é executada');
+    s = s.replace(/\b[\uFFFD]+\s+realizada\b/gi, 'é realizada');
+    s = s.replace(/\b[\uFFFD]+\s+o\b/gi, 'é o');
+    s = s.replace(/\b[\uFFFD]+\s+a\b/gi, 'é a');
+    s = s.replace(/Qual\s*[\uFFFD]+\s*o/gi, 'Qual é o');
+    s = s.replace(/Qual\s*[\uFFFD]+\s*a/gi, 'Qual é a');
+    s = s.replace(/(\d+)[\uFFFD]+\s*Kyu/gi, '$1º Kyu');
+    s = s.replace(/(\d+)[\uFFFD]+\s*Dan/gi, '$1º Dan');
+    s = s.replace(/(\d+)[\uFFFD]+\s*movimento/gi, '$1º movimento');
+    s = s.replace(/(\d+)[\uFFFD]+/g, '$1º');
+    // Remove qualquer caractere  restante
+    s = s.replace(/[\uFFFD]/g, '');
+    return s;
+  },
+
+  sanitizeQuestionObject: function(q) {
+    if (!q) return q;
+    return {
+      ...q,
+      beltName: this.sanitizePtBrText(q.beltName),
+      question: this.sanitizePtBrText(q.question),
+      explanation: this.sanitizePtBrText(q.explanation),
+      options: Array.isArray(q.options) ? q.options.map(opt => this.sanitizePtBrText(opt)) : q.options
+    };
+  },
+
   // Regra Oficial de Abreviação de Nomes Próprios da Língua Portuguesa do Brasil (ABNT / Cartório):
   // 1. O primeiro nome e o último sobrenome NUNCA são abreviados.
   // 2. Conectivos e preposições ("de", "da", "do", "das", "dos", "e") são descartados nos nomes do meio abreviados.
@@ -970,18 +1043,20 @@ window.TKST_EXAM_GENERATOR = {
       }
     }
 
-    return selected.slice(0, count);
+    return selected.slice(0, count).map(q => this.sanitizeQuestionObject(q));
   },
 
   // Gera HTML da Folha 1 (Prova de Múltipla Escolha com Cartão de Respostas no Cabeçalho)
   buildQuizExamSheetHtml: function(kyu, questions, options = {}) {
     const exam = this.getExamData(kyu);
     const dateStr = options.date || "_____/_____/2026";
-    const rawStudentName = options.studentName || options.name || "";
+    const rawStudentName = this.sanitizePtBrText(options.studentName || options.name || "");
     const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 26);
-    const dojoName = options.dojoName || options.dojo || "";
+    const dojoName = this.sanitizePtBrText(options.dojoName || options.dojo || "");
+    const studentId = options.studentId || options.id || '';
 
-    const answerLetters = questions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
+    const sanitizedQuestions = (questions || []).map(q => this.sanitizeQuestionObject(q));
+    const answerLetters = sanitizedQuestions.map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
     const compactCode = this.encodeCompactExamCode(kyu, answerLetters);
     const examId = compactCode;
 
@@ -995,11 +1070,12 @@ window.TKST_EXAM_GENERATOR = {
         date: dateStr,
         studentName: rawStudentName,
         studentAbbr: studentName,
-        studentId: options.studentId || options.id || '',
+        studentId: studentId,
         dojoName: dojoName,
         timestamp: Date.now()
       };
       store[compactCode] = examRecord;
+      store[compactCode.toUpperCase()] = examRecord;
       const keys = Object.keys(store);
       if (keys.length > 300) {
         delete store[keys[0]];
@@ -1007,6 +1083,7 @@ window.TKST_EXAM_GENERATOR = {
       localStorage.setItem('tkst_generated_exams', JSON.stringify(store));
       if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
       window.TKST_GENERATED_EXAMS_CACHE[compactCode] = examRecord;
+      window.TKST_GENERATED_EXAMS_CACHE[compactCode.toUpperCase()] = examRecord;
       if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastGeneratedExam === 'function') {
         window.TKST_AUTH.broadcastGeneratedExam(examRecord);
       }
@@ -1032,13 +1109,15 @@ window.TKST_EXAM_GENERATOR = {
 
     const renderSingleQuestion = (q, idx) => {
       const qNum = idx + 1;
+      const qText = this.sanitizePtBrText(q.question);
       const optionsHtml = (q.options || []).map((opt, optIdx) => {
         const letter = String.fromCharCode(65 + optIdx);
+        const optText = this.sanitizePtBrText(opt);
         return `
           <div class="exam-mcq-option">
             <span class="exam-mcq-square"></span>
             <span class="exam-mcq-letter">(${letter})</span>
-            <span class="exam-mcq-opt-text">${opt}</span>
+            <span class="exam-mcq-opt-text">${optText}</span>
           </div>
         `;
       }).join('');
@@ -1049,7 +1128,7 @@ window.TKST_EXAM_GENERATOR = {
         return `
           <div class="exam-vertical-q-item exam-portrait-q-card exam-landscape-q-card">
             <div class="exam-q-title-row">
-              <span class="exam-q-number">${qNum}.</span> ${q.question}
+              <span class="exam-q-number">${qNum}.</span> ${qText}
             </div>
             <div class="exam-q-side-row">
               <div class="exam-mcq-options-col">
@@ -1069,7 +1148,7 @@ window.TKST_EXAM_GENERATOR = {
       return `
         <div class="${cardClass}">
           <div class="exam-q-title-row">
-            <span class="exam-q-number">${qNum}.</span> ${q.question}
+            <span class="exam-q-number">${qNum}.</span> ${qText}
           </div>
           <div class="exam-mcq-options-col">
             ${optionsHtml}
@@ -1078,8 +1157,8 @@ window.TKST_EXAM_GENERATOR = {
       `;
     };
 
-    const col1Questions = questions.slice(0, 5).map((q, idx) => renderSingleQuestion(q, idx)).join('');
-    const col2Questions = questions.slice(5, 10).map((q, idx) => renderSingleQuestion(q, idx + 5)).join('');
+    const col1Questions = sanitizedQuestions.slice(0, 5).map((q, idx) => renderSingleQuestion(q, idx)).join('');
+    const col2Questions = sanitizedQuestions.slice(5, 10).map((q, idx) => renderSingleQuestion(q, idx + 5)).join('');
 
     return `
       <div class="exam-sheet-a4 single-page-a4 exam-sheet-page1 exam-portrait-sheet">

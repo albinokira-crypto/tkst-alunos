@@ -1271,8 +1271,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <i class="fas fa-crown"></i> <span>Painel Admin</span>
             ${pendingCount > 0 ? `<span class="header-notification-pill" title="${pendingCount} cadastro(s) pendente(s)">${pendingCount}</span>` : ''}
           </button>
-          <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.78rem; padding: 6px 11px; background: #25D366; color: #FFF; font-weight: 700; border: none; white-space: nowrap; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.35);" title="Convidar Novos Alunos via WhatsApp">
-            <i class="fab fa-whatsapp"></i> <span>Convidar</span>
+          <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.78rem; padding: 6px 11px; background: #25D366; color: #FFF; font-weight: 700; border: none; white-space: nowrap; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.35);" title="Compartilhar Link de Acesso ou Convite de Cadastro via WhatsApp">
+            <i class="fab fa-whatsapp"></i> <span>Acesso / Convite</span>
           </button>
         ` : ''}
         <button class="btn btn-secondary" onclick="window.TKST_APP.openEditProfileModal()" style="font-size: 0.78rem; padding: 6px 10px; border-color: rgba(255, 183, 3, 0.35); color: var(--accent-gold); white-space: nowrap;" title="Editar Perfil e Informações">
@@ -1672,7 +1672,7 @@ document.addEventListener('DOMContentLoaded', () => {
           dojoName: examSelectedDojobookStudent.dojo_nome
         };
       } else {
-        const typedStudent = (document.getElementById('examDojobookStudentSearch')?.value || '').trim();
+        const typedStudent = (document.getElementById('examDojobookStudentSearch')?.value || window._examTypedStudentName || '').trim();
         if (typedStudent) {
           studentOptions = {
             studentName: typedStudent,
@@ -2805,24 +2805,24 @@ document.addEventListener('DOMContentLoaded', () => {
                   id="examDojobookStudentSearch"
                   class="form-control"
                   placeholder="Digite o nome do aluno para buscar ou digite livremente..."
-                  value="${examSelectedDojobookStudent ? examSelectedDojobookStudent.nome : ''}"
-                  oninput="window.TKST_APP.onDojobookStudentSearchInput(this.value)"
+                  value="${examSelectedDojobookStudent ? examSelectedDojobookStudent.nome : (window._examTypedStudentName || '')}"
+                  oninput="window._examTypedStudentName = this.value; window.TKST_APP.onDojobookStudentSearchInput(this.value)"
                   onfocus="window.TKST_APP.onDojobookStudentSearchFocus(this)"
                   autocomplete="off"
                   spellcheck="false"
-                  style="width: 100%; padding: 11px 40px 11px 40px; background: #0B0E14; border: 1.5px solid ${examSelectedDojobookStudent ? '#10B981' : 'var(--border-color)'}; border-radius: var(--radius-sm); color: #FFF; font-size: 0.9rem; font-weight: 700; transition: border-color 0.2s;"
+                  style="width: 100%; padding: 11px 40px 11px 40px; background: #0B0E14; border: 1.5px solid ${(examSelectedDojobookStudent || window._examTypedStudentName) ? '#10B981' : 'var(--border-color)'}; border-radius: var(--radius-sm); color: #FFF; font-size: 0.9rem; font-weight: 700; transition: border-color 0.2s;"
                 >
                 <div style="position: absolute; right: 10px; display: flex; align-items: center; gap: 6px; z-index: 2;">
                   <button 
                     type="button" 
                     id="examDojobookClearBtn"
-                    onclick="window.TKST_APP.clearExamDojobookStudent()" 
-                    style="display: ${examSelectedDojobookStudent ? 'flex' : 'none'}; background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.4); color: #F87171; border-radius: 50%; width: 24px; height: 24px; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; padding: 0;"
+                    onclick="window._examTypedStudentName = ''; window.TKST_APP.clearExamDojobookStudent()" 
+                    style="display: ${(examSelectedDojobookStudent || window._examTypedStudentName) ? 'flex' : 'none'}; background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.4); color: #F87171; border-radius: 50%; width: 24px; height: 24px; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; padding: 0;"
                     title="Limpar campo e desvincular"
                   >
                     <i class="fas fa-times"></i>
                   </button>
-                  <span id="examDojobookLinkedBadge" style="display: ${examSelectedDojobookStudent ? 'inline-block' : 'none'}; background: #10B981; color: #000; font-weight: 900; font-size: 0.68rem; padding: 3px 8px; border-radius: 4px; white-space: nowrap;">
+                  <span id="examDojobookLinkedBadge" style="display: ${(examSelectedDojobookStudent || window._examTypedStudentName) ? 'inline-block' : 'none'}; background: #10B981; color: #000; font-weight: 900; font-size: 0.68rem; padding: 3px 8px; border-radius: 4px; white-space: nowrap;">
                     ✓ Vinculado
                   </span>
                 </div>
@@ -10111,6 +10111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectCustomTypedStudent: function(encodedName) {
       const name = decodeURIComponent(encodedName).trim();
       if (!name) return;
+      window._examTypedStudentName = name;
       examSelectedDojobookStudent = {
         id: 'std_custom_' + Date.now(),
         nome: name,
@@ -10157,6 +10158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     selectDojobookCandidate: function(candidate) {
+      window._examTypedStudentName = '';
       examSelectedDojobookStudent = candidate;
       const targetBelt = candidate.vai_para || candidate.graduacao_destino || candidate.graduacao_atual || '';
       
@@ -10184,6 +10186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     clearExamDojobookStudent: function() {
+      window._examTypedStudentName = '';
       examSelectedDojobookStudent = null;
       renderAdminMaster();
       setTimeout(() => {
@@ -10395,6 +10398,10 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAdminMaster();
     },
     generateExamPreview: (mode = 'exam') => {
+      const typedInp = document.getElementById('examDojobookStudentSearch');
+      if (typedInp && typedInp.value.trim()) {
+        window._examTypedStudentName = typedInp.value.trim();
+      }
       if (window.TKST_EXAM_GENERATOR) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
       }
@@ -10428,7 +10435,7 @@ document.addEventListener('DOMContentLoaded', () => {
           dojoName: examSelectedDojobookStudent.dojo_nome
         };
       } else {
-        const typedStudent = (document.getElementById('examDojobookStudentSearch')?.value || '').trim();
+        const typedStudent = (document.getElementById('examDojobookStudentSearch')?.value || window._examTypedStudentName || '').trim();
         if (typedStudent) {
           studentOptions = {
             studentName: typedStudent,
@@ -10439,8 +10446,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const html = window.TKST_EXAM_GENERATOR.buildQuizExamWithKeyHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions, studentOptions);
       window.TKST_EXAM_GENERATOR.printHtml(`Prova Oficial - ${exam.targetBelt}`, html);
-      // Reseta para que a próxima impressão gere novo sorteio dinâmico
-      examCurrentRandomQuestions = null;
+      // Mantém examCurrentRandomQuestions para que o gabarito corresponda à mesma prova impressa
     },
     printCurrentAnswerKey: () => {
       if (!window.TKST_EXAM_GENERATOR) return;
@@ -13738,58 +13744,92 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    openInviteModal: () => {
+    openInviteModal: (initialMode = 'access') => {
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
 
-      modalTitle.innerHTML = `<span><i class="fab fa-whatsapp" style="color: #25D366;"></i> Convidar Aluno para Cadastro</span>`;
-      modalBody.innerHTML = `
-        <div style="padding: 6px 2px;">
-          <p style="font-size: 0.88rem; color: #94A3B8; margin-bottom: 16px; line-height: 1.5;">
-            Envie o convite oficial do portal <strong>TKST Alunos</strong> para novos praticantes realizarem o cadastro no sistema:
-          </p>
+      modalTitle.innerHTML = `<span><i class="fab fa-whatsapp" style="color: #25D366;"></i> Compartilhar Link / Convite</span>`;
 
-          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 18px; font-size: 0.85rem; color: #E2E8F0; line-height: 1.5;">
-            <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
-              <i class="fas fa-comment-dots"></i> Mensagem Oficial de Convite:
-            </div>
-            <div id="inviteMsgPreview" style="font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; color: #CBD5E1; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; line-height: 1.6;">OSS!!!
-O Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.
+      const renderInviteBody = (mode) => {
+        const isAccess = mode === 'access';
+        const url = isAccess 
+          ? 'https://tkst-alunos.pages.dev/' 
+          : 'https://tkst-alunos.pages.dev/?cadastro=1';
+        
+        const previewText = isAccess
+          ? `OSS!!! 🥋\nAcesse o portal oficial de estudos e treinos TKST Alunos:\n\n👉 Toque no link abaixo para entrar no app:\n${url}`
+          : `OSS!!! 🥋\nO Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.\n\n👉 Toque no link abaixo para realizar seu cadastro:\n${url}`;
 
-👉 Toque no link abaixo para realizar seu cadastro:
-https://tkst-alunos.pages.dev/?cadastro=1</div>
-          </div>
+        const descText = isAccess
+          ? `Envie o link direto de <strong>Acesso ao Portal / App</strong> para alunos que já possuem conta ou que desejam acessar a plataforma:`
+          : `Envie o convite oficial do portal <strong>TKST Alunos</strong> para novos praticantes realizarem o cadastro no sistema:`;
 
-          <div id="inviteFeedback" style="margin-bottom: 12px;"></div>
-
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button type="button" class="btn" onclick="window.TKST_APP.sendInviteWhatsApp()" style="width: 100%; padding: 13px; font-weight: 700; background: #25D366; color: #FFF; font-size: 0.95rem; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35);">
-              <i class="fab fa-whatsapp" style="font-size: 1.25rem;"></i> Enviar Convite no WhatsApp
-            </button>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteText()" style="padding: 11px 8px; font-size: 0.84rem; font-weight: 600;">
-                <i class="fas fa-copy"></i> Copiar Mensagem
+        modalBody.innerHTML = `
+          <div style="padding: 6px 2px;">
+            <!-- Seletor de Tipo de Link: Acesso ao App vs Novo Cadastro -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+              <button type="button" class="btn ${isAccess ? 'btn-gold' : 'btn-secondary'}" onclick="window.TKST_APP.openInviteModal('access')" style="padding: 10px 8px; font-size: 0.82rem; font-weight: 700; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; ${isAccess ? 'box-shadow: 0 4px 12px rgba(255, 183, 3, 0.3);' : ''}">
+                <i class="fas fa-mobile-alt"></i> Acesso ao App
               </button>
-              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteLink()" style="padding: 11px 8px; font-size: 0.84rem; font-weight: 600;">
-                <i class="fas fa-link"></i> Copiar Link
+              <button type="button" class="btn ${!isAccess ? 'btn-gold' : 'btn-secondary'}" onclick="window.TKST_APP.openInviteModal('register')" style="padding: 10px 8px; font-size: 0.82rem; font-weight: 700; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; ${!isAccess ? 'box-shadow: 0 4px 12px rgba(255, 183, 3, 0.3);' : ''}">
+                <i class="fas fa-user-plus"></i> Novo Cadastro
               </button>
             </div>
-          </div>
-        </div>
-      `;
 
+            <p style="font-size: 0.85rem; color: #94A3B8; margin-bottom: 14px; line-height: 1.5;">
+              ${descText}
+            </p>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px; font-size: 0.85rem; color: #E2E8F0; line-height: 1.5;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 700; text-transform: uppercase;">
+                  <i class="fas fa-comment-dots"></i> ${isAccess ? 'Mensagem com Link do App:' : 'Mensagem Oficial de Convite:'}
+                </div>
+                <span style="font-size: 0.72rem; color: #64748B; font-family: monospace;">${isAccess ? 'Link Direto' : 'Formulário Cadastro'}</span>
+              </div>
+              <div id="inviteMsgPreview" style="font-family: monospace; font-size: 0.84rem; white-space: pre-wrap; color: #CBD5E1; background: rgba(0,0,0,0.35); padding: 12px; border-radius: 6px; line-height: 1.6; border: 1px solid rgba(255,255,255,0.06);">${previewText}</div>
+            </div>
+
+            <div id="inviteFeedback" style="margin-bottom: 12px;"></div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <button type="button" class="btn" onclick="window.TKST_APP.sendInviteWhatsApp('${mode}')" style="width: 100%; padding: 13px; font-weight: 700; background: #25D366; color: #FFF; font-size: 0.95rem; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35); border: none;">
+                <i class="fab fa-whatsapp" style="font-size: 1.25rem;"></i> ${isAccess ? 'Enviar Link de Acesso no WhatsApp' : 'Enviar Convite de Cadastro no WhatsApp'}
+              </button>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteText('${mode}')" style="padding: 11px 8px; font-size: 0.84rem; font-weight: 600;">
+                  <i class="fas fa-copy"></i> Copiar Mensagem
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.copyInviteLink('${mode}')" style="padding: 11px 8px; font-size: 0.84rem; font-weight: 600;">
+                  <i class="fas fa-link"></i> Copiar Link
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      renderInviteBody(initialMode);
       detailModal.classList.add('active');
     },
 
-    sendInviteWhatsApp: () => {
-      const text = `OSS!!!\nO Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.\n\n👉 *Toque no link abaixo para realizar seu cadastro:*\nhttps://tkst-alunos.pages.dev/?cadastro=1`;
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
+    sendInviteWhatsApp: (mode = 'access') => {
+      const isAccess = mode === 'access';
+      const url = isAccess ? 'https://tkst-alunos.pages.dev/' : 'https://tkst-alunos.pages.dev/?cadastro=1';
+      const text = isAccess
+        ? `OSS!!! 🥋\nAcesse o portal oficial de estudos e treinos TKST Alunos:\n\n👉 *Toque no link abaixo para entrar no app:*\n${url}`
+        : `OSS!!! 🥋\nO Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.\n\n👉 *Toque no link abaixo para realizar seu cadastro:*\n${url}`;
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      window.open(waUrl, '_blank');
     },
 
-    copyInviteText: () => {
-      const text = `OSS!!!\nO Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.\n\n👉 Toque no link abaixo para realizar seu cadastro:\nhttps://tkst-alunos.pages.dev/?cadastro=1`;
+    copyInviteText: (mode = 'access') => {
+      const isAccess = mode === 'access';
+      const url = isAccess ? 'https://tkst-alunos.pages.dev/' : 'https://tkst-alunos.pages.dev/?cadastro=1';
+      const text = isAccess
+        ? `OSS!!! 🥋\nAcesse o portal oficial de estudos e treinos TKST Alunos:\n\n👉 Toque no link abaixo para entrar no app:\n${url}`
+        : `OSS!!! 🥋\nO Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.\n\n👉 Toque no link abaixo para realizar seu cadastro:\n${url}`;
       navigator.clipboard.writeText(text).then(() => {
         const fb = document.getElementById('inviteFeedback');
         if (fb) {
@@ -13799,8 +13839,9 @@ https://tkst-alunos.pages.dev/?cadastro=1</div>
       });
     },
 
-    copyInviteLink: () => {
-      const url = 'https://tkst-alunos.pages.dev/?cadastro=1';
+    copyInviteLink: (mode = 'access') => {
+      const isAccess = mode === 'access';
+      const url = isAccess ? 'https://tkst-alunos.pages.dev/' : 'https://tkst-alunos.pages.dev/?cadastro=1';
       navigator.clipboard.writeText(url).then(() => {
         const fb = document.getElementById('inviteFeedback');
         if (fb) {
@@ -15967,30 +16008,24 @@ Retorne estritamente um JSON no seguinte formato:
         matchedExam = window.TKST_AUTH.getGeneratedExam(cleanCode);
       }
       if (!matchedExam && window.TKST_GENERATED_EXAMS_CACHE) {
-        matchedExam = window.TKST_GENERATED_EXAMS_CACHE[cleanCode] || null;
+        matchedExam = window.TKST_GENERATED_EXAMS_CACHE[cleanCode] || window.TKST_GENERATED_EXAMS_CACHE[cleanCode.toUpperCase()] || null;
       }
       if (!matchedExam) {
         try {
           const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-          matchedExam = store[cleanCode] || null;
+          matchedExam = store[cleanCode] || store[cleanCode.toUpperCase()] || null;
         } catch(e) {}
       }
 
       let kyu = 6;
       let answers = [];
 
-      if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
-        kyu = decoded.kyu;
-        answers = decoded.answers;
-        if (typeof showToast === 'function') {
-          showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) decodificada 100% offline!`, 'success');
-        }
-      } else if (matchedExam && Array.isArray(matchedExam.answers) && matchedExam.answers.length === 10) {
+      if (matchedExam && matchedExam.kyu !== undefined && Array.isArray(matchedExam.answers) && matchedExam.answers.length === 10) {
         kyu = matchedExam.kyu;
         answers = matchedExam.answers;
-        if (typeof showToast === 'function') {
-          showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) carregada com sucesso!`, 'success');
-        }
+      } else if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
+        kyu = decoded.kyu;
+        answers = decoded.answers;
       } else {
         // Se não conseguiu decodificar matematicamente, associa à graduação selecionada no menu
         const kyuSelect = document.getElementById('examCorrectionKyuSelect');
@@ -16002,8 +16037,17 @@ Retorne estritamente um JSON no seguinte formato:
         if (answers.length < 10) {
           answers = ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
         }
-        if (typeof showToast === 'function') {
-          showToast(`🎯 Prova #${cleanCode} associada à ${getBeltNameFromKyu(kyu)}!`, 'info');
+      }
+
+      const stName = (matchedExam && (matchedExam.studentName || matchedExam.studentAbbr)) || (decoded && decoded.studentTag) || '';
+      const stId = (matchedExam && matchedExam.studentId) || '';
+      const stDojo = (matchedExam && matchedExam.dojoName) || '';
+
+      if (typeof showToast === 'function') {
+        if (stName) {
+          showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) vinculada ao aluno: ${stName}`, 'success');
+        } else {
+          showToast(`🎯 Prova #${cleanCode} (${getBeltNameFromKyu(kyu)}) carregada com sucesso!`, 'success');
         }
       }
 
@@ -16011,9 +16055,9 @@ Retorne estritamente um JSON no seguinte formato:
         kyu: kyu,
         examId: cleanCode,
         answers: answers,
-        studentName: (matchedExam && (matchedExam.studentName || matchedExam.studentAbbr)) || '',
-        studentId: (matchedExam && matchedExam.studentId) || '',
-        dojoName: (matchedExam && matchedExam.dojoName) || ''
+        studentName: stName,
+        studentId: stId,
+        dojoName: stDojo
       };
 
       window.TKST_APP.playChime();
@@ -16259,7 +16303,7 @@ Retorne estritamente um JSON no seguinte formato:
       ];
 
       // =========================================================================
-      // 1ª ETAPA: IDENTIFICAR A PROVA (DIGITAÇÃO DO CÓDIGO OU FOTO DO CÓDIGO)
+      // 1ª ETAPA: IDENTIFICAR A PROVA (DIGITAÇÃO DO CÓDIGO)
       // =========================================================================
       if (examScannerStep === 1) {
         body.innerHTML = `
@@ -16271,8 +16315,8 @@ Retorne estritamente um JSON no seguinte formato:
                   1
                 </div>
                 <div>
-                  <strong style="font-size: 0.98rem; color: #FFF;">1ª Etapa: Identificar a Prova</strong>
-                  <div style="font-size: 0.78rem; color: #CBD5E1;">Digite o código de 5 caracteres ou use a câmera ao lado para fotografá-lo.</div>
+                  <strong style="font-size: 0.98rem; color: #FFF;">1ª Etapa: Digitar Código da Prova</strong>
+                  <div style="font-size: 0.78rem; color: #CBD5E1;">Digite o código de 5 caracteres impresso no cabeçalho da prova.</div>
                 </div>
               </div>
               <span class="badge" style="background: rgba(245,190,0,0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold); font-size: 0.75rem; font-weight: 800; padding: 4px 8px;">
@@ -16280,33 +16324,26 @@ Retorne estritamente um JSON no seguinte formato:
               </span>
             </div>
 
-            <!-- Card Principal: Digitação do Código Alfanumérico da Prova com Câmera ao Lado -->
-            <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid var(--accent-gold); border-radius: 10px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+            <!-- Card Principal: Digitação do Código Alfanumérico da Prova -->
+            <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid var(--accent-gold); border-radius: 10px; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
               <div style="font-size: 0.92rem; color: #FFF; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-barcode" style="color: var(--accent-gold); font-size: 1.15rem;"></i>
-                <span>Código da Avaliação (5 caracteres, ex: <span style="color: var(--accent-gold);">0IZ96</span>):</span>
+                <i class="fas fa-keyboard" style="color: var(--accent-gold); font-size: 1.15rem;"></i>
+                <span>Código da Avaliação (5 caracteres):</span>
               </div>
 
-              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <!-- Campo de Digitação -->
-                <input type="text" id="examManualCodeInput" placeholder="0IZ96" maxlength="5" style="flex: 1; min-width: 120px; max-width: 150px; padding: 12px 14px; border-radius: 8px; background: #0B0E14; border: 2px solid var(--border-color); color: #FFF; font-size: 1.25rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
-
-                <!-- Botão de Câmera ao lado do campo para fotografar SOMENTE o código -->
-                <label title="Fotografar somente o badge do código da prova com a câmera" class="btn btn-secondary" style="padding: 12px 14px; font-size: 0.92rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; border-radius: 8px; border: 1.5px solid var(--accent-gold); background: rgba(245, 190, 0, 0.12); color: var(--accent-gold);">
-                  <i class="fas fa-camera" style="font-size: 1.15rem;"></i>
-                  <span>Foto do Código</span>
-                  <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TKST_APP.handleExamCodePhotoUpload(this)">
-                </label>
+                <input type="text" id="examManualCodeInput" placeholder="EX: 0IZ96" maxlength="5" autofocus style="flex: 1; min-width: 140px; padding: 12px 14px; border-radius: 8px; background: #0B0E14; border: 2px solid var(--border-color); color: #FFF; font-size: 1.35rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; text-align: center;" onkeyup="if(event.key==='Enter') window.TKST_APP.submitManualExamCode()">
 
                 <!-- Botão Confirmar e Avançar -->
-                <button type="button" class="btn btn-primary" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 12px 18px; font-size: 0.92rem; font-weight: 800; background: var(--accent-gold); color: #000; border: none; border-radius: 8px; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <button type="button" class="btn btn-primary" onclick="window.TKST_APP.submitManualExamCode()" style="padding: 12px 22px; font-size: 0.95rem; font-weight: 800; background: var(--accent-gold); color: #000; border: none; border-radius: 8px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; cursor: pointer;">
                   <span>Avançar</span>
                   <i class="fas fa-arrow-right"></i>
                 </button>
               </div>
 
-              <div style="font-size: 0.76rem; color: #94A3B8; line-height: 1.4;">
-                💡 <em>O código de 5 caracteres fica no cabeçalho da prova (ex: CÓDIGO: 0IZ96). Digite ou toque em <strong>Foto do Código</strong> para capturar somente o código. O gabarito é decodificado 100% offline.</em>
+              <div style="font-size: 0.78rem; color: #94A3B8; line-height: 1.4;">
+                💡 <em>O código de 5 caracteres fica no cabeçalho da prova (ex: <strong>CÓDIGO: 0IZ96</strong>). Ao digitar e avançar, o aluno vinculado e o gabarito oficial são carregados automaticamente!</em>
               </div>
             </div>
 
@@ -16332,6 +16369,10 @@ Retorne estritamente um JSON no seguinte formato:
             </div>
           </div>
         `;
+        setTimeout(() => {
+          const inp = document.getElementById('examManualCodeInput');
+          if (inp) inp.focus();
+        }, 60);
         return;
       }
 
@@ -16340,10 +16381,10 @@ Retorne estritamente um JSON no seguinte formato:
       // =========================================================================
       body.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 14px; padding: 6px 2px;">
-          <!-- Card de Confirmação da Etapa 1 -->
+          <!-- Card de Confirmação da Etapa 1 com Aluno em Destaque -->
           <div style="background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10B981; border-radius: var(--radius-sm); padding: 12px 16px; color: #FFF; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 34px; height: 34px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: #10B981; color: #FFF; font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">
                 <i class="fas fa-check"></i>
               </div>
               <div>
@@ -16351,9 +16392,18 @@ Retorne estritamente um JSON no seguinte formato:
                 <div style="font-size: 0.8rem; color: #E2E8F0;">
                   ${beltName} • Gabarito oficial de 10 questões carregado
                 </div>
+                ${detected.studentName ? `
+                  <div style="font-size: 0.86rem; color: #FDE047; font-weight: 800; margin-top: 3px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-user-graduate" style="color: var(--accent-gold);"></i> Aluno Vinculado: ${detected.studentName} ${detected.dojoName ? `(${detected.dojoName})` : ''}
+                  </div>
+                ` : `
+                  <div style="font-size: 0.78rem; color: #94A3B8; margin-top: 2px;">
+                    <i class="fas fa-user-clock"></i> Nenhum aluno pré-vinculado (seleção disponível na confirmação da nota).
+                  </div>
+                `}
               </div>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.returnToStep1Qr()" style="font-size: 0.76rem; padding: 6px 10px; border-color: rgba(255,255,255,0.25);">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.returnToStep1Qr()" style="font-size: 0.76rem; padding: 6px 10px; border-color: rgba(255,255,255,0.25); flex-shrink: 0;">
               <i class="fas fa-undo"></i> Trocar Prova
             </button>
           </div>
@@ -17271,7 +17321,7 @@ Retorne estritamente um JSON no seguinte formato:
       const cleanExamId = String((detectedMeta && detectedMeta.examId) || (result && result.examId) || '').slice(0, 5);
       const savedExam = (examGen && examGen.getSavedExamById ? examGen.getSavedExamById(cleanExamId) : null)
         || (window.TKST_AUTH && window.TKST_AUTH.getGeneratedExam ? window.TKST_AUTH.getGeneratedExam(cleanExamId) : null)
-        || (window.TKST_GENERATED_EXAMS_CACHE && window.TKST_GENERATED_EXAMS_CACHE[cleanExamId]);
+        || (window.TKST_GENERATED_EXAMS_CACHE && (window.TKST_GENERATED_EXAMS_CACHE[cleanExamId] || window.TKST_GENERATED_EXAMS_CACHE[cleanExamId.toUpperCase()]));
       const initialDetectedName = (result && (result.studentName || result.aluno)) 
         || (detectedMeta && detectedMeta.studentName) 
         || (savedExam && (savedExam.studentName || savedExam.studentAbbr)) 
@@ -17354,6 +17404,17 @@ Retorne estritamente um JSON no seguinte formato:
             examGradingPendingResult.detectedName = appMatch.name;
           }
         }
+      }
+
+      // 3. Se ainda não vinculou mas temos nome do aluno salvo na prova, pré-vincula como aluno customizado
+      if (!examGradingPendingResult.selectedDojobookStudent && !examGradingPendingResult.selectedAppStudent && (examGradingPendingResult.detectedName || (savedExam && savedExam.studentName))) {
+        const studentDisplayName = examGradingPendingResult.detectedName || (savedExam && savedExam.studentName);
+        examGradingPendingResult.selectedDojobookStudent = {
+          id: (savedExam && savedExam.studentId) || ('std_' + Date.now()),
+          nome: studentDisplayName,
+          dojo_nome: (savedExam && savedExam.dojoName) || examGradingPendingResult.detectedDojo || 'TKST',
+          graduacao_destino: beltName
+        };
       }
 
       window.TKST_APP.refreshGradingReviewUI();
