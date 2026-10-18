@@ -247,6 +247,20 @@
   }
 
   // =========================================================================
+  // AUTH HEADERS & SESSION TOKEN HELPER
+  // =========================================================================
+  function getClientAuthHeaders(extra = {}) {
+    const headers = { 'Content-Type': 'application/json', ...extra };
+    try {
+      const token = localStorage.getItem('tkst_session_token');
+      if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
+      }
+    } catch(e) {}
+    return headers;
+  }
+
+  // =========================================================================
   // QUIZ BANK — Endpoint dedicado para persistência permanente das questões
   // =========================================================================
 
@@ -257,7 +271,7 @@
       // 1. Endpoint dedicado /api/quiz-bank (persistência entre requisições)
       fetch('/api/quiz-bank', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getClientAuthHeaders(),
         body: JSON.stringify({ bank: customOnly, deletedQuizIds: deleted })
       }).catch(() => {});
 
@@ -539,7 +553,7 @@
     try {
       const res = await fetch('/api/quiz-commit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getClientAuthHeaders(),
         body: JSON.stringify({
           customQuestions: bank || [],
           deletedQuizIds: deleted
@@ -634,11 +648,17 @@
     if (!Array.isArray(students) || students.length === 0) return;
     const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || []);
     try {
+      const sanitized = students.map(s => {
+        if (!s) return null;
+        const { password, phone, passwordHash, passwordSalt, ...safe } = s;
+        return safe;
+      }).filter(Boolean);
+
       fetch('/api/student-commit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getClientAuthHeaders(),
         body: JSON.stringify({
-          students,
+          students: sanitized,
           deletedStudentIds: deleted
         })
       }).catch(() => {});
@@ -785,7 +805,7 @@
     try {
       fetch('/api/glossary', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getClientAuthHeaders(),
         body: JSON.stringify(payload)
       }).catch(() => {});
     } catch(e) {}
@@ -794,7 +814,7 @@
     try {
       const res = await fetch('/api/glossary-commit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getClientAuthHeaders(),
         body: JSON.stringify(payload)
       });
       if (res.ok) {
@@ -1100,7 +1120,7 @@
     try {
       fetch('/api/submission-commit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getClientAuthHeaders(),
         body: JSON.stringify({
           quiz_submissions: submissions,
           deletedQuizSubIds: deleted
@@ -1159,7 +1179,7 @@
     try {
       fetch('/api/kata-commit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getClientAuthHeaders(),
         body: JSON.stringify({
           custom_videos: videos
         })
@@ -1178,7 +1198,13 @@
     try {
       const deletedDojos = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_DOJOS)) || [];
       const dojos = (JSON.parse(localStorage.getItem(STORAGE_KEY_DOJOS)) || []).filter(d => typeof d === 'string' && d.trim().length > 0 && !deletedDojos.includes(d.toLowerCase().trim()));
-      const students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+      const rawStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+      const students = rawStudents.map(s => {
+        if (!s) return null;
+        const { password, phone, passwordHash, passwordSalt, ...safe } = s;
+        return safe;
+      }).filter(Boolean);
+
       const videos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
       const progress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
@@ -1244,7 +1270,7 @@
       try {
         await fetch('/api/sync', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getClientAuthHeaders(),
           body: payloadStr
         });
       } catch(syncErr) {
@@ -1946,13 +1972,12 @@
       students = [];
     }
 
-    // Ensure Master Admin exists with requested initial credentials without overwriting custom edits
+    // Ensure Master Admin exists without hardcoded plain text credentials
     const adminIndex = students.findIndex(s => s.username === 'irons365');
     const masterAdminDefault = {
       id: 'admin_irons365',
       username: 'irons365',
       email: 'irons365@tkst.com.br',
-      password: 'Irons365.',
       name: 'Sensei Diego',
       role: 'admin',
       currentBelt: 'Faixa Preta',
@@ -1962,7 +1987,6 @@
       startDate: '2000-01-01',
       avatar: 'assets/images/logo-tkst.png',
       status: 'approved',
-      phone: '',
       updatedAt: 1,
       notes: 'Administrador Master responsável por todo o sistema, arquivos e aprovações.'
     };
@@ -1970,7 +1994,7 @@
     if (adminIndex === -1) {
       students.unshift(masterAdminDefault);
     } else {
-      // Keep all user edits (name, phone, belt, etc.) and only fill missing fields
+      // Keep all user edits (name, belt, etc.) and only fill missing fields
       students[adminIndex] = { ...masterAdminDefault, ...students[adminIndex] };
     }
 
@@ -1984,7 +2008,6 @@
       id: 'std_joaogabriel',
       username: 'joaogabriel.dasilva3150@gmail.com',
       email: 'joaogabriel.dasilva3150@gmail.com',
-      password: '1234',
       name: 'João Gabriel Fonseca da Silva',
       role: 'aluno',
       currentBelt: 'Faixa Amarela (6º Kyu)',
@@ -1998,7 +2021,6 @@
       createdAt: '2026-08-20T15:08:00.000Z',
       updatedAt: Date.now(),
       statusUpdatedAt: Date.now(),
-      phone: '21985215905',
       notes: 'Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego.'
     };
 
@@ -2015,7 +2037,6 @@
           id: 'std_01',
           username: 'lucas.karate',
           email: 'lucas@tkst.com.br',
-          password: '1234',
           name: 'Lucas Silva',
           role: 'aluno',
           currentBelt: 'Faixa Branca',
@@ -2025,14 +2046,12 @@
           startDate: '2026-01-10',
           avatar: 'assets/images/tigre.png',
           status: 'approved',
-          phone: '(21) 98888-1111',
           notes: 'Treinando para o exame de Faixa Amarela.'
         },
         {
           id: 'std_02',
           username: 'mariana.costa',
           email: 'mariana@tkst.com.br',
-          password: '1234',
           name: 'Mariana Costa',
           role: 'aluno',
           currentBelt: 'Faixa Vermelha',
@@ -2042,7 +2061,6 @@
           startDate: '2025-06-15',
           avatar: 'assets/images/logo-tkst-clean.png',
           status: 'approved',
-          phone: '(21) 97777-2222',
           notes: 'Focada no Heian Sandan e Sanbon Kumite.'
         }
       );
@@ -2122,6 +2140,10 @@
 
     pushNow: function() {
       return pushToCloud();
+    },
+
+    getAuthHeaders: function(extra = {}) {
+      return getClientAuthHeaders(extra);
     },
 
     getCurrentUser: function() {
@@ -2472,6 +2494,9 @@
     },
 
     logout: function() {
+      try {
+        localStorage.removeItem('tkst_session_token');
+      } catch(e) {}
       this.setCurrentUser(null);
     },
 
@@ -2483,83 +2508,46 @@
       const cleanId = identifier.trim().toLowerCase();
       const cleanPass = password.trim();
 
-      // Master Admin Fast Path
-      if (cleanId === 'irons365' && (cleanPass === 'Irons365.' || cleanPass === 'irons365.')) {
-        const students = this.getAllStudents();
-        let admin = students.find(s => s.username === 'irons365');
-        if (!admin) {
-          initStorage();
-          admin = this.getAllStudents().find(s => s.username === 'irons365');
+      // 1. Chamar endpoint centralizado /api/login com validação segura no backend
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: cleanId, password: cleanPass })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data && data.success && data.user) {
+          if (data.token) {
+            try {
+              localStorage.setItem('tkst_session_token', data.token);
+            } catch(e) {}
+          }
+          data.user.lastActive = Date.now();
+          this.setCurrentUser(data.user);
+          return { success: true, user: data.user };
+        } else {
+          return { 
+            success: false, 
+            message: (data && data.message) || 'Usuário ou senha incorretos.' 
+          };
         }
-        admin.lastActive = Date.now();
-        const aIdx = students.findIndex(s => s.username === 'irons365');
-        if (aIdx !== -1) {
-          students[aIdx].lastActive = admin.lastActive;
-          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
-          pushToCloud();
+      } catch (networkErr) {
+        // Fallback Offline / PWA: se a rede falhar e o usuário atual já for este usuário
+        const currentUser = this.getCurrentUser();
+        if (currentUser && (
+          (currentUser.username && currentUser.username.toLowerCase() === cleanId) ||
+          (currentUser.email && currentUser.email.toLowerCase() === cleanId) ||
+          (currentUser.id && currentUser.id.toLowerCase() === cleanId)
+        )) {
+          return { success: true, user: currentUser, offline: true };
         }
-        this.setCurrentUser(admin);
-        return { success: true, user: admin };
-      }
-
-      let students = this.getAllStudents();
-      let found = students.find(s => 
-        (s.username && s.username.toLowerCase() === cleanId) ||
-        (s.email && s.email.toLowerCase() === cleanId)
-      );
-
-      // SE NÃO ENCONTROU LOCALMENTE OU ESTÁ COM STATUS 'pending', CONSULTA A NUVEM IMEDIATAMENTE!
-      if (!found || found.status === 'pending') {
-        try {
-          await pullStudentsFromCloud();
-          await pullFromCloud();
-        } catch(e) {}
-
-        students = this.getAllStudents();
-        found = students.find(s => 
-          (s.username && s.username.toLowerCase() === cleanId) ||
-          (s.email && s.email.toLowerCase() === cleanId)
-        );
-      }
-
-      if (!found) {
-        return { success: false, message: 'Nick ou usuário não encontrado. Verifique a digitação ou cadastre-se.' };
-      }
-
-      if (found.password !== cleanPass) {
-        return { success: false, message: 'Senha incorreta. Tente novamente.' };
-      }
-
-      // Auto-aprovação transparente para qualquer aluno cadastrado
-      if (found.status === 'pending') {
-        found.status = 'approved';
-        found.approvedAt = found.approvedAt || new Date().toISOString();
-        found.statusUpdatedAt = Date.now();
-        const fIdx = students.findIndex(s => s.id === found.id || s.username === found.username);
-        if (fIdx !== -1) {
-          students[fIdx] = found;
-          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
-          pushToCloud();
-        }
-      }
-
-      if (found.status === 'rejected') {
-        return { 
-          success: false, 
-          message: 'Seu cadastro não foi aprovado pela coordenação. Entre em contato com seu Sensei.' 
+        return {
+          success: false,
+          message: 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.'
         };
       }
-
-      found.lastActive = Date.now();
-      const fIdx = students.findIndex(s => s.id === found.id || s.username === found.username);
-      if (fIdx !== -1) {
-        students[fIdx].lastActive = found.lastActive;
-        localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
-        pushToCloud();
-      }
-
-      this.setCurrentUser(found);
-      return { success: true, user: found };
     },
 
     register: function(studentData) {
@@ -2656,7 +2644,6 @@
         id: matchedExistingStudent ? matchedExistingStudent.id : ('std_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)),
         username: cleanNick,
         email: studentData.email ? studentData.email.trim() : `${cleanNick}@tkst.local`,
-        password: pass,
         name: cleanName,
         role: studentData.role || 'aluno',
         currentBelt: selectedBelt,
@@ -2670,9 +2657,30 @@
         createdAt: matchedExistingStudent ? (matchedExistingStudent.createdAt || new Date().toISOString()) : new Date().toISOString(),
         updatedAt: Date.now(),
         statusUpdatedAt: Date.now(),
-        phone: studentData.phone ? studentData.phone.trim() : (matchedExistingStudent ? matchedExistingStudent.phone : ''),
         notes: studentData.notes || 'Novo aluno cadastrado pelo portal.'
       };
+
+      if (pass && typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+        (async () => {
+          try {
+            const enc = new TextEncoder();
+            const saltBytes = new Uint8Array(16);
+            window.crypto.getRandomValues(saltBytes);
+            const saltHex = Array.from(saltBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+            const passKey = await window.crypto.subtle.importKey('raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveBits']);
+            const bits = await window.crypto.subtle.deriveBits({ name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' }, passKey, 256);
+            const hashHex = Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+            const curStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+            const idx = curStudents.findIndex(s => s.id === newStudent.id);
+            if (idx !== -1) {
+              curStudents[idx].passwordHash = hashHex;
+              curStudents[idx].passwordSalt = saltHex;
+              localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(curStudents));
+            }
+          } catch(e) {}
+        })();
+      }
 
       if (matchedExistingStudent) {
         const existIdx = students.findIndex(s => s.id === matchedExistingStudent.id);

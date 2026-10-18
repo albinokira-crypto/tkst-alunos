@@ -1,4 +1,7 @@
 .vercel
-
 .env*
+.dev.vars
+.dev.vars.*
+node_modules/
+temp_imgs/
 *.tmp

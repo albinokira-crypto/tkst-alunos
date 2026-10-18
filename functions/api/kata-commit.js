@@ -5,13 +5,7 @@ const REPO = 'albinokira-crypto/tkst-alunos';
 const FILE_PATH = 'assets/data/kata-videos.json';
 const BRANCH = 'main';
 
-const corsHeaders = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Cache-Control': 'no-store, no-cache, must-revalidate'
-};
+import { getCorsHeaders, verifyAuth } from './_auth.js';
 
 function toBase64Utf8(str) {
   const bytes = new TextEncoder().encode(str);
@@ -31,12 +25,14 @@ function fromBase64Utf8(b64) {
   return new TextDecoder().decode(bytes);
 }
 
-export async function onRequestOptions() {
-  return new Response(null, { status: 200, headers: corsHeaders });
+export async function onRequestOptions(context) {
+  const { request, env } = context;
+  return new Response(null, { status: 200, headers: getCorsHeaders(env, request) });
 }
 
 export async function onRequestGet(context) {
   const { request, env } = context;
+  const headers = getCorsHeaders(env, request);
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
 
   if (token) {
@@ -57,7 +53,7 @@ export async function onRequestGet(context) {
             source: 'github',
             sha: ghData.sha,
             data: JSON.parse(raw)
-          }), { status: 200, headers: corsHeaders });
+          }), { status: 200, headers });
         }
       }
     } catch (e) {
@@ -75,7 +71,7 @@ export async function onRequestGet(context) {
           success: true,
           source: 'cloudflare_assets',
           data
-        }), { status: 200, headers: corsHeaders });
+        }), { status: 200, headers });
       }
     } catch (e) {}
   }
@@ -89,18 +85,29 @@ export async function onRequestGet(context) {
         success: true,
         source: 'raw_github',
         data
-      }), { status: 200, headers: corsHeaders });
+      }), { status: 200, headers });
     }
   } catch (e) {}
 
   return new Response(JSON.stringify({ success: true, source: 'fallback_empty', data: {} }), {
     status: 200,
-    headers: corsHeaders
+    headers
   });
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const headers = getCorsHeaders(env, request);
+
+  // Verificação de autenticação: apenas admin pode alterar vídeos dos Kata
+  const auth = await verifyAuth(request, env, 'admin');
+  if (!auth.authenticated) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: auth.error
+    }), { status: 401, headers });
+  }
+
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
 
   try {
@@ -111,7 +118,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({
         success: false,
         message: 'Payload inválido. Envie um objeto custom_videos.'
-      }), { status: 400, headers: corsHeaders });
+      }), { status: 400, headers });
     }
 
     if (!token) {

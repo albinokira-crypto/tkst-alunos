@@ -1,17 +1,12 @@
 // functions/api/student-commit.js
 // Cloudflare Pages Function para persistência e consulta da base de alunos
+// Protegido por Token de Sessão HMAC-SHA256 (role: admin)
+
+import { getCorsHeaders, verifyAuth, sanitizeStudent } from './_auth.js';
 
 const REPO = 'albinokira-crypto/tkst-alunos';
 const FILE_PATH = 'assets/data/students.json';
 const BRANCH = 'main';
-
-const corsHeaders = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Cache-Control': 'no-store, no-cache, must-revalidate'
-};
 
 function toBase64Utf8(str) {
   const bytes = new TextEncoder().encode(str);
@@ -31,12 +26,23 @@ function fromBase64Utf8(b64) {
   return new TextDecoder().decode(bytes);
 }
 
-export async function onRequestOptions() {
-  return new Response(null, { status: 200, headers: corsHeaders });
+function sanitizeStudentData(data) {
+  if (!data || typeof data !== 'object') return { students: [], deletedStudentIds: [] };
+  const students = Array.isArray(data.students) ? data.students.map(sanitizeStudent).filter(Boolean) : [];
+  return {
+    ...data,
+    students
+  };
+}
+
+export async function onRequestOptions(context) {
+  const { request, env } = context;
+  return new Response(null, { status: 200, headers: getCorsHeaders(env, request) });
 }
 
 export async function onRequestGet(context) {
   const { request, env } = context;
+  const headers = getCorsHeaders(env, request);
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
 
   // 1. Tentar via GitHub API
@@ -53,12 +59,13 @@ export async function onRequestGet(context) {
         const ghData = await ghRes.json();
         if (ghData && ghData.content) {
           const raw = fromBase64Utf8(ghData.content);
+          const parsed = JSON.parse(raw);
           return new Response(JSON.stringify({
             success: true,
             source: 'github',
             sha: ghData.sha,
-            data: JSON.parse(raw)
-          }), { status: 200, headers: corsHeaders });
+            data: sanitizeStudentData(parsed)
+          }), { status: 200, headers });
         }
       }
     } catch (e) {
@@ -75,8 +82,8 @@ export async function onRequestGet(context) {
         return new Response(JSON.stringify({
           success: true,
           source: 'cloudflare_assets',
-          data
-        }), { status: 200, headers: corsHeaders });
+          data: sanitizeStudentData(data)
+        }), { status: 200, headers });
       }
     } catch (e) {}
   }
@@ -89,8 +96,8 @@ export async function onRequestGet(context) {
       return new Response(JSON.stringify({
         success: true,
         source: 'raw_github',
-        data
-      }), { status: 200, headers: corsHeaders });
+        data: sanitizeStudentData(data)
+      }), { status: 200, headers });
     }
   } catch (e) {}
 
@@ -98,11 +105,22 @@ export async function onRequestGet(context) {
     success: true,
     source: 'empty',
     data: { students: [], deletedStudentIds: [] }
-  }), { status: 200, headers: corsHeaders });
+  }), { status: 200, headers });
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const headers = getCorsHeaders(env, request);
+
+  // Verificação de autenticação: apenas admin pode gerenciar alunos no servidor
+  const auth = await verifyAuth(request, env, 'admin');
+  if (!auth.authenticated) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: auth.error
+    }), { status: 401, headers });
+  }
+
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
 
   try {
@@ -116,7 +134,7 @@ export async function onRequestPost(context) {
         persisted: false,
         source: 'no_token_client_storage',
         message: 'Alunos recebidos no cliente. Para autocommit configure GITHUB_TOKEN.'
-      }), { status: 200, headers: corsHeaders });
+      }), { status: 200, headers });
     }
 
     // 1. Obter arquivo atual do GitHub
@@ -143,7 +161,7 @@ export async function onRequestPost(context) {
     const deletedSet = new Set(currentData.deletedStudentIds || []);
     incomingDeleted.forEach(id => deletedSet.add(id));
 
-    // 3. Mesclar alunos
+    // 3. Mesclar alunos (preservando hashes e nunca salvando senha em texto plano)
     const studentMap = new Map();
     (currentData.students || []).forEach(s => {
       if (s && s.id && !deletedSet.has(s.id)) {
@@ -154,15 +172,24 @@ export async function onRequestPost(context) {
     incomingStudents.forEach(s => {
       if (!s || !s.id || deletedSet.has(s.id)) return;
       const studentObj = { ...s };
+      delete studentObj.password;
+      delete studentObj.phone;
+
       if (studentObj.status === 'pending') {
         studentObj.status = 'approved';
         studentObj.approvedAt = studentObj.approvedAt || new Date().toISOString();
       }
+
       const existing = studentMap.get(s.id);
       if (!existing) {
         studentMap.set(s.id, studentObj);
       } else {
-        studentMap.set(s.id, { ...existing, ...studentObj });
+        studentMap.set(s.id, {
+          ...existing,
+          ...studentObj,
+          passwordHash: existing.passwordHash || studentObj.passwordHash,
+          passwordSalt: existing.passwordSalt || studentObj.passwordSalt
+        });
       }
     });
 
@@ -184,31 +211,35 @@ export async function onRequestPost(context) {
         'User-Agent': 'TKST-Cloudflare-StudentCommit/1.0'
       },
       body: JSON.stringify({
-        message: `feat(students): sincronizar cadastro de alunos [Cloudflare auto-commit]`,
+        message: `chore(sync): atualizar base de alunos (${incomingStudents.length} alterados) [skip ci]`,
         content: newBase64,
-        sha: currentSha || undefined,
+        sha: currentSha,
         branch: BRANCH
       })
     });
 
-    if (putRes.ok || putRes.status === 201) {
+    if (putRes.ok) {
+      const putData = await putRes.json();
       return new Response(JSON.stringify({
         success: true,
         persisted: true,
-        count: finalPayload.students.length,
-        message: 'Base de alunos salva com sucesso no GitHub!'
-      }), { status: 200, headers: corsHeaders });
+        source: 'github',
+        commitSha: putData.commit && putData.commit.sha,
+        updatedCount: incomingStudents.length
+      }), { status: 200, headers });
     } else {
-      const err = await putRes.json().catch(() => ({}));
+      const errText = await putRes.text();
       return new Response(JSON.stringify({
         success: false,
-        error: err.message || 'Falha ao commitar alunos no GitHub'
-      }), { status: 502, headers: corsHeaders });
+        persisted: false,
+        error: 'Falha ao salvar no GitHub: ' + errText
+      }), { status: 502, headers });
     }
+
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: err.message }), {
-      status: 500,
-      headers: corsHeaders
-    });
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Erro interno ao processar alunos: ' + err.message
+    }), { status: 500, headers });
   }
 }

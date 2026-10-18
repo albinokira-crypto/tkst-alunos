@@ -1,17 +1,12 @@
 // functions/api/submission-commit.js
 // Cloudflare Pages Function para persistência e consulta do histórico de simulados
+// Protegido por Token de Sessão HMAC-SHA256
+
+import { getCorsHeaders, verifyAuth } from './_auth.js';
 
 const REPO = 'albinokira-crypto/tkst-alunos';
 const FILE_PATH = 'assets/data/submissions.json';
 const BRANCH = 'main';
-
-const corsHeaders = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Cache-Control': 'no-store, no-cache, must-revalidate'
-};
 
 function toBase64Utf8(str) {
   const bytes = new TextEncoder().encode(str);
@@ -31,12 +26,14 @@ function fromBase64Utf8(b64) {
   return new TextDecoder().decode(bytes);
 }
 
-export async function onRequestOptions() {
-  return new Response(null, { status: 200, headers: corsHeaders });
+export async function onRequestOptions(context) {
+  const { request, env } = context;
+  return new Response(null, { status: 200, headers: getCorsHeaders(env, request) });
 }
 
 export async function onRequestGet(context) {
   const { request, env } = context;
+  const headers = getCorsHeaders(env, request);
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
 
   // 1. Tentar via GitHub API
@@ -58,7 +55,7 @@ export async function onRequestGet(context) {
             source: 'github',
             sha: ghData.sha,
             data: JSON.parse(raw)
-          }), { status: 200, headers: corsHeaders });
+          }), { status: 200, headers });
         }
       }
     } catch (e) {
@@ -76,7 +73,7 @@ export async function onRequestGet(context) {
           success: true,
           source: 'cloudflare_assets',
           data
-        }), { status: 200, headers: corsHeaders });
+        }), { status: 200, headers });
       }
     } catch (e) {}
   }
@@ -90,7 +87,7 @@ export async function onRequestGet(context) {
         success: true,
         source: 'raw_github',
         data
-      }), { status: 200, headers: corsHeaders });
+      }), { status: 200, headers });
     }
   } catch (e) {}
 
@@ -98,16 +95,48 @@ export async function onRequestGet(context) {
     success: true,
     source: 'empty',
     data: []
-  }), { status: 200, headers: corsHeaders });
+  }), { status: 200, headers });
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const headers = getCorsHeaders(env, request);
+
+  // Verificação de autenticação: usuário logado (aluno ou admin)
+  const auth = await verifyAuth(request, env);
+  if (!auth.authenticated) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: auth.error
+    }), { status: 401, headers });
+  }
+
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
 
   try {
     const body = await request.json().catch(() => ({}));
     const incomingSubmissions = Array.isArray(body.submissions) ? body.submissions : (Array.isArray(body) ? body : (body.submission ? [body.submission] : []));
+
+    // Se não for admin, garante que o aluno só envie simulados dele mesmo
+    const userRole = (auth.user.role || '').toLowerCase();
+    if (userRole !== 'admin') {
+      const userId = (auth.user.sub || '').toLowerCase();
+      const userNick = (auth.user.username || '').toLowerCase();
+      const unauthorized = incomingSubmissions.some(s => {
+        if (!s) return false;
+        const sId = (s.studentId || '').toLowerCase();
+        const sNick = (s.studentUsername || '').toLowerCase();
+        if (sId && sId !== userId && sId !== userNick) return true;
+        if (sNick && sNick !== userNick && sNick !== userId) return true;
+        return false;
+      });
+      if (unauthorized) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Acesso negado: você só pode submeter simulados da sua própria conta.'
+        }), { status: 403, headers });
+      }
+    }
 
     if (!token) {
       return new Response(JSON.stringify({
@@ -115,7 +144,7 @@ export async function onRequestPost(context) {
         persisted: false,
         source: 'no_token_client_storage',
         message: 'Submissão gravada no cliente.'
-      }), { status: 200, headers: corsHeaders });
+      }), { status: 200, headers });
     }
 
     let currentSha = null;
@@ -135,7 +164,7 @@ export async function onRequestPost(context) {
       try {
         const raw = fromBase64Utf8(currentFile.content);
         const parsed = JSON.parse(raw);
-        existingSubmissions = Array.isArray(parsed) ? parsed : (parsed.submissions || []);
+        existingSubmissions = Array.isArray(parsed) ? parsed : (parsed.submissions || parsed.quiz_submissions || []);
       } catch (e) {}
     }
 
@@ -177,18 +206,19 @@ export async function onRequestPost(context) {
         persisted: true,
         count: finalSubmissions.length,
         message: 'Histórico de simulados salvo com sucesso no GitHub!'
-      }), { status: 200, headers: corsHeaders });
+      }), { status: 200, headers });
     } else {
-      const err = await putRes.json().catch(() => ({}));
       return new Response(JSON.stringify({
         success: false,
-        error: err.message || 'Falha ao commitar simulados no GitHub'
-      }), { status: 502, headers: corsHeaders });
+        persisted: false,
+        error: 'Falha ao salvar no repositório GitHub.'
+      }), { status: 502, headers });
     }
+
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: err.message }), {
-      status: 500,
-      headers: corsHeaders
-    });
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Erro interno ao processar submissão: ' + err.message
+    }), { status: 500, headers });
   }
 }

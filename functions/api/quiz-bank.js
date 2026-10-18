@@ -7,13 +7,7 @@ const BRANCH = 'main';
 const MARKER_START = '// ==TKST_CUSTOM_QUESTIONS_START==';
 const MARKER_END = '// ==TKST_CUSTOM_QUESTIONS_END==';
 
-const corsHeaders = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Cache-Control': 'no-store, no-cache, must-revalidate'
-};
+import { getCorsHeaders, verifyAuth } from './_auth.js';
 
 let inMemoryQuizBank = null;
 
@@ -53,12 +47,14 @@ function extractQuestionsFromScript(scriptText) {
   }
 }
 
-export async function onRequestOptions() {
-  return new Response(null, { status: 200, headers: corsHeaders });
+export async function onRequestOptions(context) {
+  const { request, env } = context;
+  return new Response(null, { status: 200, headers: getCorsHeaders(env, request) });
 }
 
 export async function onRequestGet(context) {
   const { request, env } = context;
+  const headers = getCorsHeaders(env, request);
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
 
   if (inMemoryQuizBank && Array.isArray(inMemoryQuizBank) && inMemoryQuizBank.length > 0) {
@@ -67,7 +63,7 @@ export async function onRequestGet(context) {
       source: 'memory_cache',
       count: inMemoryQuizBank.length,
       data: inMemoryQuizBank
-    }), { status: 200, headers: corsHeaders });
+    }), { status: 200, headers });
   }
 
   // 1. Tentar via GitHub API
@@ -91,7 +87,7 @@ export async function onRequestGet(context) {
               source: 'github',
               count: questions.length,
               data: questions
-            }), { status: 200, headers: corsHeaders });
+            }), { status: 200, headers });
           }
         }
       }
@@ -113,7 +109,7 @@ export async function onRequestGet(context) {
             source: 'cloudflare_assets',
             count: questions.length,
             data: questions
-          }), { status: 200, headers: corsHeaders });
+          }), { status: 200, headers });
         }
       }
     } catch (e) {}
@@ -130,7 +126,7 @@ export async function onRequestGet(context) {
         source: 'raw_github',
         count: questions.length,
         data: questions
-      }), { status: 200, headers: corsHeaders });
+      }), { status: 200, headers });
     }
   } catch (e) {}
 
@@ -139,11 +135,22 @@ export async function onRequestGet(context) {
     source: 'empty',
     count: 0,
     data: []
-  }), { status: 200, headers: corsHeaders });
+  }), { status: 200, headers });
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const headers = getCorsHeaders(env, request);
+
+  // Verificação de autenticação: apenas admin pode alterar o banco de questões
+  const auth = await verifyAuth(request, env, 'admin');
+  if (!auth.authenticated) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: auth.error
+    }), { status: 401, headers });
+  }
+
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
 
   try {
@@ -153,7 +160,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({
         success: false,
         error: 'Payload inválido: esperado array de questões.'
-      }), { status: 400, headers: corsHeaders });
+      }), { status: 400, headers });
     }
 
     if (incoming.length > 0) {
@@ -167,7 +174,7 @@ export async function onRequestPost(context) {
         source: 'no_token_client_storage',
         count: incoming.length,
         message: 'Questões salvas no cliente. Para autocommit configure GITHUB_TOKEN.'
-      }), { status: 200, headers: corsHeaders });
+      }), { status: 200, headers });
     }
 
     // 1. Obter arquivo atual do GitHub

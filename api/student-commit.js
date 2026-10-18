@@ -5,10 +5,20 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const { verifyAuth, sanitizeStudent } = require('./_auth');
 
 const REPO = process.env.GITHUB_REPO || 'albinokira-crypto/tkst-alunos';
 const FILE_PATH = 'assets/data/students.json';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
+
+function sanitizeStudentData(data) {
+  if (!data || typeof data !== 'object') return { students: [], deletedStudentIds: [] };
+  const students = Array.isArray(data.students) ? data.students.map(sanitizeStudent).filter(Boolean) : [];
+  return {
+    ...data,
+    students
+  };
+}
 
 function githubRequest(method, reqPath, token, body) {
   return new Promise((resolve, reject) => {
@@ -91,7 +101,7 @@ module.exports = async (req, res) => {
         if (getResult.status === 200 && getResult.data && getResult.data.content) {
           const content = Buffer.from(getResult.data.content.replace(/\n/g, ''), 'base64').toString('utf8');
           const parsed = JSON.parse(content);
-          return res.status(200).json({ success: true, data: parsed });
+          return res.status(200).json({ success: true, data: sanitizeStudentData(parsed) });
         }
       }
     } catch (e) {}
@@ -101,7 +111,7 @@ module.exports = async (req, res) => {
       const localPath = path.resolve(process.cwd(), FILE_PATH);
       if (fs.existsSync(localPath)) {
         const parsed = JSON.parse(fs.readFileSync(localPath, 'utf8'));
-        return res.status(200).json({ success: true, data: parsed });
+        return res.status(200).json({ success: true, data: sanitizeStudentData(parsed) });
       }
     } catch (e) {}
 
@@ -110,6 +120,11 @@ module.exports = async (req, res) => {
 
   // POST: Adiciona/atualiza alunos e commita no GitHub
   if (req.method === 'POST') {
+    const auth = verifyAuth(req, 'admin');
+    if (!auth.authenticated) {
+      return res.status(401).json({ success: false, error: auth.error });
+    }
+
     try {
       let body = req.body;
       if (typeof body === 'string') body = JSON.parse(body);

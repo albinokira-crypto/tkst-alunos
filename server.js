@@ -3,8 +3,9 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '127.0.0.1';
 const PUBLIC_DIR = __dirname;
-const VIDEO_DIR = 'D:\\Videos Kata SKO';
+const VIDEO_DIR = process.env.VIDEO_DIR || 'D:\\Videos Kata SKO';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -212,7 +213,8 @@ const server = http.createServer(async (req, res) => {
 
   // 2. Handle video streaming from D:\Videos Kata SKO
   if (pathname.startsWith('/videos/')) {
-    const videoName = pathname.replace('/videos/', '');
+    const rawVideoName = pathname.replace('/videos/', '');
+    const videoName = path.basename(rawVideoName);
     let videoPath = path.join(VIDEO_DIR, videoName);
     
     // Fallback to assets/videos if exists
@@ -250,7 +252,7 @@ const server = http.createServer(async (req, res) => {
         return;
       }
     } else {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end('Vídeo não encontrado.');
       return;
     }
@@ -261,14 +263,33 @@ const server = http.createServer(async (req, res) => {
     pathname = '/index.html';
   }
 
-  const filePath = path.join(PUBLIC_DIR, pathname);
-
-  // Security check: ensure path is within PUBLIC_DIR
-  if (!filePath.startsWith(PUBLIC_DIR)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain' });
+  // Prevent dotfile access and path traversal
+  const segments = pathname.split('/').filter(Boolean);
+  const hasDotfile = segments.some(seg => seg.startsWith('.'));
+  if (hasDotfile) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Acesso proibido.');
     return;
   }
+
+  // Block sensitive server files and source folders
+  const restrictedRoots = ['api', 'functions', 'scripts', 'tests', 'node_modules'];
+  const restrictedFiles = ['server.js', 'package.json', 'package-lock.json', 'vercel.json', '.vercelignore'];
+  if (restrictedRoots.includes(segments[0]) || restrictedFiles.includes(path.basename(pathname).toLowerCase())) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Acesso proibido.');
+    return;
+  }
+
+  const safePath = path.resolve(PUBLIC_DIR, '.' + pathname);
+  const relative = path.relative(PUBLIC_DIR, safePath);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Acesso proibido.');
+    return;
+  }
+
+  const filePath = safePath;
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
@@ -282,13 +303,15 @@ const server = http.createServer(async (req, res) => {
 
     res.writeHead(200, {
       'Content-Type': contentType,
-      'Cache-Control': 'no-cache'
+      'Cache-Control': 'no-cache',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'SAMEORIGIN'
     });
 
     fs.createReadStream(filePath).pipe(res);
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`🥋 TKST Alunos rodando em: http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`🥋 TKST Alunos rodando em: http://${HOST}:${PORT}`);
 });

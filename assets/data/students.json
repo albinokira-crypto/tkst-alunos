@@ -16,9 +16,7 @@
       "approvedAt": "2026-01-01T00:00:00.000Z",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": 1788714274983,
-      "phone": "(21) 972114674",
       "notes": "Administrador Master responsável por todo o sistema, arquivos e aprovações.",
-      "password": "Irons365.",
       "lastActive": 1791755244119,
       "statusUpdatedAt": 1786925884100,
       "quizScores": [
@@ -86,13 +84,14 @@
           "beltLevel": "Faixa Amarela 6º Kyu",
           "beltKyu": 6
         }
-      ]
+      ],
+      "passwordSalt": "3ce2fdacd982afe0f022bfa72298f244",
+      "passwordHash": "247c60d340f1d11af788eb501708bf694667d792745f77971bc8e612ff0c614b"
     },
     {
       "id": "std_1788565703617_toit0",
       "username": "suppotheo7@gmail.com",
       "email": "suppotheo7@gmail.com@tkst.local",
-      "password": "77uqRY3F5m2",
       "name": "Théo Suppo Peçanha Martins",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -106,14 +105,14 @@
       "createdAt": "2026-09-04T23:48:23.623Z",
       "updatedAt": 1788565703623,
       "statusUpdatedAt": 1788565703623,
-      "phone": "21972733854",
-      "notes": "Novo aluno cadastrado pelo portal."
+      "notes": "Novo aluno cadastrado pelo portal.",
+      "passwordSalt": "3ba1c472abdc818f076ee1ddb211d187",
+      "passwordHash": "8713a9779fd34d82332f71e6ebd63aed7f4cd1cbe1c254d43afc60f7f1deda99"
     },
     {
       "id": "std_1788521342680_zfcsv",
       "username": "karate shotokan",
       "email": "karate shotokan@tkst.local",
-      "password": "Karate",
       "name": "Vagner da Silva Macedo",
       "role": "aluno",
       "currentBelt": "Faixa Marrom (1º Kyu)",
@@ -127,7 +126,6 @@
       "createdAt": "2026-09-04T11:29:02.694Z",
       "updatedAt": 1789245064605,
       "statusUpdatedAt": 1788521342694,
-      "phone": "(21)97014-4614",
       "notes": "Novo aluno cadastrado pelo portal.",
       "lastActive": 1791389463216,
       "quizScores": [
@@ -147,13 +145,14 @@
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
         }
-      ]
+      ],
+      "passwordSalt": "de954f3665adccbcf359f10a9f15bf42",
+      "passwordHash": "8218ca700be109195bf1df773fa22c89881053882bf508dea4c8bd3bc002dc1d"
     },
     {
       "id": "std_1788197460590_w39u4",
       "username": "nathaliamagalhaesproenca@gmail.com",
       "email": "nathaliamagalhaesproenca@gmail.com@tkst.local",
-      "password": "031013",
       "name": "Nathalia Magalhaes Proença",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha (5º Kyu)",
@@ -167,7 +166,6 @@
       "createdAt": "2026-08-31T17:31:00.600Z",
       "updatedAt": 1791245751228,
       "statusUpdatedAt": 1788199368996,
-      "phone": "21 988516728",
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1791245747583,
       "quizScores": [
@@ -435,13 +433,14 @@
           "beltLevel": "Faixa Vermelha 5º Kyu",
           "beltKyu": 5
         }
-      ]
+      ],
+      "passwordSalt": "90bc857f846488113d590aeccbce6364",
+      "passwordHash": "93544bff25b07457d042566b5d07c5184174ebc53d87ddfdcdb4d37ef9631102"
     },
     {
       "id": "std_1787604092193_useog",
       "username": "dandaoday021@gmail.com",
       "email": "dandaoday021@gmail.com@tkst.local",
-      "password": "mariavictor",
       "name": "Maria Victoria severiano brandão",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha (5º Kyu)",
@@ -455,14 +454,14 @@
       "createdAt": "2026-08-24T20:41:32.198Z",
       "updatedAt": 1787604141657,
       "statusUpdatedAt": 1787604141657,
-      "phone": "21966124627",
-      "notes": "Novo cadastro realizado pelo portal."
+      "notes": "Novo cadastro realizado pelo portal.",
+      "passwordSalt": "36db71d7955c18116eb4201f54f88727",
+      "passwordHash": "cfc083e42f2a8cabcad4429b392045f344196aa70944781647ca7c4c0b4f01a6"
     },
     {
       "id": "std_1787521165137_pq6q4",
       "username": "emanuellybastoslanga@gmail.com",
       "email": "emanuellybastoslanga@gmail.com@tkst.local",
-      "password": "962019",
       "name": "Emanuelly Bastos langa",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha (5º Kyu)",
@@ -476,7 +475,6 @@
       "createdAt": "2026-08-23T21:39:25.162Z",
       "updatedAt": 1789598076621,
       "statusUpdatedAt": 1787521212135,
-      "phone": "21985684113",
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1789598051681,
       "quizScores": [
@@ -512,13 +510,14 @@
           "beltLevel": "Faixa Vermelha 5º Kyu",
           "beltKyu": 5
         }
-      ]
+      ],
+      "passwordSalt": "7e8a7ec443100c95c80cc04a4a41adb6",
+      "passwordHash": "8f1e8a96c8042828244e2467bba7db2d3c52d22f7d1ff052e53af1cc88715e8e"
     },
     {
       "id": "std_1787351605155_g3rqr",
       "username": "almir",
       "email": "almir@tkst.local",
-      "password": "1SGmagrin",
       "name": "Almir Gustavo Silva Werly",
       "role": "admin",
       "currentBelt": "Faixa Preta (Nidan - 2º Dan)",
@@ -532,15 +531,15 @@
       "createdAt": "2026-08-21T22:33:25.162Z",
       "updatedAt": 1788394140946,
       "statusUpdatedAt": 1788379203426,
-      "phone": "21967604566",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1788379363832
+      "lastActive": 1788379363832,
+      "passwordSalt": "77af47d510ef4ad385d191cb27513777",
+      "passwordHash": "45daf4192240bdd455f7db811d5dec51fae14eb0f0e91d7a10c65ca1a4ba66d3"
     },
     {
       "id": "std_1787271943441_o09zl",
       "username": "hugo",
       "email": "hugo@tkst.local",
-      "password": "280816",
       "name": "Hugo Barreto Monteiro",
       "role": "aluno",
       "currentBelt": "Faixa Branca (7º Kyu)",
@@ -554,15 +553,15 @@
       "createdAt": "2026-08-21T00:25:43.442Z",
       "updatedAt": 1787272026092,
       "statusUpdatedAt": 1787272026092,
-      "phone": "21995540589",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1787840248219
+      "lastActive": 1787840248219,
+      "passwordSalt": "4bb7e79fccc837f77ae49bc398e94404",
+      "passwordHash": "cdacdc8045459b274e5ca849554bac0bad61234066c4f0006f6f87ec57f08945"
     },
     {
       "id": "std_1787268943201_fpw5o",
       "username": "nick",
       "email": "nicollyferreiradesouza14@gmail.com@tkst.local",
-      "password": "2014@",
       "name": "Nicolly ferreira de Souza",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -576,7 +575,6 @@
       "createdAt": "2026-08-20T23:35:43.204Z",
       "updatedAt": 1791641128569,
       "statusUpdatedAt": 1788216728113,
-      "phone": "5521997096186",
       "notes": "Novo cadastro realizado pelo portal. [Auto-aprovado: Aluno reconhecido na base]",
       "lastActive": 1791641121247,
       "quizScores": [
@@ -596,13 +594,14 @@
           "beltLevel": "Faixa Amarela 6º Kyu",
           "beltKyu": 6
         }
-      ]
+      ],
+      "passwordSalt": "731a17dddf158fdf54a2d6e3289256f6",
+      "passwordHash": "3164609b27c648aa72d46cb2b274ff8737d32133e34f1d40cd8fef907e1dc46d"
     },
     {
       "id": "std_1787242518359_gbipq",
       "username": "sofiapareira558@gmail.com",
       "email": "sofiapareira558@gmail.com@tkst.local",
-      "password": "ana2utowy",
       "name": "Sofia Pereira Sertório",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha (5º Kyu)",
@@ -616,7 +615,6 @@
       "createdAt": "2026-08-20T16:15:18.363Z",
       "updatedAt": 1789651074054,
       "statusUpdatedAt": 1787242680972,
-      "phone": "21988352635",
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1789651064189,
       "quizScores": [
@@ -628,13 +626,14 @@
           "beltLevel": "Faixa Amarela 6º Kyu",
           "beltKyu": 6
         }
-      ]
+      ],
+      "passwordSalt": "a096c6c6f02b071dd6d2c07e6773ca0c",
+      "passwordHash": "1f539c9063daa51f9dde929720c4da5aa05ff1df3d60261cdb9660c00d92ba6b"
     },
     {
       "id": "std_1787242265755_iheub",
       "username": "airanflorencio14@gmail.com",
       "email": "airanflorencio14@gmail.com@tkst.local",
-      "password": "050614",
       "name": "Airan da Silva de Paula Florêncio",
       "role": "aluno",
       "currentBelt": "Faixa Verde (3º Kyu)",
@@ -692,13 +691,14 @@
           "beltLevel": "Faixa Verde 3º Kyu",
           "beltKyu": 3
         }
-      ]
+      ],
+      "passwordSalt": "90ff01ed3ed5dea44422337cd6a9633f",
+      "passwordHash": "376fe5b1d84a924be97966a5f07671755f5474791d4db349b20785a156a87e93"
     },
     {
       "id": "std_1787241713104_fnkjw",
       "username": "michellemodestomage@gmail.com",
       "email": "michellemodestomage@gmail.com@tkst.local",
-      "password": "1252",
       "name": "Agatha modesto de Aguiar",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -712,15 +712,15 @@
       "createdAt": "2026-08-20T16:01:53.116Z",
       "updatedAt": 1787242983055,
       "statusUpdatedAt": 1787242983055,
-      "phone": "21998567357",
       "notes": "Novo cadastro realizado pelo portal. [Auto-aprovado: Aluno reconhecido na base]",
-      "lastActive": 1787243333157
+      "lastActive": 1787243333157,
+      "passwordSalt": "bca3de2e9d7cbaae185861233d859475",
+      "passwordHash": "0b8565a258fefae94368fe88419ed14676d8f1f13c0fb579ac5f47abbef2e733"
     },
     {
       "id": "std_1787239592203_am7jz",
       "username": "biacorreamelo10@gmail.com",
       "email": "biacorreamelo10@gmail.com@tkst.local",
-      "password": "0207",
       "name": "Beatriz Corrêa De Melo",
       "role": "aluno",
       "currentBelt": "Faixa Marrom (1º Kyu)",
@@ -734,7 +734,6 @@
       "createdAt": "2026-08-20T15:26:32.204Z",
       "updatedAt": 1787240456050,
       "statusUpdatedAt": 1787239638208,
-      "phone": "55 21 96761-8191",
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1787276282573,
       "quizScores": [
@@ -746,13 +745,14 @@
           "beltLevel": "Simulado Geral",
           "beltKyu": "all"
         }
-      ]
+      ],
+      "passwordSalt": "fa672c9b97253c6dca3f55995611a74f",
+      "passwordHash": "c93c359bf46f35f50dcc5ecbdcd13ea3e829eaf623b8672dcc4dc0cce6ed86c5"
     },
     {
       "id": "std_joaogabriel",
       "username": "joaogabriel.dasilva3150@gmail.com",
       "email": "joaogabriel.dasilva3150@gmail.com",
-      "password": "1234",
       "name": "João Gabriel Fonseca da Silva",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -766,14 +766,14 @@
       "createdAt": "2026-08-20T15:08:00.000Z",
       "updatedAt": 1791755248971,
       "statusUpdatedAt": 1791755248971,
-      "phone": "21985215905",
-      "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego."
+      "notes": "Aluno matriculado na unidade TKST Santo Aleixo. Acesso liberado pelo Sensei Diego.",
+      "passwordSalt": "230466ad957cdddbfdb52d43875db849",
+      "passwordHash": "2fc99106cb07d0e332fe34a9114b3ef15a590bfdb0076d42bd65a5de1e4a0dd0"
     },
     {
       "id": "std_1787188271144_i70th",
       "username": "xuxex@hotmail.com",
       "email": "xuxex@hotmail.com@tkst.local",
-      "password": "3147",
       "name": "Pedro Victor Rezende Carneiro Costa",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -787,14 +787,14 @@
       "createdAt": "2026-08-20T01:11:11.157Z",
       "updatedAt": 1787188453610,
       "statusUpdatedAt": 1787188453610,
-      "phone": "31996317973",
-      "notes": "Novo cadastro realizado pelo portal."
+      "notes": "Novo cadastro realizado pelo portal.",
+      "passwordSalt": "042cc515efa0e457a68c71c420658a23",
+      "passwordHash": "e4ff3a41ecf60ef1ec9dceb6d0edfef092d5e29b64efb6fd545861ed89982e34"
     },
     {
       "id": "std_1787185578421_3i178",
       "username": "alicevarb2@gmail.com",
       "email": "alicevarb2@gmail.com@tkst.local",
-      "password": "i4z4HPhCt46",
       "name": "Alice Barbosa de Souza Pereira",
       "role": "aluno",
       "currentBelt": "Faixa Amarela (6º Kyu)",
@@ -808,15 +808,15 @@
       "createdAt": "2026-08-20T00:26:18.431Z",
       "updatedAt": 1791417051936,
       "statusUpdatedAt": 1791417051936,
-      "phone": "alicevarb2@gmail.com",
       "notes": "Novo aluno cadastrado pelo portal.",
-      "lastActive": 1791417346202
+      "lastActive": 1791417346202,
+      "passwordSalt": "3deb3150f62b73070cd8fd092867dbbd",
+      "passwordHash": "b9c79b312c23d12dcc970cf1c03502f3b550b85cdc97200070a557d309ad0354"
     },
     {
       "id": "std_1787167014810_him5t",
       "username": "pietro",
       "email": "pietro@tkst.local",
-      "password": "a12345",
       "name": "Pietro albino",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha",
@@ -832,13 +832,14 @@
       "statusUpdatedAt": 1787167014821,
       "phone": "",
       "notes": "Novo cadastro realizado pelo portal.",
-      "lastActive": 1787168558184
+      "lastActive": 1787168558184,
+      "passwordSalt": "9b6de224c2861086f13cdcd6b859e627",
+      "passwordHash": "f10492714ad50a8b1354e6f75b4bed9548b26e83ecb8c275ba69ef8253ee1aa1"
     },
     {
       "id": "std_1787063008306_96bzm",
       "username": "pietro01",
       "email": "pietro01@tkst.local",
-      "password": "a1234",
       "name": "Pietro S.H.J. Campista",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha (5º Kyu)",
@@ -852,15 +853,15 @@
       "createdAt": "2026-08-18T14:23:28.307Z",
       "updatedAt": 1788396962784,
       "statusUpdatedAt": 1788396962784,
-      "phone": "21999888301",
       "notes": "Novo aluno cadastrado pelo portal.",
-      "lastActive": 1789075212847
+      "lastActive": 1789075212847,
+      "passwordSalt": "82df031ee221cf4538dbdd6c1b40a8e5",
+      "passwordHash": "c82d6c206a91decd259b1f9bb9e4492949b0f3afe27b27db09aa838153caaf9e"
     },
     {
       "id": "std_1787010787759_1h4nl",
       "username": "carol",
       "email": "carol@tkst.local",
-      "password": "721820",
       "name": "Carolyne Ferreira Ramos Evaristo",
       "role": "aluno",
       "currentBelt": "Faixa Branca (7º Kyu)",
@@ -874,7 +875,6 @@
       "createdAt": "2026-08-17T23:53:07.759Z",
       "updatedAt": 1791318240238,
       "statusUpdatedAt": 1788227679643,
-      "phone": "021995419348",
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1791404176573,
       "quizScores": [
@@ -1030,13 +1030,14 @@
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
         }
-      ]
+      ],
+      "passwordSalt": "bec8fa30e441f7121da3f20cf6bff693",
+      "passwordHash": "49073baffefa4d777cafb12a40c2f99eea3d656352c3df429a7455b2d55cbd2d"
     },
     {
       "id": "std_1786982056436_rcskv",
       "username": "alvesraisln@icloud.com",
       "email": "alvesraisln@icloud.com@tkst.local",
-      "password": "280313",
       "name": "Raislan Vitoria",
       "role": "aluno",
       "currentBelt": "Faixa Preta (Shodan - 1º Dan)",
@@ -1049,15 +1050,15 @@
       "createdAt": "2026-08-17T15:54:16.438Z",
       "updatedAt": 1786982281590,
       "statusUpdatedAt": 1786982281590,
-      "phone": "21999947847",
       "notes": "Novo cadastro realizado pelo portal.",
-      "approvedAt": "2026-08-17T15:58:01.583Z"
+      "approvedAt": "2026-08-17T15:58:01.583Z",
+      "passwordSalt": "553a08f8a89f12b68bf6ab838d0cdc04",
+      "passwordHash": "115f38b9e6465b815381a9059ba243e3298f814482ab049af2a9ffc4659a5423"
     },
     {
       "id": "std_1786920249903",
       "username": "pamelalarahlunna@gmail.com",
       "email": "pamelalarahlunna@gmail.com@tkst.local",
-      "password": "pamela17",
       "name": "Lunna da Fonseca Barbosa Pereira",
       "role": "aluno",
       "currentBelt": "Faixa Branca (7º Kyu)",
@@ -1067,17 +1068,17 @@
       "startDate": "2026-08-16",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "phone": "21979822652",
       "notes": "Novo cadastro realizado pelo portal.",
       "approvedAt": "2026-08-17T00:40:00.095Z",
       "statusUpdatedAt": 1786927200095,
-      "updatedAt": 1786927200095
+      "updatedAt": 1786927200095,
+      "passwordSalt": "9edec5043a537568d769c7dc2bb16e80",
+      "passwordHash": "49d46e3103585cc33dc2c490663b82ccf2b40e3db8915a6bc4e24141d31e3cd2"
     },
     {
       "id": "std_1786907524940",
       "username": "cmarcelle380@gmail.com",
       "email": "cmarcelle380@gmail.com@tkst.local",
-      "password": "preta",
       "name": "Marcelle Corrêa de Melo",
       "role": "aluno",
       "currentBelt": "Faixa Preta (Shodan - 1º Dan)",
@@ -1087,7 +1088,6 @@
       "startDate": "2026-08-16",
       "avatar": "data:image/jpeg;base64,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",
       "status": "approved",
-      "phone": "21967702692",
       "notes": "Novo cadastro realizado pelo portal.",
       "approvedAt": "2026-08-17T00:39:55.615Z",
       "statusUpdatedAt": 1786927195615,
@@ -1110,13 +1110,14 @@
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
         }
-      ]
+      ],
+      "passwordSalt": "0b41115ffc41c6872a13428ecdfd94b0",
+      "passwordHash": "a0fff687290f7f43c679340b2b07ab7c76c7345cb43825dc35a7f34f211d607d"
     },
     {
       "id": "std_1786839088915",
       "username": "ncdrielle@gmail.com",
       "email": "ncdrielle@gmail.com@tkst.local",
-      "password": "dri2026",
       "name": "Drielle Corrêa de melo",
       "role": "aluno",
       "currentBelt": "Faixa Preta (Shodan - 1º Dan)",
@@ -1126,7 +1127,6 @@
       "startDate": "2026-08-16",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "phone": "21998845702",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
       "updatedAt": 1787239753005,
@@ -1156,13 +1156,14 @@
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
         }
-      ]
+      ],
+      "passwordSalt": "608fe1ff21ff9038d8eab5ae99af3068",
+      "passwordHash": "68506cc3aad572e8ee590a8fdb6d4ddab37b30f3f9c00aecc85ac6b5172b8e6e"
     },
     {
       "id": "std_1786884701207",
       "username": "flavia medeiros",
       "email": "flavia medeiros@tkst.local",
-      "password": "Flavia1283",
       "name": "Rosa Flavia Alves de Carvalho Medeiros",
       "role": "aluno",
       "currentBelt": "Faixa Vermelha (5º Kyu)",
@@ -1172,7 +1173,6 @@
       "startDate": "2026-08-16",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "phone": "21999714332",
       "notes": "Novo cadastro realizado pelo portal.",
       "lastActive": 1791550583134,
       "statusUpdatedAt": 1,
@@ -1442,13 +1442,14 @@
           "beltLevel": "Faixa Amarela 6º Kyu",
           "beltKyu": 6
         }
-      ]
+      ],
+      "passwordSalt": "70309b5774d3639f0dbf118fcda13463",
+      "passwordHash": "1d81d768e3566af69ad2c4be5e42c17de777f1111b733ab23e3c5f3b2f47399e"
     },
     {
       "id": "std_1786921801399",
       "username": "alicemendes",
       "email": "alicemendes@tkst.local",
-      "password": "pamela17",
       "name": "Alice Biagioli Mendes Barbosa",
       "role": "aluno",
       "currentBelt": "Faixa Branca (7º Kyu)",
@@ -1458,16 +1459,16 @@
       "startDate": "2026-08-16",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "phone": "21979822652",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
-      "updatedAt": 1791753921264
+      "updatedAt": 1791753921264,
+      "passwordSalt": "49b0d732dee96da87e762d72ac7b714a",
+      "passwordHash": "8a6c35c6882cc47ca6a20bfa7e9ae964448c60787cd4fcd44970d720b0d9031a"
     },
     {
       "id": "std_1786821348098",
       "username": "sensei gabriel",
       "email": "sensei gabriel@tkst.local",
-      "password": "27112021",
       "name": "Gabriel Souza de Oliveira",
       "role": "admin",
       "currentBelt": "Faixa Preta (Sandan - 3º Dan)",
@@ -1477,7 +1478,6 @@
       "startDate": "2026-08-15",
       "avatar": "assets/images/logo-tkst.png",
       "status": "approved",
-      "phone": "21981617690",
       "notes": "Novo cadastro realizado pelo portal.",
       "statusUpdatedAt": 1,
       "updatedAt": 1788639341708,
@@ -1499,13 +1499,14 @@
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
         }
-      ]
+      ],
+      "passwordSalt": "8315af1a0a16cd4310221a3533a0073e",
+      "passwordHash": "1e8430f7d0623ff803238080b585042a8d55d17877a8d31b01e802f1e8541ad6"
     },
     {
       "id": "std_1789162821949_aluw8",
       "username": "carvalhonicole204@gmail.com",
       "email": "carvalhonicole204@gmail.com@tkst.local",
-      "password": "RtDvKGnA69d",
       "name": "Nicole de carvalho medeiros",
       "role": "aluno",
       "currentBelt": "Faixa Marrom (1º Kyu)",
@@ -1519,14 +1520,14 @@
       "createdAt": "2026-09-11T21:40:21.952Z",
       "updatedAt": 1789162821952,
       "statusUpdatedAt": 1789162821952,
-      "phone": "21997983519",
-      "notes": "Novo aluno cadastrado pelo portal."
+      "notes": "Novo aluno cadastrado pelo portal.",
+      "passwordSalt": "1391cd0c8b41375b7f9853128c8d5bab",
+      "passwordHash": "6a917c98d419df284721026ff43dde306366b7df421544531da744eb22c5ca04"
     },
     {
       "id": "std_1791415207374_ol51s",
       "username": "sophia",
       "email": "sophia@tkst.local",
-      "password": "1909soso",
       "name": "Sophia Rezende Carvalho",
       "role": "aluno",
       "currentBelt": "Faixa Branca (7º Kyu)",
@@ -1540,7 +1541,6 @@
       "createdAt": "2026-10-07T23:20:07.378Z",
       "updatedAt": 1791415505145,
       "statusUpdatedAt": 1791415207378,
-      "phone": "21971768688",
       "notes": "Novo aluno cadastrado pelo portal.",
       "lastActive": 1791415796382,
       "quizScores": [
@@ -1560,13 +1560,14 @@
           "beltLevel": "Faixa Branca 7º Kyu",
           "beltKyu": 7
         }
-      ]
+      ],
+      "passwordSalt": "cc46b5734ad7c1d50033934bf716119c",
+      "passwordHash": "2c38aace9a661f98fe28b30318cff98d8e5fd9a3a85c5fefbabaa37a6f598197"
     },
     {
       "id": "std_1791754923781_5v251",
       "username": "rafael.egger",
       "email": "rafael.egger@tkst.local",
-      "password": "987654321",
       "name": "Rafael Marinho Egger",
       "role": "admin",
       "currentBelt": "Faixa Preta (Nidan - 2º Dan)",
@@ -1580,9 +1581,10 @@
       "createdAt": "2026-10-11T21:42:03.782Z",
       "updatedAt": 1791755266809,
       "statusUpdatedAt": 1791754923782,
-      "phone": "21985329876",
       "notes": "Novo aluno cadastrado pelo portal.",
-      "lastActive": 1791755223032
+      "lastActive": 1791755223032,
+      "passwordSalt": "b7fbe92311be854bf2aeb2f54edbf490",
+      "passwordHash": "d5edf239f0ce04cbb5370b592aa3ec4b6cfb9949e251aa62da11bcdaf09bac33"
     }
   ],
   "deletedStudentIds": [
@@ -1602,5 +1604,5 @@
     "std_1787274696200_z2fxf",
     "std_1789065282146_yfwap"
   ],
-  "updatedAt": 1791755267360
+  "updatedAt": 1792349325932
 }
