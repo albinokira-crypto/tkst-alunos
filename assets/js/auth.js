@@ -1746,6 +1746,7 @@
         const text = await res.text();
         if (text && text.trim()) {
           const lines = text.trim().split('\n');
+          let appliedMainCloudData = false;
           for (let i = lines.length - 1; i >= 0; i--) {
             try {
               const item = JSON.parse(lines[i]);
@@ -1764,11 +1765,16 @@
                   continue;
                 }
                 if (cloudData.type === 'sync_notification') {
-                  pullFromCloud();
-                  break;
+                  if (!appliedMainCloudData) {
+                    pullFromCloud();
+                    appliedMainCloudData = true;
+                  }
+                  continue;
                 }
-                applyCloudData(cloudData);
-                break;
+                if (!appliedMainCloudData) {
+                  applyCloudData(cloudData);
+                  appliedMainCloudData = true;
+                }
               }
             } catch(e) {}
           }
@@ -4080,7 +4086,7 @@
         store[cleanId] = record;
         safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
 
-        // Transmissão instantânea ultra-leve via NTFY (< 300 bytes) para sincronizar com o celular/PC imediatamente
+        // 1. Transmissão instantânea ultra-leve via NTFY (< 300 bytes) para sincronizar com o celular/PC imediatamente
         fetch(SYNC_URL, {
           method: 'POST',
           headers: {
@@ -4094,7 +4100,17 @@
           })
         }).catch(() => {});
 
-        pushToCloud();
+        // 2. Persistência direta no Vercel Serverless /api/sync para retenção imediata na nuvem
+        fetch('/api/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            generated_exams: {
+              [cleanId]: record,
+              [record.examId]: record
+            }
+          })
+        }).catch(() => {});
       } catch(e) {}
     },
 
@@ -4116,6 +4132,63 @@
         if (foundKey && store[foundKey]) return store[foundKey];
       } catch(e) {}
       return null;
+    },
+
+    fetchExamFromCloud: async function(examId) {
+      if (!examId) return null;
+      const clean = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
+      const baseCode = clean.split('-')[0];
+
+      // 1. Verifica cache local
+      const local = this.getGeneratedExam(clean) || this.getGeneratedExam(baseCode);
+      if (local && (local.studentName || local.studentAbbr)) return local;
+
+      // 2. Tenta buscar no Vercel /api/sync
+      try {
+        const res = await fetch('/api/sync', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.success && json.data && json.data.generated_exams) {
+            const cloudExams = json.data.generated_exams;
+            if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+            Object.assign(window.TKST_GENERATED_EXAMS_CACHE, cloudExams);
+            let store = {};
+            try { store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
+            Object.assign(store, cloudExams);
+            safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
+
+            const match = cloudExams[clean] || cloudExams[baseCode] ||
+              Object.values(cloudExams).find(x => x && (x.examId === clean || x.examId === baseCode || (x.examId && x.examId.toUpperCase() === clean)));
+            if (match) return match;
+          }
+        }
+      } catch(e) {}
+
+      // 3. Fallback: faz poll no NTFY para capturar exames gerados recentemente
+      try {
+        const pollRes = await fetch(SYNC_URL + '/json?poll=1');
+        if (pollRes.ok) {
+          const text = await pollRes.text();
+          if (text && text.trim()) {
+            const lines = text.trim().split('\n');
+            for (let i = lines.length - 1; i >= 0; i--) {
+              try {
+                const item = JSON.parse(lines[i]);
+                const cloudData = await parseNtfyItem(item);
+                if (cloudData && cloudData.type === 'tkst_exam_generated' && cloudData.record) {
+                  handleIncomingExamRecord(cloudData.record);
+                  const r = cloudData.record;
+                  if (r.examId && (r.examId.toUpperCase() === clean || r.examId.toUpperCase() === baseCode)) {
+                    return r;
+                  }
+                }
+              } catch(e) {}
+            }
+          }
+        }
+      } catch(e) {}
+
+      return this.getGeneratedExam(clean);
     },
 
     deduplicateQuizSubmissions: deduplicateQuizSubmissions,

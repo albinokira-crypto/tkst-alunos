@@ -4,6 +4,23 @@ const path = require('path');
 const TMP_QUIZ_FILE = path.join('/tmp', 'tkst_sync_quiz_bank.json');
 const TMP_FULL_STATE_FILE = path.join('/tmp', 'tkst_sync_full_state.json');
 const TMP_GLOSSARY_FILE = path.join('/tmp', 'tkst_glossary.json');
+const TMP_EXAMS_FILE = path.join('/tmp', 'tkst_generated_exams.json');
+
+function readGeneratedExamsFromTmp() {
+  try {
+    if (fs.existsSync(TMP_EXAMS_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(TMP_EXAMS_FILE, 'utf8'));
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function writeGeneratedExamsToTmp(exams) {
+  try {
+    fs.writeFileSync(TMP_EXAMS_FILE, JSON.stringify(exams), 'utf8');
+  } catch (e) {}
+}
 
 function readFullStateFromTmp() {
   try {
@@ -177,6 +194,24 @@ module.exports = async (req, res) => {
           const vParsed = JSON.parse(fs.readFileSync(localVideosPath, 'utf8'));
           if (vParsed && typeof vParsed === 'object' && Object.keys(vParsed).length > 0) {
             inMemoryData.custom_videos = vParsed;
+          }
+        }
+      } catch(e) {}
+    }
+
+    // Hidrata provas geradas do /tmp ou assets/data/generated-exams.json se a lista em memória estiver vazia
+    if (!inMemoryData.generated_exams || Object.keys(inMemoryData.generated_exams).length === 0) {
+      try {
+        const tmpExams = readGeneratedExamsFromTmp();
+        if (tmpExams && Object.keys(tmpExams).length > 0) {
+          inMemoryData.generated_exams = tmpExams;
+        } else {
+          const localExamsPath = path.resolve(process.cwd(), 'assets/data/generated-exams.json');
+          if (fs.existsSync(localExamsPath)) {
+            const eParsed = JSON.parse(fs.readFileSync(localExamsPath, 'utf8'));
+            if (eParsed && typeof eParsed === 'object') {
+              inMemoryData.generated_exams = eParsed;
+            }
           }
         }
       } catch(e) {}
@@ -527,10 +562,17 @@ module.exports = async (req, res) => {
         lastSync: new Date().toISOString()
       };
 
-      // Persiste estado completo, quiz bank e glossário no /tmp para sobreviver ao próximo cold-start
+      // Persiste estado completo, quiz bank, glossário e provas geradas no /tmp e arquivos locais
       writeFullStateToTmp(inMemoryData);
       if (customQuizBank.length > 0) writeQuizBankToTmp(customQuizBank);
       if (Object.keys(mergedGlossary).length > 0) writeGlossaryToTmp({ glossary: mergedGlossary, deletedGlossaryTerms: allDeletedGlossary });
+      if (inMemoryData.generated_exams && Object.keys(inMemoryData.generated_exams).length > 0) {
+        writeGeneratedExamsToTmp(inMemoryData.generated_exams);
+        try {
+          const localExamsPath = path.resolve(process.cwd(), 'assets/data/generated-exams.json');
+          fs.writeFileSync(localExamsPath, JSON.stringify(inMemoryData.generated_exams, null, 2), 'utf8');
+        } catch(e) {}
+      }
 
       return res.status(200).json({
         success: true,

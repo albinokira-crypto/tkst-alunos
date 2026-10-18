@@ -10359,7 +10359,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const dId = selectEl.value.replace('dojo_', '');
         const dataCands = dojobookCandidatesCache || { candidatos: [], alunos: [] };
         const todos = [...(dataCands.candidatos || []), ...(dataCands.alunos || [])];
-        const match = todos.find(t => String(t.id) === String(dId));
+        let match = todos.find(t => String(t.id) === String(dId));
+        if (!match && examGradingPendingResult && examGradingPendingResult.selectedDojobookStudent && String(examGradingPendingResult.selectedDojobookStudent.id) === String(dId)) {
+          match = examGradingPendingResult.selectedDojobookStudent;
+        }
         if (match && examGradingPendingResult) {
           examGradingPendingResult.selectedDojobookStudent = match;
           examGradingPendingResult.selectedAppStudent = null;
@@ -15977,7 +15980,7 @@ Retorne estritamente um JSON no seguinte formato:
     },
 
     // Digitação direta do código de 5 caracteres (ex: 0IZ96) impresso no cabeçalho da prova
-    submitManualExamCode: function(optCode) {
+    submitManualExamCode: async function(optCode) {
       const inputEl = document.getElementById('examManualCodeInput');
       const rawCode = optCode || (inputEl ? inputEl.value : '');
       const cleanCode = String(rawCode || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z]/g, '').trim().toUpperCase().slice(0, 5);
@@ -16001,8 +16004,13 @@ Retorne estritamente um JSON no seguinte formato:
 
       let matchedExam = null;
       const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
+
+      // 2. Busca no armazenamento persistente local (apenas registros reais com aluno ou respostas salvas)
       if (examGen && examGen.getSavedExamById) {
-        matchedExam = examGen.getSavedExamById(cleanCode);
+        const found = examGen.getSavedExamById(cleanCode);
+        if (found && !found._isMathFallback) {
+          matchedExam = found;
+        }
       }
       if (!matchedExam && window.TKST_AUTH && window.TKST_AUTH.getGeneratedExam) {
         matchedExam = window.TKST_AUTH.getGeneratedExam(cleanCode);
@@ -16015,6 +16023,21 @@ Retorne estritamente um JSON no seguinte formato:
           const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
           matchedExam = store[cleanCode] || store[cleanCode.toUpperCase()] || null;
         } catch(e) {}
+      }
+
+      // 3. Se ainda não possui o nome do aluno, busca na nuvem instantaneamente (Vercel /api/sync e NTFY)
+      if ((!matchedExam || (!matchedExam.studentName && !matchedExam.studentAbbr)) && window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
+        try {
+          const cloudExam = await window.TKST_AUTH.fetchExamFromCloud(cleanCode);
+          if (cloudExam) {
+            matchedExam = cloudExam;
+          }
+        } catch(e) {}
+      }
+
+      // 4. Fallback se não foi encontrado registro completo: usa decodificação matemática
+      if (!matchedExam && examGen && examGen.getSavedExamById) {
+        matchedExam = examGen.getSavedExamById(cleanCode);
       }
 
       let kyu = 6;
@@ -16261,6 +16284,15 @@ Retorne estritamente um JSON no seguinte formato:
       const decoded = window.TKST_BARCODE.decodeBarcodePayload(rawData);
       if (!decoded || !decoded.examId) return;
 
+      const examGen = window.TKST_EXAMS || window.TKST_EXAM_GENERATOR;
+      const saved = (examGen && examGen.getSavedExamById ? examGen.getSavedExamById(decoded.examId) : null)
+        || (window.TKST_AUTH && window.TKST_AUTH.getGeneratedExam ? window.TKST_AUTH.getGeneratedExam(decoded.examId) : null);
+      if (saved) {
+        if (!decoded.studentName && (saved.studentName || saved.studentAbbr)) decoded.studentName = saved.studentName || saved.studentAbbr;
+        if (!decoded.studentId && saved.studentId) decoded.studentId = saved.studentId;
+        if (!decoded.dojoName && saved.dojoName) decoded.dojoName = saved.dojoName;
+      }
+
       examScannerDetectedData = decoded;
       window.TKST_APP.playChime();
       if (navigator.vibrate) {
@@ -16269,7 +16301,11 @@ Retorne estritamente um JSON no seguinte formato:
 
       const beltName = getBeltNameFromKyu(decoded.kyu);
       if (typeof showToast === 'function') {
-        showToast(`🎯 Código de Barras Lido: Prova #${decoded.examId} (${beltName})`, 'success');
+        if (decoded.studentName) {
+          showToast(`🎯 Prova #${decoded.examId} (${beltName}) vinculada ao aluno: ${decoded.studentName}`, 'success');
+        } else {
+          showToast(`🎯 Código de Barras Lido: Prova #${decoded.examId} (${beltName})`, 'success');
+        }
       }
 
       const kyuSelect = document.getElementById('examCorrectionKyuSelect');
@@ -17251,19 +17287,24 @@ Retorne estritamente um JSON no seguinte formato:
         });
         if (json && json.aiAvailable) {
           finalResult.aiAvailable = true;
-          if (json.aluno || json.studentName) {
-            finalResult.studentName = json.aluno || json.studentName;
+          if (!finalResult.studentName && (json.aluno || json.studentName)) {
+            const rawAiName = String(json.aluno || json.studentName).trim();
+            if (!/^(nome|aluno|nome do aluno|estudante|string vazia|null|undefined)$/i.test(rawAiName)) {
+              finalResult.studentName = rawAiName;
+            }
           }
-          if (json.dojo) {
+          if (!finalResult.dojo && json.dojo) {
             finalResult.dojo = json.dojo;
           }
-          if (json.kyu !== undefined && json.kyu !== null) {
+          if ((finalResult.kyu === undefined || finalResult.kyu === null) && json.kyu !== undefined && json.kyu !== null) {
             finalResult.kyu = json.kyu;
             detected.kyu = json.kyu;
           }
-          if (json.examId) {
-            finalResult.examId = json.examId;
-            detected.examId = json.examId;
+          if (!detected.examId || detected.examId === 'SENSEI') {
+            if (json.examId) {
+              finalResult.examId = json.examId;
+              detected.examId = json.examId;
+            }
           }
           if (Array.isArray(json.answerKey) && json.answerKey.length === 10) {
             // Preserva gabarito já decodificado pelo código
@@ -17322,9 +17363,9 @@ Retorne estritamente um JSON no seguinte formato:
       const savedExam = (examGen && examGen.getSavedExamById ? examGen.getSavedExamById(cleanExamId) : null)
         || (window.TKST_AUTH && window.TKST_AUTH.getGeneratedExam ? window.TKST_AUTH.getGeneratedExam(cleanExamId) : null)
         || (window.TKST_GENERATED_EXAMS_CACHE && (window.TKST_GENERATED_EXAMS_CACHE[cleanExamId] || window.TKST_GENERATED_EXAMS_CACHE[cleanExamId.toUpperCase()]));
-      const initialDetectedName = (result && (result.studentName || result.aluno)) 
-        || (detectedMeta && detectedMeta.studentName) 
+      const initialDetectedName = (detectedMeta && detectedMeta.studentName) 
         || (savedExam && (savedExam.studentName || savedExam.studentAbbr)) 
+        || (result && (result.studentName || result.aluno)) 
         || '';
 
       // Salva estado para edições e gravação
@@ -17337,7 +17378,7 @@ Retorne estritamente um JSON no seguinte formato:
         ambiguousQuestions: ambiguousQuestions,
         imagePreviewUrl: imagePreviewUrl,
         detectedName: initialDetectedName,
-        detectedDojo: (result && result.dojo) || (savedExam && savedExam.dojoName) || (detectedMeta && detectedMeta.dojoName) || '',
+        detectedDojo: (savedExam && savedExam.dojoName) || (detectedMeta && detectedMeta.dojoName) || (result && result.dojo) || '',
         selectedDojobookStudent: null,
         selectedAppStudent: null
       };
@@ -17360,14 +17401,15 @@ Retorne estritamente um JSON no seguinte formato:
       const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
       const detNorm = norm(examGradingPendingResult.detectedName);
 
-      // 1. Se veio do savedExam com studentId, vincula diretamente
-      if (savedExam && savedExam.studentId) {
-        const dMatch = todosDojobook.find(t => String(t.id) === String(savedExam.studentId));
+      // 1. Se veio do savedExam ou detectedMeta com studentId, vincula diretamente
+      const targetStudentId = (savedExam && savedExam.studentId) || (detectedMeta && detectedMeta.studentId);
+      if (targetStudentId) {
+        const dMatch = todosDojobook.find(t => String(t.id) === String(targetStudentId));
         if (dMatch) {
           examGradingPendingResult.selectedDojobookStudent = dMatch;
           examGradingPendingResult.detectedName = dMatch.nome;
         } else {
-          const aMatch = allAppStudents.find(s => String(s.id) === String(savedExam.studentId));
+          const aMatch = allAppStudents.find(s => String(s.id) === String(targetStudentId));
           if (aMatch) {
             examGradingPendingResult.selectedAppStudent = aMatch;
             examGradingPendingResult.detectedName = aMatch.name;
@@ -17407,12 +17449,12 @@ Retorne estritamente um JSON no seguinte formato:
       }
 
       // 3. Se ainda não vinculou mas temos nome do aluno salvo na prova, pré-vincula como aluno customizado
-      if (!examGradingPendingResult.selectedDojobookStudent && !examGradingPendingResult.selectedAppStudent && (examGradingPendingResult.detectedName || (savedExam && savedExam.studentName))) {
-        const studentDisplayName = examGradingPendingResult.detectedName || (savedExam && savedExam.studentName);
+      if (!examGradingPendingResult.selectedDojobookStudent && !examGradingPendingResult.selectedAppStudent && (examGradingPendingResult.detectedName || (savedExam && savedExam.studentName) || (detectedMeta && detectedMeta.studentName))) {
+        const studentDisplayName = examGradingPendingResult.detectedName || (savedExam && savedExam.studentName) || (detectedMeta && detectedMeta.studentName);
         examGradingPendingResult.selectedDojobookStudent = {
-          id: (savedExam && savedExam.studentId) || ('std_' + Date.now()),
+          id: (savedExam && savedExam.studentId) || (detectedMeta && detectedMeta.studentId) || ('std_' + Date.now()),
           nome: studentDisplayName,
-          dojo_nome: (savedExam && savedExam.dojoName) || examGradingPendingResult.detectedDojo || 'TKST',
+          dojo_nome: (savedExam && savedExam.dojoName) || (detectedMeta && detectedMeta.dojoName) || examGradingPendingResult.detectedDojo || 'TKST',
           graduacao_destino: beltName
         };
       }
@@ -17502,10 +17544,16 @@ Retorne estritamente um JSON no seguinte formato:
 
       // Candidatos do DojôBook para compor o dropdown se já carregados
       const hasDojobookCands = dojobookCandidatesCache && Array.isArray(dojobookCandidatesCache.candidatos) && dojobookCandidatesCache.candidatos.length > 0;
+      const isSelectedDojobookInList = hasDojobookCands && data.selectedDojobookStudent && dojobookCandidatesCache.candidatos.some(c => String(c.id) === String(data.selectedDojobookStudent.id));
+      const linkedStudentOptionHtml = (data.selectedDojobookStudent && !isSelectedDojobookInList) ? `
+        <option value="dojo_${data.selectedDojobookStudent.id}" selected>
+          🥋 ${data.selectedDojobookStudent.nome} — [Aluno Vinculado à Prova] ${data.selectedDojobookStudent.dojo_nome ? `(${data.selectedDojobookStudent.dojo_nome})` : ''}
+        </option>
+      ` : '';
       const dojobookCandidatesOptionsHtml = hasDojobookCands ? `
         <optgroup label="🥋 Candidatos ao Exame de Faixa (DojôBook)">
           ${dojobookCandidatesCache.candidatos.map(c => `
-            <option value="dojo_${c.id}" ${(data.selectedDojobookStudent && data.selectedDojobookStudent.id === c.id) ? 'selected' : ''}>
+            <option value="dojo_${c.id}" ${(data.selectedDojobookStudent && String(data.selectedDojobookStudent.id) === String(c.id)) ? 'selected' : ''}>
               ${c.nome} — vai para ${c.vai_para || c.graduacao_destino || 'Faixa'} ${c.dojo_nome ? `(${c.dojo_nome})` : ''}
             </option>
           `).join('')}
@@ -17604,8 +17652,9 @@ Retorne estritamente um JSON no seguinte formato:
             <div style="font-size: 0.74rem; color: #94A3B8; margin-bottom: 4px;">
               Ou selecione da lista:
             </div>
-            <select id="examGradeStudentSelect" class="form-control" onchange="window.TKST_APP.onModalStudentSelectChange(this)" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; font-size: 0.88rem;">
-              <option value="">-- Selecione o Aluno Matriculado --</option>
+            <select id="examGradeStudentSelect" class="form-control" onchange="window.TKST_APP.onModalStudentSelectChange(this)" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1.5px solid ${(data.selectedDojobookStudent || data.selectedAppStudent) ? '#10B981' : 'var(--border-color)'}; color: #FFF; font-size: 0.88rem;">
+              ${linkedStudentOptionHtml}
+              <option value="" ${(!data.selectedDojobookStudent && !data.selectedAppStudent && !data.detectedName) ? 'selected' : ''}>-- Selecione o Aluno Matriculado --</option>
               ${dojobookCandidatesOptionsHtml}
               <optgroup label="📋 Alunos Cadastrados no App">
                 ${matchingStudents.map(s => {

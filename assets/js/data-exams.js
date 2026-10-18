@@ -905,7 +905,8 @@ window.TKST_EXAM_GENERATOR = {
         studentTag: decoded.studentTag,
         answers: decoded.answers,
         date: "_____/_____/2026",
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        _isMathFallback: true
       };
     }
     return null;
@@ -1063,15 +1064,23 @@ window.TKST_EXAM_GENERATOR = {
     // Registra a prova gerada no armazenamento persistente do Sensei para conferência imediata e offline
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+      const existingRecord = store[compactCode] || store[compactCode.toUpperCase()]
+        || (window.TKST_GENERATED_EXAMS_CACHE && (window.TKST_GENERATED_EXAMS_CACHE[compactCode] || window.TKST_GENERATED_EXAMS_CACHE[compactCode.toUpperCase()]));
+
+      const effectiveStudentName = rawStudentName || (existingRecord && existingRecord.studentName) || "";
+      const effectiveStudentAbbr = studentName || (existingRecord && existingRecord.studentAbbr) || "";
+      const effectiveStudentId = studentId || (existingRecord && existingRecord.studentId) || "";
+      const effectiveDojoName = dojoName || (existingRecord && existingRecord.dojoName) || "";
+
       const examRecord = {
         kyu: Number(kyu),
         examId: compactCode,
         answers: answerLetters,
         date: dateStr,
-        studentName: rawStudentName,
-        studentAbbr: studentName,
-        studentId: studentId,
-        dojoName: dojoName,
+        studentName: effectiveStudentName,
+        studentAbbr: effectiveStudentAbbr,
+        studentId: effectiveStudentId,
+        dojoName: effectiveDojoName,
         timestamp: Date.now()
       };
       store[compactCode] = examRecord;

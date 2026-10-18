@@ -383,9 +383,15 @@ Retorne estritamente um JSON:
       });
     }
 
-    // Extrai identificador da prova e decodifica matematicamente
+    // Extrai identificador da prova e decodifica matematicamente (preserva examId já validado na Etapa 1)
+    const clientProvidedExamId = (examId && String(examId).trim().length >= 4 && !['SENSEI', 'EXAM'].includes(String(examId).trim().toUpperCase()))
+      ? String(examId).trim().toUpperCase()
+      : null;
+
     const aiExamCode = parsedAi.codigo_prova || parsedAi.examId || (parsedAi.dados_prova && parsedAi.dados_prova.exam_id) || '';
-    if (aiExamCode) {
+    if (clientProvidedExamId) {
+      detectedExamId = clientProvidedExamId;
+    } else if (aiExamCode) {
       detectedExamId = String(aiExamCode).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').replace(/[^0-9A-Z-]/g, '').trim().toUpperCase();
     }
 
@@ -451,7 +457,13 @@ Retorne estritamente um JSON:
       else if (gradText.includes('amarela') || gradText.includes('6º kyu') || gradText.includes('6 kyu')) detectedKyu = 6;
     }
 
-    const studentName = parsedAi.aluno || parsedAi.studentName || (decodedCompact && decodedCompact.studentTag) || null;
+    let studentName = parsedAi.aluno || parsedAi.studentName || (decodedCompact && decodedCompact.studentTag) || null;
+    if (studentName) {
+      const sLower = String(studentName).toLowerCase().trim();
+      if (sLower.includes('nome do aluno') || sLower.includes('string vazia') || sLower.includes('ou string') || sLower.length <= 2) {
+        studentName = null;
+      }
+    }
 
     return res.status(200).json({
       success: true,
