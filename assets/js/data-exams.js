@@ -1872,12 +1872,12 @@ window.TKST_EXAM_GENERATOR = {
       /* CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR COM NOTA INTEGRADA) */
       .exam-header-omr-card {
         flex: 0 0 auto !important;
-        width: 86mm !important;
-        max-width: 88mm !important;
+        width: 90mm !important;
+        max-width: 92mm !important;
         border: 1.8px solid #0F172A !important;
         border-radius: 4px !important;
         background: #F8FAFC !important;
-        padding: 1.6mm 2.5mm !important;
+        padding: 1.8mm 2.8mm !important;
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1936,22 +1936,25 @@ window.TKST_EXAM_GENERATOR = {
       .exam-omr-grid-2col {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 10px !important;
+        gap: 12px !important;
+        width: 100% !important;
       }
       .exam-omr-col {
         display: flex !important;
         flex-direction: column !important;
-        gap: 1.2px !important;
+        gap: 1.5px !important;
+        width: 100% !important;
       }
       .exam-omr-row {
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 2.5px !important;
-        padding: 1px 2px !important;
-        border-radius: 2.5px !important;
+        justify-content: space-between !important;
+        gap: 4px !important;
+        padding: 1.5px 3.5px !important;
+        border-radius: 3px !important;
         box-sizing: border-box !important;
         border: 0.8px solid transparent !important;
+        width: 100% !important;
       }
       /* LINHAS ZEBRADAS PARA FACILITAR PREENCHIMENTO SEM CONFUSÃO */
       .exam-omr-row:nth-child(even) {
@@ -1963,11 +1966,11 @@ window.TKST_EXAM_GENERATOR = {
         border-color: #E2E8F0 !important;
       }
       .omr-q-num {
-        font-size: 7pt !important;
+        font-size: 7.4pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
-        width: 14px !important;
-        min-width: 14px !important;
+        width: 16px !important;
+        min-width: 16px !important;
         text-align: right !important;
         letter-spacing: -0.2px !important;
         line-height: 1 !important;
@@ -1975,27 +1978,29 @@ window.TKST_EXAM_GENERATOR = {
         margin-right: 2px !important;
       }
       .omr-sq-group {
-        display: inline-flex !important;
+        flex: 1 !important;
+        display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 2px !important;
-        flex-shrink: 0 !important;
+        justify-content: space-between !important;
+        gap: 0 !important;
+        width: calc(100% - 18px) !important;
       }
       .omr-sq {
-        width: 13.5px !important;
-        height: 13.5px !important;
-        min-width: 13.5px !important;
-        min-height: 13.5px !important;
-        border: 1.4px solid #0F172A !important;
-        border-radius: 2px !important;
+        width: 14.5px !important;
+        height: 14.5px !important;
+        min-width: 14.5px !important;
+        min-height: 14.5px !important;
+        border: 1.5px solid #0F172A !important;
+        border-radius: 2.5px !important;
         background: #FFF !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 6.8pt !important;
+        font-size: 7.2pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
         flex-shrink: 0 !important;
+        box-shadow: 0.5px 0.5px 0px rgba(15, 23, 42, 0.4) !important;
       }
 
       /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 282mm DE ALTURA TOTAL) */
