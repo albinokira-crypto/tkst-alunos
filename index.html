@@ -32,8 +32,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=260">
-  <link rel="stylesheet" href="assets/css/components.css?v=260">
+  <link rel="stylesheet" href="assets/css/main.css?v=283">
+  <link rel="stylesheet" href="assets/css/components.css?v=283">
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
@@ -631,9 +631,22 @@
         <!-- 1. CAPTURA / UPLOAD VIEW -->
         <div id="omrCaptureView">
           <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <!-- Seletor de Modo de Captura -->
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; flex-wrap: wrap;">
+              <button type="button" id="omrModeCardBtn" class="btn btn-sm btn-primary" onclick="window.TKST_APP.setOmrCaptureMode('card')" style="font-size: 0.8rem; font-weight: 700;">
+                🎯 Apenas Cartão de Respostas (Recomendado)
+              </button>
+              <button type="button" id="omrModeSheetBtn" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.setOmrCaptureMode('sheet')" style="font-size: 0.8rem; font-weight: 700;">
+                📄 Folha A4 Inteira
+              </button>
+            </div>
+            <div id="omrModeHelperText" style="font-size: 0.75rem; color: #94A3B8; text-align: center; margin-bottom: 12px;">
+              🎯 Modo Cartão: Aproxime a câmera e enquadre de perto apenas o Cartão de Respostas no cabeçalho da prova.
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.2fr 1fr 1.2fr; gap: 10px; margin-bottom: 12px;">
               <div>
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Faixa / Kyu do Exame</label>
+                <label style="display: block; font-size: 0.80rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Faixa / Kyu do Exame</label>
                 <select id="omrKyuSelect" class="form-control" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;" onchange="window.TKST_APP.onOmrKyuChanged()">
                   <option value="6">6º Kyu (Branca para Amarela)</option>
                   <option value="5">5º Kyu (Amarela para Vermelha)</option>
@@ -647,18 +660,22 @@
                 </select>
               </div>
               <div>
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Aluno Avaliado (Opcional)</label>
+                <label style="display: block; font-size: 0.80rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Código da Prova</label>
+                <input type="text" id="omrExamCodeInput" class="form-control" placeholder="Ex: 18ZK4" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFB703; font-weight: 800; font-family: monospace; text-transform: uppercase;" oninput="window.TKST_APP.onOmrExamCodeInput(this.value)">
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.80rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Aluno Avaliado (Opcional)</label>
                 <select id="omrStudentSelect" class="form-control" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-                  <option value="">Detectar automaticamente ou selecionar...</option>
+                  <option value="">Detectar automaticamente...</option>
                 </select>
               </div>
             </div>
 
             <!-- Viewfinder Câmera -->
             <div id="omrVideoContainer" style="display:none; position: relative; background: #000; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 14px; text-align: center;">
-              <video id="omrVideoElement" autoplay playsinline style="width: 100%; max-height: 380px; object-fit: cover;"></video>
+              <video id="omrVideoElement" autoplay playsinline muted style="width: 100%; max-height: 380px; object-fit: cover;"></video>
               <div style="position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; border: 2px dashed rgba(245, 190, 0, 0.7); pointer-events: none; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                <span style="background: rgba(0,0,0,0.65); color: #FFD166; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Enquadre o Cartão de Respostas aqui</span>
+                <span id="omrViewfinderOverlayText" style="background: rgba(0,0,0,0.65); color: #FFD166; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Enquadre o Cartão de Respostas aqui</span>
               </div>
             </div>
 
@@ -746,26 +763,26 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=282"></script>
-  <script src="assets/js/data-curriculum.js?v=282"></script>
-  <script src="assets/js/data-katas.js?v=282"></script>
-  <script src="assets/js/data-kumite.js?v=282"></script>
-  <script src="assets/js/data-glossary.js?v=282"></script>
-  <script src="assets/js/data-quiz.js?v=282"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=282"></script>
-  <script src="assets/js/data-media.js?v=282"></script>
-  <script src="assets/js/data-exams.js?v=282"></script>
-  <script src="assets/js/omr-engine.js?v=282"></script>
-  <script src="assets/js/qr-generator.js?v=282"></script>
-  <script src="assets/js/auth.js?v=282"></script>
-  <script src="assets/js/app.js?v=282"></script>
+  <script src="assets/js/jsqr.min.js?v=283"></script>
+  <script src="assets/js/data-curriculum.js?v=283"></script>
+  <script src="assets/js/data-katas.js?v=283"></script>
+  <script src="assets/js/data-kumite.js?v=283"></script>
+  <script src="assets/js/data-glossary.js?v=283"></script>
+  <script src="assets/js/data-quiz.js?v=283"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=283"></script>
+  <script src="assets/js/data-media.js?v=283"></script>
+  <script src="assets/js/data-exams.js?v=283"></script>
+  <script src="assets/js/omr-engine.js?v=283"></script>
+  <script src="assets/js/qr-generator.js?v=283"></script>
+  <script src="assets/js/auth.js?v=283"></script>
+  <script src="assets/js/app.js?v=283"></script>
 
-  <!-- PWA Service Worker Registration seguro (sem auto-reload agressivo) -->
+  <!-- PWA Service Worker Registration com verificação de atualização -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {
-          // Service Worker opera em Network-First, sem forçar reload agressivo que feche abas
+          try { reg.update(); } catch(e) {}
         }).catch(err => {
           console.log('SW registration note:', err);
         });

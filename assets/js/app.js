@@ -232,6 +232,10 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (typeof renderAdminView === 'function') {
         renderAdminView();
       }
+    } else if (activeTab === 'quiz' && !quizActive) {
+      if (typeof renderQuiz === 'function') {
+        renderQuiz();
+      }
     }
   });
 
@@ -15383,6 +15387,67 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
+    setOmrCaptureMode: function(mode) {
+      omrCaptureMode = mode === 'sheet' ? 'sheet' : 'card';
+      const cardBtn = document.getElementById('omrModeCardBtn');
+      const sheetBtn = document.getElementById('omrModeSheetBtn');
+      const hint = document.getElementById('omrModeHint');
+      const frame = document.getElementById('omrCardTargetFrame');
+
+      if (cardBtn && sheetBtn) {
+        if (omrCaptureMode === 'card') {
+          cardBtn.style.background = 'var(--accent-gold)';
+          cardBtn.style.color = '#000';
+          cardBtn.style.border = '1px solid var(--accent-gold)';
+          sheetBtn.style.background = 'rgba(255,255,255,0.06)';
+          sheetBtn.style.color = '#CBD5E1';
+          sheetBtn.style.border = '1px solid rgba(255,255,255,0.15)';
+        } else {
+          sheetBtn.style.background = 'var(--accent-gold)';
+          sheetBtn.style.color = '#000';
+          sheetBtn.style.border = '1px solid var(--accent-gold)';
+          cardBtn.style.background = 'rgba(255,255,255,0.06)';
+          cardBtn.style.color = '#CBD5E1';
+          cardBtn.style.border = '1px solid rgba(255,255,255,0.15)';
+        }
+      }
+
+      if (hint) {
+        hint.textContent = omrCaptureMode === 'card'
+          ? '🎯 Modo Cartão (Recomendado): Aproxime a câmera focando apenas no retângulo do gabarito (9x4 cm).'
+          : '📄 Modo Folha A4: Enquadre a folha inteira na vertical com boa iluminação e sobre fundo escuro.';
+      }
+
+      if (frame) {
+        frame.style.aspectRatio = omrCaptureMode === 'card' ? '2.14 / 1' : '1 / 1.41';
+        frame.style.maxHeight = omrCaptureMode === 'card' ? '200px' : '360px';
+      }
+    },
+
+    onOmrExamCodeInput: function(code) {
+      const clean = (code || '').trim().toUpperCase();
+      if (!clean) return;
+
+      if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
+        const decoded = window.TKST_EXAM_GENERATOR.decodeCompactExamCode(clean);
+        if (decoded && decoded.valid) {
+          const kyuSelect = document.getElementById('omrKyuSelect');
+          if (kyuSelect && decoded.kyu !== undefined) {
+            kyuSelect.value = String(decoded.kyu);
+          }
+          if (Array.isArray(decoded.key) && decoded.key.length === 10) {
+            omrCurrentExpectedKey = decoded.key;
+            if (typeof showToast === 'function') {
+              showToast(`🎯 Prova decodificada: Kyu ${decoded.kyu} | Gabarito auto-carregado!`, 'success', 3000);
+            }
+            if (omrCurrentScanResult) {
+              this.recalculateOmrScore();
+            }
+          }
+        }
+      }
+    },
+
     startOmrCamera: async function() {
       try {
         const video = document.getElementById('omrVideoElement');
@@ -15395,25 +15460,45 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           return;
         }
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          }
-        });
+        if (video) {
+          video.muted = true;
+          video.setAttribute('playsinline', 'true');
+          video.setAttribute('webkit-playsinline', 'true');
+        }
+
+        let stream = null;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            },
+            audio: false
+          });
+        } catch (firstErr) {
+          console.warn('Tentativa com ideal environment falhou, tentando fallback genérico de vídeo:', firstErr);
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+          });
+        }
 
         omrCameraStream = stream;
         if (video) {
           video.srcObject = stream;
-          video.play();
+          try {
+            await video.play();
+          } catch(playErr) {
+            console.warn('video.play() precisou de fallback:', playErr);
+          }
         }
         if (container) container.style.display = 'block';
         if (captureBtn) captureBtn.style.display = 'inline-flex';
         if (startBtn) startBtn.style.display = 'none';
       } catch(err) {
         console.error('Erro ao acessar câmera para OMR:', err);
-        alert('Não foi possível acessar a câmera. Verifique as permissões do dispositivo ou escolha uma foto salva.');
+        alert('Não foi possível acessar a câmera (' + (err.message || err.name || 'Permissão negada') + '). Verifique as permissões do navegador ou utilize o botão "Escolher Foto do Arquivo".');
       }
     },
 
@@ -15501,7 +15586,15 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
       const kyuSelect = document.getElementById('omrKyuSelect');
       const kyu = kyuSelect ? Number(kyuSelect.value) : 6;
-      omrCurrentExpectedKey = this.getExpectedKeyForKyu(kyu);
+      const examCodeInput = document.getElementById('omrExamCodeInput');
+      const examCode = examCodeInput ? examCodeInput.value.trim() : '';
+
+      if (examCode) {
+        this.onOmrExamCodeInput(examCode);
+      }
+      if (!omrCurrentExpectedKey || omrCurrentExpectedKey.length < 10) {
+        omrCurrentExpectedKey = this.getExpectedKeyForKyu(kyu);
+      }
 
       try {
         if (!window.TKST_OMR_ENGINE) {
@@ -15511,7 +15604,9 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         const scanResult = await window.TKST_OMR_ENGINE.scanExamImage(imageSrc, {
           kyu,
           expectedKey: omrCurrentExpectedKey,
-          forceAi
+          forceAi,
+          mode: omrCaptureMode || 'card',
+          examCode: examCode || ''
         });
 
         omrCurrentScanResult = scanResult;
@@ -15662,6 +15757,9 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
       const fileInput = document.getElementById('omrFileInput');
       if (fileInput) fileInput.value = '';
+
+      const examCodeInput = document.getElementById('omrExamCodeInput');
+      if (examCodeInput) examCodeInput.value = '';
     },
 
     saveOmrOfficialGrade: async function() {
@@ -15722,6 +15820,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
   let omrCurrentScanResult = null;
   let omrCurrentSourceImage = null;
   let omrCurrentExpectedKey = [];
+  let omrCaptureMode = 'card';
 
   // Helper para parar imediatamente qualquer áudio / vídeo em execução dentro de modais
   function stopModalMedia(modalElement) {

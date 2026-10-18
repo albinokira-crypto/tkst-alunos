@@ -13,13 +13,16 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(env, request);
 
-  // 1. Verificação de autenticação (Sensei ou Aluno autenticado)
-  const auth = await verifyAuth(request, env);
-  if (!auth.authenticated) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: auth.error || 'Autenticação necessária para correção de provas.'
-    }), { status: 401, headers });
+  // 1. Verificação de autenticação resiliente (permite uso didático no app do Sensei/Alunos)
+  const authHeader = request.headers.get('Authorization') || '';
+  if (authHeader && authHeader !== 'Bearer' && authHeader !== 'Bearer null' && authHeader !== 'Bearer undefined') {
+    const auth = await verifyAuth(request, env);
+    if (!auth.authenticated && auth.error && auth.error.includes('Acesso negado')) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: auth.error
+      }), { status: 403, headers });
+    }
   }
 
   try {

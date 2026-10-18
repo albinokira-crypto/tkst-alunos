@@ -354,6 +354,13 @@ module.exports = async (req, res) => {
         customQuizBank = existingQuizBank.filter(q => !deletedQuizSet.has(q.id));
       }
 
+      // Merge edited_quiz_questions: preserva mapa de edições do Sensei
+      const existingEdited = inMemoryData.edited_quiz_questions || {};
+      let mergedEditedQuestions = { ...existingEdited };
+      if (incoming.edited_quiz_questions && typeof incoming.edited_quiz_questions === 'object') {
+        mergedEditedQuestions = { ...mergedEditedQuestions, ...incoming.edited_quiz_questions };
+      }
+
       // 5. Intelligent Quiz Submissions Merge: mescla simulados por ID preservando todos os envios de todos os alunos
       const existingSubs = inMemoryData.quiz_submissions || (readFullStateFromTmp()?.quiz_submissions) || [];
       const subMap = new Map();
@@ -541,6 +548,7 @@ module.exports = async (req, res) => {
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
         quiz_submissions: quizSubmissionsList,
         custom_quiz_bank: customQuizBank,
+        edited_quiz_questions: mergedEditedQuestions,
         custom_glossary: mergedGlossary,
         custom_media: customMediaList,
         custom_albums: customAlbumsList,

@@ -305,26 +305,61 @@
         ? editedMap
         : JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
       
-      const modifiedQuestions = stripDefaultImages(
-        Array.isArray(questions)
-          ? questions.filter(q => q && q.id && (q._edited || q._custom || localEdited[q.id]))
-          : []
-      );
+      const cleanEditedMap = {};
+      Object.keys(localEdited).forEach(id => {
+        const q = localEdited[id];
+        if (q && q.id && q.question) {
+          const { image, ...rest } = q;
+          cleanEditedMap[id] = (image && image.length > 400) ? { ...rest, image: '' } : q;
+        }
+      });
 
-      const msg = {
-        type: 'tkst_quiz_edit_delta',
-        editedMap: localEdited,
-        questions: modifiedQuestions,
-        timestamp: Date.now()
-      };
+      const keys = Object.keys(cleanEditedMap);
+      if (keys.length === 0) return;
 
+      // Pacotes compactos garantindo estritamente < 2.5KB por envio no ntfy.sh
+      if (keys.length <= 4) {
+        const msg = {
+          type: 'tkst_quiz_edit_delta',
+          editedMap: cleanEditedMap,
+          timestamp: Date.now()
+        };
+        await fetch(SYNC_URL, {
+          method: 'POST',
+          headers: {
+            'Title': 'TKST_QUIZ_EDIT_DELTA',
+            'Content-Type': 'text/plain; charset=utf-8'
+          },
+          body: JSON.stringify(msg)
+        });
+      } else {
+        for (let i = 0; i < keys.length; i += 2) {
+          const chunkMap = {};
+          keys.slice(i, i + 2).forEach(k => { chunkMap[k] = cleanEditedMap[k]; });
+          const msg = {
+            type: 'tkst_quiz_edit_delta',
+            editedMap: chunkMap,
+            timestamp: Date.now()
+          };
+          await fetch(SYNC_URL, {
+            method: 'POST',
+            headers: {
+              'Title': 'TKST_QUIZ_EDIT_DELTA',
+              'Content-Type': 'text/plain; charset=utf-8'
+            },
+            body: JSON.stringify(msg)
+          });
+        }
+      }
+
+      // Notificação leve para dispositivos em repouso
       await fetch(SYNC_URL, {
         method: 'POST',
         headers: {
-          'Title': 'TKST_QUIZ_EDIT_DELTA',
+          'Title': 'TKST_DATA_V2_PING',
           'Content-Type': 'text/plain; charset=utf-8'
         },
-        body: JSON.stringify(msg)
+        body: JSON.stringify({ type: 'sync_notification', timestamp: Date.now() })
       });
     } catch(err) {
       console.warn('Quiz edit delta broadcast notice:', err);
@@ -568,21 +603,32 @@
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
             cloudQuestions = json.data;
           }
+          if (json && json.editedMap && typeof json.editedMap === 'object' && Object.keys(json.editedMap).length > 0) {
+            try {
+              const curMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+              localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify({ ...curMap, ...json.editedMap }));
+            } catch(e) {}
+          }
         }
       } catch(e) {}
 
       // 4. 2ª tentativa: busca de /api/sync se /api/quiz-bank veio vazio (resiliente a reinício da Vercel)
-      if (cloudQuestions.length === 0) {
-        try {
-          const syncRes = await fetch('/api/sync', { cache: 'no-store' });
-          if (syncRes.ok) {
-            const syncJson = await syncRes.json();
-            if (syncJson && syncJson.data && Array.isArray(syncJson.data.custom_quiz_bank) && syncJson.data.custom_quiz_bank.length > 0) {
-              cloudQuestions = syncJson.data.custom_quiz_bank;
-            }
+      try {
+        const syncRes = await fetch('/api/sync', { cache: 'no-store' });
+        if (syncRes.ok) {
+          const syncJson = await syncRes.json();
+          if (cloudQuestions.length === 0 && syncJson && syncJson.data && Array.isArray(syncJson.data.custom_quiz_bank) && syncJson.data.custom_quiz_bank.length > 0) {
+            cloudQuestions = syncJson.data.custom_quiz_bank;
           }
-        } catch(e) {}
-      }
+          const syncEdited = (syncJson && syncJson.edited_quiz_questions) || (syncJson && syncJson.data && syncJson.data.edited_quiz_questions);
+          if (syncEdited && typeof syncEdited === 'object' && Object.keys(syncEdited).length > 0) {
+            try {
+              const curMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+              localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify({ ...curMap, ...syncEdited }));
+            } catch(e) {}
+          }
+        }
+      } catch(e) {}
 
       // 5. 3ª tentativa (fallback): lê direto do GitHub se /api/quiz-bank e /api/sync vieram vazios
       if (cloudQuestions.length === 0) {

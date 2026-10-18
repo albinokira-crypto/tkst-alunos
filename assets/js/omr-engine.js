@@ -7,8 +7,9 @@
 (function() {
   'use strict';
 
-  const OMR_CARD_WIDTH = 340;
-  const OMR_CARD_HEIGHT = 460;
+  // O Cartão Oficial de Respostas da TKST mede 90mm de largura x ~42mm de altura (formato horizontal / landscape)
+  const OMR_CARD_WIDTH = 500;
+  const OMR_CARD_HEIGHT = 240;
 
   // Carrega imagem de arquivo, URL ou Base64 em HTMLImageElement
   function loadImage(src) {
@@ -53,7 +54,7 @@
   }
 
   // Detecção inteligente de orientação (0, 90, 180 ou 270 graus)
-  async function detectAndCorrectOrientation(sourceCanvas) {
+  async function detectAndCorrectOrientation(sourceCanvas, mode = 'card') {
     // 1. Tenta decodificar QR Code com jsQR se disponível
     if (typeof window.jsQR === 'function') {
       const angles = [0, 90, 180, 270];
@@ -75,8 +76,8 @@
       }
     }
 
-    // 2. Se a imagem for mais larga do que alta (paisagem) e o exame for retrato, rotaciona 90 graus
-    if (sourceCanvas.width > sourceCanvas.height * 1.25) {
+    // 2. Se for modo folha inteira A4 (que é retrato, h > w) e a foto estiver deitada em paisagem (w > 1.25 * h)
+    if (mode === 'sheet' && sourceCanvas.width > sourceCanvas.height * 1.25) {
       return { canvas: rotateCanvas(sourceCanvas, 270), angle: 270, qrData: null };
     }
 
@@ -100,8 +101,8 @@
     }
     const meanLuminance = sumLuminance / totalPixels;
 
-    // 2. Limiar adaptativo dinâmico (Otsu simplificado com ponderação local)
-    const threshold = Math.max(70, Math.min(180, meanLuminance * 0.82));
+    // 2. Limiar adaptativo dinâmico (Otsu com ponderação local)
+    const threshold = Math.max(70, Math.min(185, meanLuminance * 0.82));
 
     const binaryData = new Uint8Array(totalPixels);
     for (let i = 0, p = 0; i < d.length; i += 4, p++) {
@@ -119,32 +120,43 @@
   }
 
   // Localiza e extrai o Cartão de Respostas (OMR Card) com correção de enquadramento
-  function cropOmrCard(canvas) {
-    const ctx = canvas.getContext('2d');
+  function cropOmrCard(canvas, mode = 'card') {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Na diagramação oficial da TKST (Folha A4 Retrato):
-    // O Cartão de Respostas fica no cabeçalho, no canto superior direito (ou superior se recortado)
-    // Coordenadas relativas típicas do cabeçalho direito:
-    // x: de 48% a 98% da largura, y: de 2% a 28% da altura
-    let cardX = Math.round(w * 0.48);
-    let cardY = Math.round(h * 0.02);
-    let cardW = Math.round(w * 0.50);
-    let cardH = Math.round(h * 0.26);
+    let cardX = 0;
+    let cardY = 0;
+    let cardW = w;
+    let cardH = h;
 
-    // Se o usuário já enviou a foto cortada focando apenas no cartão:
-    if (w < 900 && h < 900 && Math.abs(w / h - 0.74) < 0.4) {
-      cardX = Math.round(w * 0.04);
-      cardY = Math.round(h * 0.04);
-      cardW = Math.round(w * 0.92);
-      cardH = Math.round(h * 0.92);
+    if (mode === 'sheet') {
+      // Modo Folha A4 Inteira Retrato:
+      // O Cartão de Respostas fica no cabeçalho superior direito da folha
+      cardX = Math.round(w * 0.44);
+      cardY = Math.round(h * 0.02);
+      cardW = Math.round(w * 0.54);
+      cardH = Math.round(h * 0.25);
+    } else {
+      // Modo Cartão (Padrão e Recomendado):
+      // A câmera do celular já foi enquadrada pelo usuário diretamente sobre o Cartão de Respostas
+      if (h > w * 1.15) {
+        // Celular segurado em pé (vertical/retrato): o cartão horizontal ocupa a faixa central
+        cardX = Math.round(w * 0.04);
+        cardW = Math.round(w * 0.92);
+        cardY = Math.round(h * 0.22);
+        cardH = Math.round(h * 0.56);
+      } else {
+        // Foto horizontal / já recortada: margem de 4% para descartar bordas de mesa
+        cardX = Math.round(w * 0.04);
+        cardY = Math.round(h * 0.04);
+        cardW = Math.round(w * 0.92);
+        cardH = Math.round(h * 0.92);
+      }
     }
 
     const cardCanvas = createCanvas(OMR_CARD_WIDTH, OMR_CARD_HEIGHT);
     const cardCtx = cardCanvas.getContext('2d');
 
-    // Desenha com interpolação suave
     cardCtx.imageSmoothingEnabled = true;
     cardCtx.imageSmoothingQuality = 'high';
     cardCtx.drawImage(canvas, cardX, cardY, cardW, cardH, 0, 0, OMR_CARD_WIDTH, OMR_CARD_HEIGHT);
@@ -155,46 +167,52 @@
     };
   }
 
-  // Lê a grade de 10 questões no cartão OMR normalizado
+  // Lê a grade de 10 questões no cartão OMR normalizado (500x240)
   function readBubbleGrid(cardCanvas) {
     const ctx = cardCanvas.getContext('2d');
     const w = cardCanvas.width;
     const h = cardCanvas.height;
 
     // Aplica binarização adaptativa no cartão
-    const { binaryData, threshold } = applyAdaptiveContrast(ctx, w, h);
+    const { binaryData } = applyAdaptiveContrast(ctx, w, h);
 
-    // Configuração da grade OMR (normalizada em 340x460):
-    // Duas colunas: Coluna 1 (Q1 a Q5), Coluna 2 (Q6 a Q10)
-    // 5 linhas em cada coluna
-    // 4 opções por linha: A, B, C, D
-    const col1X = 0.08 * w;
-    const col2X = 0.54 * w;
-    const colWidth = 0.38 * w;
+    // Mapeamento exato da grade do Cartão Oficial TKST:
+    // 2 colunas: Coluna 1 (Q01 a Q05 na esquerda) e Coluna 2 (Q06 a Q10 na direita)
+    // 5 linhas por coluna
+    // Posições percentuais normalizadas baseadas no CSS .exam-header-omr-card
+    const col1Options = {
+      'A': 0.155,
+      'B': 0.240,
+      'C': 0.325,
+      'D': 0.410
+    };
 
-    const rowStartY = 0.24 * h; // Pula o cabeçalho do cartão
-    const rowHeight = 0.14 * h;
+    const col2Options = {
+      'A': 0.645,
+      'B': 0.730,
+      'C': 0.815,
+      'D': 0.900
+    };
+
+    const rowStartY = 0.28 * h; // Pula o cabeçalho "CARTÃO DE RESPOSTAS / NOTA"
+    const rowHeight = 0.138 * h; // 5 linhas distribuídas até ~96% da altura
 
     const questions = [];
 
     for (let i = 1; i <= 10; i++) {
       const isCol2 = i > 5;
       const rowIndex = isCol2 ? i - 6 : i - 1;
-      const colX = isCol2 ? col2X : col1X;
-      const y = rowStartY + rowIndex * rowHeight;
+      const optMap = isCol2 ? col2Options : col1Options;
+      const y = rowStartY + (rowIndex + 0.5) * rowHeight;
 
-      // 4 opções: A, B, C, D espaçadas horizontalmente
-      const optWidth = colWidth / 4;
-      const options = ['A', 'B', 'C', 'D'];
       const fillRatios = {};
       const sampleBoxes = {};
+      const sampleRadius = Math.round(w * 0.034); // ~17px de raio em 500px
 
-      options.forEach((opt, optIdx) => {
-        const optCenterX = colX + (optIdx + 0.5) * optWidth;
-        const optCenterY = y + rowHeight * 0.5;
-        const sampleRadius = Math.round(optWidth * 0.26);
+      ['A', 'B', 'C', 'D'].forEach(opt => {
+        const optCenterX = optMap[opt] * w;
+        const optCenterY = y;
 
-        // Amostra pixels no interior da bolha / quadradinho
         let darkPixels = 0;
         let totalSampled = 0;
 
@@ -232,30 +250,30 @@
       let doubt = false;
       let notes = '';
 
-      // Regras de Decisão OMR:
-      // 1. Marcação Clara e Limpa: preenchimento superior a 30% e pelo menos 1.7x superior à 2ª opção
-      if (topRatio >= 0.28 && topRatio >= secondRatio * 1.65) {
+      // Regras de Decisão OMR para caneta preta/azul e lápis:
+      // 1. Marcação Clara e Nítida
+      if (topRatio >= 0.28 && topRatio >= secondRatio * 1.60) {
         detectedAnswer = topOpt;
-        confidence = Math.min(0.99, 0.75 + (topRatio - secondRatio) * 0.6);
+        confidence = Math.min(0.99, 0.78 + (topRatio - secondRatio) * 0.5);
         doubt = false;
         notes = 'Marcação limpa e nítida';
       }
-      // 2. Questão em Branco: nenhuma alternativa com preenchimento significativo (< 18%)
-      else if (topRatio < 0.18) {
+      // 2. Questão em Branco (nenhuma opção marcada)
+      else if (topRatio < 0.17) {
         detectedAnswer = null;
         confidence = 0.92;
         doubt = false;
         notes = 'Questão em branco (sem preenchimento)';
       }
-      // 3. Rasura ou Dupla Marcação: duas opções preenchidas com valor acima de 22%
-      else if (topRatio >= 0.24 && secondRatio >= 0.20) {
+      // 3. Possível Rasura ou Dupla Marcação
+      else if (topRatio >= 0.22 && secondRatio >= 0.18) {
         detectedAnswer = topOpt;
         confidence = 0.45;
         doubt = true;
         notes = `Possível rasura entre [${topOpt}] (${Math.round(topRatio * 100)}%) e [${secondOpt}] (${Math.round(secondRatio * 100)}%)`;
       }
-      // 4. Marca Fraca ou Marcação Incompleta
-      else if (topRatio >= 0.18 && topRatio < 0.28) {
+      // 4. Marca Fraca ou Marcação Parcial
+      else if (topRatio >= 0.17 && topRatio < 0.28) {
         detectedAnswer = topOpt;
         confidence = 0.62;
         doubt = true;
@@ -278,7 +296,6 @@
       });
     }
 
-    // Calcula confiança geral
     const sumConf = questions.reduce((acc, q) => acc + q.confidence, 0);
     const overallConfidence = Math.round((sumConf / 10) * 100) / 100;
 
@@ -292,7 +309,7 @@
       if (!q.sampleBoxes) return;
       Object.entries(q.sampleBoxes).forEach(([opt, box]) => {
         const isSelected = q.answer === opt;
-        ctx.lineWidth = isSelected ? 3 : 1;
+        ctx.lineWidth = isSelected ? 2.5 : 1;
 
         if (isSelected) {
           if (q.doubt) {
@@ -303,7 +320,7 @@
             ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
           }
         } else {
-          ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
           ctx.fillStyle = 'rgba(148, 163, 184, 0.08)';
         }
 
@@ -312,11 +329,10 @@
         ctx.fill();
         ctx.stroke();
 
-        // Letra identificadora
         if (isSelected) {
           ctx.fillStyle = q.doubt ? '#D97706' : '#059669';
-          ctx.font = 'bold 11px sans-serif';
-          ctx.fillText(opt, box.x + 2, box.y - 3);
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText(opt, box.x + 3, box.y - 3);
         }
       });
     });
@@ -325,12 +341,15 @@
   // Chamada de validação multi-modal com Gemini Vision via API do backend
   async function verifyWithGeminiVision(croppedCardDataUrl, contextInfo = {}) {
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      const token = localStorage.getItem('tkst_session_token');
+      if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
+      }
+
       const res = await fetch('/api/exam-correct', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + (localStorage.getItem('tkst_session_token') || '')
-        },
+        headers,
         body: JSON.stringify({
           imageBase64: croppedCardDataUrl,
           mimeType: 'image/jpeg',
@@ -341,13 +360,13 @@
       });
 
       if (!res.ok) {
-        return { success: false, error: 'Serviço Gemini Vision indisponível temporariamente.' };
+        return { success: false, geminiAvailable: false, error: 'Serviço Gemini Vision indisponível temporariamente.' };
       }
 
       const json = await res.json();
       return json;
     } catch(err) {
-      return { success: false, error: err.message };
+      return { success: false, geminiAvailable: false, error: err.message };
     }
   }
 
@@ -358,6 +377,7 @@
     const opts = {
       forceAi: false,
       autoRotate: true,
+      mode: 'card', // 'card' (apenas cartão) ou 'sheet' (folha inteira A4)
       examCode: '',
       expectedKey: null,
       kyu: null,
@@ -373,7 +393,7 @@
     // 2. Pré-processamento: Rotação Correta (0/90/180/270)
     let orientationInfo = { angle: 0, qrData: null };
     if (opts.autoRotate) {
-      orientationInfo = await detectAndCorrectOrientation(workCanvas);
+      orientationInfo = await detectAndCorrectOrientation(workCanvas, opts.mode);
       workCanvas = orientationInfo.canvas;
     }
 
@@ -384,16 +404,15 @@
       if (match) detectedExamCode = match[1];
     }
 
-    // 3. Recorte e enquadramento do Cartão OMR
-    const { cardCanvas, bounds } = cropOmrCard(workCanvas);
+    // 3. Recorte e enquadramento do Cartão OMR conforme o modo escolhido
+    const { cardCanvas, bounds } = cropOmrCard(workCanvas, opts.mode);
 
     // 4. Leitura nativa das bolhas via processamento de imagem
     const omrResult = readBubbleGrid(cardCanvas);
 
-    // 5. Validação Multi-Modal com Gemini Vision:
-    // Disparada automaticamente caso haja rasura/dúvida ou se solicitado pelo Sensei
+    // 5. Validação Multi-Modal com Gemini Vision (se solicitado ou em caso de dúvida/rasura)
     const hasDoubt = omrResult.questions.some(q => q.doubt === true);
-    const lowConfidence = omrResult.overallConfidence < 0.85;
+    const lowConfidence = omrResult.overallConfidence < 0.82;
 
     let geminiResult = null;
     let usedAi = false;
@@ -408,11 +427,9 @@
 
       if (geminiResult && geminiResult.success && Array.isArray(geminiResult.questions)) {
         usedAi = true;
-        // Mescla as predições do Gemini com a leitura OMR, resolvendo as rasuras
         geminiResult.questions.forEach(gq => {
           const lq = omrResult.questions.find(q => q.num === gq.num);
           if (lq) {
-            // Se o Gemini tem alta confiança e resolveu uma dúvida ou rasura
             if (lq.doubt || gq.confidence >= lq.confidence) {
               lq.answer = gq.answer;
               lq.confidence = gq.confidence;
@@ -422,7 +439,6 @@
           }
         });
 
-        // Recalcula confiança combinada
         const sum = omrResult.questions.reduce((acc, q) => acc + q.confidence, 0);
         omrResult.overallConfidence = Math.round((sum / 10) * 100) / 100;
         if (geminiResult.examCode && !detectedExamCode) {
@@ -440,7 +456,7 @@
       questions: omrResult.questions,
       overallConfidence: omrResult.overallConfidence,
       usedAi,
-      geminiAvailable: geminiResult ? Boolean(geminiResult.geminiAvailable) : true,
+      geminiAvailable: geminiResult ? Boolean(geminiResult.geminiAvailable !== false) : true,
       hasDoubt: omrResult.questions.some(q => q.doubt),
       croppedCardDataUrl: cardCanvas.toDataURL('image/jpeg', 0.90),
       rawImageDataUrl: workCanvas.toDataURL('image/jpeg', 0.82),

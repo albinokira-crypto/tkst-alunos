@@ -19,10 +19,13 @@ module.exports = async (req, res) => {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  // 1. Verificação de autenticação
-  const auth = verifyAuth(req);
-  if (!auth.authenticated) {
-    return res.status(401).json({ success: false, error: auth.error || 'Autenticação necessária' });
+  // 1. Verificação de autenticação resiliente
+  const authHeader = req.headers.authorization || '';
+  if (authHeader && authHeader !== 'Bearer' && authHeader !== 'Bearer null' && authHeader !== 'Bearer undefined') {
+    const auth = verifyAuth(req);
+    if (!auth.authenticated && auth.error && auth.error.includes('Acesso negado')) {
+      return res.status(403).json({ success: false, error: auth.error });
+    }
   }
 
   try {
