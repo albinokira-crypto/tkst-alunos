@@ -268,22 +268,108 @@
     try {
       const customOnly = stripDefaultImages((bank || []).filter(q => q && q.id && q.question));
       const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || []);
+      
+      // Obtém o mapa de questões editadas do usuário
+      let editedMap = {};
+      try {
+        editedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+      } catch(e) {}
+
       // 1. Endpoint dedicado /api/quiz-bank (persistência entre requisições)
       fetch('/api/quiz-bank', {
         method: 'POST',
         headers: getClientAuthHeaders(),
-        body: JSON.stringify({ bank: customOnly, deletedQuizIds: deleted })
+        body: JSON.stringify({ bank: customOnly, deletedQuizIds: deleted, editedMap })
       }).catch(() => {});
 
       // 2. Commit automático no GitHub via endpoint server-side seguro
       pushQuizBankToServer(customOnly, deleted).catch(() => {});
 
-      // 3. Transmissão imediata via NTFY em lotes seguros (< 3.5KB) para sincronizar com o PC/celular em tempo real
-      if (customOnly.length > 0) {
+      // 3. Transmissão prioritária e imediata do Delta de Edições via NTFY (pacote único e leve < 2KB)
+      // Garante sincronização instantânea com celulares e outros PCs sem risco de rate limit (429)
+      broadcastQuizEditDelta(editedMap, customOnly);
+
+      // 4. Transmissão secundária em lote (para sincronização de novas questões completas)
+      if (customOnly.length > 0 && customOnly.length <= 20) {
         broadcastQuizBankChunks(customOnly);
       }
     } catch(err) {
       console.warn('Quiz bank push notice:', err);
+    }
+  }
+
+  // Transmite delta direto de questões editadas em pacote ultra-leve (< 2KB) via NTFY
+  async function broadcastQuizEditDelta(editedMap, questions) {
+    try {
+      const localEdited = (editedMap && Object.keys(editedMap).length > 0)
+        ? editedMap
+        : JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+      
+      const modifiedQuestions = stripDefaultImages(
+        Array.isArray(questions)
+          ? questions.filter(q => q && q.id && (q._edited || q._custom || localEdited[q.id]))
+          : []
+      );
+
+      const msg = {
+        type: 'tkst_quiz_edit_delta',
+        editedMap: localEdited,
+        questions: modifiedQuestions,
+        timestamp: Date.now()
+      };
+
+      await fetch(SYNC_URL, {
+        method: 'POST',
+        headers: {
+          'Title': 'TKST_QUIZ_EDIT_DELTA',
+          'Content-Type': 'text/plain; charset=utf-8'
+        },
+        body: JSON.stringify(msg)
+      });
+    } catch(err) {
+      console.warn('Quiz edit delta broadcast notice:', err);
+    }
+  }
+
+  // Recebe e aplica imediatamente edições de questões feitas no PC ou em outros dispositivos
+  function handleIncomingQuizEditDelta(data) {
+    if (!data) return;
+    try {
+      const incomingMap = data.editedMap || {};
+      const incomingQuestions = Array.isArray(data.questions) ? data.questions : [];
+      let localEditedMap = {};
+      try {
+        localEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+      } catch(e) {}
+
+      let modified = false;
+      Object.keys(incomingMap).forEach(qId => {
+        const eq = incomingMap[qId];
+        if (eq && eq.id && eq.question) {
+          localEditedMap[qId] = eq;
+          modified = true;
+        }
+      });
+      incomingQuestions.forEach(q => {
+        if (q && q.id && q.question) {
+          localEditedMap[q.id] = q;
+          modified = true;
+        }
+      });
+
+      if (modified) {
+        localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(localEditedMap));
+      }
+
+      // Atualiza o banco oficial em memória e cofre local
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function') {
+        const updatedBank = window.TKST_AUTH.getCustomQuizBank();
+        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
+          detail: { count: updatedBank.length, updated: true, fromDelta: true }
+        }));
+      }
+    } catch(err) {
+      console.warn('handleIncomingQuizEditDelta error:', err);
     }
   }
 
@@ -354,28 +440,44 @@
       }
 
       let anyNew = false;
+      let anyModified = false;
       const initialBankSize = bankMap.size;
       const restored = restoreDefaultImages(incoming);
+      let localEditedMap = {};
+      try {
+        localEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+      } catch(e) {}
+
       restored.forEach(q => {
         if (q && q.id && q.question && !deletedIds.includes(q.id)) {
           const existing = bankMap.get(q.id);
           if (!existing) {
             bankMap.set(q.id, q);
             anyNew = true;
-          } else if (q._edited || (q.updatedAt && (!existing.updatedAt || q.updatedAt > existing.updatedAt))) {
-            bankMap.set(q.id, { ...existing, ...q, image: q.image || existing.image });
-            anyNew = true;
+          } else if (q._edited || (q.updatedAt && (!existing.updatedAt || q.updatedAt >= existing.updatedAt))) {
+            const updatedItem = { ...existing, ...q, image: q.image || existing.image };
+            bankMap.set(q.id, updatedItem);
+            anyModified = true;
+            if (q._edited) {
+              localEditedMap[q.id] = updatedItem;
+            }
           }
         }
       });
+
+      try {
+        localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(localEditedMap));
+      } catch(e) {}
 
       const merged = Array.from(bankMap.values());
       safeSaveQuizBank(merged);
       window.TKST_QUIZ_BANK = merged;
       window.TKST_QUIZ = merged;
 
-      if (anyNew && merged.length !== initialBankSize) {
-        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length } }));
+      if (anyNew || anyModified) {
+        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
+          detail: { count: merged.length, updated: true }
+        }));
       }
     } catch(err) {
       console.warn('Incoming quiz chunk notice:', err);
@@ -502,17 +604,30 @@
 
       if (cloudQuestions.length > 0) {
         const restoredCloud = restoreDefaultImages(cloudQuestions);
+        let cloudEditedMap = {};
+        try {
+          cloudEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+        } catch(e) {}
+
         restoredCloud.forEach(q => {
           const isSenseiQ = q && q.id && q.question;
           if (isSenseiQ && !deletedIds.includes(q.id) && q && q.id) {
             const localQ = bankMap.get(q.id);
             const isLocalEdited = localQ && (localQ._edited || localQ._custom);
-            const isCloudNewer = q.updatedAt && localQ && localQ.updatedAt && q.updatedAt > localQ.updatedAt;
-            if (!localQ || (!isLocalEdited && (!localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt))) || (isLocalEdited && isCloudNewer)) {
-              bankMap.set(q.id, { ...(localQ || {}), ...q, image: q.image || (localQ && localQ.image) || '' });
+            const isCloudNewer = q.updatedAt && localQ && localQ.updatedAt && q.updatedAt >= localQ.updatedAt;
+            if (!localQ || (!isLocalEdited && (!localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt))) || (isLocalEdited && isCloudNewer) || q._edited) {
+              const updatedItem = { ...(localQ || {}), ...q, image: q.image || (localQ && localQ.image) || '' };
+              bankMap.set(q.id, updatedItem);
+              if (q._edited) {
+                cloudEditedMap[q.id] = updatedItem;
+              }
             }
           }
         });
+
+        try {
+          localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(cloudEditedMap));
+        } catch(e) {}
       }
 
       // Re-aplica com prioridade máxima o mapa de questões editadas localmente
@@ -533,13 +648,10 @@
       } catch(e) {}
 
       const merged = Array.from(bankMap.values());
-      const currentBankLength = Array.isArray(window.TKST_QUIZ_BANK) ? window.TKST_QUIZ_BANK.length : 0;
       safeSaveQuizBank(merged);
       window.TKST_QUIZ_BANK = merged;
       window.TKST_QUIZ = merged;
-      if (currentBankLength !== merged.length) {
-        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length } }));
-      }
+      window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length, updated: true } }));
     } catch(err) {
       console.warn('Quiz bank pull notice:', err);
     }
@@ -1247,6 +1359,7 @@
         progress,
         quiz_submissions,
         custom_quiz_bank,
+        edited_quiz_questions: JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}'),
         custom_glossary,
         custom_media,
         custom_albums,
@@ -1549,19 +1662,43 @@
       localSaved.forEach(q => {
         if (!localDeletedQuizzes.includes(q.id)) bankMap.set(q.id, q);
       });
+      // Se a nuvem enviou o mapa de edições do Sensei, mescla com o armazenamento local
+      if (cloudData.edited_quiz_questions && typeof cloudData.edited_quiz_questions === 'object') {
+        try {
+          const curMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+          const mergedMap = { ...curMap, ...cloudData.edited_quiz_questions };
+          localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(mergedMap));
+          changed = true;
+        } catch(e) {}
+      }
+
       const restoredIncoming = restoreDefaultImages(cloudData.custom_quiz_bank);
+      let incomingEditedMap = {};
+      try {
+        incomingEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+      } catch(e) {}
+
       restoredIncoming.forEach(q => {
         if (!localDeletedQuizzes.includes(q.id) && q && q.id) {
           const localQ = bankMap.get(q.id);
           const isLocalEdited = localQ && (localQ._edited || localQ._custom);
-          const isCloudNewer = q.updatedAt && localQ && localQ.updatedAt && q.updatedAt > localQ.updatedAt;
-          if (!localQ || (!isLocalEdited && (!localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt))) || (isLocalEdited && isCloudNewer)) {
-            bankMap.set(q.id, q);
+          const isCloudNewer = q.updatedAt && localQ && localQ.updatedAt && q.updatedAt >= localQ.updatedAt;
+          if (!localQ || (!isLocalEdited && (!localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt))) || (isLocalEdited && isCloudNewer) || q._edited) {
+            const updatedItem = { ...(localQ || {}), ...q, image: q.image || (localQ && localQ.image) || '' };
+            bankMap.set(q.id, updatedItem);
+            if (q._edited) {
+              incomingEditedMap[q.id] = updatedItem;
+              changed = true;
+            }
           }
         }
       });
 
-      // Re-aplica mapa dedicado de edições locais
+      try {
+        localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(incomingEditedMap));
+      } catch(e) {}
+
+      // Re-aplica mapa dedicado de edições locais (garantia que edições sobrepõem qualquer padrão)
       try {
         const editedStored = localStorage.getItem('tkst_edited_quiz_questions');
         if (editedStored) {
@@ -1583,8 +1720,8 @@
       safeSaveQuizBank(mergedBank);
       window.TKST_QUIZ_BANK = mergedBank;
       window.TKST_QUIZ = mergedBank;
-      if (currentBankLength !== mergedBank.length) {
-        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: mergedBank.length } }));
+      if (changed || currentBankLength !== mergedBank.length) {
+        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: mergedBank.length, updated: true } }));
         changed = true;
       }
     }
@@ -1843,6 +1980,10 @@
                   handleIncomingExamRecord(cloudData.record);
                   continue;
                 }
+                if (cloudData.type === 'tkst_quiz_edit_delta') {
+                  handleIncomingQuizEditDelta(cloudData);
+                  continue;
+                }
                 if (cloudData.type === 'tkst_quiz_chunk') {
                   handleIncomingQuizChunk(cloudData);
                   continue;
@@ -1899,6 +2040,8 @@
               if (cloudData) {
                 if (cloudData.type === 'tkst_exam_generated' && cloudData.record) {
                   handleIncomingExamRecord(cloudData.record);
+                } else if (cloudData.type === 'tkst_quiz_edit_delta') {
+                  handleIncomingQuizEditDelta(cloudData);
                 } else if (cloudData.type === 'tkst_quiz_chunk') {
                   handleIncomingQuizChunk(cloudData);
                 } else if (cloudData.type === 'quiz_sync_broadcast' && Array.isArray(cloudData.bank)) {
@@ -3112,17 +3255,21 @@
 
     saveQuizSubmission: function(data) {
       const user = this.getCurrentUser();
-      if (!user) return null;
+      if (!user && !data.studentId && !data.studentName) return null;
 
       const nowIso = new Date().toISOString();
+      const allStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+      const evaluatedUser = (data.studentId && allStudents.find(s => s && s.id === data.studentId)) ||
+                            (data.studentName && allStudents.find(s => s && (s.name === data.studentName || s.username === data.studentName))) ||
+                            user || { id: 'temp_student', name: data.studentName || 'Aluno TKST', username: 'aluno' };
 
       // 1. Update user progress in local storage
       const allProgress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
-      if (!allProgress[user.id]) {
-        allProgress[user.id] = { masteredItems: {}, quizScores: [] };
+      if (!allProgress[evaluatedUser.id]) {
+        allProgress[evaluatedUser.id] = { masteredItems: {}, quizScores: [] };
       }
-      if (!allProgress[user.id].quizScores) {
-        allProgress[user.id].quizScores = [];
+      if (!allProgress[evaluatedUser.id].quizScores) {
+        allProgress[evaluatedUser.id].quizScores = [];
       }
       const scoreItem = {
         date: nowIso,
@@ -3130,15 +3277,15 @@
         total: data.total,
         percentage: Math.round((data.score / data.total) * 100),
         beltLevel: data.beltLevel,
-        beltKyu: data.beltKyu !== undefined ? data.beltKyu : 7
+        beltKyu: data.beltKyu !== undefined ? data.beltKyu : 7,
+        isOmr: Boolean(data.isOmr)
       };
-      allProgress[user.id].quizScores.push(scoreItem);
+      allProgress[evaluatedUser.id].quizScores.push(scoreItem);
       localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(allProgress));
 
       // 2. Also record directly into the student profile object in allStudents
       try {
-        const allStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
-        const studentIndex = allStudents.findIndex(s => s && (s.id === user.id || s.username === user.username));
+        const studentIndex = allStudents.findIndex(s => s && (s.id === evaluatedUser.id || s.username === evaluatedUser.username));
         if (studentIndex >= 0) {
           const std = allStudents[studentIndex];
           std.quizScores = std.quizScores || [];
@@ -3159,11 +3306,11 @@
 
       const submission = {
         id: 'quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-        studentId: user.id,
-        studentName: user.name,
-        studentUsername: user.username,
-        studentBelt: user.currentBelt,
-        studentKyu: user.currentKyu !== undefined ? user.currentKyu : 7,
+        studentId: evaluatedUser.id,
+        studentName: evaluatedUser.name || evaluatedUser.username,
+        studentUsername: evaluatedUser.username || evaluatedUser.name,
+        studentBelt: evaluatedUser.currentBelt || data.beltLevel || 'Faixa Branca',
+        studentKyu: evaluatedUser.currentKyu !== undefined ? evaluatedUser.currentKyu : (data.beltKyu !== undefined ? data.beltKyu : 7),
         beltLevel: data.beltLevel,
         beltKyu: data.beltKyu !== undefined ? data.beltKyu : 7,
         score: data.score,
@@ -3172,7 +3319,10 @@
         passed: Math.round((data.score / data.total) * 100) >= 70,
         perfect: data.score === data.total,
         date: nowIso,
-        details: Array.isArray(data.details) ? data.details : []
+        details: Array.isArray(data.details) ? data.details : [],
+        isOmr: Boolean(data.isOmr),
+        examCode: data.examCode || '',
+        overallConfidence: data.overallConfidence || null
       };
 
       submissions.unshift(submission);

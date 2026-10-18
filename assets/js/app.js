@@ -218,13 +218,20 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('tkst_quiz_bank_updated', (e) => {
     const count = (e.detail && e.detail.count) || (Array.isArray(window.TKST_QUIZ_BANK) ? window.TKST_QUIZ_BANK.length : 0);
     const now = Date.now();
-    if (count > 0 && count !== lastQuizBankCount && (now - lastQuizSyncToastTime > 15000)) {
+    if (e.detail && e.detail.updated && (now - lastQuizSyncToastTime > 6000)) {
+      lastQuizSyncToastTime = now;
+      showToast(`📥 Questões sincronizadas em tempo real com o PC!`, 'success', 3000);
+    } else if (count > 0 && count !== lastQuizBankCount && (now - lastQuizSyncToastTime > 15000)) {
       lastQuizBankCount = count;
       lastQuizSyncToastTime = now;
       showToast(`📥 Banco sincronizado: ${count} questões disponíveis!`, 'info', 3000);
     }
-    if (activeTab === 'admin' && typeof renderAdminView === 'function') {
-      renderAdminView();
+    if (activeTab === 'admin') {
+      if (typeof renderAdminMaster === 'function') {
+        renderAdminMaster();
+      } else if (typeof renderAdminView === 'function') {
+        renderAdminView();
+      }
     }
   });
 
@@ -2477,6 +2484,9 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.78rem; padding: 6px 14px; font-weight: 800; background: #F5BE00; color: #000; border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(245, 190, 0, 0.35);" title="Corrigir Prova com Câmera ou Scanner OMR">
+                <i class="fas fa-camera"></i> Corrigir com Câmera / OMR
+              </button>
               <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_AUTH.pullQuizSubmissionsFromCloud().then(() => renderAdminMaster())" style="font-size: 0.78rem; padding: 6px 12px; color: var(--accent-gold); border-color: rgba(255, 183, 3, 0.4); display: inline-flex; align-items: center; gap: 6px;" title="Buscar os simulados mais recentes salvos na nuvem">
                 <i class="fas fa-sync-alt"></i> Atualizar da Nuvem
               </button>
@@ -2747,6 +2757,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-gold" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 800; color: #000; background: #F5BE00; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.35);" title="Corrigir Prova Teórica com Câmera ou Scanner OMR">
+                <i class="fas fa-camera"></i> Corrigir Prova com Câmera / OMR
+              </button>
               <button class="btn btn-gold" onclick="window.TKST_APP.printMasterAnswerKey()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; color: #000; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.25);">
                 <i class="fas fa-key"></i> Imprimir Gabarito Geral (Todas as Faixas)
               </button>
@@ -15335,9 +15348,380 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    openExamCameraScanner: function() {},
-    closeExamCameraScanner: function() {}
+    openExamCameraScanner: function(kyu) {
+      const modal = document.getElementById('examOmrScannerModal');
+      if (!modal) return;
+
+      // Popula lista de alunos matriculados
+      const sel = document.getElementById('omrStudentSelect');
+      if (sel && window.TKST_AUTH && typeof window.TKST_AUTH.getAllStudents === 'function') {
+        const students = window.TKST_AUTH.getAllStudents() || [];
+        sel.innerHTML = '<option value="">Detectar automaticamente ou selecionar...</option>' +
+          students.map(s => `<option value="${s.id}">${s.name || s.username} (${s.dojo || 'TKST'})</option>`).join('');
+      }
+
+      const kyuSelect = document.getElementById('omrKyuSelect');
+      if (kyuSelect && kyu !== undefined && kyu !== null) {
+        kyuSelect.value = String(kyu);
+      }
+
+      this.resetOmrScanner();
+      modal.classList.add('active');
+      modal.style.display = 'flex';
+    },
+
+    closeExamCameraScanner: function() {
+      this.closeExamOmrModal();
+    },
+
+    closeExamOmrModal: function() {
+      this.stopOmrCamera();
+      const modal = document.getElementById('examOmrScannerModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+      }
+    },
+
+    startOmrCamera: async function() {
+      try {
+        const video = document.getElementById('omrVideoElement');
+        const container = document.getElementById('omrVideoContainer');
+        const captureBtn = document.getElementById('omrCaptureBtn');
+        const startBtn = document.getElementById('omrStartCameraBtn');
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert('Seu navegador ou dispositivo não suporta acesso direto à câmera. Utilize a opção "Escolher Foto do Arquivo".');
+          return;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
+        });
+
+        omrCameraStream = stream;
+        if (video) {
+          video.srcObject = stream;
+          video.play();
+        }
+        if (container) container.style.display = 'block';
+        if (captureBtn) captureBtn.style.display = 'inline-flex';
+        if (startBtn) startBtn.style.display = 'none';
+      } catch(err) {
+        console.error('Erro ao acessar câmera para OMR:', err);
+        alert('Não foi possível acessar a câmera. Verifique as permissões do dispositivo ou escolha uma foto salva.');
+      }
+    },
+
+    stopOmrCamera: function() {
+      if (omrCameraStream) {
+        omrCameraStream.getTracks().forEach(track => {
+          try { track.stop(); } catch(e) {}
+        });
+        omrCameraStream = null;
+      }
+      const video = document.getElementById('omrVideoElement');
+      if (video) video.srcObject = null;
+      const container = document.getElementById('omrVideoContainer');
+      if (container) container.style.display = 'none';
+      const captureBtn = document.getElementById('omrCaptureBtn');
+      if (captureBtn) captureBtn.style.display = 'none';
+      const startBtn = document.getElementById('omrStartCameraBtn');
+      if (startBtn) startBtn.style.display = 'inline-flex';
+    },
+
+    captureOmrFrame: function() {
+      const video = document.getElementById('omrVideoElement');
+      if (!video || !video.videoWidth) return;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      this.stopOmrCamera();
+      this.processOmrImage(canvas.toDataURL('image/jpeg', 0.92));
+    },
+
+    handleOmrFileUpload: function(event) {
+      const input = event.target;
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.stopOmrCamera();
+          this.processOmrImage(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+
+    onOmrKyuChanged: function() {
+      const kyuSelect = document.getElementById('omrKyuSelect');
+      const kyu = kyuSelect ? Number(kyuSelect.value) : 6;
+      omrCurrentExpectedKey = this.getExpectedKeyForKyu(kyu);
+      if (omrCurrentScanResult) {
+        this.recalculateOmrScore();
+      }
+    },
+
+    getExpectedKeyForKyu: function(kyu) {
+      try {
+        if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getExamData === 'function') {
+          const exam = window.TKST_EXAM_GENERATOR.getExamData(kyu);
+          if (exam && Array.isArray(exam.questions) && exam.questions.length >= 10) {
+            return exam.questions.slice(0, 10).map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
+          }
+        }
+      } catch(e) {}
+
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      const kyuQuestions = bank.filter(q => Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6)) === Number(kyu));
+      if (kyuQuestions.length >= 10) {
+        return kyuQuestions.slice(0, 10).map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
+      }
+      return ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
+    },
+
+    processOmrImage: async function(imageSrc, forceAi = false) {
+      omrCurrentSourceImage = imageSrc;
+
+      const captureView = document.getElementById('omrCaptureView');
+      const processingView = document.getElementById('omrProcessingView');
+      const reviewView = document.getElementById('omrReviewView');
+
+      if (captureView) captureView.style.display = 'none';
+      if (reviewView) reviewView.style.display = 'none';
+      if (processingView) processingView.style.display = 'block';
+
+      const kyuSelect = document.getElementById('omrKyuSelect');
+      const kyu = kyuSelect ? Number(kyuSelect.value) : 6;
+      omrCurrentExpectedKey = this.getExpectedKeyForKyu(kyu);
+
+      try {
+        if (!window.TKST_OMR_ENGINE) {
+          throw new Error('Motor OMR não carregado. Recarregue a página.');
+        }
+
+        const scanResult = await window.TKST_OMR_ENGINE.scanExamImage(imageSrc, {
+          kyu,
+          expectedKey: omrCurrentExpectedKey,
+          forceAi
+        });
+
+        omrCurrentScanResult = scanResult;
+
+        if (processingView) processingView.style.display = 'none';
+        if (reviewView) reviewView.style.display = 'block';
+
+        this.renderOmrReviewView(scanResult);
+
+        if (scanResult.usedAi) {
+          showToast('🤖 Avaliação validada com sucesso pelo Gemini Vision!', 'info', 3500);
+        } else if (scanResult.hasDoubt) {
+          showToast('⚠️ Rasuras ou marcas fracas detectadas. Revise as marcações abaixo.', 'warning', 4500);
+        } else {
+          showToast('✅ Cartão OMR escaneado e lido com alta precisão!', 'success', 3000);
+        }
+      } catch(err) {
+        console.error('Erro no processamento OMR:', err);
+        if (processingView) processingView.style.display = 'none';
+        if (captureView) captureView.style.display = 'block';
+        alert('Ocorreu um erro ao processar a prova: ' + (err.message || err));
+      }
+    },
+
+    renderOmrReviewView: function(scanResult) {
+      const cardImg = document.getElementById('omrScannedCardImg');
+      if (cardImg && scanResult.croppedCardDataUrl) {
+        cardImg.src = scanResult.croppedCardDataUrl;
+      }
+
+      const confBadge = document.getElementById('omrConfidenceBadge');
+      if (confBadge) {
+        const confPct = Math.round((scanResult.overallConfidence || 0.9) * 100);
+        confBadge.textContent = `Confiança: ${confPct}%`;
+        confBadge.style.background = confPct >= 85 ? '#065F46' : (confPct >= 60 ? '#854D0E' : '#991B1B');
+        confBadge.style.color = confPct >= 85 ? '#34D399' : (confPct >= 60 ? '#FBBF24' : '#F87171');
+      }
+
+      // Preenche lista de questões com botões de override 1-clique
+      const listContainer = document.getElementById('omrQuestionsReviewList');
+      if (listContainer) {
+        listContainer.innerHTML = scanResult.questions.map(q => {
+          const isCorrect = q.answer && q.answer === omrCurrentExpectedKey[q.num - 1];
+          const confPct = Math.round(q.confidence * 100);
+          let badgeColor = '#10B981';
+          let badgeText = `${confPct}%`;
+          if (q.doubt) {
+            badgeColor = '#EF4444';
+            badgeText = 'Rasura/Dúvida';
+          } else if (confPct < 80) {
+            badgeColor = '#F59E0B';
+            badgeText = `${confPct}%`;
+          }
+
+          const options = ['A', 'B', 'C', 'D'];
+          const buttonsHtml = options.map(opt => {
+            const isSelected = q.answer === opt;
+            const btnStyle = isSelected
+              ? 'background: var(--accent-gold); color: #000; font-weight: 800; border: 1px solid var(--accent-gold); box-shadow: 0 0 6px rgba(245, 190, 0, 0.6);'
+              : 'background: rgba(255,255,255,0.06); color: #CBD5E1; border: 1px solid rgba(255,255,255,0.15);';
+            return `<button type="button" class="btn btn-sm" onclick="window.TKST_APP.overrideOmrAnswer(${q.num}, '${opt}')" style="padding: 3px 8px; font-size: 0.78rem; border-radius: 4px; ${btnStyle}">${opt}</button>`;
+          }).join(' ');
+
+          return `
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 800; color: #FFF; font-size: 0.85rem;">Q${q.num}:</span>
+                <span style="display: flex; gap: 4px;">${buttonsHtml}</span>
+                <button type="button" class="btn btn-sm" onclick="window.TKST_APP.overrideOmrAnswer(${q.num}, null)" style="padding: 2px 6px; font-size: 0.7rem; color: #94A3B8; background: transparent; border: 1px solid rgba(255,255,255,0.1);" title="Marcar como em branco">Em branco</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.4); color: ${badgeColor}; font-weight: 700;">${badgeText}</span>
+                <span style="font-size: 0.75rem; color: #94A3B8;">Gabarito: <strong style="color: #FFF;">${omrCurrentExpectedKey[q.num - 1] || '-'}</strong></span>
+                <span>${isCorrect ? '✅' : '❌'}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      this.recalculateOmrScore();
+    },
+
+    overrideOmrAnswer: function(questionNum, letter) {
+      if (!omrCurrentScanResult || !omrCurrentScanResult.questions) return;
+      const target = omrCurrentScanResult.questions.find(q => q.num === questionNum);
+      if (target) {
+        target.answer = letter;
+        target.doubt = false;
+        target.confidence = 1.0;
+        target.notes = 'Corrigido manualmente pelo Sensei';
+        this.renderOmrReviewView(omrCurrentScanResult);
+      }
+    },
+
+    recalculateOmrScore: function() {
+      if (!omrCurrentScanResult || !omrCurrentScanResult.questions) return;
+      let hits = 0;
+      omrCurrentScanResult.questions.forEach((q, idx) => {
+        const expected = omrCurrentExpectedKey[idx];
+        if (q.answer && q.answer === expected) {
+          hits++;
+        }
+      });
+
+      const score = hits; // 1 ponto por questão = total 10
+      const passed = score >= 7;
+
+      const scoreDisplay = document.getElementById('omrScoreDisplay');
+      if (scoreDisplay) {
+        scoreDisplay.innerHTML = `${score.toFixed(1).replace('.', ',')} <span style="font-size: 0.9rem; color: #64748B;">/ 10,0</span>`;
+      }
+
+      const hitsDisplay = document.getElementById('omrHitsDisplay');
+      if (hitsDisplay) {
+        hitsDisplay.textContent = `${hits} de 10 acertos (${hits * 10}%)`;
+      }
+
+      const scoreBadge = document.getElementById('omrScoreBadge');
+      if (scoreBadge) {
+        scoreBadge.textContent = passed ? 'APROVADO' : 'REPROVADO';
+        scoreBadge.className = passed ? 'badge badge-success' : 'badge badge-danger';
+        scoreBadge.style.background = passed ? '#059669' : '#DC2626';
+        scoreBadge.style.color = '#FFF';
+      }
+    },
+
+    forceGeminiOmrValidation: async function() {
+      if (!omrCurrentSourceImage) {
+        alert('Nenhuma imagem carregada para validação.');
+        return;
+      }
+      await this.processOmrImage(omrCurrentSourceImage, true);
+    },
+
+    resetOmrScanner: function() {
+      this.stopOmrCamera();
+      omrCurrentScanResult = null;
+      omrCurrentSourceImage = null;
+
+      const captureView = document.getElementById('omrCaptureView');
+      const processingView = document.getElementById('omrProcessingView');
+      const reviewView = document.getElementById('omrReviewView');
+
+      if (captureView) captureView.style.display = 'block';
+      if (processingView) processingView.style.display = 'none';
+      if (reviewView) reviewView.style.display = 'none';
+
+      const fileInput = document.getElementById('omrFileInput');
+      if (fileInput) fileInput.value = '';
+    },
+
+    saveOmrOfficialGrade: async function() {
+      if (!omrCurrentScanResult || !omrCurrentScanResult.questions) {
+        alert('Nenhum resultado de exame disponível para salvar.');
+        return;
+      }
+
+      const kyuSelect = document.getElementById('omrKyuSelect');
+      const kyu = kyuSelect ? Number(kyuSelect.value) : 6;
+      const beltName = typeof getBeltNameFromKyu === 'function' ? getBeltNameFromKyu(kyu) : `Kyu ${kyu}`;
+
+      let hits = 0;
+      omrCurrentScanResult.questions.forEach((q, idx) => {
+        if (q.answer && q.answer === omrCurrentExpectedKey[idx]) hits++;
+      });
+
+      const studentSelect = document.getElementById('omrStudentSelect');
+      const studentId = studentSelect ? studentSelect.value : '';
+      const allStudents = window.TKST_AUTH ? window.TKST_AUTH.getAllStudents() : [];
+      const student = allStudents.find(s => s && s.id === studentId);
+
+      const submissionData = {
+        score: hits,
+        total: 10,
+        beltLevel: beltName,
+        beltKyu: kyu,
+        studentId: student ? student.id : null,
+        studentName: student ? (student.name || student.username) : 'Aluno TKST',
+        isOmr: true,
+        examCode: omrCurrentScanResult.examCode || '',
+        overallConfidence: omrCurrentScanResult.overallConfidence,
+        details: omrCurrentScanResult.questions.map((q, idx) => ({
+          num: q.num,
+          studentAnswer: q.answer,
+          correctAnswer: omrCurrentExpectedKey[idx],
+          isCorrect: q.answer === omrCurrentExpectedKey[idx],
+          confidence: q.confidence,
+          doubt: q.doubt,
+          notes: q.notes
+        }))
+      };
+
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.saveQuizSubmission === 'function') {
+        window.TKST_AUTH.saveQuizSubmission(submissionData);
+        showToast(`✅ Avaliação OMR salva: Nota ${hits},0 registrada com sucesso!`, 'success', 3500);
+        this.closeExamOmrModal();
+        if (typeof renderAdminMaster === 'function') {
+          renderAdminMaster();
+        }
+      } else {
+        alert('Módulo de autenticação indisponível.');
+      }
+    }
   };
+
+  let omrCameraStream = null;
+  let omrCurrentScanResult = null;
+  let omrCurrentSourceImage = null;
+  let omrCurrentExpectedKey = [];
 
   // Helper para parar imediatamente qualquer áudio / vídeo em execução dentro de modais
   function stopModalMedia(modalElement) {

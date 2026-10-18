@@ -616,6 +616,127 @@
     </div>
   </div>
 
+  <!-- Modal de Correção de Provas OMR & Gemini Vision (Sensei) -->
+  <div class="modal-overlay" id="examOmrScannerModal" style="display:none;">
+    <div class="modal-container" style="max-width: 860px; width: 96%; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-bottom: 1px solid var(--border-color); padding: 14px 20px;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-camera" style="color: var(--accent-gold);"></i>
+          <span>Correção de Provas OMR & Gemini Vision</span>
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeExamOmrModal()" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 16px; overflow-y: auto; flex: 1;">
+        <!-- 1. CAPTURA / UPLOAD VIEW -->
+        <div id="omrCaptureView">
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Faixa / Kyu do Exame</label>
+                <select id="omrKyuSelect" class="form-control" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;" onchange="window.TKST_APP.onOmrKyuChanged()">
+                  <option value="6">6º Kyu (Branca para Amarela)</option>
+                  <option value="5">5º Kyu (Amarela para Vermelha)</option>
+                  <option value="4">4º Kyu (Vermelha para Laranja)</option>
+                  <option value="3">3º Kyu (Laranja para Verde)</option>
+                  <option value="2">2º Kyu (Verde para Roxa)</option>
+                  <option value="1">1º Kyu (Roxa para Marrom)</option>
+                  <option value="0">1º Dan (Marrom para Preta Shodan)</option>
+                  <option value="-1">2º Dan (Nidan)</option>
+                  <option value="-2">3º Dan (Sandan)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">Aluno Avaliado (Opcional)</label>
+                <select id="omrStudentSelect" class="form-control" style="width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+                  <option value="">Detectar automaticamente ou selecionar...</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Viewfinder Câmera -->
+            <div id="omrVideoContainer" style="display:none; position: relative; background: #000; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 14px; text-align: center;">
+              <video id="omrVideoElement" autoplay playsinline style="width: 100%; max-height: 380px; object-fit: cover;"></video>
+              <div style="position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; border: 2px dashed rgba(245, 190, 0, 0.7); pointer-events: none; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <span style="background: rgba(0,0,0,0.65); color: #FFD166; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Enquadre o Cartão de Respostas aqui</span>
+              </div>
+            </div>
+
+            <!-- Botões de Ação de Captura -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+              <button type="button" id="omrStartCameraBtn" class="btn btn-primary" onclick="window.TKST_APP.startOmrCamera()" style="font-weight: 700;">
+                <i class="fas fa-video"></i> Usar Câmera do Dispositivo
+              </button>
+              <button type="button" id="omrCaptureBtn" class="btn btn-gold" onclick="window.TKST_APP.captureOmrFrame()" style="display:none; font-weight: 800; background: #F5BE00; color: #000;">
+                <i class="fas fa-camera"></i> Capturar Foto da Prova
+              </button>
+              <label class="btn btn-secondary" style="margin: 0; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-file-image"></i> Escolher Foto do Arquivo
+                <input type="file" id="omrFileInput" accept="image/*" style="display:none;" onchange="window.TKST_APP.handleOmrFileUpload(event)">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. PROCESSANDO SPINNER -->
+        <div id="omrProcessingView" style="display:none; text-align: center; padding: 40px 20px;">
+          <div class="spinner-border" style="width: 48px; height: 48px; border-width: 4px; color: var(--accent-gold); margin-bottom: 16px;"></div>
+          <h4 id="omrProcessingTitle" style="color: #FFF; font-weight: 800; margin-bottom: 6px;">Analisando Cartão OMR...</h4>
+          <p id="omrProcessingDesc" style="color: #94A3B8; font-size: 0.85rem;">Corrigindo perspectiva, contraste e lendo preenchimento das bolhas...</p>
+        </div>
+
+        <!-- 3. SENSEI REVIEW VIEW -->
+        <div id="omrReviewView" style="display:none;">
+          <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 16px; margin-bottom: 16px;" id="omrReviewSplitGrid">
+            <!-- Coluna da Esquerda: Foto do Cartão com caixas detectadas -->
+            <div style="background: #0B0E14; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; text-align: center;">
+              <div style="font-size: 0.82rem; font-weight: 700; color: #CBD5E1; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Cartão Escaneado (OMR)</span>
+                <span id="omrConfidenceBadge" class="badge" style="font-size: 0.72rem; padding: 3px 8px;">Confiança: 95%</span>
+              </div>
+              <div style="border-radius: 6px; overflow: hidden; background: #000; margin-bottom: 10px; max-height: 380px; display: flex; align-items: center; justify-content: center;">
+                <img id="omrScannedCardImg" src="" alt="Cartão OMR" style="max-width: 100%; max-height: 380px; object-fit: contain;">
+              </div>
+              <button type="button" id="omrGeminiValidateBtn" class="btn btn-sm btn-outline" onclick="window.TKST_APP.forceGeminiOmrValidation()" style="width: 100%; font-size: 0.8rem; padding: 8px; border-color: rgba(96, 165, 250, 0.4); color: #60A5FA;">
+                <i class="fas fa-brain"></i> Reavaliar com Gemini Vision (IA)
+              </button>
+            </div>
+
+            <!-- Coluna da Direita: Scorecard & Revisão Manual Questão por Questão -->
+            <div>
+              <!-- Placar e Nota -->
+              <div style="background: #0F172A; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 0.75rem; color: #94A3B8; text-transform: uppercase; font-weight: 700;">Nota Calculada</div>
+                  <div id="omrScoreDisplay" style="font-size: 1.6rem; font-weight: 900; color: var(--accent-gold);">0,0 <span style="font-size: 0.9rem; color: #64748B;">/ 10,0</span></div>
+                </div>
+                <div style="text-align: right;">
+                  <div id="omrScoreBadge" class="badge badge-success" style="font-size: 0.85rem; padding: 6px 14px; font-weight: 800;">APROVADO</div>
+                  <div id="omrHitsDisplay" style="font-size: 0.75rem; color: #94A3B8; margin-top: 3px;">0 de 10 acertos</div>
+                </div>
+              </div>
+
+              <!-- Lista das 10 Questões com botões de override 1-clique -->
+              <div id="omrQuestionsReviewList" style="max-height: 300px; overflow-y: auto; padding-right: 4px;">
+                <!-- Populado dinamicamente via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Rodapé de Confirmação -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 14px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.resetOmrScanner()">
+              <i class="fas fa-redo"></i> Escanear Outra Prova
+            </button>
+            <button type="button" id="omrSaveGradeBtn" class="btn btn-primary" onclick="window.TKST_APP.saveOmrOfficialGrade()" style="font-weight: 800; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none;">
+              <i class="fas fa-save"></i> Salvar Nota no Histórico do Aluno
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Mozilla PDF.js Engine for Native Mobile & Desktop PDF Rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
@@ -625,18 +746,19 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=281"></script>
-  <script src="assets/js/data-curriculum.js?v=281"></script>
-  <script src="assets/js/data-katas.js?v=281"></script>
-  <script src="assets/js/data-kumite.js?v=281"></script>
-  <script src="assets/js/data-glossary.js?v=281"></script>
-  <script src="assets/js/data-quiz.js?v=281"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=281"></script>
-  <script src="assets/js/data-media.js?v=281"></script>
-  <script src="assets/js/data-exams.js?v=281"></script>
-  <script src="assets/js/qr-generator.js?v=281"></script>
-  <script src="assets/js/auth.js?v=281"></script>
-  <script src="assets/js/app.js?v=281"></script>
+  <script src="assets/js/jsqr.min.js?v=282"></script>
+  <script src="assets/js/data-curriculum.js?v=282"></script>
+  <script src="assets/js/data-katas.js?v=282"></script>
+  <script src="assets/js/data-kumite.js?v=282"></script>
+  <script src="assets/js/data-glossary.js?v=282"></script>
+  <script src="assets/js/data-quiz.js?v=282"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=282"></script>
+  <script src="assets/js/data-media.js?v=282"></script>
+  <script src="assets/js/data-exams.js?v=282"></script>
+  <script src="assets/js/omr-engine.js?v=282"></script>
+  <script src="assets/js/qr-generator.js?v=282"></script>
+  <script src="assets/js/auth.js?v=282"></script>
+  <script src="assets/js/app.js?v=282"></script>
 
   <!-- PWA Service Worker Registration seguro (sem auto-reload agressivo) -->
   <script>

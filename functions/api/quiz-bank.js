@@ -197,7 +197,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({
         success: false,
         error: 'Não foi possível ler assets/js/data-quiz.js no GitHub.'
-      }), { status: 502, headers: corsHeaders });
+      }), { status: 502, headers });
     }
 
     const startIdx = fileContent.indexOf(MARKER_START);
@@ -206,7 +206,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({
         success: false,
         error: 'Marcadores de custom questions não encontrados no repositório.'
-      }), { status: 500, headers: corsHeaders });
+      }), { status: 500, headers });
     }
 
     // 2. Extrair questões existentes e mesclar
@@ -254,18 +254,18 @@ export async function onRequestPost(context) {
         persisted: true,
         count: merged.length,
         message: 'Banco de questões salvo com sucesso no GitHub!'
-      }), { status: 200, headers: corsHeaders });
+      }), { status: 200, headers });
     } else {
       const err = await putRes.json().catch(() => ({}));
       return new Response(JSON.stringify({
         success: false,
         error: err.message || 'Falha ao commitar quiz bank no GitHub'
-      }), { status: 502, headers: corsHeaders });
+      }), { status: 502, headers });
     }
   } catch (err) {
     return new Response(JSON.stringify({ success: false, error: err.message }), {
       status: 500,
-      headers: corsHeaders
+      headers
     });
   }
 }
