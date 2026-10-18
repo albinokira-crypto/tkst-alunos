@@ -322,11 +322,15 @@
       }
 
       let anyNew = false;
+      const initialBankSize = bankMap.size;
       const restored = restoreDefaultImages(incoming);
       restored.forEach(q => {
         if (q && q.id && q.question && !deletedIds.includes(q.id)) {
           const existing = bankMap.get(q.id);
-          if (!existing || !existing.updatedAt || (q.updatedAt && q.updatedAt >= existing.updatedAt)) {
+          if (!existing) {
+            bankMap.set(q.id, q);
+            anyNew = true;
+          } else if (q.updatedAt && existing.updatedAt && q.updatedAt > existing.updatedAt) {
             bankMap.set(q.id, q);
             anyNew = true;
           }
@@ -338,7 +342,7 @@
       window.TKST_QUIZ_BANK = merged;
       window.TKST_QUIZ = merged;
 
-      if (anyNew) {
+      if (anyNew && merged.length !== initialBankSize) {
         window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length } }));
       }
     } catch(err) {

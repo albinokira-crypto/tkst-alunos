@@ -172,7 +172,19 @@ document.addEventListener('DOMContentLoaded', () => {
       success: '#22c55e', error: '#ef4444', warning: '#eab308', info: '#6366f1', sync: '#FFB703'
     };
 
+    const existingToasts = container.querySelectorAll('.tkst-toast-item');
+    for (const t of existingToasts) {
+      if (t.dataset.msg === message) {
+        return; // Evita empilhamento de toasts idênticos na tela
+      }
+    }
+    if (existingToasts.length >= 3) {
+      try { container.removeChild(existingToasts[0]); } catch(e) {}
+    }
+
     const toast = document.createElement('div');
+    toast.className = 'tkst-toast-item';
+    toast.dataset.msg = message;
     toast.style.cssText = [
       `background:${colors[type] || colors.success}`,
       `border:1.5px solid ${borders[type] || borders.success}`,
@@ -213,9 +225,16 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('tkst_quiz_committed', (e) => {
     showToast(`💚 ${e.detail.count} questões salvas permanentemente no GitHub!`, 'success', 5000);
   });
+  let lastQuizBankCount = 0;
+  let lastQuizSyncToastTime = 0;
   window.addEventListener('tkst_quiz_bank_updated', (e) => {
     const count = (e.detail && e.detail.count) || (Array.isArray(window.TKST_QUIZ_BANK) ? window.TKST_QUIZ_BANK.length : 0);
-    showToast(`📥 Banco sincronizado: ${count} questões disponíveis!`, 'info', 3000);
+    const now = Date.now();
+    if (count > 0 && count !== lastQuizBankCount && (now - lastQuizSyncToastTime > 15000)) {
+      lastQuizBankCount = count;
+      lastQuizSyncToastTime = now;
+      showToast(`📥 Banco sincronizado: ${count} questões disponíveis!`, 'info', 3000);
+    }
     if (activeTab === 'admin' && typeof renderAdminView === 'function') {
       renderAdminView();
     }
@@ -16985,7 +17004,7 @@ Retorne estritamente um JSON no seguinte formato:
           const compResult = await new Promise((resolve) => {
             const tempImg = new Image();
             tempImg.onload = () => {
-              const maxDim = 1280;
+              const maxDim = 1920; // Alta resolução para nítida identificação do preenchimento das bolinhas
               let w = tempImg.naturalWidth || tempImg.width;
               let h = tempImg.naturalHeight || tempImg.height;
               if (w > maxDim || h > maxDim) {
@@ -17002,7 +17021,13 @@ Retorne estritamente um JSON no seguinte formato:
               cv.height = h;
               const ctx = cv.getContext('2d');
               ctx.drawImage(tempImg, 0, 0, w, h);
-              resolve({ dataUrl: cv.toDataURL('image/jpeg', 0.85) });
+              const highResDataUrl = cv.toDataURL('image/jpeg', 0.92);
+              try {
+                ctx.clearRect(0, 0, w, h);
+                cv.width = 1;
+                cv.height = 1;
+              } catch(e) {}
+              resolve({ dataUrl: highResDataUrl });
             };
             tempImg.onerror = () => resolve({ dataUrl: rawDataUrl });
             tempImg.src = rawDataUrl;
@@ -17014,7 +17039,6 @@ Retorne estritamente um JSON no seguinte formato:
           dataUrl = rawDataUrl;
         }
 
-        examScannerCapturedImage = dataUrl;
         window.TKST_APP.executeGradingPipeline(dataUrl);
       };
       reader.readAsDataURL(file);
@@ -17268,30 +17292,15 @@ Retorne estritamente um JSON no seguinte formato:
           <div style="font-size: 2.8rem; color: var(--accent-gold); margin-bottom: 14px;">
             <i class="fas fa-brain fa-pulse"></i>
           </div>
-          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Analisando Foto da Prova...</h3>
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Analisando Cartão com IA Gemini Vision...</h3>
           <p style="font-size: 0.84rem; color: #94A3B8; max-width: 440px; margin: 0 auto 16px auto;">
-            Detectando quadradinhos pintados a lápis/caneta nas 10 questões e confrontando com o gabarito oficial.
+            Identificando marcações nas 10 questões através de visão computacional multimodal em alta resolução.
           </p>
           <div class="progress-bar-container" style="max-width: 320px; margin: 0 auto; height: 8px;">
             <div class="progress-bar-fill" style="width: 70%; animation: pulse 1.5s infinite;"></div>
           </div>
         </div>
       `;
-
-      // 1. Carrega imagem em canvas offscreen de alta fidelidade
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      await new Promise((resolve) => {
-        img.onload = resolve;
-        img.onerror = resolve;
-        img.src = imageDataUrl;
-      });
-
-      const offCanvas = document.createElement('canvas');
-      offCanvas.width = img.naturalWidth || img.width || 1920;
-      offCanvas.height = img.naturalHeight || img.height || 1080;
-      const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
-      offCtx.drawImage(img, 0, 0, offCanvas.width, offCanvas.height);
 
       const detected = examScannerDetectedData || {
         kyu: examGeneratorSelectedKyu || 6,
@@ -17308,15 +17317,11 @@ Retorne estritamente um JSON no seguinte formato:
         }
       }
 
-      // 3. Executa OMR Client-Side direto no Canvas (Lê grafite/X nos quadradinhos)
-      const omrResult = window.TKST_APP.analyzeExamMarksOMR(offCanvas, detected.answers);
-
-      // 4. Estrutura base de resultado com garantia de detecção pelo OMR
       let finalResult = {
         success: true,
         aiAvailable: false,
-        detectedAnswers: omrResult.detectedAnswers,
-        ambiguousQuestions: omrResult.ambiguousQuestions,
+        detectedAnswers: new Array(10).fill(null),
+        ambiguousQuestions: [],
         studentName: detected.studentName || '',
         dojo: detected.dojoName || '',
         kyu: detected.kyu,
@@ -17324,7 +17329,14 @@ Retorne estritamente um JSON no seguinte formato:
         answerKey: detected.answers
       };
 
-      // 5. Tenta complementar via API Gemini Multimodal Vision
+      let offCanvas = null;
+      let offCtx = null;
+      let img = null;
+
+      // =========================================================================
+      // 1. PRIORIDADE MÁXIMA: IA MULTIMODAL GEMINI VISION
+      // =========================================================================
+      let geminiSuccess = false;
       try {
         const json = await window.TKST_APP.callGradeExamApi({
           image: imageDataUrl,
@@ -17333,8 +17345,23 @@ Retorne estritamente um JSON no seguinte formato:
           examId: detected.examId,
           step: examScannerStep || 2
         });
-        if (json && json.aiAvailable) {
+
+        if (json && json.aiAvailable && Array.isArray(json.detectedAnswers) && json.detectedAnswers.length === 10) {
           finalResult.aiAvailable = true;
+          geminiSuccess = true;
+
+          // Mapeia respostas detectadas pela IA
+          finalResult.detectedAnswers = json.detectedAnswers.map((aiAns) => {
+            return (typeof aiAns === 'string' && ['A', 'B', 'C', 'D'].includes(aiAns.trim().toUpperCase()))
+              ? aiAns.trim().toUpperCase()
+              : null;
+          });
+
+          // Mapeia rasuras e dúvidas para confirmação em 1 toque
+          if (Array.isArray(json.ambiguousQuestions)) {
+            finalResult.ambiguousQuestions = json.ambiguousQuestions.map(Number).filter(n => !isNaN(n) && n >= 1 && n <= 10);
+          }
+
           if (!finalResult.studentName && (json.aluno || json.studentName)) {
             const rawAiName = String(json.aluno || json.studentName).trim();
             if (!/^(nome|aluno|nome do aluno|estudante|string vazia|null|undefined)$/i.test(rawAiName)) {
@@ -17355,31 +17382,80 @@ Retorne estritamente um JSON no seguinte formato:
             }
           }
           if (Array.isArray(json.answerKey) && json.answerKey.length === 10) {
-            // Preserva gabarito já decodificado pelo código
             if (!detected.answers || detected.answers.length < 10) {
               finalResult.answerKey = json.answerKey;
               detected.answers = json.answerKey;
             }
           }
-          if (Array.isArray(json.detectedAnswers) && json.detectedAnswers.length === 10) {
-            finalResult.detectedAnswers = json.detectedAnswers.map((aiAns) => {
-              return (typeof aiAns === 'string' && ['A', 'B', 'C', 'D'].includes(aiAns.trim().toUpperCase()))
-                ? aiAns.trim().toUpperCase()
-                : null;
-            });
-          }
-          if (Array.isArray(json.ambiguousQuestions)) {
-            finalResult.ambiguousQuestions = Array.from(new Set([...(json.ambiguousQuestions || []), ...omrResult.ambiguousQuestions]));
-          }
+
           if (typeof showToast === 'function') {
-            showToast(`🤖 IA Gemini: Folha analisada com sucesso!`, 'success');
+            showToast(`🤖 IA Gemini Vision: 10 questões analisadas com sucesso!`, 'success');
           }
         }
       } catch(apiErr) {
-        console.warn('API grade-exam indisponível, usando OMR puro:', apiErr);
+        console.warn('Gemini Vision indisponível, ativando fallback OMR local:', apiErr);
       }
 
-      window.TKST_APP.renderGradingReviewModal(finalResult, imageDataUrl, detected);
+      // =========================================================================
+      // 2. FALLBACK IMEDIATO: OMR CLIENT-SIDE VIA CANVAS API
+      // Acionado se o Gemini estiver offline, sem chave ou se não identificou questões
+      // =========================================================================
+      const needsLocalOmr = !geminiSuccess || finalResult.detectedAnswers.every(a => a === null);
+      if (needsLocalOmr) {
+        try {
+          img = new Image();
+          img.crossOrigin = 'anonymous';
+          await new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+            img.src = imageDataUrl;
+          });
+
+          offCanvas = document.createElement('canvas');
+          offCanvas.width = img.naturalWidth || img.width || 1920;
+          offCanvas.height = img.naturalHeight || img.height || 1080;
+          offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
+          offCtx.drawImage(img, 0, 0, offCanvas.width, offCanvas.height);
+
+          const omrResult = window.TKST_APP.analyzeExamMarksOMR(offCanvas, detected.answers);
+          if (omrResult && Array.isArray(omrResult.detectedAnswers)) {
+            finalResult.detectedAnswers = omrResult.detectedAnswers;
+            finalResult.ambiguousQuestions = Array.from(new Set([...finalResult.ambiguousQuestions, ...(omrResult.ambiguousQuestions || [])]));
+          }
+
+          if (typeof showToast === 'function' && !geminiSuccess) {
+            showToast(`⚡ OMR Local: Correção offline concluída!`, 'info');
+          }
+        } catch(omrErr) {
+          console.warn('Erro no fallback OMR local:', omrErr);
+        }
+      }
+
+      // =========================================================================
+      // 3. GESTÃO DE MEMÓRIA E DESCARTE IMEDIATO (GARBAGE COLLECTION)
+      // Limpa canvas, instâncias de imagem e referências Base64 da memória do navegador
+      // =========================================================================
+      try {
+        if (offCtx && offCanvas) {
+          offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+          offCanvas.width = 1;
+          offCanvas.height = 1;
+          offCtx = null;
+          offCanvas = null;
+        }
+        if (img) {
+          img.onload = null;
+          img.onerror = null;
+          img.src = '';
+          img = null;
+        }
+      } catch(memErr) {}
+
+      // Limpa variável de imagem para liberar RAM
+      imageDataUrl = null;
+
+      // Exibe interface de conferência sem reter Base64 pesado em memória
+      window.TKST_APP.renderGradingReviewModal(finalResult, null, detected);
     },
 
     renderGradingReviewModal: function(result, imagePreviewUrl, detectedMeta) {
