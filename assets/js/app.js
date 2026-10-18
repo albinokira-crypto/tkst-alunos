@@ -107,14 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.88';
+  const APP_DISPLAY_VERSION = 'V-2.89';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.88. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.89. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.88)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.89)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
         } catch(e) {}
@@ -15565,7 +15565,8 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
     onOmrExamCodeInput: function(code) {
       const clean = (code || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
-      if (clean.length >= 4) {
+      const baseCode = clean.split('-')[0].replace(/[^0-9A-Z]/g, '');
+      if (baseCode.length >= 5) {
         this.identifyExamByCode(clean, false);
       } else {
         const card = document.getElementById('omrExamIdentificationCard');
@@ -15573,6 +15574,13 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         if (card) card.style.display = 'none';
         if (placeholder) placeholder.style.display = 'block';
         omrCurrentIdentifiedExam = null;
+      }
+    },
+
+    toggleManualStudentOverride: function() {
+      const wrap = document.getElementById('omrManualStudentOverrideWrap');
+      if (wrap) {
+        wrap.style.display = (wrap.style.display === 'none' || !wrap.style.display) ? 'block' : 'none';
       }
     },
 
@@ -15605,7 +15613,17 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     identifyExamByCode: async function(codeStr, isExplicitSearch = false) {
       if (!codeStr) return;
       const clean = String(codeStr).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
-      const baseCode = clean.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+      const parts = clean.split('-');
+      const baseCode = parts[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+      const studentTag = parts.length > 1 ? parts.slice(1).join('-').replace(/[^0-9A-Z]/g, '').trim() : '';
+
+      // Precisa ter pelo menos 5 caracteres no baseCode para identificar
+      if (baseCode.length < 5) {
+        if (isExplicitSearch) {
+          alert('O código da prova deve conter pelo menos 5 caracteres (ex: 18ZK4 ou 19EKS-PIETRO).');
+        }
+        return;
+      }
 
       let exam = null;
 
@@ -15625,7 +15643,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
           exam = store[clean] || store[baseCode];
           if (!exam) {
-            const foundKey = Object.keys(store).find(k => k.trim().toUpperCase() === clean || k.trim().toUpperCase() === baseCode);
+            const foundKey = Object.keys(store).find(k => {
+              const ku = k.trim().toUpperCase();
+              return ku === clean || ku === baseCode || ku.startsWith(baseCode + '-');
+            });
             if (foundKey) exam = store[foundKey];
           }
         } catch(e) {}
@@ -15643,11 +15664,27 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (!exam && window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.decodeCompactExamCode === 'function') {
         const decoded = window.TKST_EXAM_GENERATOR.decodeCompactExamCode(clean) || window.TKST_EXAM_GENERATOR.decodeCompactExamCode(baseCode);
         if (decoded && Array.isArray(decoded.answers) && decoded.answers.length === 10) {
+          let resolvedStudentName = decoded.studentTag || studentTag || '';
+          let resolvedStudentId = '';
+          const tagToMatch = (decoded.studentTag || studentTag || '').toUpperCase();
+          if (tagToMatch && window.TKST_AUTH && typeof window.TKST_AUTH.getAllStudents === 'function') {
+            const all = window.TKST_AUTH.getAllStudents() || [];
+            const match = all.find(s => {
+              const sName = (s.name || s.username || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+              return sName.includes(tagToMatch) || tagToMatch.includes(sName.split(' ')[0]);
+            });
+            if (match) {
+              resolvedStudentName = match.name || match.username;
+              resolvedStudentId = match.id;
+            }
+          }
           exam = {
             kyu: decoded.kyu,
             examId: decoded.fullExamId || decoded.examId || baseCode,
             answers: decoded.answers,
-            studentName: decoded.studentTag || '',
+            studentName: resolvedStudentName,
+            studentAbbr: resolvedStudentName,
+            studentId: resolvedStudentId,
             date: new Date().toLocaleDateString('pt-BR'),
             _isMathFallback: true
           };
@@ -15670,7 +15707,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
         // Preenche dados da identificação
         const codeBadge = document.getElementById('omrIdentifiedCodeBadge');
-        if (codeBadge) codeBadge.textContent = exam.examId || baseCode;
+        if (codeBadge) codeBadge.textContent = exam.examId || clean;
 
         const beltEl = document.getElementById('omrIdentifiedBeltText');
         if (beltEl) beltEl.textContent = beltName;
@@ -15681,15 +15718,25 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         const dateEl = document.getElementById('omrIdentifiedDate');
         if (dateEl) dateEl.textContent = `Data: ${exam.date || new Date().toLocaleDateString('pt-BR')}`;
 
-        // Aluno
+        // Aluno vinculado diretamente pelo código
         const studentEl = document.getElementById('omrIdentifiedStudentText');
+        const studentSub = document.getElementById('omrIdentifiedStudentSub');
         const studentName = exam.studentName || exam.studentAbbr || '';
         if (studentEl) {
-          studentEl.textContent = studentName || 'Aluno não vinculado (selecione abaixo)';
+          studentEl.textContent = studentName || 'Aluno Vinculado pelo Código';
           studentEl.style.color = studentName ? '#38BDF8' : '#F59E0B';
         }
+        if (studentSub) {
+          if (studentName) {
+            studentSub.innerHTML = '<i class="fas fa-check-circle" style="color: #10B981;"></i> Vinculado automaticamente pelo código da prova';
+            studentSub.style.display = 'block';
+          } else {
+            studentSub.innerHTML = '<span style="color: #94A3B8;">Código avulso</span>';
+            studentSub.style.display = 'block';
+          }
+        }
 
-        // Tenta selecionar o aluno na lista
+        // Preenche select opcional apenas se usuário quiser alterar manualmente
         const studentSelect = document.getElementById('omrStudentSelect');
         if (studentSelect) {
           let matched = false;
@@ -15712,13 +15759,6 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
                 break;
               }
             }
-          }
-          if (!matched && studentName) {
-            const opt = document.createElement('option');
-            opt.value = exam.studentId || 'identified_name';
-            opt.textContent = `${studentName} (Identificado na Prova)`;
-            opt.selected = true;
-            studentSelect.appendChild(opt);
           }
         }
 

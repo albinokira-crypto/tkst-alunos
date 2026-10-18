@@ -32,8 +32,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=288">
-  <link rel="stylesheet" href="assets/css/components.css?v=288">
+  <link rel="stylesheet" href="assets/css/main.css?v=289">
+  <link rel="stylesheet" href="assets/css/components.css?v=289">
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
@@ -176,7 +176,7 @@
 
       <div class="nav-section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
         <span>Sessão & Conta</span>
-        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.88. Toque para atualizar o app.">V-2.88</span>
+        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.89. Toque para atualizar o app.">V-2.89</span>
       </div>
       <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
         <li class="nav-item">
@@ -688,14 +688,22 @@
                   <div id="omrIdentifiedDojoText" style="font-size: 0.72rem; color: #64748B; margin-top: 2px;"></div>
                 </div>
 
-                <!-- Bloco 2: Aluno -->
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px;">
-                  <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Aluno Vinculado</div>
-                  <div id="omrIdentifiedStudentText" style="font-size: 0.92rem; font-weight: 800; color: #38BDF8;"></div>
-                  <div style="margin-top: 4px;">
+                <!-- Bloco 2: Aluno Vinculado -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: center;">
+                  <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Aluno Vinculado à Prova</div>
+                  <div id="omrIdentifiedStudentText" style="font-size: 0.98rem; font-weight: 900; color: #38BDF8; word-break: break-word;"></div>
+                  <div id="omrIdentifiedStudentSub" style="font-size: 0.72rem; color: #10B981; margin-top: 3px; font-weight: 700;">
+                    <i class="fas fa-check-circle"></i> Vinculado automaticamente pelo código
+                  </div>
+                  <div id="omrManualStudentOverrideWrap" style="display: none; margin-top: 6px;">
                     <select id="omrStudentSelect" class="form-control" style="width: 100%; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; background: #07090E; border: 1px solid var(--border-color); color: #CBD5E1;" onchange="window.TKST_APP.onOmrStudentSelectChanged(this.value)">
-                      <option value="">Confirmar ou alterar aluno...</option>
+                      <option value="">Alterar para outro aluno...</option>
                     </select>
+                  </div>
+                  <div style="margin-top: 4px;">
+                    <a href="javascript:void(0)" onclick="window.TKST_APP.toggleManualStudentOverride()" style="font-size: 0.68rem; color: #64748B; text-decoration: underline;">
+                      Trocar aluno se necessário
+                    </a>
                   </div>
                 </div>
               </div>
@@ -887,19 +895,19 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=288"></script>
-  <script src="assets/js/data-curriculum.js?v=288"></script>
-  <script src="assets/js/data-katas.js?v=288"></script>
-  <script src="assets/js/data-kumite.js?v=288"></script>
-  <script src="assets/js/data-glossary.js?v=288"></script>
-  <script src="assets/js/data-quiz.js?v=288"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=288"></script>
-  <script src="assets/js/data-media.js?v=288"></script>
-  <script src="assets/js/data-exams.js?v=288"></script>
-  <script src="assets/js/omr-engine.js?v=288"></script>
-  <script src="assets/js/qr-generator.js?v=288"></script>
-  <script src="assets/js/auth.js?v=288"></script>
-  <script src="assets/js/app.js?v=288"></script>
+  <script src="assets/js/jsqr.min.js?v=289"></script>
+  <script src="assets/js/data-curriculum.js?v=289"></script>
+  <script src="assets/js/data-katas.js?v=289"></script>
+  <script src="assets/js/data-kumite.js?v=289"></script>
+  <script src="assets/js/data-glossary.js?v=289"></script>
+  <script src="assets/js/data-quiz.js?v=289"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=289"></script>
+  <script src="assets/js/data-media.js?v=289"></script>
+  <script src="assets/js/data-exams.js?v=289"></script>
+  <script src="assets/js/omr-engine.js?v=289"></script>
+  <script src="assets/js/qr-generator.js?v=289"></script>
+  <script src="assets/js/auth.js?v=289"></script>
+  <script src="assets/js/app.js?v=289"></script>
 
   <!-- PWA Service Worker Registration com verificação de atualização e recarregamento automático -->
   <script>
@@ -912,7 +920,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=288', { updateViaCache: 'none' }).then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=289', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
