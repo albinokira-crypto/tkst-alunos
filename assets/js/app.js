@@ -107,14 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.84';
+  const APP_DISPLAY_VERSION = 'V-2.85';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.84. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.85. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.84)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.85)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
         } catch(e) {}
@@ -135,6 +135,32 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
   }
+
+  // Verificação periódica e automática de nova versão no servidor (auto-upgrade silencioso)
+  setInterval(async () => {
+    try {
+      const vRes = await fetch('./assets/data/version.json?_=' + Date.now(), { cache: 'no-store' });
+      if (vRes.ok) {
+        const vData = await vRes.json();
+        if (vData && vData.version && vData.version !== APP_DISPLAY_VERSION) {
+          console.log('Nova versão detectada:', vData.version, 'Versão atual:', APP_DISPLAY_VERSION);
+          if ('caches' in window) {
+            try {
+              const names = await caches.keys();
+              await Promise.all(names.map(n => caches.delete(n)));
+            } catch(e) {}
+          }
+          if ('serviceWorker' in navigator) {
+            try {
+              const regs = await navigator.serviceWorker.getRegistrations();
+              regs.forEach(r => r.unregister());
+            } catch(e) {}
+          }
+          window.location.reload(true);
+        }
+      }
+    } catch(e) {}
+  }, 15000);
 
   // =========================================================================
   // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)

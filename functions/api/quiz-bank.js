@@ -88,7 +88,8 @@ export async function onRequestGet(context) {
               success: true,
               source: 'github',
               count: questions.length,
-              data: questions
+              data: questions,
+              editedMap: inMemoryEditedMap || {}
             }), { status: 200, headers });
           }
         }
@@ -110,7 +111,8 @@ export async function onRequestGet(context) {
             success: true,
             source: 'cloudflare_assets',
             count: questions.length,
-            data: questions
+            data: questions,
+            editedMap: inMemoryEditedMap || {}
           }), { status: 200, headers });
         }
       }
@@ -127,7 +129,8 @@ export async function onRequestGet(context) {
         success: true,
         source: 'raw_github',
         count: questions.length,
-        data: questions
+        data: questions,
+        editedMap: inMemoryEditedMap || {}
       }), { status: 200, headers });
     }
   } catch (e) {}
@@ -136,11 +139,10 @@ export async function onRequestGet(context) {
     success: true,
     source: 'empty',
     count: 0,
-    data: []
+    data: [],
+    editedMap: inMemoryEditedMap || {}
   }), { status: 200, headers });
 }
-
-let inMemoryEditedMap = {};
 
 export async function onRequestPost(context) {
   const { request, env } = context;

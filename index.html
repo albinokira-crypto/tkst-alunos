@@ -32,8 +32,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=284">
-  <link rel="stylesheet" href="assets/css/components.css?v=284">
+  <link rel="stylesheet" href="assets/css/main.css?v=285">
+  <link rel="stylesheet" href="assets/css/components.css?v=285">
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
@@ -176,7 +176,7 @@
 
       <div class="nav-section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
         <span>Sessão & Conta</span>
-        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.84. Toque para atualizar o app.">V-2.84</span>
+        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.85. Toque para atualizar o app.">V-2.85</span>
       </div>
       <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
         <li class="nav-item">
@@ -763,26 +763,43 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=284"></script>
-  <script src="assets/js/data-curriculum.js?v=284"></script>
-  <script src="assets/js/data-katas.js?v=284"></script>
-  <script src="assets/js/data-kumite.js?v=284"></script>
-  <script src="assets/js/data-glossary.js?v=284"></script>
-  <script src="assets/js/data-quiz.js?v=284"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=284"></script>
-  <script src="assets/js/data-media.js?v=284"></script>
-  <script src="assets/js/data-exams.js?v=284"></script>
-  <script src="assets/js/omr-engine.js?v=284"></script>
-  <script src="assets/js/qr-generator.js?v=284"></script>
-  <script src="assets/js/auth.js?v=284"></script>
-  <script src="assets/js/app.js?v=284"></script>
+  <script src="assets/js/jsqr.min.js?v=285"></script>
+  <script src="assets/js/data-curriculum.js?v=285"></script>
+  <script src="assets/js/data-katas.js?v=285"></script>
+  <script src="assets/js/data-kumite.js?v=285"></script>
+  <script src="assets/js/data-glossary.js?v=285"></script>
+  <script src="assets/js/data-quiz.js?v=285"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=285"></script>
+  <script src="assets/js/data-media.js?v=285"></script>
+  <script src="assets/js/data-exams.js?v=285"></script>
+  <script src="assets/js/omr-engine.js?v=285"></script>
+  <script src="assets/js/qr-generator.js?v=285"></script>
+  <script src="assets/js/auth.js?v=285"></script>
+  <script src="assets/js/app.js?v=285"></script>
 
-  <!-- PWA Service Worker Registration com verificação de atualização -->
+  <!-- PWA Service Worker Registration com verificação de atualização e recarregamento automático -->
   <script>
     if ('serviceWorker' in navigator) {
+      let isRefreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          window.location.reload();
+        }
+      });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=285', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
         }).catch(err => {
           console.log('SW registration note:', err);
         });

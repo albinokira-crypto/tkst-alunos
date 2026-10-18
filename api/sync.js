@@ -115,6 +115,7 @@ let inMemoryData = {
   progress: {},
   quiz_submissions: [],
   custom_quiz_bank: defaultQuizBank,
+  edited_quiz_questions: {},
   custom_glossary: {},
   custom_media: [],
   custom_albums: [],

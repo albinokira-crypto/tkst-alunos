@@ -28,6 +28,7 @@
 
   const SYNC_TOPIC = 'tkst_karate_sync_v3_live';
   const SYNC_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
+  const CLIENT_SENDER_ID = 'tkst_client_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   let isSyncing = false;
   let syncPending = false;
 
@@ -321,6 +322,7 @@
       if (keys.length <= 4) {
         const msg = {
           type: 'tkst_quiz_edit_delta',
+          senderId: CLIENT_SENDER_ID,
           editedMap: cleanEditedMap,
           timestamp: Date.now()
         };
@@ -338,6 +340,7 @@
           keys.slice(i, i + 2).forEach(k => { chunkMap[k] = cleanEditedMap[k]; });
           const msg = {
             type: 'tkst_quiz_edit_delta',
+            senderId: CLIENT_SENDER_ID,
             editedMap: chunkMap,
             timestamp: Date.now()
           };
@@ -359,7 +362,7 @@
           'Title': 'TKST_DATA_V2_PING',
           'Content-Type': 'text/plain; charset=utf-8'
         },
-        body: JSON.stringify({ type: 'sync_notification', timestamp: Date.now() })
+        body: JSON.stringify({ type: 'sync_notification', senderId: CLIENT_SENDER_ID, timestamp: Date.now() })
       });
     } catch(err) {
       console.warn('Quiz edit delta broadcast notice:', err);
@@ -381,27 +384,32 @@
       Object.keys(incomingMap).forEach(qId => {
         const eq = incomingMap[qId];
         if (eq && eq.id && eq.question) {
-          localEditedMap[qId] = eq;
-          modified = true;
+          const cur = localEditedMap[qId];
+          if (!cur || !cur.updatedAt || (eq.updatedAt && eq.updatedAt >= cur.updatedAt)) {
+            localEditedMap[qId] = eq;
+            modified = true;
+          }
         }
       });
       incomingQuestions.forEach(q => {
         if (q && q.id && q.question) {
-          localEditedMap[q.id] = q;
-          modified = true;
+          const cur = localEditedMap[q.id];
+          if (!cur || !cur.updatedAt || (q.updatedAt && q.updatedAt >= cur.updatedAt)) {
+            localEditedMap[q.id] = q;
+            modified = true;
+          }
         }
       });
 
       if (modified) {
         localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(localEditedMap));
-      }
-
-      // Atualiza o banco oficial em memória e cofre local
-      if (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function') {
-        const updatedBank = window.TKST_AUTH.getCustomQuizBank();
-        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
-          detail: { count: updatedBank.length, updated: true, fromDelta: true }
-        }));
+        // Atualiza o banco oficial em memória e cofre local
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function') {
+          const updatedBank = window.TKST_AUTH.getCustomQuizBank();
+          window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
+            detail: { count: updatedBank.length, updated: true, fromDelta: true }
+          }));
+        }
       }
     } catch(err) {
       console.warn('handleIncomingQuizEditDelta error:', err);
@@ -422,6 +430,7 @@
         const slice = customOnly.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
         const chunkMsg = {
           type: 'tkst_quiz_chunk',
+          senderId: CLIENT_SENDER_ID,
           broadcastId,
           chunkIndex: i,
           totalChunks,
@@ -696,10 +705,14 @@
       } catch(e) {}
 
       const merged = Array.from(bankMap.values());
+      const prevBank = window.TKST_QUIZ_BANK || [];
+      const actuallyChanged = prevBank.length !== merged.length || JSON.stringify(prevBank.map(q => q.id + ':' + (q.question || '') + ':' + (q._edited || ''))) !== JSON.stringify(merged.map(q => q.id + ':' + (q.question || '') + ':' + (q._edited || '')));
       safeSaveQuizBank(merged);
       window.TKST_QUIZ_BANK = merged;
       window.TKST_QUIZ = merged;
-      window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length, updated: true } }));
+      if (actuallyChanged) {
+        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: { count: merged.length, updated: true } }));
+      }
     } catch(err) {
       console.warn('Quiz bank pull notice:', err);
     }
@@ -1422,6 +1435,7 @@
         deletedQuizSubIds,
         deletedGlossaryTerms,
         deletedDojos,
+        senderId: CLIENT_SENDER_ID,
         timestamp: Date.now()
       };
 
@@ -1457,7 +1471,7 @@
               'Title': 'TKST_DATA_V2_PING',
               'Content-Type': 'text/plain; charset=utf-8'
             },
-            body: JSON.stringify({ type: 'sync_notification', timestamp: Date.now() })
+            body: JSON.stringify({ type: 'sync_notification', senderId: CLIENT_SENDER_ID, timestamp: Date.now() })
           });
           // Garante transmissão das questões em lotes seguros (< 3.5KB) para o PC/celular em tempo real
           if (custom_quiz_bank && custom_quiz_bank.length > 0) {
@@ -2032,6 +2046,10 @@
               const item = JSON.parse(lines[i]);
               const cloudData = await parseNtfyItem(item);
               if (cloudData) {
+                // Previne auto-eco: se a mensagem foi originada por esta mesma aba/dispositivo, ignora
+                if (cloudData.senderId && cloudData.senderId === CLIENT_SENDER_ID) {
+                  continue;
+                }
                 if (cloudData.type === 'tkst_exam_generated' && cloudData.record) {
                   handleIncomingExamRecord(cloudData.record);
                   continue;
@@ -2094,6 +2112,10 @@
             if (parsed) {
               const cloudData = await parseNtfyItem(parsed);
               if (cloudData) {
+                // Previne auto-eco: se a mensagem foi transmitida por este mesmo cliente, ignora completamente
+                if (cloudData.senderId && cloudData.senderId === CLIENT_SENDER_ID) {
+                  return;
+                }
                 if (cloudData.type === 'tkst_exam_generated' && cloudData.record) {
                   handleIncomingExamRecord(cloudData.record);
                 } else if (cloudData.type === 'tkst_quiz_edit_delta') {

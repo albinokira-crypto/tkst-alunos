@@ -34,11 +34,33 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/exam-correct.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/login.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "**/*",
       "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/sw.js",
+      "headers": {
+        "cache-control": "no-cache, no-store, must-revalidate"
+      },
+      "dest": "/sw.js"
+    },
+    {
+      "src": "/assets/data/version.json",
+      "headers": {
+        "cache-control": "no-cache, no-store, must-revalidate"
+      },
+      "dest": "/assets/data/version.json"
+    },
     {
       "src": "/api/sync",
       "dest": "/api/sync.js"
@@ -70,6 +92,14 @@
     {
       "src": "/api/kata-commit",
       "dest": "/api/kata-commit.js"
+    },
+    {
+      "src": "/api/exam-correct",
+      "dest": "/api/exam-correct.js"
+    },
+    {
+      "src": "/api/login",
+      "dest": "/api/login.js"
     },
     {
       "handle": "filesystem"

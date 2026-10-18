@@ -12,6 +12,7 @@ const path = require('path');
 const https = require('https');
 
 const TMP_FILE = path.join('/tmp', 'tkst_quiz_bank.json');
+const TMP_EDITED_FILE = path.join('/tmp', 'tkst_edited_quiz_bank.json');
 const REPO = process.env.GITHUB_REPO || 'albinokira-crypto/tkst-alunos';
 const FILE_PATH = 'assets/js/data-quiz.js';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
@@ -36,6 +37,23 @@ function readFromTmp() {
 function writeToTmp(bank) {
   try {
     fs.writeFileSync(TMP_FILE, JSON.stringify(bank), 'utf8');
+  } catch (e) {}
+}
+
+function readEditedFromTmp() {
+  try {
+    if (fs.existsSync(TMP_EDITED_FILE)) {
+      const raw = fs.readFileSync(TMP_EDITED_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch (e) {}
+  return {};
+}
+
+function writeEditedToTmp(map) {
+  try {
+    fs.writeFileSync(TMP_EDITED_FILE, JSON.stringify(map), 'utf8');
   } catch (e) {}
 }
 
@@ -128,6 +146,10 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     let bank = readBank();
 
+    if (Object.keys(moduleEditedMap).length === 0) {
+      moduleEditedMap = readEditedFromTmp();
+    }
+
     // Fallback: se memória/tmp estão vazios, busca no GitHub (fonte permanente)
     if (!bank || bank.length === 0) {
       const token = process.env.GITHUB_TOKEN;
@@ -156,7 +178,9 @@ module.exports = async (req, res) => {
       }
 
       if (body.editedMap && typeof body.editedMap === 'object') {
-        moduleEditedMap = { ...moduleEditedMap, ...body.editedMap };
+        const fromTmp = readEditedFromTmp();
+        moduleEditedMap = { ...fromTmp, ...moduleEditedMap, ...body.editedMap };
+        writeEditedToTmp(moduleEditedMap);
       }
 
       // Merge: mantém o que já existe e adiciona/atualiza com o que chegou
