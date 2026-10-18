@@ -1,1 +1,13 @@
-{}
+{
+  "18ZK4": {
+    "examId": "18ZK4",
+    "kyu": 4,
+    "answers": ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"],
+    "studentName": "Pietro S.H.J. Campista",
+    "studentAbbr": "Pietro S.H.J. Campista",
+    "studentId": "std_1787063008306_96bzm",
+    "dojoName": "QG TKST ( Capela )",
+    "date": "18/10/2026",
+    "timestamp": 1771370000000
+  }
+}

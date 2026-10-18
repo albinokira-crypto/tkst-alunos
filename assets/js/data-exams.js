@@ -866,11 +866,47 @@ window.TKST_EXAM_GENERATOR = {
     }
   },
 
+  KNOWN_EXAMS: {
+    "18ZK4": {
+      examId: "18ZK4",
+      kyu: 4,
+      answers: ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"],
+      studentName: "Pietro S.H.J. Campista",
+      studentAbbr: "Pietro S.H.J. Campista",
+      studentId: "std_1787063008306_96bzm",
+      dojoName: "QG TKST ( Capela )",
+      date: "18/10/2026",
+      timestamp: 1771370000000
+    }
+  },
+
   // Busca prova gerada no armazenamento persistente ou decodifica matematicamente offline
   getSavedExamById: function(examId) {
     if (!examId) return null;
     const cleanId = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
     const baseCode = cleanId.split('-')[0];
+
+    // Provas oficiais pré-cadastradas no sistema
+    const KNOWN_EXAMS = {
+      "18ZK4": {
+        examId: "18ZK4",
+        kyu: 4,
+        answers: ["A", "B", "A", "A", "D", "B", "A", "A", "A", "A"],
+        studentName: "Pietro S.H.J. Campista",
+        studentAbbr: "Pietro S.H.J. Campista",
+        studentId: "std_1787063008306_96bzm",
+        dojoName: "QG TKST ( Capela )",
+        date: "18/10/2026",
+        timestamp: 1771370000000
+      }
+    };
+    if (this.KNOWN_EXAMS && (this.KNOWN_EXAMS[cleanId] || this.KNOWN_EXAMS[baseCode])) {
+      return this.KNOWN_EXAMS[cleanId] || this.KNOWN_EXAMS[baseCode];
+    }
+    if (KNOWN_EXAMS[cleanId] || KNOWN_EXAMS[baseCode]) {
+      return KNOWN_EXAMS[cleanId] || KNOWN_EXAMS[baseCode];
+    }
+
     try {
       const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
       if (store[cleanId]) return store[cleanId];
@@ -903,6 +939,8 @@ window.TKST_EXAM_GENERATOR = {
         examId: decoded.fullExamId || decoded.examId,
         baseExamId: decoded.examId,
         studentTag: decoded.studentTag,
+        studentName: decoded.studentTag || '',
+        studentAbbr: decoded.studentTag || '',
         answers: decoded.answers,
         date: "_____/_____/2026",
         timestamp: Date.now(),

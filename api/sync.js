@@ -78,6 +78,14 @@ try {
   }
 } catch(e) {}
 
+let defaultGeneratedExams = {};
+try {
+  const examsPath = path.join(__dirname, '..', 'assets', 'data', 'generated-exams.json');
+  if (fs.existsSync(examsPath)) {
+    defaultGeneratedExams = JSON.parse(fs.readFileSync(examsPath, 'utf8')) || {};
+  }
+} catch(e) {}
+
 let inMemoryData = {
   dojos: [
     'TKST Santo Aleixo',
@@ -112,7 +120,7 @@ let inMemoryData = {
   custom_albums: [],
   custom_subalbums: [],
   custom_curriculum: {},
-  generated_exams: {},
+  generated_exams: { ...defaultGeneratedExams },
   deletedStudentIds: [],
   deletedQuizIds: [],
   deletedQuizSubIds: [],
@@ -199,23 +207,11 @@ module.exports = async (req, res) => {
       } catch(e) {}
     }
 
-    // Hidrata provas geradas do /tmp ou assets/data/generated-exams.json se a lista em memória estiver vazia
-    if (!inMemoryData.generated_exams || Object.keys(inMemoryData.generated_exams).length === 0) {
-      try {
-        const tmpExams = readGeneratedExamsFromTmp();
-        if (tmpExams && Object.keys(tmpExams).length > 0) {
-          inMemoryData.generated_exams = tmpExams;
-        } else {
-          const localExamsPath = path.resolve(process.cwd(), 'assets/data/generated-exams.json');
-          if (fs.existsSync(localExamsPath)) {
-            const eParsed = JSON.parse(fs.readFileSync(localExamsPath, 'utf8'));
-            if (eParsed && typeof eParsed === 'object') {
-              inMemoryData.generated_exams = eParsed;
-            }
-          }
-        }
-      } catch(e) {}
-    }
+    // Hidrata provas geradas do /tmp e assets/data/generated-exams.json
+    try {
+      const tmpExams = readGeneratedExamsFromTmp() || {};
+      inMemoryData.generated_exams = { ...defaultGeneratedExams, ...tmpExams, ...(inMemoryData.generated_exams || {}) };
+    } catch(e) {}
 
     return res.status(200).json({
       success: true,
@@ -550,7 +546,7 @@ module.exports = async (req, res) => {
         custom_albums: customAlbumsList,
         custom_subalbums: customSubAlbumsList,
         custom_curriculum: mergedCurriculum,
-        generated_exams: incoming.generated_exams ? { ...inMemoryData.generated_exams, ...incoming.generated_exams } : inMemoryData.generated_exams,
+        generated_exams: incoming.generated_exams ? { ...defaultGeneratedExams, ...inMemoryData.generated_exams, ...incoming.generated_exams } : { ...defaultGeneratedExams, ...inMemoryData.generated_exams },
         deletedStudentIds: allDeleted,
         deletedQuizIds: allDeletedQuizzes,
         deletedQuizSubIds: allDeletedSubs,
