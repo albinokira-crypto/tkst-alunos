@@ -87,7 +87,7 @@
     return bank.map(q => {
       if (!q) return null;
       const dq = defMap.get(q.id);
-      if (dq && !q._edited && q.image && dq.image === q.image) {
+      if (dq && q.image && dq.image === q.image) {
         const { image, ...rest } = q;
         return { ...rest, image: '' };
       }
@@ -127,7 +127,7 @@
       console.warn('safeSaveQuizBank quota exceeded, stripping backup history and saving delta...', err);
       try {
         localStorage.removeItem('tkst_quiz_backup_history');
-        const customDelta = cleanBank.filter(q => q && q.id && q.question);
+        const customDelta = cleanBank.filter(q => q && q.id && (q._edited || q._custom));
         localStorage.setItem(STORAGE_KEY_QUIZ_BANK, JSON.stringify(customDelta));
         try { localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(customDelta)); } catch(e) {}
         return true;
@@ -173,7 +173,7 @@
         if (!deletedIds.includes(q.id)) {
           const vaultQ = bankMap.get(q.id);
           if (vaultQ) {
-            q = { ...vaultQ, image: q.image || vaultQ.image };
+            q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
           }
           bankMap.set(q.id, q);
         }
@@ -184,12 +184,30 @@
         if (!deletedIds.includes(q.id)) {
           const vaultQ = bankMap.get(q.id);
           if (vaultQ) {
-            q = { ...vaultQ, image: q.image || vaultQ.image };
+            q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
           }
           bankMap.set(q.id, q);
         }
       });
     }
+
+    // Sobrepõe prioritariamente o cofre dedicado de edições locais do usuário
+    try {
+      const editedStored = localStorage.getItem('tkst_edited_quiz_questions');
+      if (editedStored) {
+        const editedMap = JSON.parse(editedStored);
+        if (editedMap && typeof editedMap === 'object') {
+          Object.keys(editedMap).forEach(qId => {
+            const eq = editedMap[qId];
+            if (eq && eq.id && eq.question && !deletedIds.includes(eq.id)) {
+              const vaultQ = bankMap.get(eq.id);
+              bankMap.set(eq.id, { ...(vaultQ || {}), ...eq, image: eq.image || (vaultQ && vaultQ.image) || '' });
+            }
+          });
+        }
+      }
+    } catch(e) {}
+
     const merged = Array.from(bankMap.values());
     window.TKST_QUIZ_BANK = merged;
     window.TKST_QUIZ = merged;
@@ -314,7 +332,7 @@
           if (!deletedIds.includes(q.id)) {
             const vaultQ = bankMap.get(q.id);
             if (vaultQ) {
-              q = { ...vaultQ, image: q.image || vaultQ.image };
+              q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
             }
             bankMap.set(q.id, q);
           }
@@ -330,8 +348,8 @@
           if (!existing) {
             bankMap.set(q.id, q);
             anyNew = true;
-          } else if (q.updatedAt && existing.updatedAt && q.updatedAt > existing.updatedAt) {
-            bankMap.set(q.id, q);
+          } else if (q._edited || (q.updatedAt && (!existing.updatedAt || q.updatedAt > existing.updatedAt))) {
+            bankMap.set(q.id, { ...existing, ...q, image: q.image || existing.image });
             anyNew = true;
           }
         }
@@ -418,7 +436,7 @@
           if (!deletedIds.includes(q.id)) {
             const vaultQ = bankMap.get(q.id);
             if (vaultQ) {
-              q = { ...vaultQ, image: q.image || vaultQ.image };
+              q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
             }
             bankMap.set(q.id, q);
           }
@@ -474,12 +492,31 @@
           const isSenseiQ = q && q.id && q.question;
           if (isSenseiQ && !deletedIds.includes(q.id) && q && q.id) {
             const localQ = bankMap.get(q.id);
-            if (!localQ || !localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt) || !localQ._edited) {
-              bankMap.set(q.id, q);
+            const isLocalEdited = localQ && (localQ._edited || localQ._custom);
+            const isCloudNewer = q.updatedAt && localQ && localQ.updatedAt && q.updatedAt > localQ.updatedAt;
+            if (!localQ || (!isLocalEdited && (!localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt))) || (isLocalEdited && isCloudNewer)) {
+              bankMap.set(q.id, { ...(localQ || {}), ...q, image: q.image || (localQ && localQ.image) || '' });
             }
           }
         });
       }
+
+      // Re-aplica com prioridade máxima o mapa de questões editadas localmente
+      try {
+        const editedStored = localStorage.getItem('tkst_edited_quiz_questions');
+        if (editedStored) {
+          const editedMap = JSON.parse(editedStored);
+          if (editedMap && typeof editedMap === 'object') {
+            Object.keys(editedMap).forEach(qId => {
+              const eq = editedMap[qId];
+              if (eq && eq.id && eq.question && !deletedIds.includes(eq.id)) {
+                const vaultQ = bankMap.get(eq.id);
+                bankMap.set(eq.id, { ...(vaultQ || {}), ...eq, image: eq.image || (vaultQ && vaultQ.image) || '' });
+              }
+            });
+          }
+        }
+      } catch(e) {}
 
       const merged = Array.from(bankMap.values());
       const currentBankLength = Array.isArray(window.TKST_QUIZ_BANK) ? window.TKST_QUIZ_BANK.length : 0;
@@ -1490,11 +1527,31 @@
       restoredIncoming.forEach(q => {
         if (!localDeletedQuizzes.includes(q.id) && q && q.id) {
           const localQ = bankMap.get(q.id);
-          if (!localQ || !localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt) || !localQ._edited) {
+          const isLocalEdited = localQ && (localQ._edited || localQ._custom);
+          const isCloudNewer = q.updatedAt && localQ && localQ.updatedAt && q.updatedAt > localQ.updatedAt;
+          if (!localQ || (!isLocalEdited && (!localQ.updatedAt || (q.updatedAt && q.updatedAt >= localQ.updatedAt))) || (isLocalEdited && isCloudNewer)) {
             bankMap.set(q.id, q);
           }
         }
       });
+
+      // Re-aplica mapa dedicado de edições locais
+      try {
+        const editedStored = localStorage.getItem('tkst_edited_quiz_questions');
+        if (editedStored) {
+          const editedMap = JSON.parse(editedStored);
+          if (editedMap && typeof editedMap === 'object') {
+            Object.keys(editedMap).forEach(qId => {
+              const eq = editedMap[qId];
+              if (eq && eq.id && eq.question && !localDeletedQuizzes.includes(eq.id)) {
+                const vaultQ = bankMap.get(eq.id);
+                bankMap.set(eq.id, { ...(vaultQ || {}), ...eq, image: eq.image || (vaultQ && vaultQ.image) || '' });
+              }
+            });
+          }
+        }
+      } catch(e) {}
+
       const mergedBank = Array.from(bankMap.values());
       const currentBankLength = Array.isArray(window.TKST_QUIZ_BANK) ? window.TKST_QUIZ_BANK.length : 0;
       safeSaveQuizBank(mergedBank);
@@ -3244,11 +3301,28 @@
             if (q && q.id && !del.includes(q.id)) {
               const vaultQ = bankMap.get(q.id);
               if (vaultQ) {
-                q = { ...vaultQ, image: q.image || vaultQ.image };
+                q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
               }
               bankMap.set(q.id, q);
             }
           });
+        }
+      } catch(e) {}
+
+      // Sobrepõe o mapa permanente de edições locais do usuário
+      try {
+        const editedStored = localStorage.getItem('tkst_edited_quiz_questions');
+        if (editedStored) {
+          const editedMap = JSON.parse(editedStored);
+          if (editedMap && typeof editedMap === 'object') {
+            Object.keys(editedMap).forEach(qId => {
+              const eq = editedMap[qId];
+              if (eq && eq.id && eq.question && !del.includes(eq.id)) {
+                const vaultQ = bankMap.get(eq.id);
+                bankMap.set(eq.id, { ...(vaultQ || {}), ...eq, image: eq.image || (vaultQ && vaultQ.image) || '' });
+              }
+            });
+          }
         }
       } catch(e) {}
 
@@ -3322,6 +3396,18 @@
       try {
         localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(bank));
       } catch(e) {}
+
+      try {
+        const editedStored = localStorage.getItem('tkst_edited_quiz_questions');
+        if (editedStored) {
+          const editedMap = JSON.parse(editedStored);
+          if (editedMap && editedMap[qId]) {
+            delete editedMap[qId];
+            localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(editedMap));
+          }
+        }
+      } catch(e) {}
+
       window.TKST_QUIZ_BANK = bank;
 
       // Sincroniza deleção no endpoint dedicado

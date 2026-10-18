@@ -148,7 +148,7 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const incoming = body.bank || body.data || body;
+    const incoming = body.customQuestions || body.questions || body.bank || body.data || (Array.isArray(body) ? body : []);
     if (!Array.isArray(incoming)) {
       return new Response(JSON.stringify({
         success: false,
@@ -206,7 +206,12 @@ export async function onRequestPost(context) {
     const existing = extractQuestionsFromScript(fileContent);
     const bankMap = new Map();
     existing.forEach(q => { if (q && q.id) bankMap.set(q.id, q); });
-    incoming.forEach(q => { if (q && q.id) bankMap.set(q.id, q); });
+    incoming.forEach(q => {
+      if (q && q.id) {
+        const prev = bankMap.get(q.id);
+        bankMap.set(q.id, { ...(prev || {}), ...q, image: q.image || (prev && prev.image) || '' });
+      }
+    });
 
     const deletedIds = new Set(Array.isArray(body.deletedQuizIds) ? body.deletedQuizIds : []);
     const merged = Array.from(bankMap.values()).filter(q => !deletedIds.has(q.id));

@@ -313,7 +313,7 @@
           if (q && q.id && !deletedIds.includes(q.id)) {
             const vaultQ = map.get(q.id);
             if (vaultQ) {
-              q = { ...vaultQ, image: q.image || vaultQ.image };
+              q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
             }
             map.set(q.id, q);
           }
@@ -598,7 +598,7 @@
                     if (q && q.id && q.question) {
                       const vaultQ = (window.TKST_DEFAULT_QUIZ_BANK || []).find(dq => dq.id === q.id);
                       if (vaultQ) {
-                        q = { ...vaultQ, image: q.image || vaultQ.image };
+                        q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
                       }
                       map.set(q.id, q);
                     }
