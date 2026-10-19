@@ -135,15 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.93';
+  const APP_DISPLAY_VERSION = 'V-2.94';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.93. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = `Versão atual ${APP_DISPLAY_VERSION}. Toque para atualizar e limpar cache.`;
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = async () => {
       if (typeof showToast === 'function') {
-        showToast('🔄 Limpando cache e atualizando para V-2.93...', 'info', 2500);
+        showToast(`🔄 Limpando cache e atualizando para ${APP_DISPLAY_VERSION}...`, 'info', 2500);
       }
       try {
         localStorage.removeItem('tkst_quiz_official_stamp');
@@ -166,9 +166,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Verificação imediata e periódica de nova versão no servidor (auto-upgrade silencioso e seguro)
+  // Verificação periódica de nova versão no servidor (auto-upgrade silencioso, seguro e com anti-loop)
   async function checkAppVersionUpdate() {
     try {
+      // Anti-loop guard: impede qualquer recarregamento em menos de 60 segundos
+      const lastReloadKey = 'tkst_last_ver_reload_ts';
+      const lastReloadTime = Number(sessionStorage.getItem(lastReloadKey) || 0);
+      if (Date.now() - lastReloadTime < 60000) {
+        return;
+      }
+
       const vRes = await fetch('./assets/data/version.json?_=' + Date.now(), { cache: 'no-store' });
       if (vRes.ok) {
         const vData = await vRes.json();
@@ -177,7 +184,10 @@ document.addEventListener('DOMContentLoaded', () => {
           if (examPreviewGenerated || (typeof shouldSkipRerender === 'function' && shouldSkipRerender())) {
             return;
           }
+
+          sessionStorage.setItem(lastReloadKey, String(Date.now()));
           console.log('Nova versão detectada:', vData.version, 'Versão atual:', APP_DISPLAY_VERSION);
+
           if ('caches' in window) {
             try {
               const names = await caches.keys();
@@ -196,10 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {}
   }
 
-  // Executa checagem imediatamente ao abrir o app
-  checkAppVersionUpdate();
-  // Repete a cada 15 segundos
-  setInterval(checkAppVersionUpdate, 15000);
+  // Executa checagem após carregamento inicial estável (5 segundos) e depois a cada 60 segundos
+  setTimeout(checkAppVersionUpdate, 5000);
+  setInterval(checkAppVersionUpdate, 60000);
 
   // =========================================================================
   // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)

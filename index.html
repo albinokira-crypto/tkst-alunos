@@ -176,7 +176,7 @@
 
       <div class="nav-section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
         <span>Sessão & Conta</span>
-        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.93. Toque para atualizar o app.">V-2.93</span>
+        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.94. Toque para atualizar o app.">V-2.94</span>
       </div>
       <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
         <li class="nav-item">
@@ -889,8 +889,10 @@
     if ('serviceWorker' in navigator) {
       let isRefreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!isRefreshing) {
+        const lastSwReload = Number(sessionStorage.getItem('tkst_sw_reload_ts') || 0);
+        if (!isRefreshing && (Date.now() - lastSwReload > 30000)) {
           isRefreshing = true;
+          sessionStorage.setItem('tkst_sw_reload_ts', String(Date.now()));
           window.location.reload();
         }
       });
