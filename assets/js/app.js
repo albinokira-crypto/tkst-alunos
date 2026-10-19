@@ -16101,7 +16101,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       return ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
     },
 
-    processOmrImage: async function(imageSrc, forceAi = false) {
+    processOmrImage: async function(imageSrc, forceAi = true) {
       omrCurrentSourceImage = imageSrc;
 
       const phase1View = document.getElementById('omrPhase1View');
@@ -16113,6 +16113,11 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (phase2View) phase2View.style.display = 'none';
       if (reviewView) reviewView.style.display = 'none';
       if (processingView) processingView.style.display = 'block';
+
+      const pTitle = document.getElementById('omrProcessingTitle');
+      const pDesc = document.getElementById('omrProcessingDesc');
+      if (pTitle) pTitle.textContent = 'Analisando Prova com Gemini Vision...';
+      if (pDesc) pDesc.textContent = 'Identificando cartão de respostas e marcações a lápis/caneta com IA...';
 
       const examCode = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.examId) || 
                        (document.getElementById('omrExamCodeInput') ? document.getElementById('omrExamCodeInput').value.trim() : '');
@@ -16136,12 +16141,22 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         const scanResult = await window.TKST_OMR_ENGINE.scanExamImage(imageSrc, {
           kyu,
           expectedKey: omrCurrentExpectedKey,
-          forceAi,
+          forceAi: forceAi !== false,
+          useAi: true,
           mode: omrCaptureMode || 'card',
           examCode: examCode || ''
         });
 
         omrCurrentScanResult = scanResult;
+
+        // Auto-identifica a prova se o Gemini detectar o código e a prova ainda não estiver identificada
+        if (scanResult.examCode && !omrCurrentIdentifiedExam) {
+          const codeInput = document.getElementById('omrExamCodeInput');
+          if (codeInput && !codeInput.value) {
+            codeInput.value = scanResult.examCode;
+          }
+          this.identifyExamByCode(scanResult.examCode, false);
+        }
 
         if (processingView) processingView.style.display = 'none';
         if (reviewView) reviewView.style.display = 'block';
@@ -16149,11 +16164,11 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         this.renderOmrReviewView(scanResult);
 
         if (scanResult.usedAi) {
-          showToast('🤖 Avaliação validada com sucesso pelo Gemini Vision!', 'info', 3500);
+          showToast('🤖 Leitura realizada com sucesso pelo Gemini Vision 2.5 Flash!', 'success', 3500);
         } else if (scanResult.hasDoubt) {
           showToast('⚠️ Rasuras ou marcas fracas detectadas. Revise as marcações abaixo.', 'warning', 4500);
         } else {
-          showToast('✅ Cartão OMR escaneado e lido com alta precisão!', 'success', 3000);
+          showToast('✅ Cartão lido com sucesso!', 'info', 3000);
         }
       } catch(err) {
         console.error('Erro no processamento OMR:', err);
@@ -16172,7 +16187,8 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       const confBadge = document.getElementById('omrConfidenceBadge');
       if (confBadge) {
         const confPct = Math.round((scanResult.overallConfidence || 0.9) * 100);
-        confBadge.textContent = `Confiança: ${confPct}%`;
+        const providerName = scanResult.usedAi ? 'Gemini Vision 2.5' : 'OMR Local';
+        confBadge.innerHTML = `<i class="fas fa-microchip"></i> ${providerName} · ${confPct}%`;
         confBadge.style.background = confPct >= 85 ? '#065F46' : (confPct >= 60 ? '#854D0E' : '#991B1B');
         confBadge.style.color = confPct >= 85 ? '#34D399' : (confPct >= 60 ? '#FBBF24' : '#F87171');
       }

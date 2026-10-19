@@ -176,7 +176,7 @@
 
       <div class="nav-section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
         <span>Sessão & Conta</span>
-        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.92. Toque para atualizar o app.">V-2.92</span>
+        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.93. Toque para atualizar o app.">V-2.93</span>
       </div>
       <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
         <li class="nav-item">
@@ -811,12 +811,12 @@
             <!-- Orientações para Foto Perfeita -->
             <div style="background: rgba(245, 190, 0, 0.05); border: 1px solid rgba(245, 190, 0, 0.15); border-radius: 6px; padding: 10px 14px; font-size: 0.78rem; color: #CBD5E1;">
               <div style="font-weight: 700; color: var(--accent-gold); margin-bottom: 4px;">
-                <i class="fas fa-lightbulb"></i> Instruções para Leitura Rápida:
+                <i class="fas fa-brain"></i> Correção Inteligente com IA (Gemini Vision 2.5 Flash):
               </div>
               <ul style="margin: 0; padding-left: 18px; line-height: 1.5;">
-                <li>Segure o celular paralelo à folha, enquadrando as 10 bolhas de resposta.</li>
-                <li>Garanta boa iluminação e evite reflexos ou sombras sobre as marcações.</li>
-                <li>Ao tirar a foto e confirmar no seu celular, a leitura OMR iniciará imediatamente.</li>
+                <li>Aponte a câmera para a folha A4 inteira ou foque no Cartão de Respostas.</li>
+                <li>Detecta marcações a <strong>lápis (grafite)</strong> ou caneta, mesmo com sombras ou fotos inclinadas.</li>
+                <li>A IA localiza automaticamente as 10 questões e calcula a nota em poucos segundos.</li>
               </ul>
             </div>
           </div>
@@ -825,8 +825,8 @@
         <!-- 2. PROCESSANDO SPINNER -->
         <div id="omrProcessingView" style="display:none; text-align: center; padding: 40px 20px;">
           <div class="spinner-border" style="width: 48px; height: 48px; border-width: 4px; color: var(--accent-gold); margin-bottom: 16px;"></div>
-          <h4 id="omrProcessingTitle" style="color: #FFF; font-weight: 800; margin-bottom: 6px;">Analisando Cartão OMR...</h4>
-          <p id="omrProcessingDesc" style="color: #94A3B8; font-size: 0.85rem;">Corrigindo perspectiva, contraste e lendo preenchimento das bolhas...</p>
+          <h4 id="omrProcessingTitle" style="color: #FFF; font-weight: 800; margin-bottom: 6px;">Analisando Prova com Gemini Vision...</h4>
+          <p id="omrProcessingDesc" style="color: #94A3B8; font-size: 0.85rem;">Identificando cartão de respostas e marcações a lápis/caneta com IA...</p>
         </div>
 
         <!-- 3. SENSEI REVIEW VIEW -->
@@ -835,14 +835,14 @@
             <!-- Coluna da Esquerda: Foto do Cartão com caixas detectadas -->
             <div style="background: #0B0E14; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; text-align: center;">
               <div style="font-size: 0.82rem; font-weight: 700; color: #CBD5E1; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-                <span>Cartão Escaneado (OMR)</span>
+                <span>Prova / Cartão Analisado</span>
                 <span id="omrConfidenceBadge" class="badge" style="font-size: 0.72rem; padding: 3px 8px;">Confiança: 95%</span>
               </div>
               <div style="border-radius: 6px; overflow: hidden; background: #000; margin-bottom: 10px; max-height: 380px; display: flex; align-items: center; justify-content: center;">
                 <img id="omrScannedCardImg" src="" alt="Cartão OMR" style="max-width: 100%; max-height: 380px; object-fit: contain;">
               </div>
               <button type="button" id="omrGeminiValidateBtn" class="btn btn-sm btn-outline" onclick="window.TKST_APP.forceGeminiOmrValidation()" style="width: 100%; font-size: 0.8rem; padding: 8px; border-color: rgba(96, 165, 250, 0.4); color: #60A5FA;">
-                <i class="fas fa-brain"></i> Reavaliar com Gemini Vision (IA)
+                <i class="fas fa-brain"></i> Reanalisar com Gemini Vision (IA)
               </button>
             </div>
 
@@ -895,25 +895,25 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=292"></script>
-  <script src="assets/js/data-curriculum.js?v=292"></script>
-  <script src="assets/js/data-katas.js?v=292"></script>
-  <script src="assets/js/data-kumite.js?v=292"></script>
-  <script src="assets/js/data-glossary.js?v=292"></script>
-  <script src="assets/js/data-quiz.js?v=292"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=292"></script>
-  <script src="assets/js/data-media.js?v=292"></script>
-  <script src="assets/js/data-exams.js?v=292"></script>
-  <script src="assets/js/omr-engine.js?v=292"></script>
-  <script src="assets/js/qr-generator.js?v=292"></script>
-  <script src="assets/js/auth.js?v=292"></script>
-  <script src="assets/js/app.js?v=292"></script>
+  <script src="assets/js/jsqr.min.js?v=293"></script>
+  <script src="assets/js/data-curriculum.js?v=293"></script>
+  <script src="assets/js/data-katas.js?v=293"></script>
+  <script src="assets/js/data-kumite.js?v=293"></script>
+  <script src="assets/js/data-glossary.js?v=293"></script>
+  <script src="assets/js/data-quiz.js?v=293"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=293"></script>
+  <script src="assets/js/data-media.js?v=293"></script>
+  <script src="assets/js/data-exams.js?v=293"></script>
+  <script src="assets/js/omr-engine.js?v=293"></script>
+  <script src="assets/js/qr-generator.js?v=293"></script>
+  <script src="assets/js/auth.js?v=293"></script>
+  <script src="assets/js/app.js?v=293"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=292', { updateViaCache: 'none' }).then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=293', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
         }).catch(err => {
           console.log('SW registration note:', err);

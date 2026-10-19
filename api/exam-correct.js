@@ -3,7 +3,75 @@
 // Compatível com server.js local e ambiente legado Vercel
 
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 const { getCorsHeaders, verifyAuth } = require('./_auth.js');
+
+const CANDIDATE_MODELS = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
+
+function getGeminiApiKey() {
+  let key = process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '';
+  if (!key) {
+    try {
+      const candidates = [
+        path.join(__dirname, '..', '.env.local'),
+        path.join(__dirname, '..', '.env'),
+        path.join(process.cwd(), '.env.local'),
+        path.join(process.cwd(), '.env')
+      ];
+      for (const p of candidates) {
+        if (fs.existsSync(p)) {
+          const content = fs.readFileSync(p, 'utf8');
+          const m = content.match(/GEMINI_API_KEY\s*=\s*([^\r\n]+)/);
+          if (m && m[1]) {
+            key = m[1].trim().replace(/^["']|["']$/g, '');
+            if (key) break;
+          }
+        }
+      }
+    } catch(e) {}
+  }
+  return key;
+}
+
+function callGeminiModel(modelName, apiKey, payload) {
+  return new Promise((resolve, reject) => {
+    const payloadStr = JSON.stringify(payload);
+    const options = {
+      hostname: 'generativelanguage.googleapis.com',
+      path: `/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payloadStr)
+      },
+      timeout: 25000
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        resolve({
+          statusCode: res.statusCode,
+          data
+        });
+      });
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Timeout de comunicação com a API do Gemini Vision (25s)'));
+    });
+
+    req.on('error', (err) => {
+      reject(err);
+    });
+
+    req.write(payloadStr);
+    req.end();
+  });
+}
 
 module.exports = async (req, res) => {
   const origin = req.headers.origin || '*';
@@ -43,7 +111,7 @@ module.exports = async (req, res) => {
     }
 
     const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
-    const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '';
+    const geminiApiKey = getGeminiApiKey();
 
     if (!geminiApiKey) {
       return res.status(200).json({
@@ -53,22 +121,29 @@ module.exports = async (req, res) => {
       });
     }
 
-    const prompt = `Você é o avaliador oficial e inspetor técnico de exames teóricos de Karatê Shotokan (TKST).
-Analise com extrema precisão a imagem do Cartão de Respostas da Prova Teórica.
-O cartão possui exatamente 10 questões numeradas de 1 a 10.
-Cada questão possui 4 opções em formato de quadradinhos ou bolhas: [A], [B], [C], [D].
+    const prompt = `Você é o avaliador oficial e especialista em leitura óptica e visão computacional de exames teóricos de Karatê Shotokan (TKST).
+Analise com extrema precisão a imagem fornecida da Prova Teórica / Cartão de Respostas.
+
+IMPORTANTE SOBRE A IMAGEM:
+- A foto pode conter o "CARTÃO DE RESPOSTAS" aproximado OU a folha inteira A4 (com cabeçalho, dados do aluno e o cartão no canto superior direito).
+- Pode haver sombras, iluminação irregular, ligeira inclinação ou foto tirada na vertical ou horizontal.
+- O Cartão de Respostas oficial possui 10 questões numeradas de 1 a 10 (ou 01 a 10).
+- Cada questão possui 4 opções em formato de bolhas ou quadradinhos: [A], [B], [C] e [D].
 
 INSTRUÇÕES RIGOROSAS:
-1. ATENÇÃO MÁXIMA PARA MARCAÇÕES A LÁPIS (GRAFITE): Muitos alunos respondem usando lápis comum, que gera grafite cinza claro ou médio, traços diagonais, X ou preenchimento parcial. Você DEVE identificar com precisão as alternativas preenchidas a lápis, mesmo com grafite claro ou reflexos de luz. Se houver qualquer marcação intencional de lápis em uma alternativa, considere-a marcada.
-2. Para cada questão de 1 a 10, determine qual opção (A, B, C ou D) o aluno preencheu/marcou com caneta ou lápis.
-3. Se a questão estiver sem nenhuma marcação visível (em branco), defina answer como null, doubt como false e confidence em 0.95.
-4. Se houver rasura evidente (ex: uma opção riscada com X e outra preenchida, ou tentativa de apagar borracha), marque answer com a opção que representa a intenção final do aluno, mas defina doubt como true e reduza a confidence (ex: 0.45 a 0.60).
-5. Se houver dúvida real entre duas marcações fortes e não for possível decidir, marque answer com a mais escura, doubt como true e confidence baixa.
-6. Se a marcação estiver limpa e clara, defina doubt como false e confidence alta (0.90 a 1.00).
+1. ATENÇÃO MÁXIMA PARA MARCAÇÕES A LÁPIS (GRAFITE): Muitos alunos respondem usando lápis comum, que gera grafite cinza claro ou médio, traços diagonais, X ou preenchimento parcial. Você DEVE identificar com precisão as alternativas preenchidas a lápis, mesmo com grafite claro ou reflexos de luz. Se houver qualquer marcação intencional de lápis ou caneta em uma alternativa, considere-a marcada.
+2. Para cada questão de 1 a 10, determine qual opção (A, B, C ou D) o aluno marcou.
+3. Se a questão estiver sem nenhuma marcação visível (em branco), defina "answer": null, "doubt": false e "confidence": 0.95.
+4. Se houver rasura evidente (ex: uma opção riscada e outra preenchida, ou tentativa de apagar com borracha), defina "answer" com a opção que representa a intenção final do aluno, "doubt": true e "confidence": 0.50.
+5. Se houver dúvida real entre duas marcações fortes e não for possível decidir, defina "answer" com a mais escura, "doubt": true e "confidence": 0.45.
+6. Se a marcação estiver limpa e clara, defina "doubt": false e "confidence": 0.95.
+7. Se for visível o Código da Prova (código alfanumérico como "AB12C" ou "TKST-XXXXX") no cabeçalho ou etiqueta, extraia-o no campo "examCode".
+8. Se for visível o nome do aluno ou matrícula no cabeçalho da prova, extraia-o no campo "studentName".
 
-Retorne a resposta estritamente no formato JSON abaixo, sem formatação markdown e sem texto antes ou depois:
+Retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto explicativo e sem formatação markdown:
 {
   "examCode": "${examCode || ''}",
+  "studentName": "",
   "overallConfidence": 0.95,
   "questions": [
     { "num": 1, "answer": "A", "confidence": 0.98, "doubt": false, "notes": "" },
@@ -84,7 +159,7 @@ Retorne a resposta estritamente no formato JSON abaixo, sem formatação markdow
   ]
 }`;
 
-    const geminiPayload = JSON.stringify({
+    const geminiPayload = {
       contents: [
         {
           parts: [
@@ -102,81 +177,81 @@ Retorne a resposta estritamente no formato JSON abaixo, sem formatação markdow
         temperature: 0,
         response_mime_type: 'application/json'
       }
-    });
-
-    const options = {
-      hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(geminiPayload)
-      }
     };
 
-    const apiReq = https.request(options, (apiRes) => {
-      let data = '';
-      apiRes.on('data', chunk => data += chunk);
-      apiRes.on('end', () => {
-        try {
-          if (apiRes.statusCode !== 200) {
-            return res.status(502).json({
-              success: false,
-              geminiAvailable: true,
-              error: `Erro ao consultar Gemini (${apiRes.statusCode}): ${data.slice(0, 150)}`
-            });
-          }
+    let geminiResponse = null;
+    let successfulModel = '';
+    let lastError = '';
 
-          const geminiData = JSON.parse(data);
-          const candidateText = geminiData.candidates[0].content.parts[0].text;
-          const cleanJsonText = candidateText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
-          const parsedResult = JSON.parse(cleanJsonText);
-
-          const questions = [];
-          for (let i = 1; i <= 10; i++) {
-            const found = Array.isArray(parsedResult.questions)
-              ? parsedResult.questions.find(q => Number(q.num || q.questionNumber) === i)
-              : null;
-
-            let ans = found && found.answer ? String(found.answer).toUpperCase().trim() : null;
-            if (!['A', 'B', 'C', 'D'].includes(ans)) ans = null;
-
-            const conf = found && typeof found.confidence === 'number' ? Math.max(0, Math.min(1, found.confidence)) : 0.85;
-            const doubt = found ? Boolean(found.doubt) : false;
-            const notes = found && found.notes ? String(found.notes) : '';
-
-            questions.push({
-              num: i,
-              answer: ans,
-              confidence: conf,
-              doubt: doubt,
-              notes: notes
-            });
-          }
-
-          return res.status(200).json({
-            success: true,
-            geminiAvailable: true,
-            provider: 'gemini-1.5-flash',
-            examCode: parsedResult.examCode || examCode,
-            overallConfidence: typeof parsedResult.overallConfidence === 'number' ? parsedResult.overallConfidence : 0.92,
-            questions,
-            timestamp: Date.now()
-          });
-        } catch(err) {
-          return res.status(502).json({ success: false, error: 'Falha ao processar resposta do Gemini Vision: ' + err.message });
+    // Loop com fallback inteligente entre os modelos Gemini disponíveis
+    for (const model of CANDIDATE_MODELS) {
+      try {
+        const result = await callGeminiModel(model, geminiApiKey, geminiPayload);
+        if (result.statusCode === 200) {
+          geminiResponse = result;
+          successfulModel = model;
+          break;
+        } else if (result.statusCode === 404) {
+          lastError = `Modelo ${model} não disponível (404)`;
+          continue; // Tenta o próximo modelo
+        } else {
+          lastError = `Status ${result.statusCode}: ${result.data.slice(0, 150)}`;
         }
+      } catch(err) {
+        lastError = err.message;
+      }
+    }
+
+    if (!geminiResponse) {
+      return res.status(502).json({
+        success: false,
+        geminiAvailable: true,
+        error: `Não foi possível comunicar com o Gemini Vision (${lastError})`
       });
-    });
+    }
 
-    apiReq.on('error', (err) => {
-      return res.status(502).json({ success: false, error: 'Erro de conexão com Gemini API: ' + err.message });
-    });
+    const geminiData = JSON.parse(geminiResponse.data);
+    const candidateText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleanJsonText = candidateText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+    const parsedResult = JSON.parse(cleanJsonText);
 
-    apiReq.write(geminiPayload);
-    apiReq.end();
+    const questions = [];
+    for (let i = 1; i <= 10; i++) {
+      const found = Array.isArray(parsedResult.questions)
+        ? parsedResult.questions.find(q => Number(q.num || q.questionNumber) === i)
+        : null;
+
+      let ans = found && found.answer ? String(found.answer).toUpperCase().trim() : null;
+      if (!['A', 'B', 'C', 'D'].includes(ans)) ans = null;
+
+      const conf = found && typeof found.confidence === 'number' ? Math.max(0, Math.min(1, found.confidence)) : 0.85;
+      const doubt = found ? Boolean(found.doubt) : false;
+      const notes = found && found.notes ? String(found.notes) : '';
+
+      questions.push({
+        num: i,
+        answer: ans,
+        confidence: conf,
+        doubt: doubt,
+        notes: notes
+      });
+    }
+
+    const detectedExamCode = (parsedResult.examCode && parsedResult.examCode.trim()) || examCode;
+    const studentName = parsedResult.studentName || '';
+
+    return res.status(200).json({
+      success: true,
+      geminiAvailable: true,
+      provider: successfulModel,
+      examCode: detectedExamCode,
+      studentName: studentName,
+      overallConfidence: typeof parsedResult.overallConfidence === 'number' ? parsedResult.overallConfidence : 0.95,
+      questions,
+      timestamp: Date.now()
+    });
 
   } catch(err) {
-    return res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: 'Erro no processamento Gemini Vision: ' + err.message });
   }
 };

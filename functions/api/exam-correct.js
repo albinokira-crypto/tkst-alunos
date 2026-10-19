@@ -54,23 +54,29 @@ export async function onRequestPost(context) {
     }
 
     // 2. Monta o Prompt Estruturado para o Gemini Vision com Temperature 0
-    const prompt = `Você é o avaliador oficial e inspetor técnico de exames teóricos de Karatê Shotokan (TKST).
-Analise com extrema precisão a imagem do Cartão de Respostas da Prova Teórica.
-O cartão possui exatamente 10 questões numeradas de 1 a 10 (ou 01 a 10).
-Cada questão possui 4 opções em formato de quadradinhos ou bolhas: [A], [B], [C], [D].
+    const prompt = `Você é o avaliador oficial e especialista em leitura óptica e visão computacional de exames teóricos de Karatê Shotokan (TKST).
+Analise com extrema precisão a imagem fornecida da Prova Teórica / Cartão de Respostas.
+
+IMPORTANTE SOBRE A IMAGEM:
+- A foto pode conter o "CARTÃO DE RESPOSTAS" aproximado OU a folha inteira A4 (com cabeçalho, dados do aluno e o cartão no canto superior direito).
+- Pode haver sombras, iluminação irregular, ligeira inclinação ou foto tirada na vertical ou horizontal.
+- O Cartão de Respostas oficial possui 10 questões numeradas de 1 a 10 (ou 01 a 10).
+- Cada questão possui 4 opções em formato de bolhas ou quadradinhos: [A], [B], [C] e [D].
 
 INSTRUÇÕES RIGOROSAS:
-1. ATENÇÃO MÁXIMA PARA MARCAÇÕES A LÁPIS (GRAFITE): Muitos alunos respondem usando lápis comum, que gera grafite cinza claro ou médio, traços diagonais, X ou preenchimento parcial. Você DEVE identificar com precisão as alternativas preenchidas a lápis, mesmo com grafite claro ou reflexos de luz. Se houver qualquer marcação intencional de lápis em uma alternativa, considere-a marcada.
-2. Para cada questão de 1 a 10, determine qual opção (A, B, C ou D) o aluno preencheu/marcou com caneta ou lápis.
-3. Se a questão estiver sem nenhuma marcação visível (em branco), defina answer como null, doubt como false e confidence em 0.95.
-4. Se houver rasura evidente (ex: uma opção riscada com X e outra preenchida, ou tentativa de apagar borracha), marque answer com a opção que representa a intenção final do aluno, mas defina doubt como true e reduza a confidence (ex: 0.45 a 0.60).
-5. Se houver dúvida real entre duas marcações fortes e não for possível decidir, marque answer com a mais escura, doubt como true e confidence baixa.
-6. Se a marcação estiver limpa e clara, defina doubt como false e confidence alta (0.90 a 1.00).
-7. Localize também o código da prova se estiver visível no cabeçalho (ex: 5 caracteres como "AB12C").
+1. ATENÇÃO MÁXIMA PARA MARCAÇÕES A LÁPIS (GRAFITE): Muitos alunos respondem usando lápis comum, que gera grafite cinza claro ou médio, traços diagonais, X ou preenchimento parcial. Você DEVE identificar com precisão as alternativas preenchidas a lápis, mesmo com grafite claro ou reflexos de luz. Se houver qualquer marcação intencional de lápis ou caneta em uma alternativa, considere-a marcada.
+2. Para cada questão de 1 a 10, determine qual opção (A, B, C ou D) o aluno marcou.
+3. Se a questão estiver sem nenhuma marcação visível (em branco), defina "answer": null, "doubt": false e "confidence": 0.95.
+4. Se houver rasura evidente (ex: uma opção riscada e outra preenchida, ou tentativa de apagar com borracha), defina "answer" com a opção que representa a intenção final do aluno, "doubt": true e "confidence": 0.50.
+5. Se houver dúvida real entre duas marcações fortes e não for possível decidir, defina "answer" com a mais escura, "doubt": true e "confidence": 0.45.
+6. Se a marcação estiver limpa e clara, defina "doubt": false e "confidence": 0.95.
+7. Se for visível o Código da Prova (código alfanumérico como "AB12C" ou "TKST-XXXXX") no cabeçalho ou etiqueta, extraia-o no campo "examCode".
+8. Se for visível o nome do aluno ou matrícula no cabeçalho da prova, extraia-o no campo "studentName".
 
-Retorne a resposta estritamente no formato JSON abaixo, sem formatação markdown e sem texto antes ou depois:
+Retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto explicativo e sem formatação markdown:
 {
   "examCode": "${examCode || ''}",
+  "studentName": "",
   "overallConfidence": 0.95,
   "questions": [
     { "num": 1, "answer": "A", "confidence": 0.98, "doubt": false, "notes": "" },
@@ -85,9 +91,6 @@ Retorne a resposta estritamente no formato JSON abaixo, sem formatação markdow
     { "num": 10, "answer": "B", "confidence": 0.95, "doubt": false, "notes": "" }
   ]
 }`;
-
-    // 3. Chamada à API do Gemini Vision (Model: gemini-1.5-flash com fallback)
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
     const geminiPayload = {
       contents: [
@@ -109,20 +112,41 @@ Retorne a resposta estritamente no formato JSON abaixo, sem formatação markdow
       }
     };
 
-    const geminiRes = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(geminiPayload)
-    });
+    const candidateModels = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
+    let geminiRes = null;
+    let successfulModel = '';
+    let lastError = '';
 
-    if (!geminiRes.ok) {
-      const errorText = await geminiRes.text().catch(() => '');
+    for (const model of candidateModels) {
+      try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+        const resp = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(geminiPayload)
+        });
+
+        if (resp.status === 200) {
+          geminiRes = resp;
+          successfulModel = model;
+          break;
+        } else if (resp.status === 404) {
+          lastError = `Modelo ${model} não disponível (404)`;
+          continue;
+        } else {
+          const txt = await resp.text().catch(() => '');
+          lastError = `Status ${resp.status}: ${txt.slice(0, 150)}`;
+        }
+      } catch(err) {
+        lastError = err.message;
+      }
+    }
+
+    if (!geminiRes) {
       return new Response(JSON.stringify({
         success: false,
         geminiAvailable: true,
-        error: `Erro ao consultar Gemini Vision API (${geminiRes.status}): ${errorText.slice(0, 200)}`
+        error: `Não foi possível comunicar com o Gemini Vision (${lastError})`
       }), { status: 502, headers });
     }
 
@@ -173,12 +197,16 @@ Retorne a resposta estritamente no formato JSON abaixo, sem formatação markdow
       });
     }
 
+    const detectedExamCode = (parsedResult.examCode && parsedResult.examCode.trim()) || examCode;
+    const studentName = parsedResult.studentName || '';
+
     return new Response(JSON.stringify({
       success: true,
       geminiAvailable: true,
-      provider: 'gemini-1.5-flash',
-      examCode: parsedResult.examCode || examCode,
-      overallConfidence: typeof parsedResult.overallConfidence === 'number' ? parsedResult.overallConfidence : 0.92,
+      provider: successfulModel,
+      examCode: detectedExamCode,
+      studentName: studentName,
+      overallConfidence: typeof parsedResult.overallConfidence === 'number' ? parsedResult.overallConfidence : 0.95,
       questions,
       timestamp: Date.now()
     }), { status: 200, headers });

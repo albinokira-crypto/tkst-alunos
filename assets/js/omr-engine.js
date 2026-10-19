@@ -399,7 +399,7 @@
   }
 
   // Chamada de validação multi-modal com Gemini Vision via API do backend
-  async function verifyWithGeminiVision(croppedCardDataUrl, contextInfo = {}) {
+  async function verifyWithGeminiVision(imageDataUrl, contextInfo = {}) {
     try {
       const headers = { 'Content-Type': 'application/json' };
       const token = localStorage.getItem('tkst_session_token');
@@ -411,7 +411,7 @@
         method: 'POST',
         headers,
         body: JSON.stringify({
-          imageBase64: croppedCardDataUrl,
+          imageBase64: imageDataUrl,
           mimeType: 'image/jpeg',
           examCode: contextInfo.examCode || '',
           kyu: contextInfo.kyu || null,
@@ -420,7 +420,9 @@
       });
 
       if (!res.ok) {
-        return { success: false, geminiAvailable: false, error: 'Serviço Gemini Vision indisponível temporariamente.' };
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson && errJson.error ? errJson.error : `Serviço Gemini Vision indisponível (HTTP ${res.status}).`;
+        return { success: false, geminiAvailable: false, error: errMsg };
       }
 
       const json = await res.json();
@@ -435,9 +437,10 @@
   // =========================================================================
   async function scanExamImage(imageSource, options = {}) {
     const opts = {
-      forceAi: false,
+      forceAi: true,       // Opção 1: IA como motor primário padrão
+      useAi: true,         // Ativação da IA por padrão
       autoRotate: true,
-      mode: 'card', // 'card' (apenas cartão) ou 'sheet' (folha inteira A4)
+      mode: 'card',        // 'card' (apenas cartão) ou 'sheet' (folha inteira A4)
       examCode: '',
       expectedKey: null,
       kyu: null,
@@ -475,22 +478,21 @@
       if (match) detectedExamCode = match[1];
     }
 
-    // 3. Recorte e enquadramento do Cartão OMR conforme o modo escolhido
+    // 3. Recorte auxiliar do Cartão OMR para motor local de fallback
     const { cardCanvas, bounds } = cropOmrCard(workCanvas, opts.mode);
 
-    // 4. Leitura nativa das bolhas via processamento de imagem
+    // 4. Leitura nativa local das bolhas (fallback resiliente caso offline)
     const omrResult = readBubbleGrid(cardCanvas);
 
-    // 5. Validação Multi-Modal com Gemini Vision (se solicitado ou em caso de dúvida/rasura)
-    const hasDoubt = omrResult.questions.some(q => q.doubt === true);
-    const lowConfidence = omrResult.overallConfidence < 0.82;
-
+    // 5. MOTOR PRIMÁRIO: Inteligência Artificial Gemini Vision 2.5 Flash
     let geminiResult = null;
     let usedAi = false;
+    let detectedStudentName = '';
 
-    if (opts.forceAi || (hasDoubt && !opts.skipAi) || (lowConfidence && !opts.skipAi)) {
-      const cardBase64 = cardCanvas.toDataURL('image/jpeg', 0.88);
-      geminiResult = await verifyWithGeminiVision(cardBase64, {
+    if (opts.useAi !== false && !opts.skipAi) {
+      // Envia a imagem completa para que o Gemini localize e leia o cartão sem falhas de recorte rígido
+      const fullImageBase64 = workCanvas.toDataURL('image/jpeg', 0.85);
+      geminiResult = await verifyWithGeminiVision(fullImageBase64, {
         examCode: detectedExamCode,
         kyu: opts.kyu,
         expectedKey: opts.expectedKey
@@ -501,12 +503,10 @@
         geminiResult.questions.forEach(gq => {
           const lq = omrResult.questions.find(q => q.num === gq.num);
           if (lq) {
-            if (lq.doubt || gq.confidence >= lq.confidence) {
-              lq.answer = gq.answer;
-              lq.confidence = gq.confidence;
-              lq.doubt = gq.doubt;
-              lq.notes = (gq.notes ? gq.notes + ' ' : '') + '(Validado via Gemini Vision)';
-            }
+            lq.answer = gq.answer;
+            lq.confidence = gq.confidence;
+            lq.doubt = gq.doubt;
+            lq.notes = (gq.notes ? gq.notes + ' ' : '') + '(Gemini Vision 2.5 Flash)';
           }
         });
 
@@ -515,22 +515,29 @@
         if (geminiResult.examCode && !detectedExamCode) {
           detectedExamCode = geminiResult.examCode;
         }
+        if (geminiResult.studentName) {
+          detectedStudentName = geminiResult.studentName;
+        }
       }
     }
 
-    // 6. Desenha overlay de auditoria sobre o cartão
-    drawDetectionOverlay(cardCanvas, omrResult.questions);
+    // Se o Gemini Vision não foi utilizado, desenha o overlay local de auditoria sobre o cartão
+    if (!usedAi) {
+      drawDetectionOverlay(cardCanvas, omrResult.questions);
+    }
 
     return {
       success: true,
       examCode: detectedExamCode,
+      studentName: detectedStudentName,
       questions: omrResult.questions,
       overallConfidence: omrResult.overallConfidence,
       usedAi,
+      provider: (geminiResult && geminiResult.provider) || (usedAi ? 'gemini-2.5-flash' : 'omr-local'),
       geminiAvailable: geminiResult ? Boolean(geminiResult.geminiAvailable !== false) : true,
       hasDoubt: omrResult.questions.some(q => q.doubt),
-      croppedCardDataUrl: cardCanvas.toDataURL('image/jpeg', 0.90),
-      rawImageDataUrl: workCanvas.toDataURL('image/jpeg', 0.82),
+      croppedCardDataUrl: usedAi ? workCanvas.toDataURL('image/jpeg', 0.88) : cardCanvas.toDataURL('image/jpeg', 0.90),
+      rawImageDataUrl: workCanvas.toDataURL('image/jpeg', 0.85),
       cardBounds: bounds,
       rotationAngle: orientationInfo.angle,
       timestamp: Date.now()
