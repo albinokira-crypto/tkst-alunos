@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.94';
+  const APP_DISPLAY_VERSION = 'V-2.96';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -169,10 +169,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Verificação periódica de nova versão no servidor (auto-upgrade silencioso, seguro e com anti-loop)
   async function checkAppVersionUpdate() {
     try {
-      // Anti-loop guard: impede qualquer recarregamento em menos de 60 segundos
+      // 1. NUNCA recarrega se o modal de correção ou qualquer modal estiver aberto/ativo
+      const omrModal = document.getElementById('examOmrScannerModal');
+      const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
+      const isAnyModalActive = !!document.querySelector('.modal-overlay.active, .modal-backdrop.active');
+      if (isOmrActive || isAnyModalActive || examPreviewGenerated || (typeof shouldSkipRerender === 'function' && shouldSkipRerender())) {
+        return;
+      }
+
+      // Anti-loop guard: impede qualquer recarregamento em menos de 120 segundos
       const lastReloadKey = 'tkst_last_ver_reload_ts';
       const lastReloadTime = Number(sessionStorage.getItem(lastReloadKey) || 0);
-      if (Date.now() - lastReloadTime < 60000) {
+      if (Date.now() - lastReloadTime < 120000) {
         return;
       }
 
@@ -180,13 +188,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (vRes.ok) {
         const vData = await vRes.json();
         if (vData && vData.version && vData.version !== APP_DISPLAY_VERSION) {
-          // Bloqueia qualquer reload se o usuário estiver gerando prova, visualizando prévia ou preenchendo formulários
-          if (examPreviewGenerated || (typeof shouldSkipRerender === 'function' && shouldSkipRerender())) {
+          // Re-verifica se o modal de correção foi aberto durante a requisição de rede
+          const isOmrNowActive = !!document.getElementById('examOmrScannerModal')?.classList.contains('active') ||
+                                 document.getElementById('examOmrScannerModal')?.style.display !== 'none' ||
+                                 !!document.querySelector('.modal-overlay.active');
+          if (isOmrNowActive || examPreviewGenerated) {
             return;
           }
 
           sessionStorage.setItem(lastReloadKey, String(Date.now()));
-          console.log('Nova versão detectada:', vData.version, 'Versão atual:', APP_DISPLAY_VERSION);
+          console.log('[Auto-Update] Nova versão detectada:', vData.version, 'Versão atual:', APP_DISPLAY_VERSION);
 
           if ('caches' in window) {
             try {
@@ -206,9 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {}
   }
 
-  // Executa checagem após carregamento inicial estável (5 segundos) e depois a cada 60 segundos
-  setTimeout(checkAppVersionUpdate, 5000);
-  setInterval(checkAppVersionUpdate, 60000);
+  // Executa checagem após carregamento inicial estável (45 segundos) e depois a cada 120 segundos
+  setTimeout(checkAppVersionUpdate, 45000);
+  setInterval(checkAppVersionUpdate, 120000);
 
   // =========================================================================
   // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)
@@ -16409,22 +16420,22 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           let btnStyle = 'background: rgba(255,255,255,0.06); color: #E2E8F0; border: 1px solid rgba(255,255,255,0.18); font-weight: 800;';
           if (isSelected) {
             if (letter === expectedAnswer) {
-              btnStyle = 'background: #059669; color: #FFFFFF; border: 2px solid #10B981; font-weight: 900; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);';
+              btnStyle = 'background: #059669; color: #FFFFFF; border: 1.5px solid #10B981; font-weight: 900; box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);';
             } else {
-              btnStyle = 'background: #DC2626; color: #FFFFFF; border: 2px solid #EF4444; font-weight: 900; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);';
+              btnStyle = 'background: #DC2626; color: #FFFFFF; border: 1.5px solid #EF4444; font-weight: 900; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);';
             }
           }
 
-          return `<button type="button" class="btn btn-sm" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, '${letter}')" style="min-width: 33px; height: 32px; font-size: 0.88rem; border-radius: 4px; padding: 0; cursor: pointer; transition: all 0.1s; ${btnStyle}">${letter}</button>`;
-        }).join(' ');
+          return `<button type="button" class="btn btn-sm" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, '${letter}')" style="flex: 1; max-width: 28px; min-width: 22px; height: 28px; font-size: 0.82rem; border-radius: 3px; padding: 0; cursor: pointer; transition: all 0.1s; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; ${btnStyle}">${letter}</button>`;
+        }).join('');
 
         let statusHtml = '';
         if (isCorrect) {
-          statusHtml = `<span style="font-size: 0.82rem;" title="Correta (+1,0 pt)">✅</span>`;
+          statusHtml = `<span style="font-size: 0.76rem;" title="Correta (+1,0 pt)">✅</span>`;
         } else if (isAnswered) {
-          statusHtml = `<span style="font-size: 0.72rem; color: #F87171; font-weight: 800;" title="Gabarito: ${expectedAnswer}">❌ <strong style="color: #FFF;">${expectedAnswer}</strong></span>`;
+          statusHtml = `<span style="font-size: 0.65rem; color: #F87171; font-weight: 900; white-space: nowrap;" title="Gabarito: ${expectedAnswer}">❌<strong style="color: #FFF; margin-left: 1px;">${expectedAnswer}</strong></span>`;
         } else {
-          statusHtml = `<button type="button" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, null)" style="background: transparent; border: none; font-size: 0.68rem; color: #64748B; font-weight: 700; cursor: pointer; padding: 0;" title="Gabarito: ${expectedAnswer}">[${expectedAnswer}]</button>`;
+          statusHtml = `<button type="button" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, null)" style="background: transparent; border: none; font-size: 0.65rem; color: #64748B; font-weight: 700; cursor: pointer; padding: 0; white-space: nowrap;" title="Gabarito: ${expectedAnswer}">[${expectedAnswer}]</button>`;
         }
 
         const borderCol = isAnswered 
@@ -16432,14 +16443,14 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           : 'rgba(255,255,255,0.08)';
 
         return `
-          <div id="omrManualQRow_${qNum}" style="background: rgba(15, 23, 42, 0.85); border: 1px solid ${borderCol}; border-radius: 5px; padding: 3px 6px; display: flex; align-items: center; justify-content: space-between; gap: 4px; box-sizing: border-box; min-height: 34px;">
-            <div style="display: flex; align-items: center; gap: 3px; min-width: 36px;">
-              <span style="font-weight: 900; color: var(--accent-gold); font-size: 0.85rem;">Q${qNum < 10 ? '0' + qNum : qNum}</span>
+          <div id="omrManualQRow_${qNum}" style="background: rgba(15, 23, 42, 0.85); border: 1px solid ${borderCol}; border-radius: 4px; padding: 2px 4px; display: flex; align-items: center; justify-content: space-between; gap: 2px; box-sizing: border-box; height: 30px; min-height: 30px; width: 100%; min-width: 0; overflow: hidden;">
+            <div style="display: flex; align-items: center; width: 24px; min-width: 20px; flex-shrink: 0;">
+              <span style="font-weight: 900; color: var(--accent-gold); font-size: 0.78rem; line-height: 1;">Q${qNum < 10 ? '0' + qNum : qNum}</span>
             </div>
-            <div style="display: flex; gap: 3px;">
+            <div style="display: flex; gap: 2px; flex: 1; justify-content: center; min-width: 0; padding: 0 1px;">
               ${buttonsHtml}
             </div>
-            <div style="min-width: 26px; text-align: right; display: flex; align-items: center; justify-content: flex-end;">
+            <div style="width: 22px; min-width: 20px; text-align: right; display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0;">
               ${statusHtml}
             </div>
           </div>

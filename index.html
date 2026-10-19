@@ -32,8 +32,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=295">
-  <link rel="stylesheet" href="assets/css/components.css?v=295">
+  <link rel="stylesheet" href="assets/css/main.css?v=296">
+  <link rel="stylesheet" href="assets/css/components.css?v=296">
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
@@ -618,8 +618,8 @@
 
   <!-- Modal de Correção de Provas OMR & Gemini Vision (Sensei) -->
   <div class="modal-overlay" id="examOmrScannerModal" style="display:none;">
-    <div class="modal-container" style="max-width: 860px; width: 96%; max-height: 92vh; display: flex; flex-direction: column;">
-      <div class="modal-header" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-bottom: 1px solid var(--border-color); padding: 14px 20px;">
+    <div class="modal-container" style="max-width: 780px; width: min(780px, 98vw); max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-bottom: 1px solid var(--border-color); padding: 10px 14px;">
         <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-check-double" style="color: var(--accent-gold);"></i>
           <span>Corrigir Prova</span>
@@ -627,16 +627,16 @@
         <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeExamOmrModal()" aria-label="Fechar">&times;</button>
       </div>
 
-      <div class="modal-body" style="padding: 14px 16px; overflow-y: auto; flex: 1;">
+      <div class="modal-body" style="padding: 6px 8px; overflow-x: hidden; overflow-y: auto; flex: 1; box-sizing: border-box; width: 100%;">
         <!-- Stepper Indicador de Fases (Fase 1 -> Fase 2 -> Fase 3) -->
-        <div id="omrPhaseStepper" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
-          <button type="button" id="omrStepTab1" onclick="window.TKST_APP.goToOmrPhase(1)" style="flex: 1; text-align: center; padding: 7px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 800; background: rgba(245, 190, 0, 0.15); border: 1px solid var(--accent-gold); color: var(--accent-gold); cursor: pointer; transition: all 0.2s;">
+        <div id="omrPhaseStepper" style="display: flex; gap: 4px; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; width: 100%; box-sizing: border-box; overflow: hidden;">
+          <button type="button" id="omrStepTab1" onclick="window.TKST_APP.goToOmrPhase(1)" style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 800; background: rgba(245, 190, 0, 0.15); border: 1px solid var(--accent-gold); color: var(--accent-gold); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s;">
             <i class="fas fa-barcode"></i> 1. Identificar Código
           </button>
-          <button type="button" id="omrStepTab2" onclick="window.TKST_APP.goToOmrPhase(2)" style="flex: 1; text-align: center; padding: 7px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: pointer; transition: all 0.2s;">
+          <button type="button" id="omrStepTab2" onclick="window.TKST_APP.goToOmrPhase(2)" style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s;">
             <i class="fas fa-pen-to-square"></i> 2. Corrigir prova
           </button>
-          <button type="button" id="omrStepTab3" style="flex: 1; text-align: center; padding: 7px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: default; transition: all 0.2s; pointer-events: none;">
+          <button type="button" id="omrStepTab3" style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: default; transition: all 0.2s; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             <i class="fas fa-award"></i> 3. Nota Oficial
           </button>
         </div>
@@ -754,36 +754,36 @@
         </div>
 
         <!-- 2. FASE 2: MARCAÇÃO MANUAL DAS 10 RESPOSTAS DO ALUNO (100% COMPACTA SEM ROLAGEM) -->
-        <div id="omrPhase2View" style="display:none;">
+        <div id="omrPhase2View" style="display:none; width: 100%; box-sizing: border-box; overflow: hidden;">
           <!-- Barra Superior Compacta: Aluno, Faixa e Nota em 1 única linha -->
-          <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(245, 190, 0, 0.35); border-radius: 6px; padding: 6px 12px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: nowrap;">
-            <div style="display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-              <span id="omrPhase2ExamCode" style="color: var(--accent-gold); font-family: monospace; font-weight: 900; font-size: 0.92rem;"></span>
+          <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(245, 190, 0, 0.35); border-radius: 6px; padding: 4px 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; gap: 4px; width: 100%; box-sizing: border-box; overflow: hidden;">
+            <div style="display: flex; align-items: center; gap: 4px; min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+              <span id="omrPhase2ExamCode" style="color: var(--accent-gold); font-family: monospace; font-weight: 900; font-size: 0.82rem; flex-shrink: 0;"></span>
               <span style="color: #64748B;">•</span>
-              <span id="omrPhase2Belt" style="font-weight: 700; color: #FFF; font-size: 0.82rem;"></span>
+              <span id="omrPhase2Belt" style="font-weight: 700; color: #FFF; font-size: 0.78rem; flex-shrink: 0;"></span>
               <span style="color: #64748B;">•</span>
-              <span style="color: #38BDF8; font-weight: 800; font-size: 0.84rem; overflow: hidden; text-overflow: ellipsis;"><i class="fas fa-user" style="font-size: 0.72rem;"></i> <span id="omrPhase2Student"></span></span>
+              <span style="color: #38BDF8; font-weight: 800; font-size: 0.80rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fas fa-user" style="font-size: 0.70rem;"></i> <span id="omrPhase2Student"></span></span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-              <span style="font-size: 0.72rem; color: #94A3B8; font-weight: 700;">Nota:</span>
-              <span id="omrManualScoreDisplay" style="font-size: 1.15rem; font-weight: 900; color: var(--accent-gold); line-height: 1;">0,0</span>
-              <span id="omrManualScoreBadge" class="badge badge-danger" style="font-size: 0.68rem; padding: 2px 6px; font-weight: 800; background: #DC2626; color: #FFF;">REPROVADO</span>
-              <span id="omrManualHitsDisplay" style="font-size: 0.72rem; color: #94A3B8; font-weight: 700;">(0/10)</span>
+            <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 700;">Nota:</span>
+              <span id="omrManualScoreDisplay" style="font-size: 1.05rem; font-weight: 900; color: var(--accent-gold); line-height: 1;">0,0</span>
+              <span id="omrManualScoreBadge" class="badge badge-danger" style="font-size: 0.64rem; padding: 2px 4px; font-weight: 800; background: #DC2626; color: #FFF;">REPROVADO</span>
+              <span id="omrManualHitsDisplay" style="font-size: 0.68rem; color: #94A3B8; font-weight: 700;">(0/10)</span>
             </div>
           </div>
 
           <!-- Container Dinâmico com as 10 Questões em 2 Colunas lado a lado (Altura Fixa sem Rolagem) -->
-          <div id="omrManualQuestionsContainer" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, auto); grid-auto-flow: column; gap: 4px; margin-bottom: 6px;">
+          <div id="omrManualQuestionsContainer" style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(5, auto); grid-auto-flow: column; gap: 3px; margin-bottom: 5px; width: 100%; box-sizing: border-box; overflow: hidden;">
             <!-- Gerado via JavaScript: 10 questões (Q01-Q05 na col 1, Q06-Q10 na col 2) -->
           </div>
 
           <!-- Rodapé de Ações Ultra-Compacto -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px; gap: 8px;">
-            <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.goToOmrPhase(1)" style="font-size: 0.76rem; padding: 5px 12px; color: #94A3B8; border-color: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 5px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; gap: 6px; width: 100%; box-sizing: border-box;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.goToOmrPhase(1)" style="font-size: 0.74rem; padding: 4px 10px; color: #94A3B8; border-color: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 4px; height: 32px; box-sizing: border-box;">
               <i class="fas fa-arrow-left"></i> Voltar
             </button>
-            <button type="button" id="omrSaveManualGradeBtn" class="btn btn-primary" onclick="window.TKST_APP.saveManualExamGrade()" style="font-weight: 900; font-size: 0.86rem; padding: 6px 18px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none; border-radius: 6px; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
-              <i class="fas fa-check-circle" style="font-size: 0.95rem;"></i> Salvar e Lançar Nota na Ficha
+            <button type="button" id="omrSaveManualGradeBtn" class="btn btn-primary" onclick="window.TKST_APP.saveManualExamGrade()" style="font-weight: 900; font-size: 0.82rem; padding: 4px 14px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none; border-radius: 6px; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35); display: inline-flex; align-items: center; gap: 5px; cursor: pointer; height: 32px; box-sizing: border-box;">
+              <i class="fas fa-check-circle" style="font-size: 0.90rem;"></i> Salvar e Lançar Nota na Ficha
             </button>
           </div>
         </div>
@@ -855,27 +855,36 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=295"></script>
-  <script src="assets/js/data-curriculum.js?v=295"></script>
-  <script src="assets/js/data-katas.js?v=295"></script>
-  <script src="assets/js/data-kumite.js?v=295"></script>
-  <script src="assets/js/data-glossary.js?v=295"></script>
-  <script src="assets/js/data-quiz.js?v=295"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=295"></script>
-  <script src="assets/js/data-media.js?v=295"></script>
-  <script src="assets/js/data-exams.js?v=295"></script>
-  <script src="assets/js/omr-engine.js?v=295"></script>
-  <script src="assets/js/qr-generator.js?v=295"></script>
-  <script src="assets/js/auth.js?v=295"></script>
-  <script src="assets/js/app.js?v=295"></script>
+  <script src="assets/js/jsqr.min.js?v=296"></script>
+  <script src="assets/js/data-curriculum.js?v=296"></script>
+  <script src="assets/js/data-katas.js?v=296"></script>
+  <script src="assets/js/data-kumite.js?v=296"></script>
+  <script src="assets/js/data-glossary.js?v=296"></script>
+  <script src="assets/js/data-quiz.js?v=296"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=296"></script>
+  <script src="assets/js/data-media.js?v=296"></script>
+  <script src="assets/js/data-exams.js?v=296"></script>
+  <script src="assets/js/omr-engine.js?v=296"></script>
+  <script src="assets/js/qr-generator.js?v=296"></script>
+  <script src="assets/js/auth.js?v=296"></script>
+  <script src="assets/js/app.js?v=296"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       let isRefreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // Bloqueio absoluto: NUNCA recarrega enquanto o modal de correção ou qualquer modal estiver aberto
+        const omrModal = document.getElementById('examOmrScannerModal');
+        const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
+        const isAnyModalActive = !!document.querySelector('.modal-overlay.active, .modal-backdrop.active');
+        if (isOmrActive || isAnyModalActive) {
+          console.log('[SW] Recarregamento postergado: usuário em tela de correção ou modal ativo.');
+          return;
+        }
+
         const lastSwReload = Number(sessionStorage.getItem('tkst_sw_reload_ts') || 0);
-        if (!isRefreshing && (Date.now() - lastSwReload > 30000)) {
+        if (!isRefreshing && (Date.now() - lastSwReload > 60000)) {
           isRefreshing = true;
           sessionStorage.setItem('tkst_sw_reload_ts', String(Date.now()));
           window.location.reload();
@@ -883,7 +892,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=295', { updateViaCache: 'none' }).then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=296', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
 
           reg.addEventListener('updatefound', () => {
@@ -891,7 +900,11 @@
             if (installing) {
               installing.addEventListener('statechange', () => {
                 if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-                  installing.postMessage({ type: 'SKIP_WAITING' });
+                  const omrModal = document.getElementById('examOmrScannerModal');
+                  const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
+                  if (!isOmrActive) {
+                    installing.postMessage({ type: 'SKIP_WAITING' });
+                  }
                 }
               });
             }
