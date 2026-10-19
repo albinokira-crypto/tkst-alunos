@@ -15626,14 +15626,17 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       omrCurrentPhase = phase;
       const phase1View = document.getElementById('omrPhase1View');
       const phase2View = document.getElementById('omrPhase2View');
+      const phase3View = document.getElementById('omrPhase3ResultView');
       const procView = document.getElementById('omrProcessingView');
       const reviewView = document.getElementById('omrReviewView');
       const tab1 = document.getElementById('omrStepTab1');
       const tab2 = document.getElementById('omrStepTab2');
+      const tab3 = document.getElementById('omrStepTab3');
 
       if (phase === 1) {
         if (phase1View) phase1View.style.display = 'block';
         if (phase2View) phase2View.style.display = 'none';
+        if (phase3View) phase3View.style.display = 'none';
         if (procView) procView.style.display = 'none';
         if (reviewView) reviewView.style.display = 'none';
 
@@ -15648,6 +15651,12 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           tab2.style.borderColor = 'rgba(255,255,255,0.1)';
           tab2.style.color = '#94A3B8';
           tab2.style.fontWeight = '700';
+        }
+        if (tab3) {
+          tab3.style.background = 'rgba(255,255,255,0.04)';
+          tab3.style.borderColor = 'rgba(255,255,255,0.1)';
+          tab3.style.color = '#94A3B8';
+          tab3.style.fontWeight = '700';
         }
         const input = document.getElementById('omrExamCodeInput');
         if (input) setTimeout(() => input.focus(), 100);
@@ -15674,8 +15683,18 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         }
         if (p2Student) p2Student.textContent = studentLabel;
 
+        // Inicializa array de respostas manuais se necessário
+        if (!Array.isArray(omrManualAnswers) || omrManualAnswers.length !== 10) {
+          omrManualAnswers = [null, null, null, null, null, null, null, null, null, null];
+        }
+
+        // Renderiza lista interativa de 10 questões e atualiza nota em tempo real
+        this.renderManualQuestionsList();
+        this.recalculateManualExamScore();
+
         if (phase1View) phase1View.style.display = 'none';
         if (phase2View) phase2View.style.display = 'block';
+        if (phase3View) phase3View.style.display = 'none';
         if (procView) procView.style.display = 'none';
         if (reviewView) reviewView.style.display = 'none';
 
@@ -15690,6 +15709,37 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           tab2.style.borderColor = 'var(--accent-gold)';
           tab2.style.color = 'var(--accent-gold)';
           tab2.style.fontWeight = '800';
+        }
+        if (tab3) {
+          tab3.style.background = 'rgba(255,255,255,0.04)';
+          tab3.style.borderColor = 'rgba(255,255,255,0.1)';
+          tab3.style.color = '#94A3B8';
+          tab3.style.fontWeight = '700';
+        }
+      } else if (phase === 3) {
+        if (phase1View) phase1View.style.display = 'none';
+        if (phase2View) phase2View.style.display = 'none';
+        if (phase3View) phase3View.style.display = 'block';
+        if (procView) procView.style.display = 'none';
+        if (reviewView) reviewView.style.display = 'none';
+
+        if (tab1) {
+          tab1.style.background = 'rgba(16, 185, 129, 0.12)';
+          tab1.style.borderColor = '#10B981';
+          tab1.style.color = '#34D399';
+          tab1.style.fontWeight = '700';
+        }
+        if (tab2) {
+          tab2.style.background = 'rgba(16, 185, 129, 0.12)';
+          tab2.style.borderColor = '#10B981';
+          tab2.style.color = '#34D399';
+          tab2.style.fontWeight = '700';
+        }
+        if (tab3) {
+          tab3.style.background = 'rgba(245, 190, 0, 0.15)';
+          tab3.style.borderColor = 'var(--accent-gold)';
+          tab3.style.color = 'var(--accent-gold)';
+          tab3.style.fontWeight = '800';
         }
       }
     },
@@ -16245,48 +16295,129 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       this.recalculateOmrScore();
     },
 
-    overrideOmrAnswer: function(questionNum, letter) {
-      if (!omrCurrentScanResult || !omrCurrentScanResult.questions) return;
-      const target = omrCurrentScanResult.questions.find(q => q.num === questionNum);
-      if (target) {
-        target.answer = letter;
-        target.doubt = false;
-        target.confidence = 1.0;
-        target.notes = 'Corrigido manualmente pelo Sensei';
-        this.renderOmrReviewView(omrCurrentScanResult);
+    renderManualQuestionsList: function() {
+      const container = document.getElementById('omrManualQuestionsContainer');
+      if (!container) return;
+
+      const kyu = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.kyu !== undefined) 
+        ? Number(omrCurrentIdentifiedExam.kyu) 
+        : 4;
+
+      let questions = [];
+      if (omrCurrentIdentifiedExam && Array.isArray(omrCurrentIdentifiedExam.questions) && omrCurrentIdentifiedExam.questions.length >= 10) {
+        questions = omrCurrentIdentifiedExam.questions;
+      } else if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getExamData === 'function') {
+        const exData = window.TKST_EXAM_GENERATOR.getExamData(kyu);
+        if (exData && Array.isArray(exData.questions)) {
+          questions = exData.questions.slice(0, 10);
+        }
       }
+
+      const optionsLetters = ['A', 'B', 'C', 'D'];
+
+      container.innerHTML = Array.from({ length: 10 }, (_, idx) => {
+        const qNum = idx + 1;
+        const currentAnswer = (Array.isArray(omrManualAnswers) && omrManualAnswers[idx]) || null;
+        const expectedAnswer = (omrCurrentExpectedKey && omrCurrentExpectedKey[idx]) || '-';
+        const isAnswered = currentAnswer !== null && currentAnswer !== undefined;
+        const isCorrect = isAnswered && currentAnswer === expectedAnswer;
+
+        const qObj = questions[idx];
+        const qTitle = qObj && qObj.question ? qObj.question : `Questão ${qNum}`;
+        const truncatedTitle = qTitle.length > 90 ? qTitle.slice(0, 87) + '...' : qTitle;
+
+        const buttonsHtml = optionsLetters.map(letter => {
+          const isSelected = currentAnswer === letter;
+          let btnStyle = 'background: rgba(255,255,255,0.06); color: #E2E8F0; border: 1px solid rgba(255,255,255,0.18); font-weight: 700;';
+          if (isSelected) {
+            if (letter === expectedAnswer) {
+              btnStyle = 'background: #059669; color: #FFFFFF; border: 2px solid #10B981; font-weight: 900; box-shadow: 0 0 10px rgba(16, 185, 129, 0.6); transform: scale(1.05);';
+            } else {
+              btnStyle = 'background: #DC2626; color: #FFFFFF; border: 2px solid #EF4444; font-weight: 900; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); transform: scale(1.05);';
+            }
+          }
+
+          return `<button type="button" class="btn btn-sm" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, '${letter}')" style="min-width: 44px; height: 38px; font-size: 0.95rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; ${btnStyle}">${letter}</button>`;
+        }).join(' ');
+
+        let statusBadge = '';
+        if (!isAnswered) {
+          statusBadge = `<span style="font-size: 0.72rem; color: #94A3B8; background: rgba(255,255,255,0.05); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">Pendente (Gabarito: <strong style="color: #F5BE00;">${expectedAnswer}</strong>)</span>`;
+        } else if (isCorrect) {
+          statusBadge = `<span style="font-size: 0.75rem; color: #34D399; font-weight: 800; background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; padding: 3px 8px; border-radius: 4px;">✅ Correta (+1,0 pt)</span>`;
+        } else {
+          statusBadge = `<span style="font-size: 0.75rem; color: #F87171; font-weight: 800; background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; padding: 3px 8px; border-radius: 4px;">❌ Incorreta · Gabarito: [ <strong style="color: #FFF;">${expectedAnswer}</strong> ]</span>`;
+        }
+
+        return `
+          <div id="omrManualQRow_${qNum}" style="background: rgba(15, 23, 42, 0.75); border: 1px solid ${isAnswered ? (isCorrect ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)') : 'var(--border-color)'}; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; transition: border-color 0.2s;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-weight: 900; color: var(--accent-gold); font-size: 0.90rem;">Q${qNum}.</span>
+                <span style="font-size: 0.80rem; color: #CBD5E1; font-weight: 600;" title="${qTitle}">${truncatedTitle}</span>
+              </div>
+              <div>${statusBadge}</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; gap: 6px;">
+                ${buttonsHtml}
+              </div>
+              <button type="button" class="btn btn-sm" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, null)" style="padding: 4px 8px; font-size: 0.72rem; color: #94A3B8; background: transparent; border: 1px dashed rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer;">
+                Em branco
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
     },
 
-    recalculateOmrScore: function() {
-      if (!omrCurrentScanResult || !omrCurrentScanResult.questions) return;
+    setManualExamAnswer: function(questionNum, letter) {
+      if (!Array.isArray(omrManualAnswers) || omrManualAnswers.length !== 10) {
+        omrManualAnswers = [null, null, null, null, null, null, null, null, null, null];
+      }
+      omrManualAnswers[questionNum - 1] = letter;
+      this.renderManualQuestionsList();
+      this.recalculateManualExamScore();
+    },
+
+    recalculateManualExamScore: function() {
       let hits = 0;
-      omrCurrentScanResult.questions.forEach((q, idx) => {
-        const expected = omrCurrentExpectedKey[idx];
-        if (q.answer && q.answer === expected) {
-          hits++;
-        }
-      });
-
-      const score = hits; // 1 ponto por questão = total 10
-      const passed = score >= 7;
-
-      const scoreDisplay = document.getElementById('omrScoreDisplay');
-      if (scoreDisplay) {
-        scoreDisplay.innerHTML = `${score.toFixed(1).replace('.', ',')} <span style="font-size: 0.9rem; color: #64748B;">/ 10,0</span>`;
+      if (Array.isArray(omrManualAnswers) && Array.isArray(omrCurrentExpectedKey)) {
+        omrManualAnswers.forEach((ans, idx) => {
+          if (ans && ans === omrCurrentExpectedKey[idx]) {
+            hits++;
+          }
+        });
       }
 
-      const hitsDisplay = document.getElementById('omrHitsDisplay');
+      const score = hits * 1.0;
+      const passed = score >= 7.0;
+
+      const scoreDisplay = document.getElementById('omrManualScoreDisplay');
+      if (scoreDisplay) {
+        scoreDisplay.innerHTML = `${score.toFixed(1).replace('.', ',')} <span style="font-size: 0.95rem; color: #64748B;">/ 10,0</span>`;
+      }
+
+      const hitsDisplay = document.getElementById('omrManualHitsDisplay');
       if (hitsDisplay) {
         hitsDisplay.textContent = `${hits} de 10 acertos (${hits * 10}%)`;
       }
 
-      const scoreBadge = document.getElementById('omrScoreBadge');
+      const scoreBadge = document.getElementById('omrManualScoreBadge');
       if (scoreBadge) {
         scoreBadge.textContent = passed ? 'APROVADO' : 'REPROVADO';
         scoreBadge.className = passed ? 'badge badge-success' : 'badge badge-danger';
         scoreBadge.style.background = passed ? '#059669' : '#DC2626';
         scoreBadge.style.color = '#FFF';
       }
+    },
+
+    overrideOmrAnswer: function(questionNum, letter) {
+      this.setManualExamAnswer(questionNum, letter);
+    },
+
+    recalculateOmrScore: function() {
+      this.recalculateManualExamScore();
     },
 
     forceGeminiOmrValidation: async function() {
@@ -16302,6 +16433,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       omrCurrentSourceImage = null;
       omrCurrentIdentifiedExam = null;
       omrCurrentExpectedKey = [];
+      omrManualAnswers = [null, null, null, null, null, null, null, null, null, null];
 
       const fileInput = document.getElementById('omrFileInput');
       if (fileInput) fileInput.value = '';
@@ -16320,22 +16452,23 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       this.goToOmrPhase(1);
     },
 
-    saveOmrOfficialGrade: async function() {
-      if (!omrCurrentScanResult || !omrCurrentScanResult.questions) {
-        alert('Nenhum resultado de exame disponível para salvar.');
+    saveManualExamGrade: async function() {
+      if (!omrCurrentIdentifiedExam || !omrCurrentExpectedKey || omrCurrentExpectedKey.length < 10) {
+        alert('Nenhuma prova identificada para salvar.');
         return;
       }
 
-      const kyuSelect = document.getElementById('omrKyuSelect');
       const kyu = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.kyu !== undefined)
         ? Number(omrCurrentIdentifiedExam.kyu)
-        : (kyuSelect ? Number(kyuSelect.value) : 4);
+        : (document.getElementById('omrKyuSelect') ? Number(document.getElementById('omrKyuSelect').value) : 4);
       const beltName = typeof getBeltNameFromKyu === 'function' ? getBeltNameFromKyu(kyu) : `Kyu ${kyu}`;
 
       let hits = 0;
-      omrCurrentScanResult.questions.forEach((q, idx) => {
-        if (q.answer && q.answer === omrCurrentExpectedKey[idx]) hits++;
-      });
+      if (Array.isArray(omrManualAnswers)) {
+        omrManualAnswers.forEach((ans, idx) => {
+          if (ans && ans === omrCurrentExpectedKey[idx]) hits++;
+        });
+      }
 
       const studentSelect = document.getElementById('omrStudentSelect');
       const studentId = studentSelect ? studentSelect.value : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : '');
@@ -16355,30 +16488,87 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         beltKyu: kyu,
         studentId: student ? student.id : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : null),
         studentName: resolvedStudentName,
-        isOmr: true,
-        examCode: (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.examId) || omrCurrentScanResult.examCode || '',
-        overallConfidence: omrCurrentScanResult.overallConfidence,
-        details: omrCurrentScanResult.questions.map((q, idx) => ({
-          num: q.num,
-          studentAnswer: q.answer,
+        isOmr: false,
+        isManualGrading: true,
+        examCode: (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.examId) || '',
+        details: (Array.isArray(omrManualAnswers) ? omrManualAnswers : []).map((ans, idx) => ({
+          num: idx + 1,
+          studentAnswer: ans,
           correctAnswer: omrCurrentExpectedKey[idx],
-          isCorrect: q.answer === omrCurrentExpectedKey[idx],
-          confidence: q.confidence,
-          doubt: q.doubt,
-          notes: q.notes
+          isCorrect: ans === omrCurrentExpectedKey[idx]
         }))
       };
 
       if (window.TKST_AUTH && typeof window.TKST_AUTH.saveQuizSubmission === 'function') {
         window.TKST_AUTH.saveQuizSubmission(submissionData);
-        showToast(`✅ Avaliação OMR salva: Nota ${hits},0 registrada para ${resolvedStudentName}!`, 'success', 3500);
-        this.closeExamOmrModal();
+        if (typeof showToast === 'function') {
+          showToast(`✅ Avaliação salva: Nota ${hits},0 registrada para ${resolvedStudentName}!`, 'success', 3500);
+        }
         if (typeof renderAdminMaster === 'function') {
           renderAdminMaster();
         }
+        // Mostra tela de resultado oficial (Fase 3) para o Sensei anotar na folha da prova
+        this.renderOmrFinalResultView(submissionData);
+        this.goToOmrPhase(3);
       } else {
         alert('Módulo de autenticação indisponível.');
       }
+    },
+
+    renderOmrFinalResultView: function(data) {
+      const finalScore = document.getElementById('omrResultFinalScore');
+      const finalBadge = document.getElementById('omrResultFinalBadge');
+      const finalHits = document.getElementById('omrResultFinalHits');
+      const studentNameEl = document.getElementById('omrResultStudentName');
+      const beltNameEl = document.getElementById('omrResultBeltName');
+      const examCodeEl = document.getElementById('omrResultExamCode');
+      const pillsContainer = document.getElementById('omrResultQuestionsPills');
+
+      const scoreNum = Number(data.score || 0);
+      const passed = scoreNum >= 7;
+
+      if (finalScore) {
+        finalScore.textContent = `${scoreNum.toFixed(1).replace('.', ',')}`;
+        finalScore.style.color = passed ? 'var(--accent-gold)' : '#EF4444';
+      }
+
+      if (finalBadge) {
+        finalBadge.textContent = passed ? 'APROVADO' : 'REPROVADO';
+        finalBadge.className = passed ? 'badge badge-success' : 'badge badge-danger';
+        finalBadge.style.background = passed ? '#059669' : '#DC2626';
+        finalBadge.style.color = '#FFF';
+      }
+
+      if (finalHits) {
+        finalHits.textContent = `${scoreNum} de 10 acertos (${scoreNum * 10}%)`;
+      }
+
+      if (studentNameEl) studentNameEl.textContent = data.studentName || 'Aluno TKST';
+      if (beltNameEl) beltNameEl.textContent = data.beltLevel || '-';
+      if (examCodeEl) examCodeEl.textContent = data.examCode || '-';
+
+      if (pillsContainer && Array.isArray(data.details)) {
+        pillsContainer.innerHTML = data.details.map(d => {
+          const isOk = d.isCorrect;
+          const bg = isOk ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+          const border = isOk ? '#10B981' : '#EF4444';
+          const color = isOk ? '#34D399' : '#F87171';
+          const ansLabel = d.studentAnswer ? d.studentAnswer : 'Ø';
+          const tag = isOk ? '✓' : `(Gab: ${d.correctAnswer})`;
+          return `
+            <div style="background: ${bg}; border: 1px solid ${border}; border-radius: 6px; padding: 6px 4px; text-align: center;">
+              <div style="font-size: 0.68rem; color: #94A3B8; font-weight: 700;">Q${d.num}</div>
+              <div style="font-size: 0.88rem; font-weight: 900; color: ${color};">
+                ${ansLabel} <span style="font-size: 0.72rem; font-weight: 700;">${tag}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    },
+
+    saveOmrOfficialGrade: async function() {
+      await this.saveManualExamGrade();
     }
   };
 
@@ -16386,6 +16576,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
   let omrCurrentScanResult = null;
   let omrCurrentSourceImage = null;
   let omrCurrentExpectedKey = [];
+  let omrManualAnswers = [null, null, null, null, null, null, null, null, null, null];
   let omrCaptureMode = 'card';
   let omrCurrentPhase = 1;
   let omrCurrentIdentifiedExam = null;
