@@ -2560,8 +2560,8 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.78rem; padding: 6px 14px; font-weight: 800; background: #F5BE00; color: #000; border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(245, 190, 0, 0.35);" title="Corrigir Prova com Câmera ou Scanner OMR">
-                <i class="fas fa-camera"></i> Corrigir com Câmera / OMR
+              <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.78rem; padding: 6px 14px; font-weight: 800; background: #F5BE00; color: #000; border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(245, 190, 0, 0.35);" title="Corrigir Prova">
+                <i class="fas fa-pen-to-square"></i> Corrigir prova
               </button>
               <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_AUTH.pullQuizSubmissionsFromCloud().then(() => renderAdminMaster())" style="font-size: 0.78rem; padding: 6px 12px; color: var(--accent-gold); border-color: rgba(255, 183, 3, 0.4); display: inline-flex; align-items: center; gap: 6px;" title="Buscar os simulados mais recentes salvos na nuvem">
                 <i class="fas fa-sync-alt"></i> Atualizar da Nuvem
@@ -2833,8 +2833,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-gold" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 800; color: #000; background: #F5BE00; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.35);" title="Corrigir Prova Teórica com Câmera ou Scanner OMR">
-                <i class="fas fa-camera"></i> Corrigir Prova com Câmera / OMR
+              <button class="btn btn-gold" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 800; color: #000; background: #F5BE00; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.35);" title="Corrigir Prova">
+                <i class="fas fa-pen-to-square"></i> Corrigir prova
               </button>
               <button class="btn btn-gold" onclick="window.TKST_APP.printMasterAnswerKey()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; color: #000; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.25);">
                 <i class="fas fa-key"></i> Imprimir Gabarito Geral (Todas as Faixas)
@@ -9938,8 +9938,8 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     loadDojobookCandidates: async function() {
-      // 1. In-memory cache
-      if (dojobookCandidatesCache && Array.isArray(dojobookCandidatesCache.candidatos) && dojobookCandidatesCache.candidatos.length > 0) {
+      // 1. In-memory cache (requer candidatos E alunos preenchidos)
+      if (dojobookCandidatesCache && Array.isArray(dojobookCandidatesCache.candidatos) && dojobookCandidatesCache.candidatos.length > 0 && Array.isArray(dojobookCandidatesCache.alunos) && dojobookCandidatesCache.alunos.length > 0) {
         return dojobookCandidatesCache;
       }
       // 2. LocalStorage cache
@@ -9947,7 +9947,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cached = localStorage.getItem('tkst_dojobook_candidates_cache');
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (parsed && Array.isArray(parsed.candidatos)) {
+          if (parsed && Array.isArray(parsed.candidatos) && Array.isArray(parsed.alunos) && parsed.alunos.length > 0) {
             dojobookCandidatesCache = parsed;
             // Atualiza em segundo plano silenciosamente
             setTimeout(() => window.TKST_APP.fetchDojobookCandidatesBackground(), 100);
@@ -10355,22 +10355,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
     pushGradeToDojobook: async function({ studentName, studentId, score, total, beltName, kyu, examId }) {
       try {
-        const data = await window.TKST_APP.loadDojobookCandidates();
-        const todos = [...(data.candidatos || []), ...(data.alunos || [])];
-
-        const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const isUuid = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ''));
+        const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
         const targetNorm = norm(studentName);
 
-        let match = todos.find(a => a.id === studentId);
+        let data = await window.TKST_APP.loadDojobookCandidates();
+        let todos = [...(data.candidatos || []), ...(data.alunos || [])];
+
+        const findMatch = (list) => {
+          if (!Array.isArray(list) || list.length === 0) return null;
+          // 1. Busca por ID direto (UUID) ou matrícula (cod)
+          if (studentId && String(studentId).length > 2 && !String(studentId).startsWith('temp_') && !String(studentId).startsWith('std_typed_')) {
+            const byId = list.find(a => a && (String(a.id) === String(studentId) || String(a.cod) === String(studentId) || String(a.cod) === `TKST-${studentId}`));
+            if (byId) return byId;
+          }
+          // 2. Busca por Nome Exato Normalizado
+          if (targetNorm) {
+            const byExact = list.find(a => a && a.nome && norm(a.nome) === targetNorm);
+            if (byExact) return byExact;
+
+            // 3. Busca por Contém (substring)
+            if (targetNorm.length >= 3) {
+              const byIncludes = list.find(a => a && a.nome && (norm(a.nome).includes(targetNorm) || targetNorm.includes(norm(a.nome))));
+              if (byIncludes) return byIncludes;
+            }
+
+            // 4. Busca por Primeiro Nome + Último Nome
+            if (targetNorm.includes(' ')) {
+              const parts = targetNorm.split(/\s+/).filter(p => p.length >= 2);
+              if (parts.length >= 2) {
+                const first = parts[0];
+                const last = parts[parts.length - 1];
+                const byFirstLast = list.find(a => a && a.nome && norm(a.nome).includes(first) && norm(a.nome).includes(last));
+                if (byFirstLast) return byFirstLast;
+              }
+            }
+
+            // 5. Busca por primeiro nome se for único
+            const firstName = targetNorm.split(/\s+/)[0];
+            if (firstName && firstName.length >= 3) {
+              const byFirst = list.filter(a => a && a.nome && norm(a.nome).startsWith(firstName));
+              if (byFirst.length === 1) return byFirst[0];
+            }
+          }
+          return null;
+        };
+
+        let match = findMatch(todos);
+
+        // Se não encontrou ou a lista estava vazia/antiga, busca imediatamente dados frescos da API do DojôBook
         if (!match) {
-          match = todos.find(a => norm(a.nome) === targetNorm);
-        }
-        if (!match) {
-          match = todos.find(a => norm(a.nome).includes(targetNorm) || targetNorm.includes(norm(a.nome)));
+          try {
+            console.log('[DojôBook] Buscando lista atualizada de alunos na API do DojôBook...');
+            const freshRes = await fetch(`https://dojobook-five.vercel.app/api/exames/candidatos?t=${Date.now()}`, { cache: 'no-store' });
+            if (freshRes.ok) {
+              const freshData = await freshRes.json();
+              todos = [...(freshData.candidatos || []), ...(freshData.alunos || [])];
+              dojobookCandidatesCache = freshData;
+              try { localStorage.setItem('tkst_dojobook_candidates_cache', JSON.stringify(freshData)); } catch(e) {}
+              match = findMatch(todos);
+            }
+          } catch(e) {
+            console.warn('[DojôBook] Falha ao buscar lista fresca:', e);
+          }
         }
 
-        if (match && match.id) {
-          const res = await fetch(`https://dojobook-five.vercel.app/api/alunos/${match.id}/notas-exame`, {
+        const targetId = (match && match.id) || (studentId && isUuid(studentId) ? studentId : null);
+        const targetName = (match && match.nome) || studentName;
+
+        if (targetId) {
+          console.log(`[DojôBook] Enviando nota ${score}/10 para aluno ${targetName} (${targetId})...`);
+          const res = await fetch(`https://dojobook-five.vercel.app/api/alunos/${targetId}/notas-exame`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -10379,20 +10434,52 @@ document.addEventListener('DOMContentLoaded', () => {
               data: new Date().toISOString().slice(0, 10),
               graduacao: beltName || 'Exame de Faixa',
               exam_id: examId || null,
-              origem: 'tkst-alunos-camera'
+              origem: 'tkst-alunos-correcao'
             })
           });
 
           if (res.ok) {
-            console.log(`[DojôBook] Nota ${score}/10 gravada com sucesso para ${match.nome}`);
+            console.log(`[DojôBook] ✅ Nota ${score}/10 gravada com sucesso para ${targetName} (${targetId})`);
+
+            // Atualiza cache local do DojôBook imediatamente
+            try {
+              if (dojobookCandidatesCache) {
+                const updateItem = (item) => {
+                  if (item && (String(item.id) === String(targetId) || norm(item.nome) === targetNorm)) {
+                    item.nota_teorica = Number(score);
+                    item.notas_exames = item.notas_exames || [];
+                    item.notas_exames.unshift({
+                      nota: Number(score),
+                      total: Number(total) || 10,
+                      data: new Date().toISOString().slice(0, 10),
+                      graduacao: beltName || 'Exame de Faixa'
+                    });
+                  }
+                };
+                (dojobookCandidatesCache.candidatos || []).forEach(updateItem);
+                (dojobookCandidatesCache.alunos || []).forEach(updateItem);
+                localStorage.setItem('tkst_dojobook_candidates_cache', JSON.stringify(dojobookCandidatesCache));
+              }
+            } catch(e) {}
+
             if (typeof showToast === 'function') {
-              showToast(`🥋 Nota ${score}/10 gravada na ficha de ${match.nome} no DojôBook!`, 'success');
+              showToast(`🥋 Nota ${score}/10 lançada com sucesso na ficha de ${targetName} no DojôBook!`, 'success', 4000);
             }
+            return { success: true, targetId, matchedName: targetName };
+          } else {
+            const errTxt = await res.text().catch(() => '');
+            console.warn(`[DojôBook] Resposta HTTP ${res.status}:`, errTxt);
+          }
+        } else {
+          console.warn(`[DojôBook] Aluno "${studentName}" não vinculado ao DojôBook.`);
+          if (typeof showToast === 'function') {
+            showToast(`⚠️ Aluno "${studentName}" não encontrado no DojôBook. Nota salva no portal.`, 'warning', 4000);
           }
         }
       } catch (err) {
         console.warn('[DojôBook] Erro ao sincronizar nota com DojôBook:', err);
       }
+      return { success: false };
     },
 
     onModalDojobookSearchInput: async function(query) {
@@ -16308,20 +16395,6 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       const container = document.getElementById('omrManualQuestionsContainer');
       if (!container) return;
 
-      const kyu = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.kyu !== undefined) 
-        ? Number(omrCurrentIdentifiedExam.kyu) 
-        : 4;
-
-      let questions = [];
-      if (omrCurrentIdentifiedExam && Array.isArray(omrCurrentIdentifiedExam.questions) && omrCurrentIdentifiedExam.questions.length >= 10) {
-        questions = omrCurrentIdentifiedExam.questions;
-      } else if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getExamData === 'function') {
-        const exData = window.TKST_EXAM_GENERATOR.getExamData(kyu);
-        if (exData && Array.isArray(exData.questions)) {
-          questions = exData.questions.slice(0, 10);
-        }
-      }
-
       const optionsLetters = ['A', 'B', 'C', 'D'];
 
       container.innerHTML = Array.from({ length: 10 }, (_, idx) => {
@@ -16331,49 +16404,43 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         const isAnswered = currentAnswer !== null && currentAnswer !== undefined;
         const isCorrect = isAnswered && currentAnswer === expectedAnswer;
 
-        const qObj = questions[idx];
-        const qTitle = qObj && qObj.question ? qObj.question : `Questão ${qNum}`;
-        const truncatedTitle = qTitle.length > 90 ? qTitle.slice(0, 87) + '...' : qTitle;
-
         const buttonsHtml = optionsLetters.map(letter => {
           const isSelected = currentAnswer === letter;
-          let btnStyle = 'background: rgba(255,255,255,0.06); color: #E2E8F0; border: 1px solid rgba(255,255,255,0.18); font-weight: 700;';
+          let btnStyle = 'background: rgba(255,255,255,0.06); color: #E2E8F0; border: 1px solid rgba(255,255,255,0.18); font-weight: 800;';
           if (isSelected) {
             if (letter === expectedAnswer) {
-              btnStyle = 'background: #059669; color: #FFFFFF; border: 2px solid #10B981; font-weight: 900; box-shadow: 0 0 10px rgba(16, 185, 129, 0.6); transform: scale(1.05);';
+              btnStyle = 'background: #059669; color: #FFFFFF; border: 2px solid #10B981; font-weight: 900; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);';
             } else {
-              btnStyle = 'background: #DC2626; color: #FFFFFF; border: 2px solid #EF4444; font-weight: 900; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); transform: scale(1.05);';
+              btnStyle = 'background: #DC2626; color: #FFFFFF; border: 2px solid #EF4444; font-weight: 900; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);';
             }
           }
 
-          return `<button type="button" class="btn btn-sm" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, '${letter}')" style="min-width: 44px; height: 38px; font-size: 0.95rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; ${btnStyle}">${letter}</button>`;
+          return `<button type="button" class="btn btn-sm" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, '${letter}')" style="min-width: 33px; height: 32px; font-size: 0.88rem; border-radius: 4px; padding: 0; cursor: pointer; transition: all 0.1s; ${btnStyle}">${letter}</button>`;
         }).join(' ');
 
-        let statusBadge = '';
-        if (!isAnswered) {
-          statusBadge = `<span style="font-size: 0.72rem; color: #94A3B8; background: rgba(255,255,255,0.05); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">Pendente (Gabarito: <strong style="color: #F5BE00;">${expectedAnswer}</strong>)</span>`;
-        } else if (isCorrect) {
-          statusBadge = `<span style="font-size: 0.75rem; color: #34D399; font-weight: 800; background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; padding: 3px 8px; border-radius: 4px;">✅ Correta (+1,0 pt)</span>`;
+        let statusHtml = '';
+        if (isCorrect) {
+          statusHtml = `<span style="font-size: 0.82rem;" title="Correta (+1,0 pt)">✅</span>`;
+        } else if (isAnswered) {
+          statusHtml = `<span style="font-size: 0.72rem; color: #F87171; font-weight: 800;" title="Gabarito: ${expectedAnswer}">❌ <strong style="color: #FFF;">${expectedAnswer}</strong></span>`;
         } else {
-          statusBadge = `<span style="font-size: 0.75rem; color: #F87171; font-weight: 800; background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; padding: 3px 8px; border-radius: 4px;">❌ Incorreta · Gabarito: [ <strong style="color: #FFF;">${expectedAnswer}</strong> ]</span>`;
+          statusHtml = `<button type="button" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, null)" style="background: transparent; border: none; font-size: 0.68rem; color: #64748B; font-weight: 700; cursor: pointer; padding: 0;" title="Gabarito: ${expectedAnswer}">[${expectedAnswer}]</button>`;
         }
 
+        const borderCol = isAnswered 
+          ? (isCorrect ? 'rgba(16, 185, 129, 0.45)' : 'rgba(239, 68, 68, 0.45)') 
+          : 'rgba(255,255,255,0.08)';
+
         return `
-          <div id="omrManualQRow_${qNum}" style="background: rgba(15, 23, 42, 0.75); border: 1px solid ${isAnswered ? (isCorrect ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)') : 'var(--border-color)'}; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; transition: border-color 0.2s;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-weight: 900; color: var(--accent-gold); font-size: 0.90rem;">Q${qNum}.</span>
-                <span style="font-size: 0.80rem; color: #CBD5E1; font-weight: 600;" title="${qTitle}">${truncatedTitle}</span>
-              </div>
-              <div>${statusBadge}</div>
+          <div id="omrManualQRow_${qNum}" style="background: rgba(15, 23, 42, 0.85); border: 1px solid ${borderCol}; border-radius: 5px; padding: 3px 6px; display: flex; align-items: center; justify-content: space-between; gap: 4px; box-sizing: border-box; min-height: 34px;">
+            <div style="display: flex; align-items: center; gap: 3px; min-width: 36px;">
+              <span style="font-weight: 900; color: var(--accent-gold); font-size: 0.85rem;">Q${qNum < 10 ? '0' + qNum : qNum}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; gap: 6px;">
-                ${buttonsHtml}
-              </div>
-              <button type="button" class="btn btn-sm" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, null)" style="padding: 4px 8px; font-size: 0.72rem; color: #94A3B8; background: transparent; border: 1px dashed rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer;">
-                Em branco
-              </button>
+            <div style="display: flex; gap: 3px;">
+              ${buttonsHtml}
+            </div>
+            <div style="min-width: 26px; text-align: right; display: flex; align-items: center; justify-content: flex-end;">
+              ${statusHtml}
             </div>
           </div>
         `;
@@ -16404,12 +16471,12 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
       const scoreDisplay = document.getElementById('omrManualScoreDisplay');
       if (scoreDisplay) {
-        scoreDisplay.innerHTML = `${score.toFixed(1).replace('.', ',')} <span style="font-size: 0.95rem; color: #64748B;">/ 10,0</span>`;
+        scoreDisplay.innerHTML = `${score.toFixed(1).replace('.', ',')} <span style="font-size: 0.72rem; color: #64748B;">/ 10</span>`;
       }
 
       const hitsDisplay = document.getElementById('omrManualHitsDisplay');
       if (hitsDisplay) {
-        hitsDisplay.textContent = `${hits} de 10 acertos (${hits * 10}%)`;
+        hitsDisplay.textContent = `(${hits}/10)`;
       }
 
       const scoreBadge = document.getElementById('omrManualScoreBadge');
@@ -16480,7 +16547,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
 
       const studentSelect = document.getElementById('omrStudentSelect');
-      const studentId = studentSelect ? studentSelect.value : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : '');
+      const studentId = (studentSelect && studentSelect.value) ? studentSelect.value : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : '');
       const allStudents = (typeof this.getAllAvailableStudentsForExam === 'function')
         ? this.getAllAvailableStudentsForExam()
         : ((window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || []);
@@ -16490,12 +16557,14 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         ? (student.nome || student.name || student.username) 
         : ((omrCurrentIdentifiedExam && (omrCurrentIdentifiedExam.studentName || omrCurrentIdentifiedExam.studentAbbr)) || 'Aluno TKST');
 
+      const targetStudentId = student ? student.id : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : null);
+
       const submissionData = {
         score: hits,
         total: 10,
         beltLevel: beltName,
         beltKyu: kyu,
-        studentId: student ? student.id : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : null),
+        studentId: targetStudentId,
         studentName: resolvedStudentName,
         isOmr: false,
         isManualGrading: true,
@@ -16508,23 +16577,40 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         }))
       };
 
+      // 1. Grava no Portal TKST
       if (window.TKST_AUTH && typeof window.TKST_AUTH.saveQuizSubmission === 'function') {
         window.TKST_AUTH.saveQuizSubmission(submissionData);
-        if (typeof showToast === 'function') {
-          showToast(`✅ Avaliação salva: Nota ${hits},0 registrada para ${resolvedStudentName}!`, 'success', 3500);
-        }
-        if (typeof renderAdminMaster === 'function') {
-          renderAdminMaster();
-        }
-        // Mostra tela de resultado oficial (Fase 3) para o Sensei anotar na folha da prova
-        this.renderOmrFinalResultView(submissionData);
-        this.goToOmrPhase(3);
-      } else {
-        alert('Módulo de autenticação indisponível.');
       }
+
+      // 2. Grava diretamente na ficha do aluno no DojôBook (API Supabase do DojôBook)
+      let dojobookResult = null;
+      try {
+        dojobookResult = await this.pushGradeToDojobook({
+          studentName: resolvedStudentName,
+          studentId: targetStudentId,
+          score: hits,
+          total: 10,
+          beltName: beltName,
+          kyu: kyu,
+          examId: submissionData.examCode
+        });
+      } catch(err) {
+        console.warn('[DojôBook] Erro ao sincronizar com DojôBook:', err);
+      }
+
+      if (typeof showToast === 'function') {
+        showToast(`✅ Avaliação salva: Nota ${hits},0 registrada para ${resolvedStudentName}!`, 'success', 3500);
+      }
+      if (typeof renderAdminMaster === 'function') {
+        renderAdminMaster();
+      }
+
+      // Mostra tela de resultado oficial (Fase 3) para o Sensei anotar na folha da prova
+      this.renderOmrFinalResultView(submissionData, dojobookResult);
+      this.goToOmrPhase(3);
     },
 
-    renderOmrFinalResultView: function(data) {
+    renderOmrFinalResultView: function(data, dojobookResult) {
       const finalScore = document.getElementById('omrResultFinalScore');
       const finalBadge = document.getElementById('omrResultFinalBadge');
       const finalHits = document.getElementById('omrResultFinalHits');
@@ -16532,6 +16618,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       const beltNameEl = document.getElementById('omrResultBeltName');
       const examCodeEl = document.getElementById('omrResultExamCode');
       const pillsContainer = document.getElementById('omrResultQuestionsPills');
+      const dojoNotice = document.getElementById('omrResultDojobookNotice');
 
       const scoreNum = Number(data.score || 0);
       const passed = scoreNum >= 7;
@@ -16555,6 +16642,22 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (studentNameEl) studentNameEl.textContent = data.studentName || 'Aluno TKST';
       if (beltNameEl) beltNameEl.textContent = data.beltLevel || '-';
       if (examCodeEl) examCodeEl.textContent = data.examCode || '-';
+
+      if (dojoNotice) {
+        if (dojobookResult && dojobookResult.success) {
+          dojoNotice.innerHTML = `<i class="fas fa-check-circle" style="color: #10B981;"></i> <span>Nota <strong>${scoreNum},0</strong> lançada com sucesso na ficha de <strong>${dojobookResult.matchedName || data.studentName}</strong> no DojôBook!</span>`;
+          dojoNotice.style.display = 'inline-flex';
+          dojoNotice.style.background = 'rgba(16, 185, 129, 0.15)';
+          dojoNotice.style.borderColor = '#10B981';
+          dojoNotice.style.color = '#34D399';
+        } else {
+          dojoNotice.innerHTML = `<i class="fas fa-check-double" style="color: #38BDF8;"></i> <span>Nota salva no Portal TKST e vinculada ao aluno.</span>`;
+          dojoNotice.style.display = 'inline-flex';
+          dojoNotice.style.background = 'rgba(56, 189, 248, 0.12)';
+          dojoNotice.style.borderColor = '#38BDF8';
+          dojoNotice.style.color = '#38BDF8';
+        }
+      }
 
       if (pillsContainer && Array.isArray(data.details)) {
         pillsContainer.innerHTML = data.details.map(d => {
