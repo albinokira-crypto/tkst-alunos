@@ -1626,7 +1626,7 @@ window.TKST_EXAM_GENERATOR = {
     return `
       @page {
         size: A4 portrait;
-        margin: 3.5mm 4.5mm 3.5mm 4.5mm;
+        margin: 2.5mm 4mm 2.5mm 4mm;
       }
       * {
         box-sizing: border-box;
@@ -1673,9 +1673,9 @@ window.TKST_EXAM_GENERATOR = {
         break-inside: avoid !important;
       }
       .exam-portrait-sheet {
-        height: 282mm !important;
-        min-height: 280mm !important;
-        max-height: 283mm !important;
+        height: 288mm !important;
+        min-height: 284mm !important;
+        max-height: 288mm !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
         display: flex !important;
@@ -1688,7 +1688,7 @@ window.TKST_EXAM_GENERATOR = {
         break-inside: avoid !important;
       }
       .exam-page-break-wrapper {
-        page-break-after: always;
+        page-break-after: avoid;
         page-break-inside: avoid;
       }
       .exam-page-break-wrapper:last-child {
@@ -2047,17 +2047,17 @@ window.TKST_EXAM_GENERATOR = {
         box-shadow: 0.5px 0.5px 0px rgba(15, 23, 42, 0.4) !important;
       }
 
-      /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 282mm DE ALTURA TOTAL) */
+      /* 2 COLUNAS DE QUESTÕES EM MODO RETRATO (A4 VERTICAL - 288mm DE ALTURA TOTAL) */
       .exam-portrait-grid-2col {
         position: relative !important;
         z-index: 1 !important;
-        flex: 1 1 auto !important;
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 4px 14px !important;
-        height: calc(282mm - 42mm) !important;
-        min-height: calc(282mm - 42mm) !important;
-        max-height: calc(282mm - 42mm) !important;
+        gap: 2px 12px !important;
+        height: auto !important;
+        max-height: calc(288mm - 52mm) !important;
         margin-bottom: 0 !important;
         box-sizing: border-box !important;
       }
@@ -2066,17 +2066,17 @@ window.TKST_EXAM_GENERATOR = {
         flex-direction: column !important;
         justify-content: space-between !important;
         height: 100% !important;
-        gap: 3px !important;
+        gap: 2px !important;
       }
       .exam-portrait-q-card {
-        border-bottom: 1.2px dashed #CBD5E1 !important;
+        border-bottom: 1px dashed #CBD5E1 !important;
         padding-top: 1px !important;
-        padding-bottom: 2px !important;
+        padding-bottom: 1.5px !important;
         page-break-inside: avoid !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 1.5px !important;
+        gap: 1px !important;
         flex: 1 1 0 !important;
         min-height: 0 !important;
         box-sizing: border-box !important;
@@ -2087,14 +2087,14 @@ window.TKST_EXAM_GENERATOR = {
       }
 
       .exam-q-title-row {
-        font-size: 10pt !important;
-        line-height: 1.22 !important;
+        font-size: 8.8pt !important;
+        line-height: 1.2 !important;
         font-weight: 800 !important;
         color: #0F172A !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 1.5px !important;
       }
       .exam-q-number {
-        font-size: 10.4pt !important;
+        font-size: 9pt !important;
         font-weight: 900 !important;
         color: #0F172A !important;
         margin-right: 2px !important;
@@ -2105,7 +2105,7 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        gap: 2.2px !important;
+        gap: 1.8px !important;
         width: 100% !important;
         flex: 1 1 auto !important;
       }
@@ -2113,7 +2113,7 @@ window.TKST_EXAM_GENERATOR = {
         display: flex !important;
         align-items: center !important;
         gap: 5px !important;
-        font-size: 9.3pt !important;
+        font-size: 7.8pt !important;
         line-height: 1.2 !important;
         white-space: normal !important;
       }
@@ -2396,14 +2396,15 @@ window.TKST_EXAM_GENERATOR = {
           @media print {
             @page {
               size: A4 portrait;
-              margin: 2.8mm 4.5mm 2.8mm 4.5mm;
+              margin: 2.5mm 4mm 2.5mm 4mm;
             }
             html, body {
               margin: 0 !important;
               padding: 0 !important;
               background: #FFF !important;
               width: 100% !important;
-              height: auto !important;
+              height: 100% !important;
+              overflow: hidden !important;
             }
             .no-print-bar {
               display: none !important;
@@ -2415,9 +2416,11 @@ window.TKST_EXAM_GENERATOR = {
             }
             .single-page-a4,
             .single-page-wrapper,
-            .exam-page-break-wrapper:last-child {
+            .exam-page-break-wrapper {
               page-break-after: avoid !important;
               break-after: avoid !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
             }
           }
         </style>

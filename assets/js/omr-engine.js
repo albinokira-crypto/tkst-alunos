@@ -208,16 +208,14 @@
       const optMap = isCol2 ? col2Options : col1Options;
       const y = rowStartY + (rowIndex + 0.5) * rowHeight;
 
-      const fillRatios = {};
-      const darknessScores = {};
+      const rawAvgGrays = {};
       const sampleBoxes = {};
       const sampleRadius = Math.round(w * 0.034); // ~17px de raio em 500px
 
+      // 1. Amostragem preliminar de luminância de cada alternativa para estabelecer linha de base local do papel
       ['A', 'B', 'C', 'D'].forEach(opt => {
         const optCenterX = optMap[opt] * w;
         const optCenterY = y;
-
-        let darkPixels = 0;
         let sumLuminance = 0;
         let totalSampled = 0;
 
@@ -228,8 +226,41 @@
               const py = Math.round(optCenterY + dy);
               if (px >= 0 && px < w && py >= 0 && py < h) {
                 const idx = py * w + px;
-                if (binaryData[idx] === 1) darkPixels++;
                 if (grayData) sumLuminance += grayData[idx];
+                totalSampled++;
+              }
+            }
+          }
+        }
+        rawAvgGrays[opt] = totalSampled > 0 ? (sumLuminance / totalSampled) : meanLuminance;
+      });
+
+      // Linha de base local do papel para a questão (média das 3 opções mais claras / sem marcação na mesma linha)
+      const sortedGrays = Object.values(rawAvgGrays).sort((a, b) => b - a);
+      const rowPaperBase = (sortedGrays[0] + sortedGrays[1] + sortedGrays[2]) / 3;
+      // Limiar dinâmico local de grafite (lápis) baseado no papel desta linha específica
+      const localPencilThreshold = Math.min(218, Math.max(70, rowPaperBase * 0.90));
+
+      const fillRatios = {};
+      const darknessScores = {};
+
+      ['A', 'B', 'C', 'D'].forEach(opt => {
+        const optCenterX = optMap[opt] * w;
+        const optCenterY = y;
+        let darkPixels = 0;
+        let totalSampled = 0;
+
+        for (let dy = -sampleRadius; dy <= sampleRadius; dy++) {
+          for (let dx = -sampleRadius; dx <= sampleRadius; dx++) {
+            if (dx * dx + dy * dy <= sampleRadius * sampleRadius) {
+              const px = Math.round(optCenterX + dx);
+              const py = Math.round(optCenterY + dy);
+              if (px >= 0 && px < w && py >= 0 && py < h) {
+                const idx = py * w + px;
+                const g = grayData ? grayData[idx] : (binaryData[idx] === 1 ? 0 : 255);
+                if (g < localPencilThreshold || binaryData[idx] === 1) {
+                  darkPixels++;
+                }
                 totalSampled++;
               }
             }
@@ -237,9 +268,8 @@
         }
 
         const ratio = totalSampled > 0 ? darkPixels / totalSampled : 0;
-        const avgGray = totalSampled > 0 ? (sumLuminance / totalSampled) : meanLuminance;
-        // Mede o escurecimento relativo do quadradinho em relação ao papel de fundo (grafite do lápis)
-        const darkness = Math.max(0, meanLuminance - avgGray);
+        // Mede o contraste real do grafite em relação ao papel circundante da questão
+        const darkness = Math.max(0, rowPaperBase - rawAvgGrays[opt]);
 
         fillRatios[opt] = ratio;
         darknessScores[opt] = darkness;
@@ -252,10 +282,10 @@
         };
       });
 
-      // Pontuação combinada ponderada (binário + profundidade do grafite)
+      // Pontuação combinada ponderada (binário local + profundidade do grafite/lápis)
       const combinedScores = {};
       ['A', 'B', 'C', 'D'].forEach(opt => {
-        combinedScores[opt] = (fillRatios[opt] * 0.65) + ((darknessScores[opt] / 100) * 0.35);
+        combinedScores[opt] = (fillRatios[opt] * 0.55) + ((darknessScores[opt] / 100) * 0.45);
       });
 
       // Ordena opções pela pontuação combinada decrescente
@@ -272,41 +302,41 @@
       let doubt = false;
       let notes = '';
 
-      // Regras de Decisão OMR com suporte total a CANETA e LÁPIS (GRAFITE):
-      // 1. Marcação Clara e Nítida (Caneta escura ou lápis bem preenchido)
-      if ((topRatio >= 0.22 && topRatio >= secondRatio * 1.45) || (topDarkness >= 28 && topDarkness >= secondDarkness * 1.50)) {
+      // Regras de Decisão OMR calibradas com alta sensibilidade para CANETA e LÁPIS (GRAFITE):
+      // 1. Marcação Clara e Nítida (Caneta escura ou lápis firme preenchido)
+      if ((topRatio >= 0.20 && topRatio >= secondRatio * 1.40) || (topDarkness >= 22 && topDarkness >= secondDarkness * 1.45)) {
         detectedAnswer = topOpt;
-        confidence = Math.min(0.99, 0.82 + (topRatio - secondRatio) * 0.4);
+        confidence = Math.min(0.99, 0.85 + (topRatio - secondRatio) * 0.4);
         doubt = false;
         notes = 'Marcação nítida';
       }
-      // 2. Marcação a Lápis (Grafite mais claro, traços médios ou sombreamento)
-      else if ((topRatio >= 0.14 || topDarkness >= 18) && (topCombined >= secondCombined * 1.30)) {
+      // 2. Marcação a Lápis (Grafite com contraste relativo evidente sobre o papel)
+      else if ((topRatio >= 0.11 || topDarkness >= 12) && (topCombined >= secondCombined * 1.25)) {
         detectedAnswer = topOpt;
-        confidence = Math.min(0.96, 0.78 + (topDarkness / 120));
+        confidence = Math.min(0.96, 0.80 + (topDarkness / 100));
         doubt = false;
         notes = `Marcação a lápis detectada em [${topOpt}]`;
       }
       // 3. Questão em Branco (sem marcação evidente em nenhuma alternativa)
-      else if (topRatio < 0.10 && topDarkness < 12) {
+      else if (topRatio < 0.08 && topDarkness < 8) {
         detectedAnswer = null;
-        confidence = 0.94;
+        confidence = 0.95;
         doubt = false;
         notes = 'Questão em branco (sem preenchimento)';
       }
       // 4. Possível Rasura ou Dupla Marcação
-      else if ((topRatio >= 0.18 && secondRatio >= 0.14) || (topDarkness >= 22 && secondDarkness >= 18)) {
+      else if ((topRatio >= 0.16 && secondRatio >= 0.12) || (topDarkness >= 18 && secondDarkness >= 14)) {
         detectedAnswer = topOpt;
         confidence = 0.48;
         doubt = true;
         notes = `Possível rasura entre [${topOpt}] e [${secondOpt}]`;
       }
       // 5. Marcação Leve / Toque de Lápis
-      else if (topRatio >= 0.10 || topDarkness >= 12) {
+      else if (topRatio >= 0.08 || topDarkness >= 8) {
         detectedAnswer = topOpt;
-        confidence = 0.65;
-        doubt = true;
-        notes = `Marcação leve em [${topOpt}] (${Math.round(topRatio * 100)}%)`;
+        confidence = 0.68;
+        doubt = false;
+        notes = `Marcação a lápis detectada em [${topOpt}] (${Math.round(topRatio * 100)}%)`;
       } else {
         detectedAnswer = topOpt;
         confidence = 0.55;

@@ -211,7 +211,14 @@ module.exports = async (req, res) => {
     // Hidrata provas geradas do /tmp e assets/data/generated-exams.json
     try {
       const tmpExams = readGeneratedExamsFromTmp() || {};
-      inMemoryData.generated_exams = { ...defaultGeneratedExams, ...tmpExams, ...(inMemoryData.generated_exams || {}) };
+      let diskExams = {};
+      try {
+        const localExamsPath = path.resolve(process.cwd(), 'assets/data/generated-exams.json');
+        if (fs.existsSync(localExamsPath)) {
+          diskExams = JSON.parse(fs.readFileSync(localExamsPath, 'utf8')) || {};
+        }
+      } catch(e) {}
+      inMemoryData.generated_exams = { ...defaultGeneratedExams, ...diskExams, ...tmpExams, ...(inMemoryData.generated_exams || {}) };
     } catch(e) {}
 
     return res.status(200).json({

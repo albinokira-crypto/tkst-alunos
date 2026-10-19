@@ -2019,6 +2019,22 @@
 
   async function pullFromCloud() {
     try {
+      // 0. Hidrata provas geradas diretamente do arquivo JSON estático
+      try {
+        const examsRes = await fetch('./assets/data/generated-exams.json?_=' + Date.now(), { cache: 'no-store' });
+        if (examsRes.ok) {
+          const fileExams = await examsRes.json();
+          if (fileExams && typeof fileExams === 'object') {
+            let localExams = {};
+            try { localExams = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
+            const merged = { ...fileExams, ...localExams };
+            if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+            Object.assign(window.TKST_GENERATED_EXAMS_CACHE, merged);
+            safeLocalStorageSet('tkst_generated_exams', JSON.stringify(merged));
+          }
+        }
+      } catch(e) {}
+
       // 1. Endpoint dedicado do quiz bank (mais confiável — dados nunca são sobrescritos)
       pullQuizBankFromCloud().catch(() => {});
 
@@ -4438,6 +4454,7 @@
           },
           body: JSON.stringify({
             type: 'tkst_exam_generated',
+            senderId: CLIENT_SENDER_ID,
             record: record,
             timestamp: Date.now()
           })
@@ -4493,7 +4510,36 @@
       const local = this.getGeneratedExam(baseCode) || this.getGeneratedExam(clean);
       if (local && (local.studentName || local.studentAbbr)) return local;
 
-      // 2. Tenta buscar em /api/sync com timeout estendido de 3.5s para conexões móveis
+      // 2. Tenta buscar diretamente do arquivo estático de provas geradas
+      try {
+        const resFile = await fetch('./assets/data/generated-exams.json?_=' + Date.now(), { cache: 'no-store' });
+        if (resFile.ok) {
+          const examsData = await resFile.json();
+          if (examsData && typeof examsData === 'object') {
+            if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+            Object.assign(window.TKST_GENERATED_EXAMS_CACHE, examsData);
+            let store = {};
+            try { store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
+            Object.assign(store, examsData);
+            safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
+
+            let match = examsData[baseCode] || examsData[clean];
+            if (!match) {
+              match = Object.values(examsData).find(x => {
+                if (!x) return false;
+                const xCode = String(x.examId || x.baseExamId || '').replace(/^#/, '').toUpperCase().split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+                return xCode === baseCode;
+              });
+            }
+            if (match) {
+              handleIncomingExamRecord(match);
+              if (match.studentName || match.studentAbbr) return match;
+            }
+          }
+        }
+      } catch(e) {}
+
+      // 3. Tenta buscar em /api/sync com timeout estendido de 3.5s para conexões móveis
       try {
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 3500);

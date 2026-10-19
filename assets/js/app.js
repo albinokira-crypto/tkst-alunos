@@ -77,10 +77,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } catch(e) {}
   let examGeneratorSelectedKyu = 6;
+  try {
+    const savedGenKyu = sessionStorage.getItem('tkst_exam_generator_kyu');
+    if (savedGenKyu !== null && !isNaN(parseInt(savedGenKyu, 10))) {
+      examGeneratorSelectedKyu = parseInt(savedGenKyu, 10);
+    }
+  } catch(e) {}
   let examGeneratorFormat = 'quiz'; // Modelo oficial de múltipla escolha
   let examPreviewGenerated = false; // false, 'exam', 'key'
+  try {
+    const savedPreview = sessionStorage.getItem('tkst_exam_preview_mode');
+    if (savedPreview === 'exam' || savedPreview === 'key') {
+      examPreviewGenerated = savedPreview;
+    }
+  } catch(e) {}
   let examCurrentRandomQuestions = null; // 10 questões sorteadas ativas
+  try {
+    const savedQuestions = sessionStorage.getItem('tkst_exam_random_questions');
+    if (savedQuestions) {
+      examCurrentRandomQuestions = JSON.parse(savedQuestions);
+    }
+  } catch(e) {}
   let examSelectedDojobookStudent = null; // Aluno selecionado do DojôBook para a prova
+  try {
+    const savedStudent = sessionStorage.getItem('tkst_exam_selected_student');
+    if (savedStudent) {
+      examSelectedDojobookStudent = JSON.parse(savedStudent);
+    }
+    const savedTyped = sessionStorage.getItem('tkst_exam_typed_student');
+    if (savedTyped) {
+      window._examTypedStudentName = savedTyped;
+    }
+  } catch(e) {}
   let dojobookCandidatesCache = null; // Cache de alunos e candidatos do DojôBook
   let quizModalTempImage = '';
 
@@ -107,14 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.90';
+  const APP_DISPLAY_VERSION = 'V-2.92';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.90. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.92. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
     appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.90)?')) {
+      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.92)?')) {
         try {
           localStorage.removeItem('tkst_quiz_official_stamp');
         } catch(e) {}
@@ -136,13 +164,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Verificação periódica e automática de nova versão no servidor (auto-upgrade silencioso)
+  // Verificação periódica e automática de nova versão no servidor (auto-upgrade silencioso e seguro)
   setInterval(async () => {
     try {
       const vRes = await fetch('./assets/data/version.json?_=' + Date.now(), { cache: 'no-store' });
       if (vRes.ok) {
         const vData = await vRes.json();
         if (vData && vData.version && vData.version !== APP_DISPLAY_VERSION) {
+          // Bloqueia qualquer reload se o usuário estiver gerando prova, visualizando prévia ou preenchendo formulários
+          if (examPreviewGenerated || (typeof shouldSkipRerender === 'function' && shouldSkipRerender())) {
+            return;
+          }
           console.log('Nova versão detectada:', vData.version, 'Versão atual:', APP_DISPLAY_VERSION);
           if ('caches' in window) {
             try {
@@ -160,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } catch(e) {}
-  }, 15000);
+  }, 30000);
 
   // =========================================================================
   // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)
@@ -10256,6 +10288,10 @@ document.addEventListener('DOMContentLoaded', () => {
     selectDojobookCandidate: function(candidate) {
       window._examTypedStudentName = '';
       examSelectedDojobookStudent = candidate;
+      try {
+        sessionStorage.setItem('tkst_exam_selected_student', JSON.stringify(candidate));
+        sessionStorage.removeItem('tkst_exam_typed_student');
+      } catch(e) {}
       const targetBelt = candidate.vai_para || candidate.graduacao_destino || candidate.graduacao_atual || '';
       
       const s = String(targetBelt).toLowerCase();
@@ -10271,9 +10307,12 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (s.includes('sandan') || s.includes('3º dan')) targetKyu = -2;
 
       examGeneratorSelectedKyu = targetKyu;
+      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(targetKyu)); } catch(e) {}
       examCurrentRandomQuestions = null;
+      try { sessionStorage.removeItem('tkst_exam_random_questions'); } catch(e) {}
       if (examPreviewGenerated && window.TKST_EXAM_GENERATOR) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch(e) {}
       }
       renderAdminMaster();
       if (typeof showToast === 'function') {
@@ -10284,6 +10323,10 @@ document.addEventListener('DOMContentLoaded', () => {
     clearExamDojobookStudent: function() {
       window._examTypedStudentName = '';
       examSelectedDojobookStudent = null;
+      try {
+        sessionStorage.removeItem('tkst_exam_selected_student');
+        sessionStorage.removeItem('tkst_exam_typed_student');
+      } catch(e) {}
       renderAdminMaster();
       setTimeout(() => {
         const inp = document.getElementById('examDojobookStudentSearch');
@@ -10488,7 +10531,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setExamGeneratorKyu: (kyu) => {
       examGeneratorSelectedKyu = parseInt(kyu);
+      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(examGeneratorSelectedKyu)); } catch(e) {}
       examCurrentRandomQuestions = null;
+      try { sessionStorage.removeItem('tkst_exam_random_questions'); } catch(e) {}
       renderAdminMaster();
     },
     setExamGeneratorFormat: (fmt) => {
@@ -10500,16 +10545,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const typedInp = document.getElementById('examDojobookStudentSearch');
       if (typedInp && typedInp.value.trim()) {
         window._examTypedStudentName = typedInp.value.trim();
+        try { sessionStorage.setItem('tkst_exam_typed_student', window._examTypedStudentName); } catch(e) {}
       }
       if (window.TKST_EXAM_GENERATOR) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch(e) {}
       }
       examPreviewGenerated = mode;
+      try { sessionStorage.setItem('tkst_exam_preview_mode', mode); } catch(e) {}
+      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(examGeneratorSelectedKyu)); } catch(e) {}
+      if (examSelectedDojobookStudent) {
+        try { sessionStorage.setItem('tkst_exam_selected_student', JSON.stringify(examSelectedDojobookStudent)); } catch(e) {}
+      }
       renderAdminMaster();
     },
     rerollExamQuestions: () => {
       if (window.TKST_EXAM_GENERATOR) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
+        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch(e) {}
         if (typeof showToast === 'function') {
           showToast('🎲 10 novas questões sorteadas com sucesso!', 'success');
         }
@@ -10518,6 +10571,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     closeExamPreview: () => {
       examPreviewGenerated = false;
+      try { sessionStorage.removeItem('tkst_exam_preview_mode'); } catch(e) {}
       renderAdminMaster();
     },
     printCurrentExam: () => {
@@ -15701,26 +15755,29 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       let exam = null;
       let matchedStudent = null;
 
-      // 1. Procura aluno correspondente em todas as bases (DojôBook + Portal TKST)
+      // 1. Procura aluno correspondente em todas as bases apenas se a busca for explicitamente por matrícula/aluno (#140, TKST-140, 140)
+      const isExplicitStudentQuery = rawInput.startsWith('#') || clean.startsWith('TKST') || (/^\d{1,4}$/.test(clean) && !baseCode);
       const allAvailable = (typeof this.getAllAvailableStudentsForExam === 'function')
         ? this.getAllAvailableStudentsForExam()
         : [];
 
-      const numMatch = clean.match(/\d+/);
-      const inputDigits = numMatch ? numMatch[0] : '';
+      if (isExplicitStudentQuery) {
+        const numMatch = clean.match(/\d+/);
+        const inputDigits = numMatch ? numMatch[0] : '';
 
-      matchedStudent = allAvailable.find(s => {
-        if (!s) return false;
-        const sCod = String(s.cod || '').toUpperCase().trim();
-        const sId = String(s.id || '').toUpperCase().trim();
-        const sNome = String(s.nome || s.name || '').toUpperCase().trim();
+        matchedStudent = allAvailable.find(s => {
+          if (!s) return false;
+          const sCod = String(s.cod || '').toUpperCase().trim();
+          const sId = String(s.id || '').toUpperCase().trim();
+          const sNome = String(s.nome || s.name || '').toUpperCase().trim();
 
-        // Casos como "TKST-140" igual a "140", "#140" ou "TKST-140"
-        if (sCod && (sCod === clean || sCod === `TKST-${clean}` || (inputDigits && sCod.endsWith(`-${inputDigits}`)))) return true;
-        if (sId && (sId === clean || (inputDigits && sId === inputDigits))) return true;
-        if (clean.length >= 3 && sNome.includes(clean)) return true;
-        return false;
-      });
+          // Casos como "TKST-140" igual a "140", "#140" ou "TKST-140"
+          if (sCod && (sCod === clean || sCod === `TKST-${clean}` || (inputDigits && sCod.endsWith(`-${inputDigits}`)))) return true;
+          if (sId && (sId === clean || (inputDigits && sId === inputDigits))) return true;
+          if (clean.length >= 3 && sNome.includes(clean)) return true;
+          return false;
+        });
+      }
 
       // 2. Se baseCode tem 5 caracteres, busca o exame cadastrado diretamente
       if (baseCode && baseCode.length === 5) {
@@ -15729,6 +15786,12 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         }
         if (!exam && window.TKST_EXAM_GENERATOR && window.TKST_EXAM_GENERATOR.KNOWN_EXAMS) {
           exam = window.TKST_EXAM_GENERATOR.KNOWN_EXAMS[baseCode];
+        }
+        if (!exam) {
+          try {
+            const cache = window.TKST_GENERATED_EXAMS_CACHE || {};
+            exam = cache[baseCode] || cache[clean];
+          } catch(e) {}
         }
         if (!exam) {
           try {
@@ -15759,7 +15822,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         } catch(e) {}
       }
 
-      // 4. Busca instantânea na nuvem (/api/sync) se não tiver aluno local
+      // 4. Busca instantânea no backend / arquivo estático de provas geradas se não tiver aluno local
       if ((!exam || !(exam.studentName || exam.studentAbbr)) && window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
         try {
           const qCode = (exam && exam.examId) || (baseCode.length === 5 ? baseCode : clean);
