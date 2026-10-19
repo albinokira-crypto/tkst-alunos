@@ -135,37 +135,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.92';
+  const APP_DISPLAY_VERSION = 'V-2.93';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
-    appVersionBadgeEl.title = 'Versão atual V-2.92. Toque para atualizar e limpar cache.';
+    appVersionBadgeEl.title = 'Versão atual V-2.93. Toque para atualizar e limpar cache.';
     appVersionBadgeEl.style.cursor = 'pointer';
-    appVersionBadgeEl.onclick = () => {
-      if (confirm('Deseja recarregar o aplicativo e limpar o cache para a versão mais recente (V-2.92)?')) {
-        try {
-          localStorage.removeItem('tkst_quiz_official_stamp');
-        } catch(e) {}
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(regs => {
-            regs.forEach(r => r.unregister());
-          });
-        }
-        if ('caches' in window) {
-          caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))).then(() => {
-            window.location.reload(true);
-          }).catch(() => {
-            window.location.reload(true);
-          });
-        } else {
-          window.location.reload(true);
-        }
+    appVersionBadgeEl.onclick = async () => {
+      if (typeof showToast === 'function') {
+        showToast('🔄 Limpando cache e atualizando para V-2.93...', 'info', 2500);
       }
+      try {
+        localStorage.removeItem('tkst_quiz_official_stamp');
+      } catch(e) {}
+      if ('serviceWorker' in navigator) {
+        try {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          regs.forEach(r => r.unregister());
+        } catch(e) {}
+      }
+      if ('caches' in window) {
+        try {
+          const names = await caches.keys();
+          await Promise.all(names.map(name => caches.delete(name)));
+        } catch(e) {}
+      }
+      setTimeout(() => {
+        window.location.reload(true);
+      }, 400);
     };
   }
 
-  // Verificação periódica e automática de nova versão no servidor (auto-upgrade silencioso e seguro)
-  setInterval(async () => {
+  // Verificação imediata e periódica de nova versão no servidor (auto-upgrade silencioso e seguro)
+  async function checkAppVersionUpdate() {
     try {
       const vRes = await fetch('./assets/data/version.json?_=' + Date.now(), { cache: 'no-store' });
       if (vRes.ok) {
@@ -192,7 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } catch(e) {}
-  }, 30000);
+  }
+
+  // Executa checagem imediatamente ao abrir o app
+  checkAppVersionUpdate();
+  // Repete a cada 15 segundos
+  setInterval(checkAppVersionUpdate, 15000);
 
   // =========================================================================
   // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)

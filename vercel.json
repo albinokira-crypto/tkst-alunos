@@ -62,6 +62,13 @@
       "dest": "/assets/data/version.json"
     },
     {
+      "src": "/index.html",
+      "headers": {
+        "cache-control": "no-cache, no-store, must-revalidate"
+      },
+      "dest": "/index.html"
+    },
+    {
       "src": "/api/sync",
       "dest": "/api/sync.js"
     },

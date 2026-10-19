@@ -32,8 +32,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=292">
-  <link rel="stylesheet" href="assets/css/components.css?v=292">
+  <link rel="stylesheet" href="assets/css/main.css?v=293">
+  <link rel="stylesheet" href="assets/css/components.css?v=293">
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
@@ -912,9 +912,28 @@
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
+      let isRefreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          window.location.reload();
+        }
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js?v=293', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
+
+          reg.addEventListener('updatefound', () => {
+            const installing = reg.installing;
+            if (installing) {
+              installing.addEventListener('statechange', () => {
+                if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                  installing.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
         }).catch(err => {
           console.log('SW registration note:', err);
         });
