@@ -455,37 +455,26 @@
     }
   }
 
-  // Recebe e mescla lotes de questões transmitidos via nuvem NTFY
+  let _chunkSaveTimeout = null;
+  let _chunkBankMap = null;
+
+  // Recebe e mescla lotes de questões transmitidos via nuvem NTFY com debouncing
   function handleIncomingQuizChunk(data) {
     if (!data || (!Array.isArray(data.questions) && !Array.isArray(data.bank))) return;
     const incoming = Array.isArray(data.questions) ? data.questions : data.bank;
     if (incoming.length === 0) return;
     try {
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
-      let localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
-      if (!Array.isArray(localSaved) || localSaved.length === 0) {
-        try {
-          localSaved = JSON.parse(localStorage.getItem('tkst_quiz_vault_permanent')) || [];
-        } catch(e) {}
-      }
-      const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
-      const bankMap = new Map();
-      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
-      if (Array.isArray(localSaved)) {
-        restoreDefaultImages(localSaved).forEach(q => {
-          if (!deletedIds.includes(q.id)) {
-            const vaultQ = bankMap.get(q.id);
-            if (vaultQ) {
-              q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
-            }
-            bankMap.set(q.id, q);
-          }
-        });
+      if (!_chunkBankMap) {
+        _chunkBankMap = new Map();
+        const curBank = window.TKST_QUIZ_BANK || [];
+        curBank.forEach(q => { if (q && q.id) _chunkBankMap.set(q.id, q); });
+        const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+        defaultList.forEach(q => { if (!_chunkBankMap.has(q.id)) _chunkBankMap.set(q.id, { ...q }); });
       }
 
       let anyNew = false;
       let anyModified = false;
-      const initialBankSize = bankMap.size;
       const restored = restoreDefaultImages(incoming);
       let localEditedMap = {};
       try {
@@ -494,13 +483,13 @@
 
       restored.forEach(q => {
         if (q && q.id && q.question && !deletedIds.includes(q.id)) {
-          const existing = bankMap.get(q.id);
+          const existing = _chunkBankMap.get(q.id);
           if (!existing) {
-            bankMap.set(q.id, q);
+            _chunkBankMap.set(q.id, q);
             anyNew = true;
           } else if (q._edited || (q.updatedAt && (!existing.updatedAt || q.updatedAt >= existing.updatedAt))) {
             const updatedItem = { ...existing, ...q, image: q.image || existing.image };
-            bankMap.set(q.id, updatedItem);
+            _chunkBankMap.set(q.id, updatedItem);
             anyModified = true;
             if (q._edited) {
               localEditedMap[q.id] = updatedItem;
@@ -509,20 +498,25 @@
         }
       });
 
-      try {
-        localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(localEditedMap));
-      } catch(e) {}
-
-      const merged = Array.from(bankMap.values());
-      safeSaveQuizBank(merged);
+      const merged = Array.from(_chunkBankMap.values());
       window.TKST_QUIZ_BANK = merged;
       window.TKST_QUIZ = merged;
 
-      if (anyNew || anyModified) {
-        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
-          detail: { count: merged.length, updated: true }
-        }));
-      }
+      // Debounce do salvamento em disco para não congelar o browser recebendo múltiplos chunks
+      if (_chunkSaveTimeout) clearTimeout(_chunkSaveTimeout);
+      _chunkSaveTimeout = setTimeout(() => {
+        _chunkSaveTimeout = null;
+        _chunkBankMap = null;
+        try {
+          localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(localEditedMap));
+        } catch(e) {}
+        safeSaveQuizBank(merged);
+        if (anyNew || anyModified) {
+          window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
+            detail: { count: merged.length, updated: true }
+          }));
+        }
+      }, 400);
     } catch(err) {
       console.warn('Incoming quiz chunk notice:', err);
     }
@@ -2031,7 +2025,13 @@
     }
   }
 
-  async function pullFromCloud() {
+  let lastPullTime = 0;
+  async function pullFromCloud(force = false) {
+    const now = Date.now();
+    if (!force && (now - lastPullTime < 60000)) {
+      return; // Já sincronizou recentemente; evita tempestade de rede e travamentos
+    }
+    lastPullTime = now;
     try {
       // 0. Hidrata provas geradas diretamente do arquivo JSON estático
       try {
@@ -2194,12 +2194,11 @@
   });
   initRealtimeStream();
 
-  // Automatic pull on window focus / tab switch
+  // Automatic pull on window visibility change (respeita throttle de 60s)
   if (typeof document !== 'undefined') {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') pullFromCloud();
     });
-    window.addEventListener('focus', () => pullFromCloud());
     window.addEventListener('DOMContentLoaded', () => {
       pullGlossaryFromCloud();
     });
@@ -2446,9 +2445,17 @@
       return this.isMasterAdmin();
     },
 
+    _cachedStudents: null,
+    _cachedStudentsRaw: null,
+
     getAllStudents: function() {
       try {
-        let students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+        const raw = localStorage.getItem(STORAGE_KEY_STUDENTS) || '[]';
+        if (this._cachedStudents && this._cachedStudentsRaw === raw) {
+          return this._cachedStudents;
+        }
+
+        let students = JSON.parse(raw) || [];
         let updated = false;
         students.forEach(s => {
           if (s && s.status === 'pending') {
@@ -2457,42 +2464,51 @@
             updated = true;
           }
         });
-        if (updated) {
-          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
-        }
 
-        function getStudentRegTime(s) {
+        function computeRegTime(s) {
           if (!s) return 0;
+          if (s._regTime !== undefined) return s._regTime;
           if (s.createdAt) {
             const t = new Date(s.createdAt).getTime();
-            if (!isNaN(t) && t > 0) return t;
+            if (!isNaN(t) && t > 0) return (s._regTime = t);
           }
           if (s.approvedAt) {
             const t = new Date(s.approvedAt).getTime();
-            if (!isNaN(t) && t > 0) return t;
+            if (!isNaN(t) && t > 0) return (s._regTime = t);
           }
           if (s.startDate) {
             const t = new Date(s.startDate).getTime();
-            if (!isNaN(t) && t > 0) return t;
+            if (!isNaN(t) && t > 0) return (s._regTime = t);
           }
           const match = (s.id || '').match(/\d{12,14}/);
           if (match) {
             const t = parseInt(match[0], 10);
-            if (!isNaN(t) && t > 0) return t;
+            if (!isNaN(t) && t > 0) return (s._regTime = t);
           }
           if (s.updatedAt) {
             const t = typeof s.updatedAt === 'number' ? s.updatedAt : new Date(s.updatedAt).getTime();
-            if (!isNaN(t) && t > 0) return t;
+            if (!isNaN(t) && t > 0) return (s._regTime = t);
           }
-          return 0;
+          return (s._regTime = 0);
         }
+
+        students.forEach(s => { if (s) computeRegTime(s); });
 
         // Ordena por data de cadastro (mais recentes primeiro, Sensei Master no topo)
         students.sort((a, b) => {
           if (a.username === 'irons365') return -1;
           if (b.username === 'irons365') return 1;
-          return getStudentRegTime(b) - getStudentRegTime(a);
+          return (b._regTime || 0) - (a._regTime || 0);
         });
+
+        this._cachedStudents = students;
+        this._cachedStudentsRaw = raw;
+
+        if (updated) {
+          const newRaw = JSON.stringify(students);
+          this._cachedStudentsRaw = newRaw;
+          localStorage.setItem(STORAGE_KEY_STUDENTS, newRaw);
+        }
 
         return students;
       } catch (e) {
@@ -2732,18 +2748,27 @@
       const user = this.getCurrentUser();
       if (!user) return;
       const now = Date.now();
-      const students = this.getAllStudents();
-      const idx = students.findIndex(s => s.id === user.id || s.username === user.username);
-      if (idx !== -1) {
-        const prev = students[idx].lastActive ? new Date(students[idx].lastActive).getTime() : 0;
-        if (now - prev >= 30000) {
-          students[idx].lastActive = now;
-          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
-          user.lastActive = now;
-          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
-          // lastActive atualizado localmente - pushToCloud() desativado aqui para evitar loop de tráfego a cada 30s
+      const prev = user.lastActive ? (typeof user.lastActive === 'number' ? user.lastActive : new Date(user.lastActive).getTime()) : 0;
+      if (now - prev < 45000) return; // Limite de 1 heartbeat a cada 45s; zero overhead em cliques
+
+      user.lastActive = now;
+      try {
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+        const raw = localStorage.getItem(STORAGE_KEY_STUDENTS);
+        if (raw) {
+          const students = JSON.parse(raw);
+          const idx = students.findIndex(s => s.id === user.id || s.username === user.username);
+          if (idx !== -1) {
+            students[idx].lastActive = now;
+            const newRaw = JSON.stringify(students);
+            if (this._cachedStudents && this._cachedStudents[idx]) {
+              this._cachedStudents[idx].lastActive = now;
+            }
+            this._cachedStudentsRaw = newRaw;
+            localStorage.setItem(STORAGE_KEY_STUDENTS, newRaw);
+          }
         }
-      }
+      } catch(e) {}
     },
 
     // ==========================================
@@ -3458,11 +3483,22 @@
       return submission;
     },
 
+    _cachedSubs: null,
+    _cachedSubsRaw: null,
+    _cachedSubsDelRaw: null,
+
     getAllQuizSubmissions: function() {
       try {
-        const deletedSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+        const rawDel = localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS) || '[]';
+        const rawLocal = localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS) || '[]';
+
+        if (this._cachedSubs && this._cachedSubsRaw === rawLocal && this._cachedSubsDelRaw === rawDel) {
+          return this._cachedSubs;
+        }
+
+        const deletedSubIds = JSON.parse(rawDel) || [];
         const deletedSet = new Set(deletedSubIds);
-        let subs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+        let subs = JSON.parse(rawLocal) || [];
         
         const subMap = new Map();
         subs.forEach(s => {
@@ -3471,7 +3507,7 @@
 
         // Auto-recupera de allStudents.quizScores (garante que provas salvas nos perfis nunca fiquem invisíveis)
         try {
-          const allStudents = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+          const allStudents = this.getAllStudents();
           allStudents.forEach(std => {
             if (std && Array.isArray(std.quizScores)) {
               std.quizScores.forEach((qs, qIdx) => {
@@ -3482,21 +3518,7 @@
                 const dt = new Date(date).getTime();
                 const subId = `quiz_std_${std.id}_${qIdx}_${dt}`;
 
-                // Verifica se já existe simulado equivalente no mapa
-                const existsEquiv = Array.from(subMap.values()).some(s => {
-                  if (!s) return false;
-                  const sId = (s.studentId || '').toString().trim().toLowerCase();
-                  const sUser = (s.studentUsername || '').toString().trim().toLowerCase();
-                  const stdId = (std.id || '').toString().trim().toLowerCase();
-                  const stdUser = (std.username || '').toString().trim().toLowerCase();
-                  const sameStd = (stdId && (stdId === sId || stdId === sUser)) ||
-                                  (stdUser && (stdUser === sId || stdUser === sUser));
-                  const sBelt = normalizeBelt(s.beltLevel, s.beltKyu);
-                  const qsBelt = normalizeBelt(qs.beltLevel || std.currentBelt, qs.beltKyu !== undefined ? qs.beltKyu : std.currentKyu);
-                  return sameStd && sBelt === qsBelt && Number(s.score) === Number(score) && Number(s.total) === Number(total) && Math.abs(new Date(s.date || 0).getTime() - dt) <= 60000;
-                });
-
-                if (!existsEquiv && !subMap.has(subId) && !deletedSet.has(subId)) {
+                if (!subMap.has(subId) && !deletedSet.has(subId)) {
                   subMap.set(subId, {
                     id: subId,
                     studentId: std.id,
@@ -3522,8 +3544,15 @@
 
         const result = deduplicateQuizSubmissions(Array.from(subMap.values()));
         result.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+
+        this._cachedSubs = result;
+        this._cachedSubsRaw = rawLocal;
+        this._cachedSubsDelRaw = rawDel;
+
         if (result.length !== subs.length) {
-          safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(result.slice(0, 500)));
+          const slicedStr = JSON.stringify(result.slice(0, 500));
+          this._cachedSubsRaw = slicedStr;
+          safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, slicedStr);
         }
         return result;
       } catch(e) {
@@ -3700,23 +3729,36 @@
       return this.saveQuizSubmission({ score, total, beltLevel: kyu || 'Geral' });
     },
 
+    _cachedGlossary: null,
+    _cachedGlossaryRaw: null,
+    _cachedDeletedGlossaryRaw: null,
+
     getCustomGlossary: function() {
-      const deletedTerms = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY)) || [];
+      const rawDeleted = localStorage.getItem(STORAGE_KEY_DELETED_GLOSSARY) || '[]';
+      const rawSaved = localStorage.getItem(STORAGE_KEY_GLOSSARY) || '{}';
+
+      if (this._cachedGlossary && this._cachedGlossaryRaw === rawSaved && this._cachedDeletedGlossaryRaw === rawDeleted) {
+        return this._cachedGlossary;
+      }
+
+      const deletedTerms = JSON.parse(rawDeleted) || [];
       const defaultGlossary = window.TKST_DEFAULT_GLOSSARY || window.TKST_GLOSSARY || {};
-      let baseGlossary = JSON.parse(JSON.stringify(defaultGlossary));
       const fileCustom = window.TKST_CUSTOM_GLOSSARY || {};
       const cats = ['bases', 'defesas', 'socosGolpes', 'chutes', 'comandosEContagem'];
+      const baseGlossary = {};
 
       try {
-        let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_GLOSSARY));
+        let saved = JSON.parse(rawSaved) || {};
         cats.forEach(cat => {
-          if (!baseGlossary[cat]) baseGlossary[cat] = [];
+          baseGlossary[cat] = [];
           const termMap = new Map();
           
           // 1. Termos padrão
-          baseGlossary[cat].forEach(t => {
-            if (t && t.japanese) termMap.set(t.japanese.toLowerCase().trim(), { ...t });
-          });
+          if (Array.isArray(defaultGlossary[cat])) {
+            defaultGlossary[cat].forEach(t => {
+              if (t && t.japanese) termMap.set(t.japanese.toLowerCase().trim(), { ...t });
+            });
+          }
 
           // 2. Termos do arquivo bundle (GitHub)
           if (fileCustom && Array.isArray(fileCustom[cat])) {
@@ -3742,16 +3784,15 @@
           baseGlossary[cat] = Array.from(termMap.values()).filter(t => t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim()));
         });
 
+        this._cachedGlossary = baseGlossary;
+        this._cachedGlossaryRaw = rawSaved;
+        this._cachedDeletedGlossaryRaw = rawDeleted;
         window.TKST_GLOSSARY = baseGlossary;
         return baseGlossary;
       } catch(e) {
-        cats.forEach(cat => {
-          if (baseGlossary[cat]) {
-            baseGlossary[cat] = baseGlossary[cat].filter(t => t && t.japanese && !deletedTerms.includes(t.japanese.toLowerCase().trim()));
-          }
-        });
-        window.TKST_GLOSSARY = baseGlossary;
-        return baseGlossary;
+        this._cachedGlossary = defaultGlossary;
+        window.TKST_GLOSSARY = defaultGlossary;
+        return defaultGlossary;
       }
     },
 
@@ -3761,6 +3802,8 @@
       
       // 1. Atualiza memória global imediatamente
       window.TKST_GLOSSARY = glossary;
+      this._cachedGlossary = glossary;
+      this._cachedGlossaryRaw = null; // Invalida cache raw para próxima leitura
 
       // 2. Salva no localStorage com proteção contra QuotaExceededError
       safeLocalStorageSet(STORAGE_KEY_GLOSSARY, JSON.stringify(glossary));
@@ -4622,24 +4665,12 @@
     pullQuizBankFromCloud: pullQuizBankFromCloud
   };
 
-  // Background Heartbeat Engine (Keeps presence updated while using app)
+  // Background Heartbeat Engine (Executa discretamente a cada 45s apenas em background)
   setInterval(() => {
     try {
       if (window.TKST_AUTH && window.TKST_AUTH.getCurrentUser()) {
         window.TKST_AUTH.recordHeartbeat();
       }
     } catch(e) {}
-  }, 40000);
-
-  if (typeof window !== 'undefined') {
-    ['focus', 'click', 'touchstart'].forEach(evt => {
-      window.addEventListener(evt, () => {
-        try {
-          if (window.TKST_AUTH && window.TKST_AUTH.getCurrentUser()) {
-            window.TKST_AUTH.recordHeartbeat();
-          }
-        } catch(e) {}
-      }, { passive: true });
-    });
-  }
+  }, 45000);
 })();

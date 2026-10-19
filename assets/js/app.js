@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.97';
+  const APP_DISPLAY_VERSION = 'V-2.98';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -1393,67 +1393,69 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   }
 
+  let _rerenderAnimationFrame = null;
+  function scheduleRerender(action) {
+    if (shouldSkipRerender()) return;
+    if (_rerenderAnimationFrame) cancelAnimationFrame(_rerenderAnimationFrame);
+    _rerenderAnimationFrame = requestAnimationFrame(() => {
+      _rerenderAnimationFrame = null;
+      if (!shouldSkipRerender()) {
+        action();
+      }
+    });
+  }
+
   function setupGlobalEvents() {
 
     window.addEventListener('tkst_user_changed', () => {
       setupUserDisplay();
-      if (!shouldSkipRerender()) {
-        renderView(currentTab);
-      }
+      scheduleRerender(() => renderView(currentTab));
     });
 
     window.addEventListener('tkst_progress_updated', () => {
-      if (shouldSkipRerender()) return;
       if (currentTab === 'dashboard' || currentTab === 'my-exam') {
-        renderView(currentTab);
+        scheduleRerender(() => renderView(currentTab));
       }
     });
 
     window.addEventListener('tkst_cloud_synced', () => {
       setupUserDisplay();
-      if (!shouldSkipRerender()) {
-        if (currentTab === 'my-exam') {
-          return;
-        }
-        renderView(currentTab);
+      if (currentTab !== 'my-exam') {
+        scheduleRerender(() => renderView(currentTab));
       }
     });
 
     window.addEventListener('tkst_videos_updated', () => {
-      if (!shouldSkipRerender() && currentTab === 'katas') {
-        renderView(currentTab);
+      if (currentTab === 'katas') {
+        scheduleRerender(() => renderView(currentTab));
       }
     });
 
     window.addEventListener('tkst_glossary_updated', () => {
-      if (!shouldSkipRerender() && currentTab === 'glossary') {
-        renderGlossary();
+      if (currentTab === 'glossary') {
+        scheduleRerender(() => renderGlossary());
       }
     });
 
     window.addEventListener('tkst_curriculum_updated', () => {
-      if (!shouldSkipRerender()) {
-        if (currentTab === 'my-exam') {
-          renderMyExam();
-        } else if (currentTab === 'dashboard') {
-          renderDashboard();
-        }
+      if (currentTab === 'my-exam') {
+        scheduleRerender(() => renderMyExam());
+      } else if (currentTab === 'dashboard') {
+        scheduleRerender(() => renderDashboard());
       }
     });
 
     window.addEventListener('tkst_submissions_updated', () => {
-      if (!shouldSkipRerender()) {
-        if (currentTab === 'dashboard') {
-          renderDashboard();
-        } else if (currentTab === 'admin' && adminSubTab === 'quizzes') {
-          renderAdminMaster();
-        }
+      if (currentTab === 'dashboard') {
+        scheduleRerender(() => renderDashboard());
+      } else if (currentTab === 'admin' && adminSubTab === 'quizzes') {
+        scheduleRerender(() => renderAdminMaster());
       }
     });
 
     window.addEventListener('tkst_media_updated', () => {
-      if (!shouldSkipRerender() && currentTab === 'media') {
-        renderMedia();
+      if (currentTab === 'media') {
+        scheduleRerender(() => renderMedia());
       }
       if (typeof initHomePhotoSlide === 'function') {
         initHomePhotoSlide();
@@ -1461,8 +1463,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('tkst_albums_updated', () => {
-      if (!shouldSkipRerender() && currentTab === 'media') {
-        renderMedia();
+      if (currentTab === 'media') {
+        scheduleRerender(() => renderMedia());
       }
       if (typeof initHomePhotoSlide === 'function') {
         initHomePhotoSlide();
@@ -1470,8 +1472,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('tkst_subalbums_updated', () => {
-      if (!shouldSkipRerender() && currentTab === 'media') {
-        renderMedia();
+      if (currentTab === 'media') {
+        scheduleRerender(() => renderMedia());
       }
       if (typeof initHomePhotoSlide === 'function') {
         initHomePhotoSlide();
@@ -3106,6 +3108,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Indexa submissões previamente uma única vez para busca O(1) sem reprocessar normalização de strings 100.000 vezes
+    const subsByIdMap = new Map();
+    const subsByUserMap = new Map();
+    const subsByNameMap = new Map();
+
+    submissions.forEach(sub => {
+      if (!sub) return;
+      const subId = (sub.studentId || '').trim();
+      if (subId) {
+        if (!subsByIdMap.has(subId)) subsByIdMap.set(subId, []);
+        subsByIdMap.get(subId).push(sub);
+      }
+      const u = (sub.studentUsername || '').toLowerCase().trim();
+      if (u) {
+        if (!subsByUserMap.has(u)) subsByUserMap.set(u, []);
+        subsByUserMap.get(u).push(sub);
+      }
+      const n = (sub.studentName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      if (n) {
+        if (!subsByNameMap.has(n)) subsByNameMap.set(n, []);
+        subsByNameMap.get(n).push(sub);
+      }
+    });
+
+    const studentsMapFast = new Map();
+    students.forEach(s => {
+      if (!s) return;
+      if (s.id) studentsMapFast.set(s.id, s);
+      if (s.username) studentsMapFast.set(s.username, s);
+    });
+
     const leaderboard = Array.from(studentMap.values()).map(student => {
       let totalCorrect = 0;
       let totalWrong = 0;
@@ -3115,40 +3148,47 @@ document.addEventListener('DOMContentLoaded', () => {
       const normStdName = (student.fullName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       const normStdUser = (student.username || '').toLowerCase().trim();
 
-      const studentSubs = submissions.filter(sub => {
-        if (!sub) return false;
-        const subId = (sub.studentId || '').trim();
-        const normSubUser = (sub.studentUsername || '').toLowerCase().trim();
-        const normSubName = (sub.studentName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const matchedSubsSet = new Set();
+      if (student.id && subsByIdMap.has(student.id)) {
+        subsByIdMap.get(student.id).forEach(s => matchedSubsSet.add(s));
+      }
+      if (student.username) {
+        if (subsByIdMap.has(student.username)) {
+          subsByIdMap.get(student.username).forEach(s => matchedSubsSet.add(s));
+        }
+        if (subsByUserMap.has(normStdUser)) {
+          subsByUserMap.get(normStdUser).forEach(s => matchedSubsSet.add(s));
+        }
+      }
+      if (normStdName && subsByNameMap.has(normStdName)) {
+        subsByNameMap.get(normStdName).forEach(s => matchedSubsSet.add(s));
+      }
 
-        if (subId && (subId === student.id || subId === student.username)) return true;
-        if (normSubUser && (normSubUser === normStdUser || normSubUser === student.id)) return true;
-        if (normSubName && normStdName && (normSubName === normStdName || normSubName.includes(normStdName) || normStdName.includes(normSubName))) return true;
-
-        return false;
-      });
+      const studentSubs = Array.from(matchedSubsSet);
 
       // Coleta submissões ou notas diretas do perfil do aluno
       let finalScoresList = [];
       if (studentSubs.length > 0) {
         finalScoresList = studentSubs;
       } else {
-        const rawStudentObj = students.find(s => s && (s.id === student.id || s.username === student.username));
+        const rawStudentObj = (student.id && studentsMapFast.get(student.id)) || (student.username && studentsMapFast.get(student.username));
         const directScores = (rawStudentObj?.quizScores || allProgress[student.id]?.quizScores || allProgress[student.username]?.quizScores || []);
         if (Array.isArray(directScores)) finalScoresList = directScores;
       }
 
-      // Deduplica submissões com mesmo score/total/faixa e intervalo inferior a 20 segundos (elimina duplicatas de sincronização)
+      // Deduplica submissões com timestamp pré-calculado
       const uniqueScores = [];
       finalScoresList.forEach(item => {
         if (!item) return;
         const score = typeof item.score === 'number' ? item.score : 0;
         const total = typeof item.total === 'number' ? item.total : 10;
         const belt = (item.beltLevel || item.beltKyu || '').toString().trim();
+        const itemTime = item._t || (item._t = new Date(item.date || 0).getTime());
         const isDup = uniqueScores.some(u => {
           if (u.id && item.id && u.id === item.id) return true;
           const uBelt = (u.beltLevel || u.beltKyu || '').toString().trim();
-          return (belt ? uBelt === belt : true) && u.score === score && u.total === total && Math.abs(new Date(u.date || 0).getTime() - new Date(item.date || 0).getTime()) <= 60000;
+          const uTime = u._t || (u._t = new Date(u.date || 0).getTime());
+          return (belt ? uBelt === belt : true) && u.score === score && u.total === total && Math.abs(uTime - itemTime) <= 60000;
         });
         if (!isDup) uniqueScores.push(item);
       });
