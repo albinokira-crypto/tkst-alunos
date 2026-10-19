@@ -1,16 +1,15 @@
 // functions/api/quiz-bank.js
 // Cloudflare Pages Function para consulta e persistência do Banco de Questões do Simulado
+// Opera diretamente sobre o banco online permanente assets/data/quiz-custom.json
 
 const REPO = 'albinokira-crypto/tkst-alunos';
-const FILE_PATH = 'assets/js/data-quiz.js';
+const CUSTOM_FILE_PATH = 'assets/data/quiz-custom.json';
 const BRANCH = 'main';
-const MARKER_START = '// ==TKST_CUSTOM_QUESTIONS_START==';
-const MARKER_END = '// ==TKST_CUSTOM_QUESTIONS_END==';
 
 import { getCorsHeaders, verifyAuth } from './_auth.js';
 
-let inMemoryQuizBank = null;
-let inMemoryEditedMap = {};
+let inMemoryCustomData = null;
+let lastFetch = 0;
 
 function toBase64Utf8(str) {
   const bytes = new TextEncoder().encode(str);
@@ -30,24 +29,6 @@ function fromBase64Utf8(b64) {
   return new TextDecoder().decode(bytes);
 }
 
-function extractQuestionsFromScript(scriptText) {
-  if (!scriptText) return [];
-  const startIdx = scriptText.indexOf(MARKER_START);
-  const endIdx = scriptText.indexOf(MARKER_END);
-  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return [];
-
-  const block = scriptText.slice(startIdx + MARKER_START.length, endIdx).trim();
-  if (!block) return [];
-
-  try {
-    const cleanBlock = '[' + block.replace(/,\s*$/, '') + ']';
-    const parsed = JSON.parse(cleanBlock);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
-    return [];
-  }
-}
-
 export async function onRequestOptions(context) {
   const { request, env } = context;
   return new Response(null, { status: 200, headers: getCorsHeaders(env, request) });
@@ -57,41 +38,45 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(env, request);
   const token = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
+  const now = Date.now();
 
-  if (inMemoryQuizBank && Array.isArray(inMemoryQuizBank) && inMemoryQuizBank.length > 0) {
+  // Cache em memória
+  if (inMemoryCustomData && (now - lastFetch < 15000)) {
     return new Response(JSON.stringify({
       success: true,
       source: 'memory_cache',
-      count: inMemoryQuizBank.length,
-      data: inMemoryQuizBank,
-      editedMap: inMemoryEditedMap || {}
+      data: inMemoryCustomData.customQuestions || [],
+      customQuestions: inMemoryCustomData.customQuestions || [],
+      editedMap: inMemoryCustomData.editedQuestions || {},
+      deletedQuizIds: inMemoryCustomData.deletedQuizIds || []
     }), { status: 200, headers });
   }
 
   // 1. Tentar via GitHub API
   if (token) {
     try {
-      const ghRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`, {
+      const ghRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${CUSTOM_FILE_PATH}?ref=${BRANCH}`, {
         headers: {
           'Authorization': `token ${token}`,
           'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'TKST-Cloudflare-QuizBank/1.0'
+          'User-Agent': 'TKST-Cloudflare-QuizBank/2.0'
         }
       });
       if (ghRes.ok) {
         const ghData = await ghRes.json();
         if (ghData && ghData.content) {
           const raw = fromBase64Utf8(ghData.content);
-          const questions = extractQuestionsFromScript(raw);
-          if (questions.length > 0) {
-            return new Response(JSON.stringify({
-              success: true,
-              source: 'github',
-              count: questions.length,
-              data: questions,
-              editedMap: inMemoryEditedMap || {}
-            }), { status: 200, headers });
-          }
+          const parsed = JSON.parse(raw);
+          inMemoryCustomData = parsed;
+          lastFetch = now;
+          return new Response(JSON.stringify({
+            success: true,
+            source: 'github',
+            data: parsed.customQuestions || [],
+            customQuestions: parsed.customQuestions || [],
+            editedMap: parsed.editedQuestions || {},
+            deletedQuizIds: parsed.deletedQuizIds || []
+          }), { status: 200, headers });
         }
       }
     } catch (e) {
@@ -99,38 +84,20 @@ export async function onRequestGet(context) {
     }
   }
 
-  // 2. Tentar via Cloudflare Pages static assets
-  if (env && env.ASSETS) {
-    try {
-      const assetRes = await env.ASSETS.fetch(new URL('/assets/js/data-quiz.js', request.url));
-      if (assetRes.ok) {
-        const raw = await assetRes.text();
-        const questions = extractQuestionsFromScript(raw);
-        if (questions.length > 0) {
-          return new Response(JSON.stringify({
-            success: true,
-            source: 'cloudflare_assets',
-            count: questions.length,
-            data: questions,
-            editedMap: inMemoryEditedMap || {}
-          }), { status: 200, headers });
-        }
-      }
-    } catch (e) {}
-  }
-
-  // 3. Fallback: Raw GitHub
+  // 2. Tentar via Raw GitHub
   try {
-    const rawRes = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_PATH}`);
+    const rawRes = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${CUSTOM_FILE_PATH}?_=${Date.now()}`);
     if (rawRes.ok) {
-      const raw = await rawRes.text();
-      const questions = extractQuestionsFromScript(raw);
+      const parsed = await rawRes.json();
+      inMemoryCustomData = parsed;
+      lastFetch = now;
       return new Response(JSON.stringify({
         success: true,
         source: 'raw_github',
-        count: questions.length,
-        data: questions,
-        editedMap: inMemoryEditedMap || {}
+        data: parsed.customQuestions || [],
+        customQuestions: parsed.customQuestions || [],
+        editedMap: parsed.editedQuestions || {},
+        deletedQuizIds: parsed.deletedQuizIds || []
       }), { status: 200, headers });
     }
   } catch (e) {}
@@ -138,9 +105,10 @@ export async function onRequestGet(context) {
   return new Response(JSON.stringify({
     success: true,
     source: 'empty',
-    count: 0,
     data: [],
-    editedMap: inMemoryEditedMap || {}
+    customQuestions: [],
+    editedMap: {},
+    deletedQuizIds: []
   }), { status: 200, headers });
 }
 
@@ -148,7 +116,6 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(env, request);
 
-  // Verificação de autenticação resiliente: permite mesma origem do app
   const authHeader = request.headers.get('Authorization') || '';
   if (authHeader && authHeader !== 'Bearer' && authHeader !== 'Bearer null' && authHeader !== 'Bearer undefined') {
     const auth = await verifyAuth(request, env, 'admin');
@@ -165,117 +132,108 @@ export async function onRequestPost(context) {
   try {
     const body = await request.json().catch(() => ({}));
     const incoming = body.customQuestions || body.questions || body.bank || body.data || (Array.isArray(body) ? body : []);
-    if (!Array.isArray(incoming)) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Payload inválido: esperado array de questões.'
-      }), { status: 400, headers });
-    }
-
-    if (incoming.length > 0) {
-      inMemoryQuizBank = incoming;
-    }
-
-    if (body.editedMap && typeof body.editedMap === 'object') {
-      inMemoryEditedMap = { ...inMemoryEditedMap, ...body.editedMap };
-    }
-
-    if (!token) {
-      return new Response(JSON.stringify({
-        success: true,
-        persisted: false,
-        source: 'no_token_client_storage',
-        count: incoming.length,
-        editedCount: Object.keys(inMemoryEditedMap).length,
-        message: 'Questões salvas no cliente. Para autocommit configure GITHUB_TOKEN.'
-      }), { status: 200, headers });
-    }
+    const incomingDeleted = Array.isArray(body.deletedQuizIds) ? body.deletedQuizIds : [];
+    const incomingEdited = (body.editedMap && typeof body.editedMap === 'object') ? body.editedMap : {};
 
     // 1. Obter arquivo atual do GitHub
     let currentSha = null;
-    let fileContent = '';
+    let currentData = { customQuestions: [], editedQuestions: {}, deletedQuizIds: [] };
 
-    const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`, {
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'TKST-Cloudflare-QuizBank/1.0'
-      }
-    });
+    if (token) {
+      try {
+        const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${CUSTOM_FILE_PATH}?ref=${BRANCH}`, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'TKST-Cloudflare-QuizBank/2.0'
+          }
+        });
 
-    if (getRes.ok) {
-      const currentFile = await getRes.json();
-      currentSha = currentFile.sha;
-      fileContent = fromBase64Utf8(currentFile.content);
-    } else {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Não foi possível ler assets/js/data-quiz.js no GitHub.'
-      }), { status: 502, headers });
+        if (getRes.ok) {
+          const currentFile = await getRes.json();
+          currentSha = currentFile.sha;
+          currentData = JSON.parse(fromBase64Utf8(currentFile.content));
+        }
+      } catch (e) {}
     }
 
-    const startIdx = fileContent.indexOf(MARKER_START);
-    const endIdx = fileContent.indexOf(MARKER_END);
-    if (startIdx === -1 || endIdx === -1) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Marcadores de custom questions não encontrados no repositório.'
-      }), { status: 500, headers });
-    }
+    // 2. Mesclar
+    const deletedSet = new Set(Array.isArray(currentData.deletedQuizIds) ? currentData.deletedQuizIds : []);
+    incomingDeleted.forEach(id => deletedSet.add(id));
+    const finalDeleted = Array.from(deletedSet);
 
-    // 2. Extrair questões existentes e mesclar
-    const existing = extractQuestionsFromScript(fileContent);
-    const bankMap = new Map();
-    existing.forEach(q => { if (q && q.id) bankMap.set(q.id, q); });
-    incoming.forEach(q => {
-      if (q && q.id) {
-        const prev = bankMap.get(q.id);
-        bankMap.set(q.id, { ...(prev || {}), ...q, image: q.image || (prev && prev.image) || '' });
-      }
+    const qMap = new Map();
+    (Array.isArray(currentData.customQuestions) ? currentData.customQuestions : []).forEach(q => {
+      if (q && q.id && !deletedSet.has(q.id)) qMap.set(q.id, q);
     });
 
-    const deletedIds = new Set(Array.isArray(body.deletedQuizIds) ? body.deletedQuizIds : []);
-    const merged = Array.from(bankMap.values()).filter(q => !deletedIds.has(q.id));
+    if (Array.isArray(incoming)) {
+      incoming.forEach(q => {
+        if (!q || !q.id || deletedSet.has(q.id)) return;
+        const prev = qMap.get(q.id);
+        qMap.set(q.id, prev ? { ...prev, ...q } : q);
+      });
+    }
 
-    // Formatar bloco de questões
-    const serializedLines = merged.map(q => '  ' + JSON.stringify(q)).join(',\n');
-    const newFileContent = fileContent.slice(0, startIdx + MARKER_START.length) +
-      '\n' + serializedLines + '\n  ' +
-      fileContent.slice(endIdx);
+    const finalEdited = {
+      ...(currentData.editedQuestions || {}),
+      ...incomingEdited
+    };
+    finalDeleted.forEach(id => { delete finalEdited[id]; });
 
-    const newBase64 = toBase64Utf8(newFileContent);
+    const finalQuestions = Array.from(qMap.values());
+    const updatedPayload = {
+      customQuestions: finalQuestions,
+      editedQuestions: finalEdited,
+      deletedQuizIds: finalDeleted,
+      updatedAt: Date.now()
+    };
 
-    // 3. Commit no GitHub
-    const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json',
-        'User-Agent': 'TKST-Cloudflare-QuizBank/1.0'
-      },
-      body: JSON.stringify({
-        message: `feat(quiz): atualizar banco de questões customizadas [Cloudflare auto-commit]`,
+    inMemoryCustomData = updatedPayload;
+    lastFetch = Date.now();
+
+    // 3. Commit no GitHub se token configurado
+    if (token) {
+      const newBase64 = toBase64Utf8(JSON.stringify(updatedPayload, null, 2));
+      const now = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+      const putBody = {
+        message: `feat(quiz): atualizar ${finalQuestions.length} questões [Cloudflare auto-commit ${now}]`,
         content: newBase64,
-        sha: currentSha,
         branch: BRANCH
-      })
-    });
+      };
+      if (currentSha) putBody.sha = currentSha;
 
-    if (putRes.ok || putRes.status === 201) {
-      return new Response(JSON.stringify({
-        success: true,
-        persisted: true,
-        count: merged.length,
-        message: 'Banco de questões salvo com sucesso no GitHub!'
-      }), { status: 200, headers });
-    } else {
-      const err = await putRes.json().catch(() => ({}));
-      return new Response(JSON.stringify({
-        success: false,
-        error: err.message || 'Falha ao commitar quiz bank no GitHub'
-      }), { status: 502, headers });
+      const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${CUSTOM_FILE_PATH}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'TKST-Cloudflare-QuizBank/2.0'
+        },
+        body: JSON.stringify(putBody)
+      });
+
+      if (putRes.ok || putRes.status === 201) {
+        return new Response(JSON.stringify({
+          success: true,
+          persisted: true,
+          count: finalQuestions.length,
+          data: finalQuestions,
+          message: 'Banco de questões salvo com sucesso no GitHub!'
+        }), { status: 200, headers });
+      }
     }
+
+    return new Response(JSON.stringify({
+      success: true,
+      persisted: false,
+      count: finalQuestions.length,
+      data: finalQuestions,
+      message: 'Questões atualizadas em memória e no cliente.'
+    }), { status: 200, headers });
+
   } catch (err) {
     return new Response(JSON.stringify({ success: false, error: err.message }), {
       status: 500,

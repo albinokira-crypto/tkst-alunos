@@ -1169,6 +1169,24 @@ window.TKST_EXAM_GENERATOR = {
         window.TKST_AUTH.broadcastGeneratedExam(examRecord);
       }
     } catch(e) {}
+    const renderOmrRow = (qNum) => {
+      const numStr = String(qNum).padStart(2, '0');
+      return `
+        <div class="exam-omr-row">
+          <span class="omr-q-num">${numStr}</span>
+          <div class="omr-sq-group">
+            <span class="omr-sq">A</span>
+            <span class="omr-sq">B</span>
+            <span class="omr-sq">C</span>
+            <span class="omr-sq">D</span>
+          </div>
+        </div>
+      `;
+    };
+
+    const omrCol1 = [1, 2, 3, 4, 5].map(renderOmrRow).join('');
+    const omrCol2 = [6, 7, 8, 9, 10].map(renderOmrRow).join('');
+
     const renderSingleQuestion = (q, idx) => {
       const qNum = idx + 1;
       const qText = this.sanitizePtBrText(q.question);
@@ -1177,7 +1195,6 @@ window.TKST_EXAM_GENERATOR = {
         const optText = this.sanitizePtBrText(opt);
         return `
           <div class="exam-mcq-option">
-            <span class="exam-mcq-square"></span>
             <span class="exam-mcq-letter">(${letter})</span>
             <span class="exam-mcq-opt-text">${optText}</span>
           </div>
@@ -1253,22 +1270,31 @@ window.TKST_EXAM_GENERATOR = {
                 <span class="exam-code-lbl" style="font-size: 9pt !important; font-weight: 900 !important; color: #F5BE00 !important; letter-spacing: 1px !important; text-transform: uppercase !important;">CÓDIGO:</span>
                 <span class="exam-code-val" style="font-size: 20pt !important; font-weight: 900 !important; color: #FFFFFF !important; letter-spacing: 3px !important; font-family: 'Consolas', 'Courier New', monospace, sans-serif !important; line-height: 1 !important;">${compactCode}</span>
               </div>
-              <div class="exam-instruction-tag" style="font-size: 8.5pt; color: #334155;">
-                ✏️ <strong>Instruções:</strong> Assinale a alternativa correta em cada uma das 10 questões abaixo.
+              <div class="exam-instruction-tag">
+                ✏️ <strong>Atenção Aluno:</strong> Transfira suas respostas marcando totalmente o quadradinho no <strong>Cartão de Respostas ao lado</strong>.
               </div>
             </div>
           </div>
 
-          <!-- 2. LADO DIREITO: QUADRO DA NOTA FINAL E STATUS PARA O SENSEI ANOTAR DE CANETA -->
-          <div class="exam-header-grade-box" style="border: 2px solid #0F172A; border-radius: 8px; padding: 8px 14px; background: #FFFFFF; min-width: 155px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box;">
-            <div style="font-size: 8pt; font-weight: 900; color: #0F172A; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid #0F172A; width: 100%; padding-bottom: 3px; margin-bottom: 4px;">
-              NOTA DA PROVA
+          <!-- 2. LADO DIREITO: CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR COM NOTA INTEGRADA) -->
+          <div class="exam-header-omr-card">
+            <div class="exam-omr-header-bar">
+              <div class="exam-omr-title-wrap">
+                <span class="exam-omr-title">📋 CARTÃO DE RESPOSTAS</span>
+                <span class="exam-omr-sub">Pinte [ ■ ]</span>
+              </div>
+              <div class="exam-omr-grade-box">
+                <span class="exam-omr-grade-lbl">NOTA:</span>
+                <span class="exam-omr-grade-val">_____ / 10,0</span>
+              </div>
             </div>
-            <div style="font-size: 19pt; font-weight: 900; color: #0F172A; font-family: 'Consolas', monospace; line-height: 1.1;">
-              _____ / 10,0
-            </div>
-            <div style="font-size: 7.5pt; font-weight: 800; color: #475569; margin-top: 4px;">
-              [ &nbsp; ] Aprovado &nbsp; [ &nbsp; ] Reprovado
+            <div class="exam-omr-grid-2col">
+              <div class="exam-omr-col">
+                ${omrCol1}
+              </div>
+              <div class="exam-omr-col">
+                ${omrCol2}
+              </div>
             </div>
           </div>
         </div>

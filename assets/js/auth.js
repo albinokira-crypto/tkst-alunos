@@ -528,31 +528,33 @@
     }
   }
 
-  // Busca questões customizadas diretamente do data-quiz.js no GitHub (fonte permanente).
-  // Usado como fallback final quando /api/quiz-bank retorna vazio após cold-start da Vercel.
+  // Busca questões customizadas e edições diretamente do assets/data/quiz-custom.json no GitHub (fonte permanente).
   async function pullQuizBankFromGitHub() {
     try {
       const REPO = 'albinokira-crypto/tkst-alunos';
       const BRANCH = 'main';
-      // raw.githubusercontent.com serve o arquivo diretamente sem autenticação
-      const rawUrl = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/assets/js/data-quiz.js`;
-      const res = await fetch(rawUrl + '?_=' + Date.now(), { cache: 'no-store' });
+      const rawUrl = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/assets/data/quiz-custom.json?_=${Date.now()}`;
+      const res = await fetch(rawUrl, { cache: 'no-store' });
       if (!res.ok) return [];
 
-      const text = await res.text();
-      const MARKER_START = '// ==TKST_CUSTOM_QUESTIONS_START==';
-      const MARKER_END = '// ==TKST_CUSTOM_QUESTIONS_END==';
-      const startIdx = text.indexOf(MARKER_START);
-      const endIdx = text.indexOf(MARKER_END);
-      if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return [];
+      const json = await res.json();
+      if (!json || typeof json !== 'object') return [];
 
-      const block = text.slice(startIdx + MARKER_START.length, endIdx).trim();
-      if (!block) return [];
+      if (json.editedQuestions && typeof json.editedQuestions === 'object') {
+        try {
+          const curMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+          localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify({ ...curMap, ...json.editedQuestions }));
+        } catch(e) {}
+      }
+      if (Array.isArray(json.deletedQuizIds) && json.deletedQuizIds.length > 0) {
+        try {
+          const curDel = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES) || '[]');
+          const setDel = new Set([...curDel, ...json.deletedQuizIds]);
+          localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(Array.from(setDel)));
+        } catch(e) {}
+      }
 
-      // O bloco é uma lista de objetos JSON separados por vírgulas
-      const cleanBlock = '[' + block.replace(/,\s*$/, '') + ']';
-      const questions = JSON.parse(cleanBlock);
-      return Array.isArray(questions) ? questions : [];
+      return Array.isArray(json.customQuestions) ? json.customQuestions : [];
     } catch(err) {
       console.warn('Quiz bank GitHub pull notice:', err);
       return [];
@@ -616,6 +618,13 @@
             try {
               const curMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
               localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify({ ...curMap, ...json.editedMap }));
+            } catch(e) {}
+          }
+          if (json && Array.isArray(json.deletedQuizIds) && json.deletedQuizIds.length > 0) {
+            try {
+              const curDel = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES) || '[]');
+              const setDel = new Set([...curDel, ...json.deletedQuizIds]);
+              localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(Array.from(setDel)));
             } catch(e) {}
           }
         }
@@ -723,13 +732,18 @@
   async function pushQuizBankToServer(bank, deletedIds) {
     if (!Array.isArray(bank) && (!deletedIds || !deletedIds.length)) return;
     const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || []);
+    let editedMap = {};
+    try {
+      editedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+    } catch(e) {}
     try {
       const res = await fetch('/api/quiz-commit', {
         method: 'POST',
         headers: getClientAuthHeaders(),
         body: JSON.stringify({
           customQuestions: bank || [],
-          deletedQuizIds: deleted
+          deletedQuizIds: deleted,
+          editedMap: editedMap
         })
       });
 

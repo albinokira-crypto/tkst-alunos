@@ -1,32 +1,35 @@
 // api/quiz-commit.js
-// Endpoint server-side para commit automático do banco de questões no GitHub.
+// Endpoint server-side para commit automático do banco de questões online no GitHub.
 // O GITHUB_TOKEN fica seguro como variável de ambiente na Vercel — jamais exposto ao browser.
 
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 const REPO = process.env.GITHUB_REPO || 'albinokira-crypto/tkst-alunos';
-const FILE_PATH = 'assets/js/data-quiz.js';
+const FILE_PATH = 'assets/data/quiz-custom.json';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
-const MARKER_START = '// ==TKST_CUSTOM_QUESTIONS_START==';
-const MARKER_END = '// ==TKST_CUSTOM_QUESTIONS_END==';
+const NTFY_TOPIC = process.env.NTFY_TOPIC || 'tkst-alunos-sync-v3';
 
-function githubRequest(method, path, token, body) {
+function githubRequest(method, reqPath, token, body) {
   return new Promise((resolve, reject) => {
     const dataString = body ? JSON.stringify(body) : null;
     const dataBuffer = dataString ? Buffer.from(dataString, 'utf8') : null;
 
     const options = {
       hostname: 'api.github.com',
-      path,
+      path: reqPath,
       method,
       headers: {
-        'Authorization': `token ${token}`,
+        'Authorization': token ? `token ${token}` : undefined,
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'TKST-Alunos-AutoCommit/1.0',
+        'User-Agent': 'TKST-Alunos-QuizCommit/2.0',
         'Content-Type': 'application/json; charset=utf-8',
         ...(dataBuffer ? { 'Content-Length': dataBuffer.length } : {})
       }
     };
+
+    if (!token) delete options.headers['Authorization'];
 
     const req = https.request(options, (res) => {
       let responseText = '';
@@ -50,15 +53,13 @@ function githubRequest(method, path, token, body) {
   });
 }
 
-// Executa requisição ao GitHub com retries automáticos em caso de 503/timeout
-async function githubRequestWithRetry(method, path, token, body, retries = 3) {
+async function githubRequestWithRetry(method, reqPath, token, body, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await githubRequest(method, path, token, body);
+      const res = await githubRequest(method, reqPath, token, body);
       if (res.status === 200 || res.status === 201 || (attempt === retries && res.status < 500)) {
         return res;
       }
-      // Se deu erro 500/502/503/504, aguarda e tenta novamente
       if (res.status >= 500 && attempt < retries) {
         await new Promise(r => setTimeout(r, attempt * 1000));
         continue;
@@ -71,146 +72,177 @@ async function githubRequestWithRetry(method, path, token, body, retries = 3) {
   }
 }
 
-// Injeta o bloco de questões customizadas no conteúdo do arquivo e remove questões excluídas
-function injectCustomBlock(currentContent, customQuestions, deletedIds = []) {
-  const deletedSet = new Set(Array.isArray(deletedIds) ? deletedIds : []);
-  const cleanCustom = (customQuestions || []).filter(q => q && q.id && !deletedSet.has(q.id));
-  const questionsJson = cleanCustom.map(q => '  ' + JSON.stringify(q)).join(',\n');
-
-  // Caso 1: Marcadores já existem — substituição cirúrgica
-  if (currentContent.includes(MARKER_START) && currentContent.includes(MARKER_END)) {
-    const startIdx = currentContent.indexOf(MARKER_START);
-    const endIdx = currentContent.indexOf(MARKER_END) + MARKER_END.length;
-
-    let before = currentContent.slice(0, startIdx);
-    const after = currentContent.slice(endIdx);
-
-    // Se houver IDs de questões padrão deletadas, remove do bloco anterior também
-    if (deletedSet.size > 0) {
-      deletedSet.forEach(delId => {
-        const qRegex = new RegExp(`\\s*\\{[\\s\\S]*?["']id["']\\s*:\\s*["']${delId}["'][\\s\\S]*?\\},?`, 'g');
-        before = before.replace(qRegex, '');
-      });
-    }
-
-    const newBlock = cleanCustom.length > 0
-      ? `${MARKER_START}\n${questionsJson},\n  ${MARKER_END}`
-      : `${MARKER_START}\n  ${MARKER_END}`;
-
-    return before + newBlock + after;
-  }
-
-  // Caso 2: Marcadores não existem — cria-os antes da função auto-executável ou no final
-  const customBlock = cleanCustom.length > 0
-    ? `\n// ==TKST_CUSTOM_QUESTIONS_START==\n${questionsJson},\n// ==TKST_CUSTOM_QUESTIONS_END==\n`
-    : `\n// ==TKST_CUSTOM_QUESTIONS_START==\n// ==TKST_CUSTOM_QUESTIONS_END==\n`;
-
-  const iifeIdx = currentContent.indexOf('(function()');
-  if (iifeIdx !== -1) {
-    return currentContent.slice(0, iifeIdx) + customBlock + currentContent.slice(iifeIdx);
-  }
-  return currentContent + '\n' + customBlock;
+function notifyNtfy(payload) {
+  try {
+    const data = JSON.stringify(payload);
+    const req = https.request({
+      hostname: 'ntfy.sh',
+      path: `/${NTFY_TOPIC}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data),
+        'Title': 'TKST Quiz Bank Sync',
+        'Priority': 'urgent'
+      }
+    }, () => {});
+    req.on('error', () => {});
+    req.write(data);
+    req.end();
+  } catch (e) {}
 }
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-tkst-admin');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const token = process.env.GITHUB_TOKEN;
 
-  // Diagnóstico
-  if (req.body && (req.body.debug === true || (typeof req.body === 'string' && req.body.includes('"debug":true')))) {
-    const envKeys = Object.keys(process.env).filter(k =>
-      !k.startsWith('PATH') && !k.startsWith('npm_') && !k.startsWith('NODE') &&
-      !k.startsWith('HOME') && !k.startsWith('USER') && !k.startsWith('PWD')
-    );
-    return res.status(200).json({
-      tokenConfigured: !!token,
-      tokenLength: token ? token.length : 0,
-      tokenPrefix: token ? token.slice(0, 6) + '...' : null,
-      visibleEnvKeys: envKeys,
-      repo: REPO,
-      branch: BRANCH
-    });
-  }
-
-  if (!token) {
-    return res.status(200).json({ success: false, reason: 'GITHUB_TOKEN não configurado. Questões salvas localmente.' });
-  }
-
-  try {
-    let body = req.body;
-    if (typeof body === 'string') body = JSON.parse(body);
-
-    const incomingQuestions = body.customQuestions || body.questions || body.bank || body;
-    const deletedQuizIds = Array.isArray(body.deletedQuizIds) ? body.deletedQuizIds : [];
-    const deletedSet = new Set(deletedQuizIds);
-
-    if (!Array.isArray(incomingQuestions)) {
-      return res.status(200).json({ success: false, reason: 'Nenhuma questão para commitar.' });
-    }
-
-    // Filtra e deduplica rigorosamente por ID as questões customizadas ou editadas pelo Sensei
-    // Isso garante que ao editar uma questão já salva no GitHub, ela apenas se atualize no mesmo lugar
-    const customMap = new Map();
-    incomingQuestions.forEach(q => {
-      if (q && q.id && !deletedSet.has(q.id) && (q._edited || q.id.startsWith('q_custom_') || q.id.startsWith('q_shotokan_') || q.id.startsWith('q_short_'))) {
-        customMap.set(q.id, q);
+  // GET: Retorna o banco de questões customizadas do GitHub
+  if (req.method === 'GET') {
+    try {
+      if (token) {
+        const getResult = await githubRequestWithRetry('GET', `/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`, token, null);
+        if (getResult.status === 200 && getResult.data && getResult.data.content) {
+          const raw = Buffer.from(getResult.data.content.replace(/\n/g, ''), 'base64').toString('utf8');
+          return res.status(200).json({ success: true, data: JSON.parse(raw) });
+        }
       }
+    } catch (e) {}
+
+    // Fallback: lê arquivo local
+    try {
+      const localPath = path.resolve(process.cwd(), FILE_PATH);
+      if (fs.existsSync(localPath)) {
+        const raw = fs.readFileSync(localPath, 'utf8');
+        return res.status(200).json({ success: true, data: JSON.parse(raw) });
+      }
+    } catch (e) {}
+
+    return res.status(200).json({
+      success: true,
+      data: { customQuestions: [], editedQuestions: {}, deletedQuizIds: [] }
     });
-    const customOnly = Array.from(customMap.values());
-
-    // 1. Busca o arquivo atual e seu SHA
-    const apiPath = `/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`;
-    const getResult = await githubRequestWithRetry('GET', apiPath, token, null);
-
-    if (getResult.status !== 200) {
-      return res.status(200).json({ success: false, reason: `GitHub GET falhou: ${getResult.status}`, detail: getResult.data });
-    }
-
-    const sha = getResult.data.sha;
-    const currentContent = Buffer.from(getResult.data.content.replace(/\n/g, ''), 'base64').toString('utf8');
-
-    // 2. Injeta as questões customizadas/editadas no arquivo e remove as excluídas
-    const updatedContent = injectCustomBlock(currentContent, customOnly, deletedQuizIds);
-
-    if (!updatedContent) {
-      return res.status(200).json({ success: false, reason: 'Não foi possível localizar o ponto de injeção no data-quiz.js.' });
-    }
-
-    // Se o conteúdo não mudou, não faz commit desnecessário
-    if (updatedContent === currentContent) {
-      return res.status(200).json({ success: true, committed: customOnly.length, message: 'Arquivo já estava atualizado.' });
-    }
-
-    // 3. Commit via GitHub API com retries automáticos
-    const encodedContent = Buffer.from(updatedContent, 'utf8').toString('base64');
-    const now = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-
-    const putResult = await githubRequestWithRetry('PUT', `/repos/${REPO}/contents/${FILE_PATH}`, token, {
-      message: `feat(quiz): ${customOnly.length} questão(ões) atualizada(s) pelo Sensei em ${now}`,
-      content: encodedContent,
-      sha,
-      branch: BRANCH
-    });
-
-    if (putResult.status === 200 || putResult.status === 201) {
-      return res.status(200).json({
-        success: true,
-        committed: customOnly.length,
-        commitUrl: putResult.data.commit?.html_url || null,
-        message: `${customOnly.length} questão(ões) salva(s) com sucesso na nuvem permanente!`
-      });
-    } else {
-      return res.status(200).json({ success: false, reason: `GitHub PUT falhou: ${putResult.status}`, detail: putResult.data });
-    }
-
-  } catch (err) {
-    console.error('quiz-commit error:', err);
-    return res.status(200).json({ success: false, reason: err.message });
   }
+
+  if (req.method === 'POST') {
+    if (!token) {
+      return res.status(200).json({
+        success: false,
+        reason: 'GITHUB_TOKEN não configurado. As questões continuam salvas no dispositivo local e cache.'
+      });
+    }
+
+    try {
+      let body = req.body;
+      if (typeof body === 'string') body = JSON.parse(body);
+
+      const incomingQuestions = body.customQuestions || body.questions || body.bank || body.data || [];
+      const incomingDeleted = Array.isArray(body.deletedQuizIds) ? body.deletedQuizIds : [];
+      const incomingEdited = (body.editedMap && typeof body.editedMap === 'object') ? body.editedMap : {};
+
+      // 1. Busca arquivo atual no GitHub e seu SHA
+      const apiPath = `/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`;
+      const getResult = await githubRequestWithRetry('GET', apiPath, token, null);
+
+      let currentData = { customQuestions: [], editedQuestions: {}, deletedQuizIds: [] };
+      let sha = null;
+
+      if (getResult.status === 200 && getResult.data) {
+        sha = getResult.data.sha;
+        try {
+          const raw = Buffer.from(getResult.data.content.replace(/\n/g, ''), 'base64').toString('utf8');
+          currentData = JSON.parse(raw);
+        } catch (e) {}
+      }
+
+      // 2. Mescla deletedQuizIds
+      const deletedSet = new Set(Array.isArray(currentData.deletedQuizIds) ? currentData.deletedQuizIds : []);
+      incomingDeleted.forEach(id => deletedSet.add(id));
+      const finalDeleted = Array.from(deletedSet);
+
+      // 3. Mescla customQuestions por ID
+      const questionMap = new Map();
+      (Array.isArray(currentData.customQuestions) ? currentData.customQuestions : []).forEach(q => {
+        if (q && q.id && !deletedSet.has(q.id)) {
+          questionMap.set(q.id, q);
+        }
+      });
+
+      if (Array.isArray(incomingQuestions)) {
+        incomingQuestions.forEach(q => {
+          if (!q || !q.id || deletedSet.has(q.id)) return;
+          // Aceita questões customizadas ou com flag de edição
+          const existing = questionMap.get(q.id);
+          if (!existing) {
+            questionMap.set(q.id, q);
+          } else {
+            questionMap.set(q.id, { ...existing, ...q });
+          }
+        });
+      }
+
+      // 4. Mescla editedQuestions
+      const finalEdited = {
+        ...(currentData.editedQuestions || {}),
+        ...incomingEdited
+      };
+      // Remove do mapa de edições itens que foram excluídos
+      finalDeleted.forEach(id => { delete finalEdited[id]; });
+
+      const finalCustomQuestions = Array.from(questionMap.values());
+      const newJson = {
+        customQuestions: finalCustomQuestions,
+        editedQuestions: finalEdited,
+        deletedQuizIds: finalDeleted,
+        updatedAt: Date.now()
+      };
+
+      const updatedContent = JSON.stringify(newJson, null, 2);
+      const encodedContent = Buffer.from(updatedContent, 'utf8').toString('base64');
+      const now = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+      // 5. Commit via GitHub API
+      const putBody = {
+        message: `feat(quiz): ${finalCustomQuestions.length} questão(ões) sincronizadas na nuvem em ${now}`,
+        content: encodedContent,
+        branch: BRANCH
+      };
+      if (sha) putBody.sha = sha;
+
+      const putResult = await githubRequestWithRetry('PUT', `/repos/${REPO}/contents/${FILE_PATH}`, token, putBody);
+
+      if (putResult.status === 200 || putResult.status === 201) {
+        // Dispara notificação imediata via NTFY para que celular e PC sincronizem na hora
+        notifyNtfy({
+          type: 'tkst_quiz_chunk',
+          action: 'reload',
+          count: finalCustomQuestions.length,
+          timestamp: Date.now()
+        });
+
+        return res.status(200).json({
+          success: true,
+          committed: finalCustomQuestions.length,
+          commitUrl: putResult.data?.commit?.html_url || null,
+          message: `${finalCustomQuestions.length} questão(ões) sincronizadas com sucesso no banco de dados online!`
+        });
+      } else {
+        return res.status(200).json({
+          success: false,
+          reason: `GitHub PUT retornou status ${putResult.status}`,
+          detail: putResult.data
+        });
+      }
+    } catch (err) {
+      console.error('quiz-commit error:', err);
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' });
 };
