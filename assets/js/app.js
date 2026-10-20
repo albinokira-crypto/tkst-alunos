@@ -1665,6 +1665,13 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fas fa-sign-in-alt"></i> Entrar no Sistema
             </button>
 
+            <!-- Botão de Recuperação de Senha e Login -->
+            <div style="text-align: center; margin-top: 14px; margin-bottom: 2px;">
+              <a href="#" onclick="event.preventDefault(); window.TKST_APP.openForgotPasswordModal();" style="color: var(--accent-gold); font-size: 0.86rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: var(--radius-sm); background: rgba(255, 183, 3, 0.06); border: 1px solid rgba(255, 183, 3, 0.25); transition: all 0.2s ease;">
+                <i class="fas fa-key"></i> Esqueceu seu Usuário ou Senha?
+              </a>
+            </div>
+
             ${!isAppInstalled() ? `
               <div id="loginInstallPwaBox" style="margin-top: 14px;">
                 <button type="button" onclick="window.TKST_APP.installPwa()" class="btn btn-secondary" style="width: 100%; padding: 11px; font-size: 0.85rem; border: 1px dashed rgba(255, 183, 3, 0.4); color: var(--accent-gold); background: rgba(255, 183, 3, 0.05); font-weight: 600;">
@@ -12834,6 +12841,155 @@ document.addEventListener('DOMContentLoaded', () => {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalBtnText;
         }
+      }
+    },
+
+    openForgotPasswordModal: () => {
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      const detailModal = document.getElementById('detailModal');
+      if (!modalTitle || !modalBody || !detailModal) return;
+
+      modalTitle.innerHTML = `<i class="fas fa-key" style="color: var(--accent-gold); margin-right: 8px;"></i><span>Recuperação de Login e Senha</span>`;
+      modalBody.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm); padding: 12px; font-size: 0.84rem; color: #E2E8F0; line-height: 1.45;">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i>
+            Digite seu <strong>Nome Completo</strong>, <strong>Nick de Usuário</strong> ou <strong>E-mail</strong> cadastrado para recuperar suas credenciais de acesso.
+          </div>
+
+          <form onsubmit="event.preventDefault(); window.TKST_APP.searchAccountForRecovery();" style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">
+                <i class="fas fa-search" style="color: var(--accent-gold); margin-right: 6px;"></i> Localizar Minha Matrícula:
+              </label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="recoveryQueryInput" class="form-input" placeholder="Ex: Théo Suppo, Pietro, ou e-mail..." required style="flex: 1; font-size: 0.9rem;" autofocus>
+                <button type="submit" class="btn btn-primary" style="padding: 10px 16px; font-size: 0.88rem; font-weight: 700; white-space: nowrap;">
+                  <i class="fas fa-search"></i> Buscar
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div id="recoveryResultBox"></div>
+
+          <!-- Suporte Direto Sensei WhatsApp -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; text-align: center;">
+            <span style="font-size: 0.8rem; color: #94A3B8; display: block; margin-bottom: 8px;">Não lembra nenhum dado do seu cadastro?</span>
+            <a href="https://wa.me/5521976077553?text=Ol%C3%A1%20Sensei%20Diego!%20Preciso%20de%20ajuda%20para%20recuperar%20meu%20login%20e%20senha%20no%20app%20TKST%20Alunos." target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.84rem; padding: 9px 16px; border-color: #25D366; color: #25D366; background: rgba(37,211,102,0.08); text-decoration: none; font-weight: 600;">
+              <i class="fab fa-whatsapp" style="font-size: 1.1rem;"></i> Solicitar Ajuda ao Sensei no WhatsApp
+            </a>
+          </div>
+        </div>
+      `;
+
+      detailModal.classList.add('active');
+    },
+
+    searchAccountForRecovery: () => {
+      const queryInput = document.getElementById('recoveryQueryInput');
+      const resultBox = document.getElementById('recoveryResultBox');
+      if (!queryInput || !resultBox) return;
+
+      const q = queryInput.value.trim();
+      if (!q) return;
+
+      const student = window.TKST_AUTH ? window.TKST_AUTH.findStudentFlexible(q) : null;
+      if (!student) {
+        resultBox.innerHTML = `
+          <div style="background: rgba(230, 57, 70, 0.15); border: 1px solid var(--accent-crimson); color: #FF808A; padding: 12px; border-radius: var(--radius-sm); font-size: 0.85rem; line-height: 1.4;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 6px;"></i>
+            Nenhum aluno encontrado com "<strong>${q}</strong>". Verifique se digitou seu nome corretamente ou chame o Sensei no botão abaixo.
+          </div>
+        `;
+        return;
+      }
+
+      resultBox.innerHTML = `
+        <div style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.95)); border: 1.5px solid var(--accent-gold); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 12px; margin-top: 6px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+            <div>
+              <span style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">Matrícula Localizada</span>
+              <div style="font-size: 1.05rem; font-weight: 700; color: #F8FAFC;">${student.name}</div>
+            </div>
+            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.76rem; padding: 4px 8px;">
+              ${student.currentBelt || 'Aluno'}
+            </span>
+          </div>
+
+          <!-- DADOS DE ACESSO -->
+          <div style="background: rgba(255, 183, 3, 0.08); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 0.78rem; color: #E2E8F0;">Seu Usuário (Nick) de Login é:</span>
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--accent-gold); font-family: monospace; letter-spacing: 0.5px;">
+              ${student.username}
+            </div>
+            <span style="font-size: 0.72rem; color: #94A3B8;">Dojo: ${student.dojo || 'TKST'}</span>
+          </div>
+
+          <!-- FORMULÁRIO DE NOVA SENHA -->
+          <form onsubmit="event.preventDefault(); window.TKST_APP.submitPasswordReset('${student.id}');" style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.78rem; margin-bottom: 4px;">
+                <i class="fas fa-lock" style="color: var(--accent-gold); margin-right: 4px;"></i> Digite sua Nova Senha:
+              </label>
+              <input type="password" id="resetNewPassword" class="form-input" placeholder="Nova senha (4 a 11 letras ou números)" minlength="4" maxlength="11" required autocomplete="new-password" style="font-size: 0.9rem;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.78rem; margin-bottom: 4px;">
+                <i class="fas fa-check-double" style="color: var(--accent-gold); margin-right: 4px;"></i> Confirme a Nova Senha:
+              </label>
+              <input type="password" id="resetConfirmPassword" class="form-input" placeholder="Repita a nova senha" minlength="4" maxlength="11" required autocomplete="new-password" style="font-size: 0.9rem;">
+            </div>
+
+            <div id="resetFeedback" style="font-size: 0.82rem;"></div>
+
+            <button type="submit" class="btn btn-primary" style="padding: 12px; font-size: 0.95rem; font-weight: 700; width: 100%; margin-top: 4px;">
+              <i class="fas fa-save"></i> Salvar Nova Senha e Fazer Login
+            </button>
+          </form>
+        </div>
+      `;
+    },
+
+    submitPasswordReset: async (studentId) => {
+      const newPassInput = document.getElementById('resetNewPassword');
+      const confirmInput = document.getElementById('resetConfirmPassword');
+      const feedback = document.getElementById('resetFeedback');
+      if (!newPassInput || !confirmInput || !feedback) return;
+
+      const p1 = newPassInput.value.trim();
+      const p2 = confirmInput.value.trim();
+
+      if (p1.length < 4 || p1.length > 11) {
+        feedback.innerHTML = `<span style="color: #FF808A;">⚠️ A senha deve conter entre 4 e 11 caracteres.</span>`;
+        return;
+      }
+
+      if (p1 !== p2) {
+        feedback.innerHTML = `<span style="color: #FF808A;">⚠️ As senhas digitadas não conferem.</span>`;
+        return;
+      }
+
+      feedback.innerHTML = `<span style="color: var(--accent-gold);"><i class="fas fa-spinner fa-spin"></i> Atualizando e sincronizando sua senha...</span>`;
+
+      const res = await window.TKST_AUTH.recoverPassword(studentId, p1);
+      if (res.success) {
+        feedback.innerHTML = `<span style="color: #6EE7B7; font-weight: 700;">✓ Senha atualizada com sucesso! Entrando no sistema...</span>`;
+        
+        const loginId = document.getElementById('loginIdentifier');
+        const loginPass = document.getElementById('loginPassword');
+        if (loginId && res.student) loginId.value = res.student.username;
+        if (loginPass) loginPass.value = p1;
+
+        setTimeout(async () => {
+          const detailModal = document.getElementById('detailModal');
+          if (detailModal) detailModal.classList.remove('active');
+          await window.TKST_APP.submitLogin();
+        }, 1000);
+      } else {
+        feedback.innerHTML = `<span style="color: #FF808A;">${res.message || 'Erro ao redefinir senha.'}</span>`;
       }
     },
 

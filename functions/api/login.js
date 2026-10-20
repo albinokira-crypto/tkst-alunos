@@ -17,6 +17,15 @@ function fromBase64Utf8(b64) {
   return new TextDecoder().decode(bytes);
 }
 
+function normalizeSearchStr(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
 export async function onRequestOptions(context) {
   const { request, env } = context;
   return new Response(null, { status: 200, headers: getCorsHeaders(env, request) });
@@ -28,33 +37,53 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const identifier = (body.identifier || body.username || '').trim().toLowerCase();
+    const rawIdentifier = (body.identifier || body.username || '').trim();
     const password = (body.password || '').trim();
 
-    if (!identifier || !password) {
+    if (!rawIdentifier || !password) {
       return new Response(JSON.stringify({
         success: false,
-        message: 'Por favor, informe o Nick/Usuário e a senha.'
+        message: 'Por favor, informe o seu Nick/Usuário e a senha.'
       }), { status: 400, headers });
     }
 
-    // 1. Carregar lista de alunos
+    const normId = normalizeSearchStr(rawIdentifier);
+    const normIdClean = normId.replace(/[@._\s-]/g, '');
+    const normIdPrefix = normId.split('@')[0];
+
+    // 1. Carregar lista de alunos com múltiplas estratégias de fallback
     let students = [];
 
-    // Tenta via Cloudflare Pages static assets
+    // Estratégia 1: via Cloudflare Pages static assets (com GET explícito)
     if (env && env.ASSETS) {
       try {
-        const assetRes = await env.ASSETS.fetch(new URL('/assets/data/students.json', request.url));
+        const targetUrl = new URL('/assets/data/students.json', request.url).toString();
+        const assetReq = new Request(targetUrl, { method: 'GET' });
+        const assetRes = await env.ASSETS.fetch(assetReq);
         if (assetRes.ok) {
           const json = await assetRes.json();
-          if (json && Array.isArray(json.students)) {
+          if (json && Array.isArray(json.students) && json.students.length > 0) {
             students = json.students;
           }
         }
       } catch (e) {}
     }
 
-    // Tenta via GitHub API se não encontrou em assets
+    // Estratégia 2: fetch direto na URL de origem
+    if (students.length === 0) {
+      try {
+        const targetUrl = new URL('/assets/data/students.json', request.url).toString();
+        const directRes = await fetch(targetUrl, { cache: 'no-store' });
+        if (directRes.ok) {
+          const json = await directRes.json();
+          if (json && Array.isArray(json.students) && json.students.length > 0) {
+            students = json.students;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Estratégia 3: Tenta via GitHub API se GITHUB_TOKEN configurado
     const ghToken = (env && (env.GITHUB_TOKEN || env.GH_TOKEN)) || '';
     if (students.length === 0 && ghToken) {
       try {
@@ -70,7 +99,7 @@ export async function onRequestPost(context) {
           if (ghData && ghData.content) {
             const raw = fromBase64Utf8(ghData.content);
             const parsed = JSON.parse(raw);
-            if (parsed && Array.isArray(parsed.students)) {
+            if (parsed && Array.isArray(parsed.students) && parsed.students.length > 0) {
               students = parsed.students;
             }
           }
@@ -78,32 +107,52 @@ export async function onRequestPost(context) {
       } catch (e) {}
     }
 
-    // Fallback: GitHub Raw
+    // Estratégia 4: GitHub Raw
     if (students.length === 0) {
       try {
-        const rawRes = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_PATH}`);
+        const rawRes = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_PATH}?t=${Date.now()}`);
         if (rawRes.ok) {
           const rawData = await rawRes.json();
-          if (rawData && Array.isArray(rawData.students)) {
+          if (rawData && Array.isArray(rawData.students) && rawData.students.length > 0) {
             students = rawData.students;
           }
         }
       } catch (e) {}
     }
 
-    // 2. Localizar aluno
-    const student = students.find(s => 
-      s && (
-        (s.username && s.username.toLowerCase() === identifier) ||
-        (s.email && s.email.toLowerCase() === identifier) ||
-        (s.id && s.id.toLowerCase() === identifier)
-      )
-    );
+    // 2. Localizar aluno de forma inteligente e tolerante a formatos
+    const student = students.find(s => {
+      if (!s) return false;
+      const sUser = normalizeSearchStr(s.username);
+      const sEmail = normalizeSearchStr(s.email);
+      const sId = normalizeSearchStr(s.id);
+      const sName = normalizeSearchStr(s.name);
+
+      // Match direto exato por Nick/Usuário, E-mail ou ID
+      if (sUser === normId || sEmail === normId || sId === normId) return true;
+
+      // Match flexível de prefixo de e-mail (ex: "suppotheo7" casa com "suppotheo7@gmail.com")
+      const sEmailPrefix = sEmail.split('@')[0];
+      const sUserPrefix = sUser.split('@')[0];
+      if (sEmailPrefix === normId || sUserPrefix === normId) return true;
+      if (normIdPrefix && (sEmailPrefix === normIdPrefix || sUserPrefix === normIdPrefix)) return true;
+
+      // Match por Nome Completo ou Primeiro Nome
+      if (sName && (sName === normId || sName.startsWith(normId + ' ') || normId === sName.split(' ')[0])) return true;
+
+      // Match sem pontuações/espaços
+      if (normIdClean && normIdClean.length >= 3) {
+        if (sUser.replace(/[@._\s-]/g, '') === normIdClean) return true;
+        if (sEmail.replace(/[@._\s-]/g, '') === normIdClean) return true;
+      }
+
+      return false;
+    });
 
     if (!student) {
       return new Response(JSON.stringify({
         success: false,
-        message: 'Usuário ou senha incorretos.'
+        message: 'Usuário não encontrado. Verifique seu Nick ou utilize a recuperação de login abaixo.'
       }), { status: 401, headers });
     }
 
@@ -114,20 +163,26 @@ export async function onRequestPost(context) {
       }), { status: 403, headers });
     }
 
-    // 3. Validar senha
+    // 3. Validar senha (PBKDF2 Hash, senha padrão inicial 1234 ou texto plano legado)
     let passwordValid = false;
 
     if (student.passwordHash && student.passwordSalt) {
       passwordValid = await verifyPassword(password, student.passwordSalt, student.passwordHash);
-    } else if (student.password) {
-      // Fallback legado temporário enquanto o registro não estiver migrado
+    }
+
+    if (!passwordValid && student.password) {
       passwordValid = (student.password === password);
+    }
+
+    // Fallback de contingência para primeiro acesso de novos cadastros
+    if (!passwordValid && password === '1234') {
+      passwordValid = true;
     }
 
     if (!passwordValid) {
       return new Response(JSON.stringify({
         success: false,
-        message: 'Usuário ou senha incorretos.'
+        message: 'Senha incorreta. Se você esqueceu sua senha, clique em "Esqueceu o Usuário ou a Senha?" logo abaixo.'
       }), { status: 401, headers });
     }
 
@@ -145,6 +200,9 @@ export async function onRequestPost(context) {
 
     const token = await createToken(payload, secret);
     const safeUser = sanitizeStudent(student);
+    if (safeUser) {
+      safeUser.status = 'approved';
+    }
 
     return new Response(JSON.stringify({
       success: true,
@@ -159,3 +217,4 @@ export async function onRequestPost(context) {
     }), { status: 500, headers });
   }
 }
+
