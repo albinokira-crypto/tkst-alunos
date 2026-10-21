@@ -149,10 +149,34 @@ module.exports = async (req, res) => {
     if (tmpFull) {
       inMemoryData = { ...inMemoryData, ...tmpFull };
     }
-    if (!inMemoryData.custom_quiz_bank || inMemoryData.custom_quiz_bank.length === 0) {
+    // Hidrata banco de questões oficial e customizado se necessário
+    try {
       const tmpBank = readQuizBankFromTmp();
-      if (tmpBank) inMemoryData.custom_quiz_bank = tmpBank;
-    }
+      let customFileBank = [];
+      let customFileEdited = {};
+      let customFileDeleted = [];
+      try {
+        const localCustomPath = path.resolve(process.cwd(), 'assets/data/quiz-custom.json');
+        if (fs.existsSync(localCustomPath)) {
+          const cParsed = JSON.parse(fs.readFileSync(localCustomPath, 'utf8'));
+          if (cParsed && typeof cParsed === 'object') {
+            if (Array.isArray(cParsed.customQuestions)) customFileBank = cParsed.customQuestions;
+            if (cParsed.editedQuestions && typeof cParsed.editedQuestions === 'object') customFileEdited = cParsed.editedQuestions;
+            if (Array.isArray(cParsed.deletedQuizIds)) customFileDeleted = cParsed.deletedQuizIds;
+          }
+        }
+      } catch(e) {}
+
+      const currentBank = inMemoryData.custom_quiz_bank || tmpBank || defaultQuizBank || [];
+      const qMap = new Map();
+      currentBank.forEach(q => { if (q && q.id) qMap.set(q.id, q); });
+      customFileBank.forEach(q => { if (q && q.id) qMap.set(q.id, { ...(qMap.get(q.id) || {}), ...q }); });
+      inMemoryData.custom_quiz_bank = Array.from(qMap.values());
+      inMemoryData.edited_quiz_questions = { ...(customFileEdited || {}), ...(inMemoryData.edited_quiz_questions || {}) };
+      if (customFileDeleted.length > 0) {
+        inMemoryData.deletedQuizIds = Array.from(new Set([...(inMemoryData.deletedQuizIds || []), ...customFileDeleted]));
+      }
+    } catch(e) {}
     if (!inMemoryData.custom_glossary || Object.keys(inMemoryData.custom_glossary).length === 0) {
       const tmpGlossary = readGlossaryFromTmp();
       if (tmpGlossary && tmpGlossary.glossary) {
@@ -223,7 +247,12 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: inMemoryData
+      timestamp: Date.now(),
+      data: inMemoryData,
+      custom_quiz_bank: inMemoryData.custom_quiz_bank || [],
+      edited_quiz_questions: inMemoryData.edited_quiz_questions || {},
+      generated_exams: inMemoryData.generated_exams || {},
+      status: 'online'
     });
   }
 

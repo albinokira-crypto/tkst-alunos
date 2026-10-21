@@ -291,7 +291,7 @@
       broadcastQuizEditDelta(editedMap, customOnly);
 
       // 4. Transmissão secundária em lote (para sincronização de novas questões completas)
-      if (customOnly.length > 0 && customOnly.length <= 20) {
+      if (customOnly.length > 0) {
         broadcastQuizBankChunks(customOnly);
       }
     } catch(err) {
@@ -422,19 +422,29 @@
     if (!Array.isArray(bank) || bank.length === 0) return;
     try {
       const customOnly = stripDefaultImages(bank.filter(q => q && q.id && q.question));
+      // Garante que imagens pesadas não inflem o pacote além dos 3.5KB do ntfy.sh
+      const lightweightOnly = customOnly.map(q => {
+        if (!q) return null;
+        if (q.image && q.image.length > 250) {
+          const { image, ...rest } = q;
+          return { ...rest, image: '' };
+        }
+        return q;
+      }).filter(Boolean);
+
       const CHUNK_SIZE = 5;
-      const totalChunks = Math.ceil(customOnly.length / CHUNK_SIZE);
+      const totalChunks = Math.ceil(lightweightOnly.length / CHUNK_SIZE);
       const broadcastId = 'quiz_sync_' + Date.now();
 
       for (let i = 0; i < totalChunks; i++) {
-        const slice = customOnly.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+        const slice = lightweightOnly.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
         const chunkMsg = {
           type: 'tkst_quiz_chunk',
           senderId: CLIENT_SENDER_ID,
           broadcastId,
           chunkIndex: i,
           totalChunks,
-          count: customOnly.length,
+          count: lightweightOnly.length,
           questions: slice,
           timestamp: Date.now()
         };
@@ -601,12 +611,13 @@
 
       // 3. 1ª tentativa: endpoint dedicado /api/quiz-bank
       let cloudQuestions = [];
+      const cloudMap = new Map();
       try {
         const res = await fetch('/api/quiz-bank', { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-            cloudQuestions = json.data;
+            json.data.forEach(q => { if (q && q.id) cloudMap.set(q.id, q); });
           }
           if (json && json.editedMap && typeof json.editedMap === 'object' && Object.keys(json.editedMap).length > 0) {
             try {
@@ -624,13 +635,19 @@
         }
       } catch(e) {}
 
-      // 4. 2ª tentativa: busca de /api/sync se /api/quiz-bank veio vazio (resiliente a reinício da Vercel)
+      // 4. 2ª tentativa: busca de /api/sync e mescla com cloudMap (sincronização em tempo real celular x pc)
       try {
         const syncRes = await fetch('/api/sync', { cache: 'no-store' });
         if (syncRes.ok) {
           const syncJson = await syncRes.json();
-          if (cloudQuestions.length === 0 && syncJson && syncJson.data && Array.isArray(syncJson.data.custom_quiz_bank) && syncJson.data.custom_quiz_bank.length > 0) {
-            cloudQuestions = syncJson.data.custom_quiz_bank;
+          const syncBank = (syncJson && syncJson.custom_quiz_bank) || (syncJson && syncJson.data && syncJson.data.custom_quiz_bank);
+          if (Array.isArray(syncBank) && syncBank.length > 0) {
+            syncBank.forEach(q => {
+              if (q && q.id) {
+                const ex = cloudMap.get(q.id);
+                cloudMap.set(q.id, ex ? { ...ex, ...q } : q);
+              }
+            });
           }
           const syncEdited = (syncJson && syncJson.edited_quiz_questions) || (syncJson && syncJson.data && syncJson.data.edited_quiz_questions);
           if (syncEdited && typeof syncEdited === 'object' && Object.keys(syncEdited).length > 0) {
@@ -642,23 +659,28 @@
         }
       } catch(e) {}
 
-      // 5. 3ª tentativa (fallback): lê direto do GitHub se /api/quiz-bank e /api/sync vieram vazios
-      if (cloudQuestions.length === 0) {
-        cloudQuestions = await pullQuizBankFromGitHub();
+      // 5. 3ª tentativa (fallback): lê direto do GitHub se necessário
+      if (cloudMap.size === 0) {
+        const ghQuestions = await pullQuizBankFromGitHub();
+        if (Array.isArray(ghQuestions)) {
+          ghQuestions.forEach(q => { if (q && q.id) cloudMap.set(q.id, q); });
+        }
       }
 
       // 6. 4ª tentativa (fallback estático): lê assets/data/quiz-questions.json
-      if (cloudQuestions.length === 0) {
+      if (cloudMap.size === 0) {
         try {
           const jsonRes = await fetch('./assets/data/quiz-questions.json?_=' + Date.now(), { cache: 'no-store' });
           if (jsonRes.ok) {
             const staticQ = await jsonRes.json();
             if (Array.isArray(staticQ) && staticQ.length > 0) {
-              cloudQuestions = staticQ;
+              staticQ.forEach(q => { if (q && q.id) cloudMap.set(q.id, q); });
             }
           }
         } catch(e) {}
       }
+
+      cloudQuestions = Array.from(cloudMap.values());
 
       // Recupera o mapa permanente de questões editadas pelo Sensei
       let activeEditedMap = {};
@@ -2109,7 +2131,7 @@
                 }
                 if (cloudData.type === 'sync_notification') {
                   if (!appliedMainCloudData) {
-                    pullFromCloud();
+                    pullFromCloud(true);
                     appliedMainCloudData = true;
                   }
                   continue;
@@ -2169,7 +2191,7 @@
                 } else if (cloudData.type === 'quiz_sync_broadcast' && Array.isArray(cloudData.bank)) {
                   handleIncomingQuizChunk({ questions: cloudData.bank });
                 } else if (cloudData.type === 'sync_notification') {
-                  pullFromCloud();
+                  pullFromCloud(true);
                 } else {
                   applyCloudData(cloudData);
                 }

@@ -31,6 +31,7 @@ export async function onRequestGet(context) {
     timestamp: Date.now(),
     data: inMemoryState,
     dojos: inMemoryState.dojos || DEFAULT_DOJOS,
+    custom_quiz_bank: inMemoryState.custom_quiz_bank || [],
     edited_quiz_questions: inMemoryState.edited_quiz_questions || {},
     generated_exams: inMemoryState.generated_exams || {},
     status: 'online'
@@ -64,9 +65,18 @@ export async function onRequestPost(context) {
       const newEdited = sanitizedBody.edited_quiz_questions || {};
       const existingExams = inMemoryState.generated_exams || {};
       const newExams = sanitizedBody.generated_exams || {};
+
+      const existingBank = inMemoryState.custom_quiz_bank || [];
+      const incomingBank = Array.isArray(sanitizedBody.custom_quiz_bank) ? sanitizedBody.custom_quiz_bank : [];
+      const qMap = new Map();
+      existingBank.forEach(q => { if (q && q.id) qMap.set(q.id, q); });
+      incomingBank.forEach(q => { if (q && q.id) qMap.set(q.id, { ...(qMap.get(q.id) || {}), ...q }); });
+      const mergedBank = Array.from(qMap.values());
+
       inMemoryState = { 
         ...inMemoryState, 
         ...sanitizedBody, 
+        custom_quiz_bank: mergedBank,
         edited_quiz_questions: { ...existingEdited, ...newEdited },
         generated_exams: { ...existingExams, ...newExams },
         timestamp: Date.now() 

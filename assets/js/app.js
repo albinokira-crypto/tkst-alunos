@@ -1804,7 +1804,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="admin-badge-ribbon" style="margin-bottom: 0;">
               <i class="fas ${isMaster ? 'fa-crown' : 'fa-user-shield'}"></i> ${isMaster ? 'Painel Geral do Administrador (Sensei Diego)' : 'Painel do Administrador (Instrutor / Sensei)'}
             </div>
-            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #6EE7B7; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.72rem; font-weight: 700;">
+            <div style="display: none !important; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #6EE7B7; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.72rem; font-weight: 700;">
               <i class="fas fa-cloud" style="color: #10B981;"></i> Nuvem Conectada (PC ⇄ Celular)
             </div>
           </div>
@@ -1812,19 +1812,19 @@ document.addEventListener('DOMContentLoaded', () => {
           <p style="font-size: 0.85rem; color: #94A3B8;">${isMaster ? 'Controle de alunos, credenciais de administradores, simulados, Dojos e vídeos dos 26 Kata.' : 'Gerenciamento de simulados, questões, dicionário japonês, Dojos e vídeos dos 26 Kata.'}</p>
         </div>
 
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; margin-top: 8px; position: relative; z-index: 1;">
+        <div style="display: flex; gap: 8px; flex-wrap: nowrap; align-items: center; width: 100%; margin-top: 8px; position: relative; z-index: 1;">
           ${canManageStudents ? `
-            <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="font-size: 0.82rem; padding: 8px 14px; background: #25D366; color: #FFF; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
-              <i class="fab fa-whatsapp"></i> Convidar Aluno para Cadastro
+            <button class="btn" onclick="window.TKST_APP.openInviteModal()" style="flex: 1; min-width: 0; font-size: 0.82rem; padding: 9px 12px; background: #25D366; color: #FFF; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Convite ao sistema">
+              <i class="fab fa-whatsapp"></i> <span>Convite ao sistema</span>
             </button>
-            <button class="btn btn-primary" onclick="window.TKST_APP.openManualStudentModal()" style="font-size: 0.82rem; padding: 8px 14px;">
-              <i class="fas fa-user-plus"></i> Novo Aluno Manual
+            <button class="btn btn-primary" onclick="window.TKST_APP.openManualStudentModal()" style="flex: 1; min-width: 0; font-size: 0.82rem; padding: 9px 12px; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Novo Aluno Manual">
+              <i class="fas fa-user-plus"></i> <span>Novo Aluno Manual</span>
             </button>
           ` : ''}
-          <button class="btn btn-secondary" onclick="window.TKST_APP.exportFullBackup()" style="font-size: 0.82rem; padding: 8px 14px;" title="Baixar arquivo JSON completo com questões, alunos e simulados">
+          <button class="btn btn-secondary" onclick="window.TKST_APP.exportFullBackup()" style="display: none !important;" title="Baixar arquivo JSON completo com questões, alunos e simulados">
             <i class="fas fa-download"></i> Exportar Backup JSON
           </button>
-          <button class="btn btn-secondary" onclick="window.TKST_APP.importFullBackup()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(34, 197, 94, 0.4); color: #86EFAC;" title="Carregar arquivo JSON de backup do celular ou computador">
+          <button class="btn btn-secondary" onclick="window.TKST_APP.importFullBackup()" style="display: none !important;" title="Carregar arquivo JSON de backup do celular ou computador">
             <i class="fas fa-file-import"></i> Importar Backup JSON
           </button>
         </div>
@@ -1956,29 +1956,33 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Banner Indicador da Aba Ativa -->
+      <!-- Modal para Abas do Painel de Controle (Abertura em Janela Modal Flutuante) -->
       ${adminSubTab ? `
-        <div class="admin-active-tab-banner">
-          <div style="display: flex; align-items: center; gap: 9px; min-width: 0;">
-            <i class="${adminSubTab === 'students' ? 'fas fa-users' : (adminSubTab === 'media' ? 'fas fa-photo-video' : (adminSubTab === 'kata-videos' ? 'fas fa-video' : (adminSubTab === 'questions' ? 'fas fa-question-circle' : (adminSubTab === 'exam-generator' ? 'fas fa-file-pdf' : (adminSubTab === 'quizzes' ? 'fas fa-clipboard-check' : (adminSubTab === 'dojos' ? 'fas fa-torii-gate' : (adminSubTab === 'files' ? 'fas fa-folder-open' : 'fas fa-user-clock')))))))}" style="color: var(--accent-gold); font-size: 1.1rem; flex-shrink: 0;"></i>
-            <span style="font-weight: 800; color: #FFF; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              ${adminSubTab === 'students' ? 'Alunos Matriculados' : (adminSubTab === 'media' ? 'Galeria Oficial TKST (Fotos & Vídeos)' : (adminSubTab === 'kata-videos' ? 'Vídeos dos 26 Kata' : (adminSubTab === 'questions' ? 'Banco de Questões Teóricas' : (adminSubTab === 'exam-generator' ? 'Gerador de Provas & Gabaritos PDF' : (adminSubTab === 'quizzes' ? 'Provas & Simulados Realizados' : (adminSubTab === 'dojos' ? 'Dojos & Unidades TKST' : (adminSubTab === 'files' ? 'Arquivos & Mídias para Download' : 'Solicitações de Cadastro Pendentes')))))))}
-            </span>
-            <span class="badge badge-verde" style="font-size: 0.68rem; padding: 2px 7px; flex-shrink: 0;">Aba Aberta</span>
-          </div>
-          <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.setAdminSubTab(null)" style="font-size: 0.75rem; padding: 5px 12px; border-radius: 6px; flex-shrink: 0;" title="Recolher e fechar aba">
-            <i class="fas fa-times"></i> Fechar Aba
-          </button>
-        </div>
-      ` : `
-        <div style="text-align: center; padding: 32px 18px; background: rgba(18, 23, 34, 0.65); border: 1.5px dashed rgba(255, 183, 3, 0.3); border-radius: var(--radius-lg); margin-top: 6px; margin-bottom: 24px;">
-          <i class="fas fa-hand-pointer" style="font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 12px; display: inline-block;"></i>
-          <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.1rem; margin-bottom: 4px;">Selecione uma opção acima para abrir</h4>
-          <p style="font-size: 0.85rem; color: #94A3B8; margin: 0 auto; max-width: 440px;">
-            Clique nos botões do menu acima (Alunos, Kata, Questões, Provas PDF, etc.) para abrir o gerenciador desejado.
-          </p>
-        </div>
-      `}
+        <div class="modal-overlay active" id="adminTabModal" style="display: flex; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 12px; box-sizing: border-box;" onclick="if(event.target===this) window.TKST_APP.setAdminSubTab(null)">
+          <div class="modal-container" style="max-width: 1200px; width: min(1200px, 98vw); max-height: 94vh; height: 94vh; display: flex; flex-direction: column; background: #0F172A; border: 1.5px solid rgba(255, 183, 3, 0.45); border-radius: var(--radius-lg); box-shadow: 0 20px 60px rgba(0,0,0,0.85); overflow: hidden; box-sizing: border-box;">
+            
+            <!-- Modal Header -->
+            <div class="modal-header" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-bottom: 1.5px solid rgba(255, 255, 255, 0.1); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(255, 183, 3, 0.15); border: 1px solid rgba(255, 183, 3, 0.4); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-size: 1.15rem; flex-shrink: 0;">
+                  <i class="${adminSubTab === 'students' ? 'fas fa-users' : (adminSubTab === 'media' ? 'fas fa-photo-video' : (adminSubTab === 'kata-videos' ? 'fas fa-video' : (adminSubTab === 'questions' ? 'fas fa-question-circle' : (adminSubTab === 'exam-generator' ? 'fas fa-file-pdf' : (adminSubTab === 'quizzes' ? 'fas fa-clipboard-check' : (adminSubTab === 'dojos' ? 'fas fa-torii-gate' : (adminSubTab === 'files' ? 'fas fa-folder-open' : 'fas fa-user-clock')))))))}"></i>
+                </div>
+                <div style="min-width: 0;">
+                  <h3 style="font-size: 1.15rem; font-weight: 800; color: #FFF; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    ${adminSubTab === 'students' ? 'Alunos Matriculados' : (adminSubTab === 'media' ? 'Galeria Oficial TKST (Fotos & Vídeos)' : (adminSubTab === 'kata-videos' ? 'Vídeos dos 26 Kata' : (adminSubTab === 'questions' ? 'Banco de Questões Teóricas' : (adminSubTab === 'exam-generator' ? 'Gerador de Provas & Gabaritos PDF' : (adminSubTab === 'quizzes' ? 'Provas & Simulados Realizados' : (adminSubTab === 'dojos' ? 'Dojos & Unidades TKST' : (adminSubTab === 'files' ? 'Arquivos & Mídias para Download' : 'Solicitações de Cadastro Pendentes')))))))}
+                  </h3>
+                  <span style="font-size: 0.72rem; color: #94A3B8;">Painel de Controle e Abas em Modal</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.setAdminSubTab(null)" style="font-size: 0.80rem; padding: 6px 14px; font-weight: 700; border-radius: 6px;">
+                  <i class="fas fa-times"></i> Fechar
+                </button>
+              </div>
+            </div>
+
+            <!-- Modal Body (Rolagem Própria sem quebrar o layout da página) -->
+            <div class="modal-body" style="padding: 18px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch;">
 
       ${adminSubTab === 'pending' ? `
         <!-- PENDING STUDENTS APPROVAL LIST -->
@@ -5442,9 +5446,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
               </div>
             ` : ''}
+        ` : ''}
+
+            </div>
+            <!-- Modal Footer -->
+            <div style="background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 18px; display: flex; justify-content: flex-end; align-items: center; flex-shrink: 0;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.setAdminSubTab(null)" style="font-size: 0.85rem; padding: 7px 20px; font-weight: 700;">
+                <i class="fas fa-times"></i> Fechar Janela
+              </button>
+            </div>
           </div>
         </div>
-        ` : ''}
+      ` : `
+        <div style="text-align: center; padding: 36px 18px; background: rgba(18, 23, 34, 0.65); border: 1.5px dashed rgba(255, 183, 3, 0.3); border-radius: var(--radius-lg); margin-top: 6px; margin-bottom: 24px;">
+          <i class="fas fa-th-large" style="font-size: 2.4rem; color: var(--accent-gold); margin-bottom: 12px; display: inline-block;"></i>
+          <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 4px;">Painel de Controle e Abas</h4>
+          <p style="font-size: 0.85rem; color: #94A3B8; margin: 0 auto; max-width: 480px;">
+            Clique em qualquer card acima para abrir sua respectiva janela modal (Alunos, Kata, Questões, Provas PDF, Dojos, etc.).
+          </p>
+        </div>
+      `}
 
       </div>
     `;
@@ -9304,9 +9325,9 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAdminMaster();
       if (adminSubTab) {
         setTimeout(() => {
-          const target = document.querySelector('.admin-active-tab-banner') || document.querySelector('.admin-table-container');
-          if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const mBody = document.querySelector('#adminTabModal .modal-body');
+          if (mBody) {
+            mBody.scrollTop = 0;
           }
         }, 60);
       }
@@ -16966,6 +16987,9 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
   // ESC e teclas de seta no teclado para fechar/navegar no Lightbox
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' || e.key === 'Esc') {
+      if (adminSubTab) {
+        window.TKST_APP.setAdminSubTab(null);
+      }
       document.querySelectorAll('.modal-overlay.active').forEach(m => {
         if (m.getAttribute('data-prevent-outside-close') !== 'true' && !m.querySelector('form')) {
           m.removeAttribute('data-prevent-outside-close');

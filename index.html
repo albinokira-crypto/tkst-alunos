@@ -127,7 +127,8 @@
             <span>Painel do Sensei (Admin)</span>
           </a>
         </li>
-        <li class="nav-item admin-only-nav" style="display: none;">
+        <!-- Sincronizar Celular / PC (Ocultado a pedido do Sensei, sincronização 100% em tempo real ativa) -->
+        <li class="nav-item" style="display: none !important;">
           <a class="nav-link" href="sincronizar.html" target="_blank" style="color: #86EFAC; font-weight: 600; cursor: pointer; background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22C55E;">
             <i class="fas fa-sync-alt" style="color: #22C55E;"></i>
             <span>Sincronizar Celular / PC</span>
@@ -176,7 +177,7 @@
 
       <div class="nav-section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
         <span>Sessão & Conta</span>
-        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.94. Toque para atualizar o app.">V-2.94</span>
+        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.99. Toque para atualizar o app.">V-2.99</span>
       </div>
       <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
         <li class="nav-item">
@@ -855,19 +856,19 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=298"></script>
-  <script src="assets/js/data-curriculum.js?v=298"></script>
-  <script src="assets/js/data-katas.js?v=298"></script>
-  <script src="assets/js/data-kumite.js?v=298"></script>
-  <script src="assets/js/data-glossary.js?v=298"></script>
-  <script src="assets/js/data-quiz.js?v=298"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=298"></script>
-  <script src="assets/js/data-media.js?v=298"></script>
-  <script src="assets/js/data-exams.js?v=298"></script>
-  <script src="assets/js/omr-engine.js?v=298"></script>
-  <script src="assets/js/qr-generator.js?v=298"></script>
-  <script src="assets/js/auth.js?v=298"></script>
-  <script src="assets/js/app.js?v=298"></script>
+  <script src="assets/js/jsqr.min.js?v=299"></script>
+  <script src="assets/js/data-curriculum.js?v=299"></script>
+  <script src="assets/js/data-katas.js?v=299"></script>
+  <script src="assets/js/data-kumite.js?v=299"></script>
+  <script src="assets/js/data-glossary.js?v=299"></script>
+  <script src="assets/js/data-quiz.js?v=299"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=299"></script>
+  <script src="assets/js/data-media.js?v=299"></script>
+  <script src="assets/js/data-exams.js?v=299"></script>
+  <script src="assets/js/omr-engine.js?v=299"></script>
+  <script src="assets/js/qr-generator.js?v=299"></script>
+  <script src="assets/js/auth.js?v=299"></script>
+  <script src="assets/js/app.js?v=299"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
@@ -892,7 +893,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=298', { updateViaCache: 'none' }).then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=299', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
 
           reg.addEventListener('updatefound', () => {
