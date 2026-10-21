@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-2.98';
+  const APP_DISPLAY_VERSION = 'V-3.00';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -166,21 +166,29 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Verificação periódica de nova versão no servidor (auto-upgrade silencioso, seguro e com anti-loop)
+  // Rastreamento de atividade do usuário para evitar qualquer reload enquanto ele estiver estudando
+  ['click', 'keydown', 'touchstart'].forEach(evt => {
+    window.addEventListener(evt, () => {
+      try { sessionStorage.setItem('tkst_last_user_action_ts', String(Date.now())); } catch(e) {}
+    }, { passive: true });
+  });
+
+  // Verificação periódica de nova versão no servidor (auto-upgrade seguro, silencioso e NÃO-DISRUPTIVO)
   async function checkAppVersionUpdate() {
     try {
-      // 1. NUNCA recarrega se o modal de correção ou qualquer modal estiver aberto/ativo
+      // 1. NUNCA recarrega se o usuário estiver em qualquer modal, aba de estudo ou teste
       const omrModal = document.getElementById('examOmrScannerModal');
       const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
-      const isAnyModalActive = !!document.querySelector('.modal-overlay.active, .modal-backdrop.active');
-      if (isOmrActive || isAnyModalActive || examPreviewGenerated || (typeof shouldSkipRerender === 'function' && shouldSkipRerender())) {
+      const isAnyModalActive = !!document.querySelector('.modal-overlay.active, .modal-backdrop.active, .modal.active');
+      const isStudying = typeof currentTab !== 'undefined' && currentTab && currentTab !== 'dashboard';
+      if (isOmrActive || isAnyModalActive || isStudying || examPreviewGenerated || (typeof shouldSkipRerender === 'function' && shouldSkipRerender())) {
         return;
       }
 
-      // Anti-loop guard: impede qualquer recarregamento em menos de 120 segundos
+      // Anti-loop guard: impede qualquer checagem repetitiva em menos de 180 segundos
       const lastReloadKey = 'tkst_last_ver_reload_ts';
       const lastReloadTime = Number(sessionStorage.getItem(lastReloadKey) || 0);
-      if (Date.now() - lastReloadTime < 120000) {
+      if (Date.now() - lastReloadTime < 180000) {
         return;
       }
 
@@ -188,38 +196,47 @@ document.addEventListener('DOMContentLoaded', () => {
       if (vRes.ok) {
         const vData = await vRes.json();
         if (vData && vData.version && vData.version !== APP_DISPLAY_VERSION) {
-          // Re-verifica se o modal de correção foi aberto durante a requisição de rede
-          const isOmrNowActive = !!document.getElementById('examOmrScannerModal')?.classList.contains('active') ||
-                                 document.getElementById('examOmrScannerModal')?.style.display !== 'none' ||
-                                 !!document.querySelector('.modal-overlay.active');
-          if (isOmrNowActive || examPreviewGenerated) {
-            return;
+          console.log('[Auto-Update] Nova versão disponível:', vData.version, 'Versão atual:', APP_DISPLAY_VERSION);
+
+          if (appVersionBadgeEl) {
+            appVersionBadgeEl.innerHTML = `<span style="color: var(--accent-gold); font-weight: 800;">🔄 ${vData.version}</span>`;
+            appVersionBadgeEl.title = `Nova versão ${vData.version} disponível! Toque para atualizar.`;
           }
 
-          sessionStorage.setItem(lastReloadKey, String(Date.now()));
-          console.log('[Auto-Update] Nova versão detectada:', vData.version, 'Versão atual:', APP_DISPLAY_VERSION);
+          // Se estiver na tela inicial inativo por mais de 5 minutos, atualiza silenciosamente
+          const lastUserAction = Number(sessionStorage.getItem('tkst_last_user_action_ts') || 0);
+          const isIdleOnDashboard = currentTab === 'dashboard' && (Date.now() - lastUserAction > 300000);
 
-          if ('caches' in window) {
-            try {
-              const names = await caches.keys();
-              await Promise.all(names.map(n => caches.delete(n)));
-            } catch(e) {}
+          if (isIdleOnDashboard) {
+            sessionStorage.setItem(lastReloadKey, String(Date.now()));
+            if ('caches' in window) {
+              try {
+                const names = await caches.keys();
+                await Promise.all(names.map(n => caches.delete(n)));
+              } catch(e) {}
+            }
+            if ('serviceWorker' in navigator) {
+              try {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                regs.forEach(r => r.unregister());
+              } catch(e) {}
+            }
+            window.location.reload(true);
+          } else {
+            // Apenas notifica suavemente sem fechar telas nem interromper o usuário
+            if (typeof showToast === 'function' && !sessionStorage.getItem('tkst_ver_toast_shown_' + vData.version)) {
+              sessionStorage.setItem('tkst_ver_toast_shown_' + vData.version, '1');
+              showToast(`✨ Nova versão ${vData.version} disponível! Toque na versão no menu lateral para atualizar quando terminar.`, 'info', 6000);
+            }
           }
-          if ('serviceWorker' in navigator) {
-            try {
-              const regs = await navigator.serviceWorker.getRegistrations();
-              regs.forEach(r => r.unregister());
-            } catch(e) {}
-          }
-          window.location.reload(true);
         }
       }
     } catch(e) {}
   }
 
-  // Executa checagem após carregamento inicial estável (45 segundos) e depois a cada 120 segundos
-  setTimeout(checkAppVersionUpdate, 45000);
-  setInterval(checkAppVersionUpdate, 120000);
+  // Executa checagem suave após 60 segundos e depois a cada 180 segundos
+  setTimeout(checkAppVersionUpdate, 60000);
+  setInterval(checkAppVersionUpdate, 180000);
 
   // =========================================================================
   // SISTEMA DE NOTIFICAÇÃO VISUAL (TOAST)
@@ -1420,8 +1437,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('tkst_cloud_synced', () => {
       setupUserDisplay();
-      if (currentTab !== 'my-exam') {
+      // Não re-renderiza abas estáticas ou de estudo para não fechar cards ou accordions abertos pelo aluno
+      const staticStudyTabs = ['kumite', 'curriculum', 'katas', 'glossary', 'history', 'philosophy', 'sensei', 'my-exam'];
+      if (!staticStudyTabs.includes(currentTab)) {
         scheduleRerender(() => renderView(currentTab));
+      }
+    });
+
+    window.addEventListener('tkst_kumite_videos_updated', () => {
+      if (currentTab === 'kumite') {
+        scheduleRerender(() => renderKumiteGuide());
       }
     });
 
@@ -5752,42 +5777,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function openVideoModal(title, videoSource) {
+  function openVideoModal(title, videoSource, description = '') {
+    const videoModal = document.getElementById('videoModal');
     const videoTitle = document.getElementById('videoModalTitle');
     const container = document.getElementById('videoModalContainer');
     const footer = document.getElementById('videoModalFooter');
-    if (!container) return;
+    if (!videoModal || !container) return;
 
-    videoTitle.textContent = `Vídeo: ${title}`;
+    if (videoTitle) {
+      videoTitle.innerHTML = `<i class="fas fa-video" style="color: var(--accent-gold); margin-right: 6px;"></i> ${escapeHtml(title || 'Vídeo Técnico')}`;
+    }
     const embed = getEmbedUrl(videoSource);
 
     if (embed.type === 'iframe') {
       container.innerHTML = `
-        <iframe src="${embed.url}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="${title}"></iframe>
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--radius-sm); background: #000;">
+          <iframe src="${embed.url}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="${escapeHtml(title)}"></iframe>
+        </div>
       `;
     } else if (embed.type === 'video') {
       container.innerHTML = `
-        <video src="${embed.url}" controls autoplay playsinline webkit-playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
+        <video src="${embed.url}" controls autoplay playsinline webkit-playsinline style="width: 100%; max-height: 70vh; background: #000; display: block; border-radius: var(--radius-sm);">
+          <source src="${embed.url}" type="video/mp4">
           Seu navegador não suporta a reprodução deste formato de vídeo.
         </video>
       `;
     } else {
       container.innerHTML = `
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94A3B8; padding: 20px; text-align: center;">
+        <div style="padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94A3B8; text-align: center;">
           <i class="fas fa-video-slash" style="font-size: 2.5rem; color: #64748B; margin-bottom: 12px;"></i>
-          Nenhum link de vídeo configurado para este Kata no momento.
+          Nenhum link de vídeo configurado ou formato não suportado.
         </div>
       `;
     }
 
     if (footer) {
       footer.innerHTML = `
-        <p style="color: #94A3B8; font-size: 0.85rem; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <i class="fas fa-film" style="color: var(--accent-gold);"></i> Reprodução integrada oficial TKST Karatê Shotokan (No Sistema).
-        </p>
-        <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('videoModal').classList.remove('active'); const c = document.getElementById('videoModalContainer'); if(c) c.innerHTML = '';" style="font-size: 0.8rem; padding: 6px 14px; margin-left: auto;">
-          <i class="fas fa-times"></i> Fechar Player
-        </button>
+        <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+          ${description ? `<div style="font-size: 0.86rem; color: #FFF; font-weight: 600;"><i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i> ${escapeHtml(description)}</div>` : ''}
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <p style="color: #94A3B8; font-size: 0.85rem; margin: 0; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-film" style="color: var(--accent-gold);"></i> Reprodução integrada oficial TKST Karatê Shotokan.
+            </p>
+            <div style="display: flex; gap: 8px; margin-left: auto;">
+              ${embed.rawUrl ? `
+                <a href="${embed.rawUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="font-size: 0.78rem; padding: 6px 12px; text-decoration: none;">
+                  <i class="fas fa-external-link-alt"></i> Abrir Externamente
+                </a>
+              ` : ''}
+              <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('videoModal').classList.remove('active'); const c = document.getElementById('videoModalContainer'); if(c) c.innerHTML = '';" style="font-size: 0.78rem; padding: 6px 14px;">
+                <i class="fas fa-times"></i> Fechar
+              </button>
+            </div>
+          </div>
+        </div>
       `;
     }
 
@@ -5797,14 +5840,77 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // 6. RENDER KUMITE & GLOSSARY & QUIZ & PHILOSOPHY
   // =========================================================================
+  const openKumiteSections = new Set();
+  const openKumiteSubSections = new Set();
+
+  function renderKumiteVideoAction(partKey, defaultTitle, defaultDesc = '') {
+    const videos = (window.TKST_AUTH && window.TKST_AUTH.getCustomKumiteVideos)
+      ? window.TKST_AUTH.getCustomKumiteVideos()
+      : {};
+    const item = videos[partKey];
+    const hasVideo = !!(item && item.url && item.url.trim());
+    const isAdmin = window.TKST_AUTH && window.TKST_AUTH.isAdmin && window.TKST_AUTH.isAdmin();
+
+    const safeTitle = (item?.title || defaultTitle || 'Vídeo Demonstrativo de Kumite').replace(/'/g, "\\'");
+    const safeDesc = (item?.description || defaultDesc || '').replace(/'/g, "\\'");
+
+    let html = `
+      <div class="kumite-video-action-bar" style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 8px 12px;">
+    `;
+
+    if (hasVideo) {
+      html += `
+        <button type="button" class="btn btn-sm" onclick="event.stopPropagation(); window.TKST_APP.playKumiteVideo('${partKey}', '${safeTitle}', '${safeDesc}')" style="background: linear-gradient(135deg, #E63946, #D90429); color: #FFF; font-size: 0.8rem; font-weight: 700; padding: 6px 14px; border-radius: var(--radius-sm); border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(230,57,70,0.35); cursor: pointer;">
+          <i class="fas fa-play-circle" style="color: #FFD166;"></i> Assistir Vídeo Demonstrativo
+        </button>
+      `;
+    } else {
+      html += `
+        <div style="font-size: 0.78rem; color: #94A3B8; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fas fa-video-slash" style="color: #64748B;"></i>
+          <span>Vídeo demonstrativo pendente</span>
+        </div>
+      `;
+    }
+
+    html += `<div style="display: inline-flex; align-items: center; gap: 6px; margin-left: auto;">`;
+    if (hasVideo) {
+      html += `
+        <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); window.TKST_APP.openKumiteVideoModal('${partKey}', '${safeTitle}', '${safeDesc}')" title="Alterar Link do Vídeo" style="font-size: 0.75rem; padding: 5px 10px; color: var(--accent-gold); border-color: rgba(245,190,0,0.35); background: rgba(245,190,0,0.08);">
+          <i class="fas fa-link"></i> ${isAdmin ? 'Editar Link' : 'Configurar Link'}
+        </button>
+        ${isAdmin ? `
+          <button type="button" class="btn btn-sm btn-danger" onclick="event.stopPropagation(); window.TKST_APP.deleteKumiteVideo('${partKey}')" title="Remover Link do Vídeo" style="font-size: 0.75rem; padding: 5px 8px;">
+            <i class="fas fa-trash"></i>
+          </button>
+        ` : ''}
+      `;
+    } else {
+      html += `
+        <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); window.TKST_APP.openKumiteVideoModal('${partKey}', '${safeTitle}', '${safeDesc}')" title="Adicionar Link de Vídeo Demonstrativo" style="font-size: 0.75rem; padding: 5px 12px; color: #FFF; background: rgba(255,255,255,0.06); border-color: var(--border-color);">
+          <i class="fas fa-plus-circle" style="color: var(--accent-gold); margin-right: 4px;"></i> Adicionar Link de Vídeo
+        </button>
+      `;
+    }
+    html += `</div></div>`;
+
+    return html;
+  }
+
   function renderKumiteGuide() {
     const kumite = window.TKST_KUMITE;
+
+    const isGohonOpen = openKumiteSections.has('gohon');
+    const isSanbonOpen = openKumiteSections.has('sanbon');
+    const isKihonIpponOpen = openKumiteSections.has('kihonIppon');
+    const isJiyuIpponOpen = openKumiteSections.has('jiyuIppon');
+    const isKataOpen = openKumiteSections.has('kihonIpponKata');
 
     let html = `
       <div class="section-header">
         <div class="section-title-group">
           <h3><i class="fas fa-fist-raised" style="color: var(--accent-crimson);"></i> Guia Completo de Kumite TKST</h3>
-          <p>Explore as modalidades oficiais do Karatê Shotokan. Toque em cada card para expandir o guia técnico completo.</p>
+          <p>Explore as modalidades oficiais do Karatê Shotokan. Toque em cada card para expandir o guia técnico completo e assistir às demonstrações em vídeo.</p>
         </div>
       </div>
 
@@ -5812,7 +5918,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="kumite-quick-controls">
         <div style="display: flex; align-items: center; gap: 8px; font-size: 0.86rem; color: #CBD5E1;">
           <i class="fas fa-layer-group" style="color: var(--accent-gold);"></i>
-          <span><strong>5 Modalidades</strong> estruturadas do básico ao avançado</span>
+          <span><strong>5 Modalidades</strong> estruturadas do básico ao avançado com vídeos demonstrativos</span>
         </div>
         <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 7px 14px;" onclick="window.TKST_APP.toggleAllKumiteAccordions()">
           <span id="toggleAllKumiteText"><i class="fas fa-expand-alt"></i> Expandir Todos</span>
@@ -5820,8 +5926,8 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- 1. GOHON KUMITE (5 PASSOS) -->
-      <div class="kumite-accordion-card" id="kumiteCard_gohon" style="border-left: 4px solid var(--accent-gold);">
-        <button type="button" class="kumite-accordion-header" id="kumiteHeader_gohon" onclick="window.TKST_APP.toggleKumiteAccordion('gohon')" aria-expanded="false">
+      <div class="kumite-accordion-card ${isGohonOpen ? 'active' : ''}" id="kumiteCard_gohon" style="border-left: 4px solid var(--accent-gold);">
+        <button type="button" class="kumite-accordion-header ${isGohonOpen ? 'active' : ''}" id="kumiteHeader_gohon" onclick="window.TKST_APP.toggleKumiteAccordion('gohon')" aria-expanded="${isGohonOpen}">
           <div class="kumite-accordion-left">
             <div class="kumite-accordion-icon-box" style="background: rgba(245, 190, 0, 0.15); color: var(--accent-gold);">
               <i class="fas fa-project-diagram"></i>
@@ -5835,19 +5941,21 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="kumite-accordion-right">
-            <div class="kumite-accordion-chevron" id="kumiteIcon_gohon">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_gohon" style="${isGohonOpen ? 'transform: rotate(180deg);' : ''}">
               <i class="fas fa-chevron-down"></i>
             </div>
           </div>
         </button>
 
-        <div class="kumite-accordion-body" id="kumiteBody_gohon">
-          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+        <div class="kumite-accordion-body ${isGohonOpen ? 'active' : ''}" id="kumiteBody_gohon">
+          <p style="color: #CBD5E1; margin-bottom: 12px; font-size: 0.92rem; line-height: 1.6;">
             ${kumite.gohonKumite ? kumite.gohonKumite.description : 'Combate fundamental de cinco passos com finalização em Gyaku Tsuki.'}
           </p>
 
+          ${renderKumiteVideoAction('gohon_geral', 'Gohon Kumite - Demonstração Geral (5 Passos)', 'Combate fundamental de cinco passos em Karatê Shotokan')}
+
           <!-- Trilha Visual dos 5 Passos -->
-          <div class="gohon-timeline">
+          <div class="gohon-timeline" style="margin-top: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
               <strong style="color: var(--accent-gold); font-size: 0.86rem;">
                 <i class="fas fa-route" style="margin-right: 6px;"></i> Trilha de Execução dos 5 Passos:
@@ -5906,6 +6014,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
                 ⚡ <strong>5º passo:</strong> Bloqueia com <em>Age Uke</em>, firma a base e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
+              ${renderKumiteVideoAction('gohon_jodan', 'Gohon Kumite - 1. Jodan (Alto)', 'Ataque em Oi Tsuki Jodan, defesa em Age Uke e contra-ataque em Gyaku Tsuki')}
             </div>
 
             <!-- Série 2: Chudan -->
@@ -5928,6 +6037,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
                 ⚡ <strong>5º passo:</strong> Bloqueia com <em>Soto Uke</em>, estabiliza o quadril e aplica <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
+              ${renderKumiteVideoAction('gohon_chudan', 'Gohon Kumite - 2. Chudan (Médio)', 'Ataque em Oi Tsuki Chudan, defesa em Soto Uke e contra-ataque em Gyaku Tsuki')}
             </div>
 
             <!-- Série 3: Gedan -->
@@ -5950,6 +6060,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="background: rgba(255,183,3,0.08); border-radius: var(--radius-xs); padding: 8px 10px; font-size: 0.8rem; color: #FFF; border: 1px dashed rgba(255,183,3,0.3);">
                 ⚡ <strong>5º passo:</strong> Bloqueia com <em>Gedan Barai</em>, calcanhar firme e desfere <strong>Gyaku Tsuki Chudan</strong> com <span style="color: var(--accent-gold); font-weight: 800;">KIAI!</span>
               </div>
+              ${renderKumiteVideoAction('gohon_gedan', 'Gohon Kumite - 3. Gedan (Baixo)', 'Ataque em Mae Geri Chudan, defesa em Gedan Barai e contra-ataque em Gyaku Tsuki')}
             </div>
           </div>
 
@@ -5976,8 +6087,8 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- 2. SANBON KUMITE (3 PASSOS) -->
-      <div class="kumite-accordion-card" id="kumiteCard_sanbon" style="border-left: 4px solid var(--accent-crimson);">
-        <button type="button" class="kumite-accordion-header" id="kumiteHeader_sanbon" onclick="window.TKST_APP.toggleKumiteAccordion('sanbon')" aria-expanded="false">
+      <div class="kumite-accordion-card ${isSanbonOpen ? 'active' : ''}" id="kumiteCard_sanbon" style="border-left: 4px solid var(--accent-crimson);">
+        <button type="button" class="kumite-accordion-header ${isSanbonOpen ? 'active' : ''}" id="kumiteHeader_sanbon" onclick="window.TKST_APP.toggleKumiteAccordion('sanbon')" aria-expanded="${isSanbonOpen}">
           <div class="kumite-accordion-left">
             <div class="kumite-accordion-icon-box" style="background: rgba(230, 57, 70, 0.15); color: var(--accent-crimson);">
               <i class="fas fa-bolt"></i>
@@ -5991,18 +6102,20 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="kumite-accordion-right">
-            <div class="kumite-accordion-chevron" id="kumiteIcon_sanbon">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_sanbon" style="${isSanbonOpen ? 'transform: rotate(180deg);' : ''}">
               <i class="fas fa-chevron-down"></i>
             </div>
           </div>
         </button>
 
-        <div class="kumite-accordion-body" id="kumiteBody_sanbon">
-          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+        <div class="kumite-accordion-body ${isSanbonOpen ? 'active' : ''}" id="kumiteBody_sanbon">
+          <p style="color: #CBD5E1; margin-bottom: 12px; font-size: 0.92rem; line-height: 1.6;">
             ${kumite.sanbonKumite.description}
           </p>
 
-          <div style="background: rgba(10, 13, 20, 0.6); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+          ${renderKumiteVideoAction('sanbon_geral', 'Sanbon Kumite - Demonstração Completa (3 Passos)', 'Combate fundamental de três passos com ataques sucessivos e 5 formas de defesa')}
+
+          <div style="background: rgba(10, 13, 20, 0.6); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-top: 14px; margin-bottom: 20px;">
             <div style="font-weight: 700; color: var(--accent-crimson); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
               <i class="fas fa-forward"></i> Ataques Consecutivos do Atacante (Avanço em Zenkutsu):
             </div>
@@ -6014,18 +6127,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               `).join('')}
             </div>
+            ${renderKumiteVideoAction('sanbon_attacks', 'Sanbon Kumite - Sequência de Ataques Consecutivos', 'Sequência de ataque em avanço: Oi Tsuki Jodan, Oi Tsuki Chudan e Mae Geri Chudan')}
           </div>
 
           <div style="font-weight: 700; color: var(--accent-gold); font-size: 0.88rem; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
             <i class="fas fa-shield-alt"></i> 5 Formas Tradicionais de Defesa & Contra-Ataque:
           </div>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
-            ${kumite.sanbonKumite.defenses.map(d => `
+            ${kumite.sanbonKumite.defenses.map((d, dIdx) => `
               <div class="stat-card" style="flex-direction: column; align-items: flex-start; padding: 18px;">
                 <div style="color: var(--accent-gold); font-weight: 700; font-size: 0.98rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                   <i class="fas fa-check-circle" style="color: var(--accent-emerald); font-size: 0.85rem;"></i> ${d.title}
                 </div>
-                <div style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.5;">${d.sequence}</div>
+                <div style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.5; margin-bottom: 6px;">${d.sequence}</div>
+                ${renderKumiteVideoAction('sanbon_form_' + (d.formNumber || (dIdx + 1)), 'Sanbon Kumite - ' + d.title, d.sequence)}
               </div>
             `).join('')}
           </div>
@@ -6033,8 +6148,8 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- 3. KIHON IPPON KUMITE (1 PASSO FUNDAMENTAL) -->
-      <div class="kumite-accordion-card" id="kumiteCard_kihonIppon" style="border-left: 4px solid var(--accent-blue);">
-        <button type="button" class="kumite-accordion-header" id="kumiteHeader_kihonIppon" onclick="window.TKST_APP.toggleKumiteAccordion('kihonIppon')" aria-expanded="false">
+      <div class="kumite-accordion-card ${isKihonIpponOpen ? 'active' : ''}" id="kumiteCard_kihonIppon" style="border-left: 4px solid var(--accent-blue);">
+        <button type="button" class="kumite-accordion-header ${isKihonIpponOpen ? 'active' : ''}" id="kumiteHeader_kihonIppon" onclick="window.TKST_APP.toggleKumiteAccordion('kihonIppon')" aria-expanded="${isKihonIpponOpen}">
           <div class="kumite-accordion-left">
             <div class="kumite-accordion-icon-box" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue);">
               <i class="fas fa-shield-alt"></i>
@@ -6048,21 +6163,25 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="kumite-accordion-right">
-            <div class="kumite-accordion-chevron" id="kumiteIcon_kihonIppon">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_kihonIppon" style="${isKihonIpponOpen ? 'transform: rotate(180deg);' : ''}">
               <i class="fas fa-chevron-down"></i>
             </div>
           </div>
         </button>
 
-        <div class="kumite-accordion-body" id="kumiteBody_kihonIppon">
-          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+        <div class="kumite-accordion-body ${isKihonIpponOpen ? 'active' : ''}" id="kumiteBody_kihonIppon">
+          <p style="color: #CBD5E1; margin-bottom: 12px; font-size: 0.92rem; line-height: 1.6;">
             ${kumite.kihonIpponKumite.description}
           </p>
 
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            ${kumite.kihonIpponKumite.categories.map((cat, idx) => `
-              <div class="kumite-sub-accordion-card" id="subCard_kihonIppon_${idx}" data-subgroup="kihonIppon">
-                <button type="button" class="kumite-sub-header" id="subHeader_kihonIppon_${idx}" onclick="window.TKST_APP.toggleKumiteSubAccordion('kihonIppon_${idx}', 'kihonIppon')" aria-expanded="false">
+          ${renderKumiteVideoAction('kihonIppon_geral', 'Kihon Ippon Kumite - Demonstração Geral', 'Combate fundamental de 1 passo em Karatê Shotokan')}
+
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+            ${kumite.kihonIpponKumite.categories.map((cat, idx) => {
+              const isSubOpen = openKumiteSubSections.has('kihonIppon_' + idx);
+              return `
+              <div class="kumite-sub-accordion-card ${isSubOpen ? 'active' : ''}" id="subCard_kihonIppon_${idx}" data-subgroup="kihonIppon">
+                <button type="button" class="kumite-sub-header ${isSubOpen ? 'active' : ''}" id="subHeader_kihonIppon_${idx}" onclick="window.TKST_APP.toggleKumiteSubAccordion('kihonIppon_${idx}', 'kihonIppon')" aria-expanded="${isSubOpen}">
                   <div class="kumite-sub-title-wrap">
                     <span style="color: var(--accent-gold); font-size: 1.1rem;">🥋</span>
                     <div>
@@ -6070,27 +6189,30 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div style="font-size: 0.76rem; color: #94A3B8;">${cat.variations.length} Formas de Defesa & Contra-Ataque • Toque para ver</div>
                     </div>
                   </div>
-                  <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kihonIppon_${idx}"></i>
+                  <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kihonIppon_${idx}" style="${isSubOpen ? 'transform: rotate(180deg);' : ''}"></i>
                 </button>
-                <div class="kumite-sub-body" id="subBody_kihonIppon_${idx}">
-                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="kumite-sub-body ${isSubOpen ? 'active' : ''}" id="subBody_kihonIppon_${idx}">
+                  ${renderKumiteVideoAction('kihonIppon_cat_' + idx, 'Kihon Ippon Kumite - Ataque ' + cat.attackName, 'Demonstração geral de ataque anunciado: ' + cat.attackName)}
+                  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
                     ${cat.variations.map(v => `
                       <div style="background: rgba(255,255,255,0.03); padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-crimson); font-size: 0.88rem;">
                         <div style="color: var(--accent-gold); font-weight: 700; margin-bottom: 3px;">${v.number}ª Forma (${v.stance || 'Zenkutsu Dachi'}):</div>
                         <div>Defesa: <span style="color: #FFF; font-weight: 600;">${v.defense}</span> ➔ Contragolpe: <strong style="color: #48CAE4;">${v.counter}</strong></div>
+                        ${renderKumiteVideoAction('kihonIppon_' + idx + '_' + v.number, 'Kihon Ippon Kumite - ' + cat.attackName + ' (' + v.number + 'ª Forma)', 'Defesa: ' + v.defense + ' | Contra-ataque: ' + v.counter)}
                       </div>
                     `).join('')}
                   </div>
                 </div>
               </div>
-            `).join('')}
+            `;
+            }).join('')}
           </div>
         </div>
       </div>
 
       <!-- 4. JIYU IPPON KUMITE (1 PASSO SEMI-LIVRE) -->
-      <div class="kumite-accordion-card" id="kumiteCard_jiyuIppon" style="border-left: 4px solid var(--accent-emerald);">
-        <button type="button" class="kumite-accordion-header" id="kumiteHeader_jiyuIppon" onclick="window.TKST_APP.toggleKumiteAccordion('jiyuIppon')" aria-expanded="false">
+      <div class="kumite-accordion-card ${isJiyuIpponOpen ? 'active' : ''}" id="kumiteCard_jiyuIppon" style="border-left: 4px solid var(--accent-emerald);">
+        <button type="button" class="kumite-accordion-header ${isJiyuIpponOpen ? 'active' : ''}" id="kumiteHeader_jiyuIppon" onclick="window.TKST_APP.toggleKumiteAccordion('jiyuIppon')" aria-expanded="${isJiyuIpponOpen}">
           <div class="kumite-accordion-left">
             <div class="kumite-accordion-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">
               <i class="fas fa-running"></i>
@@ -6104,21 +6226,25 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="kumite-accordion-right">
-            <div class="kumite-accordion-chevron" id="kumiteIcon_jiyuIppon">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_jiyuIppon" style="${isJiyuIpponOpen ? 'transform: rotate(180deg);' : ''}">
               <i class="fas fa-chevron-down"></i>
             </div>
           </div>
         </button>
 
-        <div class="kumite-accordion-body" id="kumiteBody_jiyuIppon">
-          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+        <div class="kumite-accordion-body ${isJiyuIpponOpen ? 'active' : ''}" id="kumiteBody_jiyuIppon">
+          <p style="color: #CBD5E1; margin-bottom: 12px; font-size: 0.92rem; line-height: 1.6;">
             ${kumite.jiyuIpponKumite.description}
           </p>
 
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            ${kumite.jiyuIpponKumite.categories ? kumite.jiyuIpponKumite.categories.map((cat, idx) => `
-              <div class="kumite-sub-accordion-card" id="subCard_jiyuIppon_${idx}" data-subgroup="jiyuIppon">
-                <button type="button" class="kumite-sub-header" id="subHeader_jiyuIppon_${idx}" onclick="window.TKST_APP.toggleKumiteSubAccordion('jiyuIppon_${idx}', 'jiyuIppon')" aria-expanded="false">
+          ${renderKumiteVideoAction('jiyuIppon_geral', 'Jiyu Ippon Kumite - Demonstração Completa', 'Combate semi-livre de um passo em Karatê Shotokan')}
+
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+            ${kumite.jiyuIpponKumite.categories ? kumite.jiyuIpponKumite.categories.map((cat, idx) => {
+              const isSubOpen = openKumiteSubSections.has('jiyuIppon_' + idx);
+              return `
+              <div class="kumite-sub-accordion-card ${isSubOpen ? 'active' : ''}" id="subCard_jiyuIppon_${idx}" data-subgroup="jiyuIppon">
+                <button type="button" class="kumite-sub-header ${isSubOpen ? 'active' : ''}" id="subHeader_jiyuIppon_${idx}" onclick="window.TKST_APP.toggleKumiteSubAccordion('jiyuIppon_${idx}', 'jiyuIppon')" aria-expanded="${isSubOpen}">
                   <div class="kumite-sub-title-wrap">
                     <span style="color: var(--accent-emerald); font-size: 1.1rem;"><i class="fas fa-running"></i></span>
                     <div>
@@ -6126,26 +6252,29 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div style="font-size: 0.76rem; color: #94A3B8;">${cat.description || ''} • ${cat.forms.length} Formas de Aplicação • Toque para ver</div>
                     </div>
                   </div>
-                  <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_jiyuIppon_${idx}"></i>
+                  <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_jiyuIppon_${idx}" style="${isSubOpen ? 'transform: rotate(180deg);' : ''}"></i>
                 </button>
-                <div class="kumite-sub-body" id="subBody_jiyuIppon_${idx}">
-                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="kumite-sub-body ${isSubOpen ? 'active' : ''}" id="subBody_jiyuIppon_${idx}">
+                  ${renderKumiteVideoAction('jiyuIppon_cat_' + idx, 'Jiyu Ippon Kumite - ' + cat.attackName, cat.description || ('Ataque: ' + cat.attackName))}
+                  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
                     ${cat.forms.map(f => `
-                      <div style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.5; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 4px; border-left: 3px solid var(--accent-emerald);">
-                        <strong style="color: var(--accent-gold);">${f.number}ª Forma:</strong> ${f.technique}
+                      <div style="font-size: 0.88rem; color: #E2E8F0; line-height: 1.5; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 4px; border-left: 3px solid var(--accent-emerald);">
+                        <div><strong style="color: var(--accent-gold);">${f.number}ª Forma:</strong> ${f.technique}</div>
+                        ${renderKumiteVideoAction('jiyuIppon_' + idx + '_' + f.number, 'Jiyu Ippon Kumite - ' + cat.attackName + ' (' + f.number + 'ª Forma)', f.technique)}
                       </div>
                     `).join('')}
                   </div>
                 </div>
               </div>
-            `).join('') : ''}
+            `;
+            }).join('') : ''}
           </div>
         </div>
       </div>
 
       <!-- 5. KIHON IPPON NO KATA -->
-      <div class="kumite-accordion-card" id="kumiteCard_kihonIpponKata" style="border-left: 4px solid var(--accent-gold);">
-        <button type="button" class="kumite-accordion-header" id="kumiteHeader_kihonIpponKata" onclick="window.TKST_APP.toggleKumiteAccordion('kihonIpponKata')" aria-expanded="false">
+      <div class="kumite-accordion-card ${isKataOpen ? 'active' : ''}" id="kumiteCard_kihonIpponKata" style="border-left: 4px solid var(--accent-gold);">
+        <button type="button" class="kumite-accordion-header ${isKataOpen ? 'active' : ''}" id="kumiteHeader_kihonIpponKata" onclick="window.TKST_APP.toggleKumiteAccordion('kihonIpponKata')" aria-expanded="${isKataOpen}">
           <div class="kumite-accordion-left">
             <div class="kumite-accordion-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">
               <i class="fas fa-scroll"></i>
@@ -6159,55 +6288,69 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="kumite-accordion-right">
-            <div class="kumite-accordion-chevron" id="kumiteIcon_kihonIpponKata">
+            <div class="kumite-accordion-chevron" id="kumiteIcon_kihonIpponKata" style="${isKataOpen ? 'transform: rotate(180deg);' : ''}">
               <i class="fas fa-chevron-down"></i>
             </div>
           </div>
         </button>
 
-        <div class="kumite-accordion-body" id="kumiteBody_kihonIpponKata">
-          <p style="color: #CBD5E1; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6;">
+        <div class="kumite-accordion-body ${isKataOpen ? 'active' : ''}" id="kumiteBody_kihonIpponKata">
+          <p style="color: #CBD5E1; margin-bottom: 12px; font-size: 0.92rem; line-height: 1.6;">
             ${kumite.kihonIpponNoKata.description}
           </p>
 
-          <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${renderKumiteVideoAction('kataForm_geral', 'Kihon Ippon no Kata - Formas Tradicionais', 'Sequências completas codificadas')}
+
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px;">
             <!-- It Ban (1ª Sequência) -->
-            <div class="kumite-sub-accordion-card" id="subCard_kataForm_itBan" data-subgroup="kihonIpponKata">
-              <button type="button" class="kumite-sub-header" id="subHeader_kataForm_itBan" onclick="window.TKST_APP.toggleKumiteSubAccordion('kataForm_itBan', 'kihonIpponKata')" aria-expanded="false">
-                <div class="kumite-sub-title-wrap">
-                  <span style="color: var(--accent-gold); font-size: 1.1rem;"><i class="fas fa-scroll"></i></span>
-                  <div>
-                    <strong>It Ban (1ª Sequência Fundamental)</strong>
-                    <div style="font-size: 0.76rem; color: #94A3B8;">10 Sequências Tradicionais Codificadas • Toque para abrir/fechar</div>
+            ${(() => {
+              const isItBanOpen = openKumiteSubSections.has('kataForm_itBan');
+              return `
+              <div class="kumite-sub-accordion-card ${isItBanOpen ? 'active' : ''}" id="subCard_kataForm_itBan" data-subgroup="kihonIpponKata">
+                <button type="button" class="kumite-sub-header ${isItBanOpen ? 'active' : ''}" id="subHeader_kataForm_itBan" onclick="window.TKST_APP.toggleKumiteSubAccordion('kataForm_itBan', 'kihonIpponKata')" aria-expanded="${isItBanOpen}">
+                  <div class="kumite-sub-title-wrap">
+                    <span style="color: var(--accent-gold); font-size: 1.1rem;"><i class="fas fa-scroll"></i></span>
+                    <div>
+                      <strong>It Ban (1ª Sequência Fundamental)</strong>
+                      <div style="font-size: 0.76rem; color: #94A3B8;">10 Sequências Tradicionais Codificadas • Toque para abrir/fechar</div>
+                    </div>
                   </div>
+                  <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kataForm_itBan" style="${isItBanOpen ? 'transform: rotate(180deg);' : ''}"></i>
+                </button>
+                <div class="kumite-sub-body ${isItBanOpen ? 'active' : ''}" id="subBody_kataForm_itBan">
+                  ${renderKumiteVideoAction('kataForm_itBan', 'Kihon Ippon no Kata - It Ban (1ª Sequência Fundamental)', '10 Sequências Tradicionais Codificadas')}
+                  <ol style="padding-left: 20px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.85; margin: 12px 0 0 0;">
+                    ${kumite.kihonIpponNoKata.itBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
+                  </ol>
                 </div>
-                <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kataForm_itBan"></i>
-              </button>
-              <div class="kumite-sub-body" id="subBody_kataForm_itBan">
-                <ol style="padding-left: 20px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.85; margin: 0;">
-                  ${kumite.kihonIpponNoKata.itBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
-                </ol>
               </div>
-            </div>
+            `;
+            })()}
 
             <!-- Ni Ban (2ª Sequência) -->
-            <div class="kumite-sub-accordion-card" id="subCard_kataForm_niBan" data-subgroup="kihonIpponKata">
-              <button type="button" class="kumite-sub-header" id="subHeader_kataForm_niBan" onclick="window.TKST_APP.toggleKumiteSubAccordion('kataForm_niBan', 'kihonIpponKata')" aria-expanded="false">
-                <div class="kumite-sub-title-wrap">
-                  <span style="color: var(--accent-blue); font-size: 1.1rem;"><i class="fas fa-scroll"></i></span>
-                  <div>
-                    <strong>Ni Ban (2ª Sequência Avançada)</strong>
-                    <div style="font-size: 0.76rem; color: #94A3B8;">15 Sequências Tradicionais Codificadas • Toque para abrir/fechar</div>
+            ${(() => {
+              const isNiBanOpen = openKumiteSubSections.has('kataForm_niBan');
+              return `
+              <div class="kumite-sub-accordion-card ${isNiBanOpen ? 'active' : ''}" id="subCard_kataForm_niBan" data-subgroup="kihonIpponKata">
+                <button type="button" class="kumite-sub-header ${isNiBanOpen ? 'active' : ''}" id="subHeader_kataForm_niBan" onclick="window.TKST_APP.toggleKumiteSubAccordion('kataForm_niBan', 'kihonIpponKata')" aria-expanded="${isNiBanOpen}">
+                  <div class="kumite-sub-title-wrap">
+                    <span style="color: var(--accent-blue); font-size: 1.1rem;"><i class="fas fa-scroll"></i></span>
+                    <div>
+                      <strong>Ni Ban (2ª Sequência Avançada)</strong>
+                      <div style="font-size: 0.76rem; color: #94A3B8;">15 Sequências Tradicionais Codificadas • Toque para abrir/fechar</div>
+                    </div>
                   </div>
+                  <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kataForm_niBan" style="${isNiBanOpen ? 'transform: rotate(180deg);' : ''}"></i>
+                </button>
+                <div class="kumite-sub-body ${isNiBanOpen ? 'active' : ''}" id="subBody_kataForm_niBan">
+                  ${renderKumiteVideoAction('kataForm_niBan', 'Kihon Ippon no Kata - Ni Ban (2ª Sequência Avançada)', '15 Sequências Tradicionais Codificadas')}
+                  <ol style="padding-left: 20px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.85; margin: 12px 0 0 0;">
+                    ${kumite.kihonIpponNoKata.niBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
+                  </ol>
                 </div>
-                <i class="fas fa-chevron-down kumite-sub-chevron" id="subIcon_kataForm_niBan"></i>
-              </button>
-              <div class="kumite-sub-body" id="subBody_kataForm_niBan">
-                <ol style="padding-left: 20px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.85; margin: 0;">
-                  ${kumite.kihonIpponNoKata.niBan.map(s => `<li>${s.replace(/^\d+\.\s*/, '')}</li>`).join('')}
-                </ol>
               </div>
-            </div>
+            `;
+            })()}
           </div>
         </div>
       </div>
@@ -9828,6 +9971,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const isOpen = card.classList.contains('active') || body.classList.contains('active');
       if (isOpen) {
+        openKumiteSections.delete(sectionId);
         card.classList.remove('active');
         body.classList.remove('active');
         header?.classList.remove('active');
@@ -9838,6 +9982,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sections = ['gohon', 'sanbon', 'kihonIppon', 'jiyuIppon', 'kihonIpponKata'];
         sections.forEach(s => {
           if (s !== sectionId) {
+            openKumiteSections.delete(s);
             const c = document.getElementById(`kumiteCard_${s}`);
             const b = document.getElementById(`kumiteBody_${s}`);
             const h = document.getElementById(`kumiteHeader_${s}`);
@@ -9852,6 +9997,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
+        openKumiteSections.add(sectionId);
         card.classList.add('active');
         body.classList.add('active');
         header?.classList.add('active');
@@ -9868,6 +10014,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const isOpen = card.classList.contains('active') || body.classList.contains('active');
       if (isOpen) {
+        openKumiteSubSections.delete(subId);
         card.classList.remove('active');
         body.classList.remove('active');
         header?.classList.remove('active');
@@ -9879,6 +10026,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const groupCards = document.querySelectorAll(`[data-subgroup="${groupKey}"]`);
           groupCards.forEach(c => {
             if (c.id !== `subCard_${subId}`) {
+              const rawSubId = c.id.replace('subCard_', '');
+              openKumiteSubSections.delete(rawSubId);
               c.classList.remove('active');
               const b = c.querySelector('.kumite-sub-body');
               const h = c.querySelector('.kumite-sub-header');
@@ -9893,6 +10042,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }
 
+        openKumiteSubSections.add(subId);
         card.classList.add('active');
         body.classList.add('active');
         header?.classList.add('active');
@@ -9914,12 +10064,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!card || !body) return;
 
         if (shouldOpen) {
+          openKumiteSections.add(s);
           card.classList.add('active');
           body.classList.add('active');
           header?.classList.add('active');
           header?.setAttribute('aria-expanded', 'true');
           if (icon) icon.style.transform = 'rotate(180deg)';
         } else {
+          openKumiteSections.delete(s);
           card.classList.remove('active');
           body.classList.remove('active');
           header?.classList.remove('active');
@@ -9932,6 +10084,136 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnText) {
         btnText.innerHTML = shouldOpen ? '<i class="fas fa-compress-alt"></i> Recolher Todos' : '<i class="fas fa-expand-alt"></i> Expandir Todos';
       }
+    },
+    playKumiteVideo: (partKey, fallbackTitle, fallbackDesc) => {
+      const videos = (window.TKST_AUTH && window.TKST_AUTH.getCustomKumiteVideos) ? window.TKST_AUTH.getCustomKumiteVideos() : {};
+      const item = videos[partKey];
+      if (!item || !item.url) {
+        alert('Nenhum vídeo cadastrado para esta parte ainda.');
+        return;
+      }
+      const title = item.title || fallbackTitle || 'Demonstração de Kumite';
+      const desc = item.description || fallbackDesc || '';
+      if (typeof openVideoModal === 'function') {
+        openVideoModal(title, item.url, desc);
+      } else {
+        window.open(item.url, '_blank');
+      }
+    },
+    openKumiteVideoModal: (partKey, defaultTitle, defaultDesc) => {
+      const videos = (window.TKST_AUTH && window.TKST_AUTH.getCustomKumiteVideos) ? window.TKST_AUTH.getCustomKumiteVideos() : {};
+      const existing = videos[partKey] || {};
+      const currentTitle = existing.title || defaultTitle || 'Vídeo Demonstrativo';
+      const currentUrl = existing.url || '';
+      const currentDesc = existing.description || defaultDesc || '';
+
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modalTitle || !modalBody) return;
+
+      modalTitle.innerHTML = `<span><i class="fas fa-video" style="color: var(--accent-gold);"></i> Link do Vídeo Demonstrativo</span>`;
+
+      modalBody.innerHTML = `
+        <form onsubmit="event.preventDefault(); window.TKST_APP.submitKumiteVideoForm('${partKey}');" style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="background: rgba(245,190,0,0.08); border: 1px solid rgba(245,190,0,0.3); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.84rem; color: #E2E8F0; line-height: 1.5;">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i>
+            Insira o link para a demonstração técnica desta parte do Kumite. Suporta <strong>YouTube</strong>, <strong>YouTube Shorts</strong>, <strong>Vimeo</strong>, <strong>Google Drive</strong> ou arquivo direto <strong>MP4</strong>.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.84rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
+              <i class="fas fa-heading" style="color: var(--accent-gold); margin-right: 6px;"></i> Identificação / Título:
+            </label>
+            <input type="text" id="modalKumiteVidTitle" class="form-input" value="${escapeHtml(currentTitle)}" required style="font-size: 0.9rem; font-weight: 600;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.84rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
+              <i class="fas fa-link" style="color: var(--accent-gold); margin-right: 6px;"></i> Link do Vídeo (URL): *
+            </label>
+            <input type="url" id="modalKumiteVidUrl" class="form-input" placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..." value="${escapeHtml(currentUrl)}" required style="font-size: 0.88rem;">
+            <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.testKumiteVideoFromInput()" style="font-size: 0.76rem; padding: 4px 10px;">
+                <i class="fas fa-play"></i> Testar Reprodução Agora
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.84rem; font-weight: 700; color: #FFF; margin-bottom: 4px;">
+              <i class="fas fa-align-left" style="color: var(--accent-gold); margin-right: 6px;"></i> Instruções Técnicas / Dica (Opcional):
+            </label>
+            <textarea id="modalKumiteVidDesc" class="form-input" rows="3" placeholder="Dicas de execução, tempo de kiai, distância ou foco do golpe..." style="font-size: 0.86rem; resize: vertical;">${escapeHtml(currentDesc)}</textarea>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--border-color); flex-wrap: wrap;">
+            ${currentUrl ? `
+              <button type="button" class="btn btn-danger" onclick="window.TKST_APP.deleteKumiteVideo('${partKey}')" style="font-size: 0.84rem; padding: 10px 16px;">
+                <i class="fas fa-trash-alt"></i> Remover Vídeo
+              </button>
+            ` : '<div></div>'}
+            
+            <div style="display: flex; gap: 10px; margin-left: auto;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="font-size: 0.84rem; padding: 10px 16px;">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" style="font-size: 0.84rem; padding: 10px 18px; font-weight: 700; box-shadow: 0 4px 14px rgba(245,190,0,0.35);">
+                <i class="fas fa-cloud-upload-alt"></i> Salvar Vídeo
+              </button>
+            </div>
+          </div>
+        </form>
+      `;
+
+      const detailModal = document.getElementById('detailModal');
+      if (detailModal) detailModal.classList.add('active');
+    },
+    submitKumiteVideoForm: (partKey) => {
+      const urlInput = document.getElementById('modalKumiteVidUrl');
+      const titleInput = document.getElementById('modalKumiteVidTitle');
+      const descInput = document.getElementById('modalKumiteVidDesc');
+      if (!urlInput || !urlInput.value.trim()) {
+        alert('Por favor, informe uma URL de vídeo válida.');
+        return;
+      }
+      const url = urlInput.value.trim();
+      const title = titleInput ? titleInput.value.trim() : '';
+      const description = descInput ? descInput.value.trim() : '';
+
+      if (window.TKST_AUTH && window.TKST_AUTH.saveCustomKumiteVideo) {
+        window.TKST_AUTH.saveCustomKumiteVideo(partKey, { url, title, description });
+      }
+
+      window.TKST_APP.closeDetailModal();
+      renderKumiteGuide();
+      if (typeof showToast === 'function') {
+        showToast('Link do vídeo salvo com sucesso!', 'success');
+      } else {
+        alert('Link do vídeo salvo com sucesso!');
+      }
+    },
+    deleteKumiteVideo: (partKey) => {
+      if (!confirm('Deseja realmente remover o vídeo demonstrativo desta parte?')) return;
+      if (window.TKST_AUTH && window.TKST_AUTH.deleteCustomKumiteVideo) {
+        window.TKST_AUTH.deleteCustomKumiteVideo(partKey);
+      }
+      window.TKST_APP.closeDetailModal();
+      renderKumiteGuide();
+      if (typeof showToast === 'function') {
+        showToast('Vídeo removido.', 'info');
+      }
+    },
+    testKumiteVideoFromInput: () => {
+      const urlInput = document.getElementById('modalKumiteVidUrl');
+      const titleInput = document.getElementById('modalKumiteVidTitle');
+      const descInput = document.getElementById('modalKumiteVidDesc');
+      if (!urlInput || !urlInput.value.trim()) {
+        alert('Digite ou cole a URL do vídeo primeiro.');
+        return;
+      }
+      const title = titleInput ? titleInput.value.trim() : 'Prévia de Vídeo';
+      const desc = descInput ? descInput.value.trim() : '';
+      openVideoModal(title, urlInput.value.trim(), desc);
     },
     toggleShodanCol: (colKey) => {
       const card = document.getElementById(`shodanCard_${colKey}`);

@@ -10,6 +10,7 @@
   const STORAGE_KEY_DOJOS = 'tkst_all_dojos';
   const STORAGE_KEY_DELETED_DOJOS = 'tkst_deleted_dojos';
   const STORAGE_KEY_VIDEOS = 'tkst_custom_kata_videos';
+  const STORAGE_KEY_KUMITE_VIDEOS = 'tkst_custom_kumite_videos';
   const STORAGE_KEY_DELETED = 'tkst_deleted_student_ids';
   const STORAGE_KEY_QUIZ_SUBMISSIONS = 'tkst_quiz_submissions';
   const STORAGE_KEY_QUIZ_BANK = 'tkst_custom_quiz_bank';
@@ -1392,6 +1393,35 @@
     }
   }
 
+  // Sincronização em nuvem e arquivo para vídeos de Kumite
+  async function pullKumiteVideosFromCloud() {
+    try {
+      let cloudVideos = null;
+      try {
+        const res = await fetch('assets/data/kumite-videos.json?_=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && typeof json === 'object' && Object.keys(json).length > 0) {
+            cloudVideos = json;
+          }
+        }
+      } catch(e) {}
+
+      if (cloudVideos) {
+        let localVideos = {};
+        try { localVideos = JSON.parse(localStorage.getItem(STORAGE_KEY_KUMITE_VIDEOS)) || {}; } catch(e) {}
+        const merged = { ...cloudVideos, ...localVideos };
+        const vStr = JSON.stringify(merged);
+        if (localStorage.getItem(STORAGE_KEY_KUMITE_VIDEOS) !== vStr) {
+          localStorage.setItem(STORAGE_KEY_KUMITE_VIDEOS, vStr);
+          window.dispatchEvent(new CustomEvent('tkst_kumite_videos_updated', { detail: merged }));
+        }
+      }
+    } catch(err) {
+      console.warn('Kumite videos pull notice:', err);
+    }
+  }
+
   async function pushToCloud() {
     if (isSyncing) {
       syncPending = true;
@@ -1409,6 +1439,7 @@
       }).filter(Boolean);
 
       const videos = JSON.parse(localStorage.getItem(STORAGE_KEY_VIDEOS)) || {};
+      const kumite_videos = JSON.parse(localStorage.getItem(STORAGE_KEY_KUMITE_VIDEOS)) || {};
       const progress = JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
       const deletedStudentIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
       const deletedQuizIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
@@ -1447,6 +1478,7 @@
         dojos,
         students,
         custom_videos: videos,
+        custom_kumite_videos: kumite_videos,
         progress,
         quiz_submissions,
         custom_quiz_bank,
@@ -1706,6 +1738,18 @@
       if (localStorage.getItem(STORAGE_KEY_VIDEOS) !== vStr) {
         localStorage.setItem(STORAGE_KEY_VIDEOS, vStr);
         window.dispatchEvent(new CustomEvent('tkst_videos_updated', { detail: mergedVideos }));
+        changed = true;
+      }
+    }
+
+    // 5b. Sync Custom Kumite Videos (Demonstrações oficiais de Kumite)
+    if (cloudData.custom_kumite_videos && typeof cloudData.custom_kumite_videos === 'object') {
+      let localKumiteVideos = JSON.parse(localStorage.getItem(STORAGE_KEY_KUMITE_VIDEOS)) || {};
+      const mergedKumiteVideos = { ...localKumiteVideos, ...cloudData.custom_kumite_videos };
+      const kvStr = JSON.stringify(mergedKumiteVideos);
+      if (localStorage.getItem(STORAGE_KEY_KUMITE_VIDEOS) !== kvStr) {
+        localStorage.setItem(STORAGE_KEY_KUMITE_VIDEOS, kvStr);
+        window.dispatchEvent(new CustomEvent('tkst_kumite_videos_updated', { detail: mergedKumiteVideos }));
         changed = true;
       }
     }
@@ -2085,6 +2129,7 @@
 
       // 5. Endpoint dedicado de vídeos dos Katas permanente no GitHub
       pullKataVideosFromCloud().catch(() => {});
+      pullKumiteVideosFromCloud().catch(() => {});
 
       // 6. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
       try {
@@ -2727,6 +2772,52 @@
         return this.saveKataVideosList(kataId, []);
       }
     },
+
+    // ==========================================
+    // KUMITE VIDEOS DEMONSTRATION MANAGEMENT
+    // ==========================================
+    getCustomKumiteVideos: function() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY_KUMITE_VIDEOS);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object') return parsed;
+        }
+      } catch(e) {}
+      return window.TKST_DEFAULT_KUMITE_VIDEOS || {};
+    },
+
+    saveCustomKumiteVideos: function(videos) {
+      localStorage.setItem(STORAGE_KEY_KUMITE_VIDEOS, JSON.stringify(videos || {}));
+      pushToCloud();
+      window.dispatchEvent(new CustomEvent('tkst_kumite_videos_updated', { detail: videos }));
+    },
+
+    saveCustomKumiteVideo: function(partKey, videoData) {
+      if (!partKey) return { success: false, message: 'Chave da modalidade é obrigatória.' };
+      const allVideos = this.getCustomKumiteVideos();
+      if (!videoData || !videoData.url || !videoData.url.trim()) {
+        delete allVideos[partKey];
+      } else {
+        allVideos[partKey] = {
+          url: videoData.url.trim(),
+          title: (videoData.title && videoData.title.trim()) || 'Vídeo Demonstrativo',
+          description: (videoData.description && videoData.description.trim()) || '',
+          updatedAt: Date.now()
+        };
+      }
+      this.saveCustomKumiteVideos(allVideos);
+      return { success: true, videos: allVideos };
+    },
+
+    deleteCustomKumiteVideo: function(partKey) {
+      const allVideos = this.getCustomKumiteVideos();
+      delete allVideos[partKey];
+      this.saveCustomKumiteVideos(allVideos);
+      return { success: true, videos: allVideos };
+    },
+
+    pullKumiteVideosFromCloud: pullKumiteVideosFromCloud,
 
     // ==========================================
     // PRESENCE & ONLINE STATUS TRACKING

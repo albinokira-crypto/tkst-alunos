@@ -32,8 +32,8 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=298">
-  <link rel="stylesheet" href="assets/css/components.css?v=298">
+  <link rel="stylesheet" href="assets/css/main.css?v=300">
+  <link rel="stylesheet" href="assets/css/components.css?v=300">
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
@@ -856,36 +856,37 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=299"></script>
-  <script src="assets/js/data-curriculum.js?v=299"></script>
-  <script src="assets/js/data-katas.js?v=299"></script>
-  <script src="assets/js/data-kumite.js?v=299"></script>
-  <script src="assets/js/data-glossary.js?v=299"></script>
-  <script src="assets/js/data-quiz.js?v=299"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=299"></script>
-  <script src="assets/js/data-media.js?v=299"></script>
-  <script src="assets/js/data-exams.js?v=299"></script>
-  <script src="assets/js/omr-engine.js?v=299"></script>
-  <script src="assets/js/qr-generator.js?v=299"></script>
-  <script src="assets/js/auth.js?v=299"></script>
-  <script src="assets/js/app.js?v=299"></script>
+  <script src="assets/js/jsqr.min.js?v=300"></script>
+  <script src="assets/js/data-curriculum.js?v=300"></script>
+  <script src="assets/js/data-katas.js?v=300"></script>
+  <script src="assets/js/data-kumite.js?v=300"></script>
+  <script src="assets/js/data-glossary.js?v=300"></script>
+  <script src="assets/js/data-quiz.js?v=300"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=300"></script>
+  <script src="assets/js/data-media.js?v=300"></script>
+  <script src="assets/js/data-exams.js?v=300"></script>
+  <script src="assets/js/omr-engine.js?v=300"></script>
+  <script src="assets/js/qr-generator.js?v=300"></script>
+  <script src="assets/js/auth.js?v=300"></script>
+  <script src="assets/js/app.js?v=300"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       let isRefreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Bloqueio absoluto: NUNCA recarrega enquanto o modal de correção ou qualquer modal estiver aberto
+        // Bloqueio rigoroso: NUNCA recarrega automaticamente enquanto o usuário estiver interagindo com o app
         const omrModal = document.getElementById('examOmrScannerModal');
         const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
-        const isAnyModalActive = !!document.querySelector('.modal-overlay.active, .modal-backdrop.active');
-        if (isOmrActive || isAnyModalActive) {
-          console.log('[SW] Recarregamento postergado: usuário em tela de correção ou modal ativo.');
+        const isAnyModalActive = !!document.querySelector('.modal-overlay.active, .modal-backdrop.active, .modal.active');
+        const isStudying = typeof currentTab !== 'undefined' && currentTab !== 'dashboard';
+        if (isOmrActive || isAnyModalActive || isStudying) {
+          console.log('[SW] Recarregamento postergado: usuário em atividade ativa.');
           return;
         }
 
         const lastSwReload = Number(sessionStorage.getItem('tkst_sw_reload_ts') || 0);
-        if (!isRefreshing && (Date.now() - lastSwReload > 60000)) {
+        if (!isRefreshing && (Date.now() - lastSwReload > 180000)) {
           isRefreshing = true;
           sessionStorage.setItem('tkst_sw_reload_ts', String(Date.now()));
           window.location.reload();
@@ -893,7 +894,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=299', { updateViaCache: 'none' }).then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=300', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
 
           reg.addEventListener('updatefound', () => {

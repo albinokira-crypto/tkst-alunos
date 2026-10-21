@@ -232,6 +232,19 @@ module.exports = async (req, res) => {
       } catch(e) {}
     }
 
+    // Hidrata vídeos de Kumite do assets/data/kumite-videos.json se a lista em memória estiver vazia
+    if (!inMemoryData.custom_kumite_videos || Object.keys(inMemoryData.custom_kumite_videos).length === 0) {
+      try {
+        const localKumiteVideosPath = path.resolve(process.cwd(), 'assets/data/kumite-videos.json');
+        if (fs.existsSync(localKumiteVideosPath)) {
+          const kvParsed = JSON.parse(fs.readFileSync(localKumiteVideosPath, 'utf8'));
+          if (kvParsed && typeof kvParsed === 'object' && Object.keys(kvParsed).length > 0) {
+            inMemoryData.custom_kumite_videos = kvParsed;
+          }
+        }
+      } catch(e) {}
+    }
+
     // Hidrata provas geradas do /tmp e assets/data/generated-exams.json
     try {
       const tmpExams = readGeneratedExamsFromTmp() || {};
@@ -582,6 +595,7 @@ module.exports = async (req, res) => {
         dojos: dojosList,
         students: studentsList,
         custom_videos: incoming.custom_videos ? { ...inMemoryData.custom_videos, ...incoming.custom_videos } : inMemoryData.custom_videos,
+        custom_kumite_videos: incoming.custom_kumite_videos ? { ...(inMemoryData.custom_kumite_videos || {}), ...incoming.custom_kumite_videos } : (inMemoryData.custom_kumite_videos || {}),
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
         quiz_submissions: quizSubmissionsList,
         custom_quiz_bank: customQuizBank,
@@ -607,6 +621,12 @@ module.exports = async (req, res) => {
       writeFullStateToTmp(inMemoryData);
       if (customQuizBank.length > 0) writeQuizBankToTmp(customQuizBank);
       if (Object.keys(mergedGlossary).length > 0) writeGlossaryToTmp({ glossary: mergedGlossary, deletedGlossaryTerms: allDeletedGlossary });
+      if (inMemoryData.custom_kumite_videos && Object.keys(inMemoryData.custom_kumite_videos).length > 0) {
+        try {
+          const localKumiteVideosPath = path.resolve(process.cwd(), 'assets/data/kumite-videos.json');
+          fs.writeFileSync(localKumiteVideosPath, JSON.stringify(inMemoryData.custom_kumite_videos, null, 2), 'utf8');
+        } catch(e) {}
+      }
       if (inMemoryData.generated_exams && Object.keys(inMemoryData.generated_exams).length > 0) {
         writeGeneratedExamsToTmp(inMemoryData.generated_exams);
         try {
