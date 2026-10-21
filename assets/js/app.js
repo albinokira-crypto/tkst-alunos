@@ -3029,6 +3029,25 @@ document.addEventListener('DOMContentLoaded', () => {
           `}
         </div>
       ` : ''}
+
+            </div>
+            <!-- Modal Footer -->
+            <div style="background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 18px; display: flex; justify-content: flex-end; align-items: center; flex-shrink: 0;">
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.setAdminSubTab(null)" style="font-size: 0.85rem; padding: 7px 20px; font-weight: 700;">
+                <i class="fas fa-times"></i> Fechar Janela
+              </button>
+            </div>
+          </div>
+        </div>
+      ` : `
+        <div style="text-align: center; padding: 36px 18px; background: rgba(18, 23, 34, 0.65); border: 1.5px dashed rgba(255, 183, 3, 0.3); border-radius: var(--radius-lg); margin-top: 6px; margin-bottom: 24px;">
+          <i class="fas fa-th-large" style="font-size: 2.4rem; color: var(--accent-gold); margin-bottom: 12px; display: inline-block;"></i>
+          <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 4px;">Painel de Controle e Abas</h4>
+          <p style="font-size: 0.85rem; color: #94A3B8; margin: 0 auto; max-width: 480px;">
+            Clique em qualquer card acima para abrir sua respectiva janela modal (Alunos, Kata, Questões, Provas PDF, Dojos, etc.).
+          </p>
+        </div>
+      `}
     `;
 
     mainContent.innerHTML = html;
@@ -5446,26 +5465,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
               </div>
             ` : ''}
-        ` : ''}
-
-            </div>
-            <!-- Modal Footer -->
-            <div style="background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 18px; display: flex; justify-content: flex-end; align-items: center; flex-shrink: 0;">
-              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.setAdminSubTab(null)" style="font-size: 0.85rem; padding: 7px 20px; font-weight: 700;">
-                <i class="fas fa-times"></i> Fechar Janela
-              </button>
-            </div>
           </div>
         </div>
-      ` : `
-        <div style="text-align: center; padding: 36px 18px; background: rgba(18, 23, 34, 0.65); border: 1.5px dashed rgba(255, 183, 3, 0.3); border-radius: var(--radius-lg); margin-top: 6px; margin-bottom: 24px;">
-          <i class="fas fa-th-large" style="font-size: 2.4rem; color: var(--accent-gold); margin-bottom: 12px; display: inline-block;"></i>
-          <h4 style="font-family: var(--font-heading); color: #FFF; font-size: 1.15rem; margin-bottom: 4px;">Painel de Controle e Abas</h4>
-          <p style="font-size: 0.85rem; color: #94A3B8; margin: 0 auto; max-width: 480px;">
-            Clique em qualquer card acima para abrir sua respectiva janela modal (Alunos, Kata, Questões, Provas PDF, Dojos, etc.).
-          </p>
-        </div>
-      `}
+        ` : ''}
 
       </div>
     `;
