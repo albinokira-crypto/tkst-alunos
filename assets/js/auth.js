@@ -1663,13 +1663,13 @@
               studentModified = true;
             }
             merged.updatedAt = cloudUpdateTime;
-          } else {
-            if (s.role && s.role !== merged.role) {
-              merged.role = s.role;
-              studentModified = true;
-            }
-            if (Array.isArray(s.quizScores) && (!Array.isArray(merged.quizScores) || s.quizScores.length > merged.quizScores.length)) {
+          } else if (Array.isArray(s.quizScores) && (!Array.isArray(merged.quizScores) || s.quizScores.length > merged.quizScores.length)) {
             merged.quizScores = s.quizScores;
+            studentModified = true;
+          }
+
+          if (s.role && s.role !== merged.role) {
+            merged.role = s.role;
             studentModified = true;
           }
 
