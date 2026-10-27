@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.02';
+  const APP_DISPLAY_VERSION = 'V-3.03';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -1407,6 +1407,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (videoModal && videoModal.classList.contains('active')) return true;
     const gradingModal = document.getElementById('examGradingReviewModal');
     if (gradingModal && gradingModal.classList.contains('active')) return true;
+
+    // NUNCA recria ou reseta a tela se o modal do Painel de Controle (Alunos Matriculados, etc.) estiver aberto
+    const adminTabModal = document.getElementById('adminTabModal');
+    if (adminTabModal || (typeof adminSubTab !== 'undefined' && adminSubTab)) return true;
+
     return false;
   }
 
@@ -1730,7 +1735,21 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
+    const adminModalBody = document.querySelector('#adminTabModal .modal-body');
+    const savedModalScroll = adminModalBody ? adminModalBody.scrollTop : null;
+
     mainContent.innerHTML = html;
+
+    if (savedModalScroll !== null && savedModalScroll > 0) {
+      const newAdminModalBody = document.querySelector('#adminTabModal .modal-body');
+      if (newAdminModalBody) {
+        newAdminModalBody.scrollTop = savedModalScroll;
+      }
+    }
+
+    if (adminSubTab === 'students' && window._adminStudentSearchQuery && window.TKST_APP && typeof window.TKST_APP.onAdminStudentSearchInput === 'function') {
+      window.TKST_APP.onAdminStudentSearchInput(window._adminStudentSearchQuery);
+    }
   }
 
   // =========================================================================
