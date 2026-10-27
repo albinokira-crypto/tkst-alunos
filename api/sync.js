@@ -323,7 +323,7 @@ module.exports = async (req, res) => {
             const localUpdateTime = existing.updatedAt || 0;
             const cloudUpdateTime = s.updatedAt || 0;
             if (cloudUpdateTime >= localUpdateTime) {
-              ['name', 'phone', 'currentBelt', 'currentKyu', 'targetBelt', 'dojo', 'notes', 'avatar', 'startDate'].forEach(f => {
+              ['name', 'phone', 'role', 'currentBelt', 'currentKyu', 'targetBelt', 'dojo', 'notes', 'avatar', 'startDate'].forEach(f => {
                 if (s[f] !== undefined && s[f] !== null && s[f] !== '') merged[f] = s[f];
               });
               if (Array.isArray(s.quizScores) && s.quizScores.length > 0) {

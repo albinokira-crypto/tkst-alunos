@@ -1697,6 +1697,7 @@
         const freshUser = finalStudents.find(s => s.id === currentUser.id || s.username === currentUser.username);
         if (freshUser && JSON.stringify(freshUser) !== JSON.stringify(currentUser)) {
           localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshUser));
+          window.dispatchEvent(new CustomEvent('tkst_user_changed', { detail: freshUser }));
           changed = true;
         }
       }
@@ -2479,9 +2480,19 @@
 
     getCurrentUser: function() {
       try {
-        const user = JSON.parse(localStorage.getItem(STORAGE_KEY_USER)) || null;
-        if (user && (user.username === 'irons365' || (user.name && user.name.toLowerCase().includes('diego')))) {
-          user.name = 'Sensei Diego';
+        let user = JSON.parse(localStorage.getItem(STORAGE_KEY_USER)) || null;
+        if (user) {
+          if (user.username === 'irons365' || (user.name && user.name.toLowerCase().includes('diego'))) {
+            user.name = 'Sensei Diego';
+            user.role = 'admin';
+          } else {
+            const all = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+            const found = all.find(s => s && (s.id === user.id || (s.username && s.username.toLowerCase() === (user.username || '').toLowerCase())));
+            if (found && found.role && found.role !== user.role) {
+              user.role = found.role;
+              localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+            }
+          }
         }
         return user;
       } catch (e) {
@@ -2505,7 +2516,7 @@
     },
 
     canManageStudents: function() {
-      return this.isMasterAdmin();
+      return this.isAdmin();
     },
 
     canManageCredentials: function() {
