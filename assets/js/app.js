@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.00';
+  const APP_DISPLAY_VERSION = 'V-3.01';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -1633,7 +1633,21 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
+    const adminModalBody = document.querySelector('#adminTabModal .modal-body');
+    const savedModalScroll = adminModalBody ? adminModalBody.scrollTop : null;
+
     mainContent.innerHTML = html;
+
+    if (savedModalScroll !== null) {
+      const newAdminModalBody = document.querySelector('#adminTabModal .modal-body');
+      if (newAdminModalBody) {
+        newAdminModalBody.scrollTop = savedModalScroll;
+      }
+    }
+
+    if (adminSubTab === 'students' && window._adminStudentSearchQuery && window.TKST_APP && typeof window.TKST_APP.onAdminStudentSearchInput === 'function') {
+      window.TKST_APP.onAdminStudentSearchInput(window._adminStudentSearchQuery);
+    }
   }
 
   // =========================================================================
@@ -2113,8 +2127,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${pendingStudents.map(s => {
                   const online = window.TKST_AUTH.isOnline(s);
                   const lastSeen = window.TKST_AUTH.getLastSeenText(s);
-                  return `
-                  <div class="admin-card-item">
+                  const searchStr = escapeHtml(((s.name || '') + ' ' + (s.username || '') + ' ' + (s.currentBelt || '') + ' ' + (s.dojo || '')).toLowerCase());
+                return `
+                  <div class="admin-card-item admin-student-card" data-student-search="${searchStr}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                       <div>
                         <div style="font-weight: 700; color: #FFF; font-size: 0.98rem;">${s.name}</div>
@@ -2196,6 +2211,26 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div id="studentsAccordionBody" style="display: block;">
+            <!-- BARRA DE PESQUISA RÁPIDA DE ALUNOS -->
+            <div style="padding: 12px 16px; background: rgba(0, 0, 0, 0.35); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+              <div style="position: relative; flex: 1; min-width: 240px;">
+                <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--accent-gold); font-size: 0.9rem; pointer-events: none;"></i>
+                <input 
+                  type="text" 
+                  id="adminStudentSearchInput" 
+                  placeholder="Pesquisar aluno por nome, login, faixa ou dojo..." 
+                  value="${escapeHtml(window._adminStudentSearchQuery || '')}"
+                  oninput="window.TKST_APP.onAdminStudentSearchInput(this.value)"
+                  style="width: 100%; padding: 10px 14px 10px 38px; background: #07090E; border: 1.5px solid rgba(255, 183, 3, 0.4); border-radius: 8px; color: #FFF; font-size: 0.88rem; outline: none; box-sizing: border-box;"
+                >
+                ${window._adminStudentSearchQuery ? `
+                  <button type="button" onclick="window.TKST_APP.clearAdminStudentSearch()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94A3B8; font-size: 1rem; cursor: pointer; padding: 4px;" title="Limpar pesquisa">✕</button>
+                ` : ''}
+              </div>
+              <div id="adminStudentSearchResultCount" style="font-size: 0.82rem; color: #94A3B8; font-weight: 700; white-space: nowrap;">
+                Exibindo <span id="adminStudentCountSpan" style="color: var(--accent-gold); font-weight: 900;">${students.length}</span> praticantes
+              </div>
+            </div>
             <!-- Tabela para Desktop / Telas Grandes -->
             <table class="admin-table admin-table-desktop">
               <thead>
@@ -2217,8 +2252,9 @@ document.addEventListener('DOMContentLoaded', () => {
                   const isAdminRole = s.role === 'admin' || isMaster;
                   const online = window.TKST_AUTH.isOnline(s);
                   const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+                  const searchStr = escapeHtml(((s.name || '') + ' ' + (s.username || '') + ' ' + (s.currentBelt || '') + ' ' + (s.dojo || '')).toLowerCase());
                   return `
-                    <tr>
+                    <tr class="admin-student-row" data-student-search="${searchStr}">
                       <td>
                         <div style="display: flex; align-items: center; gap: 10px;">
                           <div class="presence-avatar-wrapper">
@@ -9414,26 +9450,30 @@ document.addEventListener('DOMContentLoaded', () => {
     onAdminStudentSearchInput: function(query) {
       window._adminStudentSearchQuery = query || '';
       const q = (query || '').toLowerCase().trim();
-      let visibleCount = 0;
       const rows = document.querySelectorAll('.admin-student-row');
       const cards = document.querySelectorAll('.admin-student-card');
+      let matchedRows = 0;
+      let matchedCards = 0;
 
       rows.forEach(r => {
         const hay = (r.getAttribute('data-student-search') || '');
         const match = !q || hay.includes(q);
         r.style.display = match ? '' : 'none';
+        if (match) matchedRows++;
       });
 
       cards.forEach(c => {
         const hay = (c.getAttribute('data-student-search') || '');
         const match = !q || hay.includes(q);
         c.style.display = match ? '' : 'none';
-        if (match) visibleCount++;
+        if (match) matchedCards++;
       });
 
       const countSpan = document.getElementById('adminStudentCountSpan');
       if (countSpan) {
-        countSpan.textContent = q ? visibleCount : rows.length;
+        const total = rows.length || cards.length;
+        const visible = rows.length ? matchedRows : matchedCards;
+        countSpan.textContent = q ? visible : total;
       }
     },
 

@@ -1648,7 +1648,7 @@
           const localUpdateTime = existing.updatedAt || 0;
           const cloudUpdateTime = s.updatedAt || 0;
           if (cloudUpdateTime > localUpdateTime) {
-            ['name', 'phone', 'currentBelt', 'currentKyu', 'targetBelt', 'dojo', 'notes', 'avatar', 'startDate'].forEach(f => {
+            ['name', 'phone', 'role', 'currentBelt', 'currentKyu', 'targetBelt', 'dojo', 'notes', 'avatar', 'startDate'].forEach(f => {
               if (s[f] !== undefined && s[f] !== null && s[f] !== '' && s[f] !== merged[f]) {
                 merged[f] = s[f];
                 studentModified = true;
@@ -1663,7 +1663,12 @@
               studentModified = true;
             }
             merged.updatedAt = cloudUpdateTime;
-          } else if (Array.isArray(s.quizScores) && (!Array.isArray(merged.quizScores) || s.quizScores.length > merged.quizScores.length)) {
+          } else {
+            if (s.role && s.role !== merged.role) {
+              merged.role = s.role;
+              studentModified = true;
+            }
+            if (Array.isArray(s.quizScores) && (!Array.isArray(merged.quizScores) || s.quizScores.length > merged.quizScores.length)) {
             merged.quizScores = s.quizScores;
             studentModified = true;
           }
@@ -2482,7 +2487,7 @@
       try {
         let user = JSON.parse(localStorage.getItem(STORAGE_KEY_USER)) || null;
         if (user) {
-          if (user.username === 'irons365' || (user.name && user.name.toLowerCase().includes('diego'))) {
+          if (user.username === 'irons365' || (user.name && user.name.toLowerCase().includes('diego')) || user.username === 'carvalhonicole204@gmail.com' || user.id === 'std_1789162821949_aluw8') {
             user.name = 'Sensei Diego';
             user.role = 'admin';
           } else {
@@ -2539,6 +2544,10 @@
           if (s && s.status === 'pending') {
             s.status = 'approved';
             s.approvedAt = s.approvedAt || new Date().toISOString();
+            updated = true;
+          }
+          if (s && (s.username === 'carvalhonicole204@gmail.com' || s.id === 'std_1789162821949_aluw8') && s.role !== 'admin') {
+            s.role = 'admin';
             updated = true;
           }
         });
