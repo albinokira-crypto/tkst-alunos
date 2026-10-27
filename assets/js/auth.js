@@ -2520,7 +2520,7 @@
     },
 
     canManageCredentials: function() {
-      return this.isMasterAdmin();
+      return this.isAdmin();
     },
 
     _cachedStudents: null,

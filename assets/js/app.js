@@ -1865,6 +1865,17 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <div class="admin-nav-grid">
+        <button class="admin-nav-btn" onclick="window.TKST_APP.openExamCameraScanner()" style="border-color: rgba(245, 190, 0, 0.5); background: linear-gradient(145deg, rgba(245, 190, 0, 0.15), rgba(18, 23, 34, 0.95));" title="Corretor de Provas com Gabarito Oficial">
+          <div class="admin-nav-btn-header">
+            <div class="admin-nav-btn-icon" style="background: rgba(245, 190, 0, 0.25); border: 1px solid rgba(245, 190, 0, 0.6); color: #FFD166;">
+              <i class="fas fa-pen-to-square"></i>
+            </div>
+            <span class="admin-nav-btn-badge badge-amarela" style="font-weight: 900;">Corretor</span>
+          </div>
+          <div class="admin-nav-btn-title" style="color: #FFD166;">Corrigir Prova</div>
+          <div class="admin-nav-btn-desc">Digitar gabarito ou escanear notas</div>
+        </button>
+
           ${canManageStudents ? `
             <button class="admin-nav-btn ${adminSubTab === 'students' ? 'active' : ''}" onclick="window.TKST_APP.setAdminSubTab('students')" title="Gerenciar Alunos Matriculados">
               <div class="admin-nav-btn-header">
@@ -9400,6 +9411,42 @@ document.addEventListener('DOMContentLoaded', () => {
   // 7. PUBLIC APPLICATION API (Attached to window.TKST_APP)
   // =========================================================================
   window.TKST_APP = {
+    onAdminStudentSearchInput: function(query) {
+      window._adminStudentSearchQuery = query || '';
+      const q = (query || '').toLowerCase().trim();
+      let visibleCount = 0;
+      const rows = document.querySelectorAll('.admin-student-row');
+      const cards = document.querySelectorAll('.admin-student-card');
+
+      rows.forEach(r => {
+        const hay = (r.getAttribute('data-student-search') || '');
+        const match = !q || hay.includes(q);
+        r.style.display = match ? '' : 'none';
+      });
+
+      cards.forEach(c => {
+        const hay = (c.getAttribute('data-student-search') || '');
+        const match = !q || hay.includes(q);
+        c.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+      });
+
+      const countSpan = document.getElementById('adminStudentCountSpan');
+      if (countSpan) {
+        countSpan.textContent = q ? visibleCount : rows.length;
+      }
+    },
+
+    clearAdminStudentSearch: function() {
+      window._adminStudentSearchQuery = '';
+      const inp = document.getElementById('adminStudentSearchInput');
+      if (inp) {
+        inp.value = '';
+        inp.focus();
+      }
+      this.onAdminStudentSearchInput('');
+    },
+
     closeModal: () => {
       if (window.TKST_APP && typeof window.TKST_APP.closeDetailModal === 'function') {
         window.TKST_APP.closeDetailModal();
