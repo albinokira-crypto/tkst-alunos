@@ -114,6 +114,7 @@ let inMemoryData = {
   custom_videos: {},
   progress: {},
   quiz_submissions: [],
+  kyu_ranking_reset_at: null,
   custom_quiz_bank: defaultQuizBank,
   edited_quiz_questions: {},
   custom_glossary: {},
@@ -213,6 +214,9 @@ module.exports = async (req, res) => {
             inMemoryData.quiz_submissions = subParsed.quiz_submissions;
             if (Array.isArray(subParsed.deletedQuizSubIds)) {
               inMemoryData.deletedQuizSubIds = subParsed.deletedQuizSubIds;
+            }
+            if (subParsed.kyu_ranking_reset_at) {
+              inMemoryData.kyu_ranking_reset_at = subParsed.kyu_ranking_reset_at;
             }
           }
         }
@@ -598,6 +602,7 @@ module.exports = async (req, res) => {
         custom_kumite_videos: incoming.custom_kumite_videos ? { ...(inMemoryData.custom_kumite_videos || {}), ...incoming.custom_kumite_videos } : (inMemoryData.custom_kumite_videos || {}),
         progress: incoming.progress ? { ...inMemoryData.progress, ...incoming.progress } : inMemoryData.progress,
         quiz_submissions: quizSubmissionsList,
+        kyu_ranking_reset_at: incoming.kyu_ranking_reset_at || inMemoryData.kyu_ranking_reset_at || null,
         custom_quiz_bank: customQuizBank,
         edited_quiz_questions: mergedEditedQuestions,
         custom_glossary: mergedGlossary,

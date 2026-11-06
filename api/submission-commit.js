@@ -105,7 +105,7 @@ module.exports = async (req, res) => {
       }
     } catch (e) {}
 
-    return res.status(200).json({ success: true, data: { quiz_submissions: [], deletedQuizSubIds: [] } });
+    return res.status(200).json({ success: true, data: { quiz_submissions: [], deletedQuizSubIds: [], kyu_ranking_reset_at: null } });
   }
 
   // POST: Adiciona novos simulados / exclui simulados e commita no GitHub
@@ -197,7 +197,12 @@ module.exports = async (req, res) => {
             if (clean && clean.id && !delSet.has(clean.id)) subMap.set(clean.id, { ...(subMap.get(clean.id) || {}), ...clean });
           });
           const finalSubs = deduplicateQuizSubmissions(Array.from(subMap.values())).slice(0, 500);
-          const newJson = { quiz_submissions: finalSubs, deletedQuizSubIds: Array.from(delSet), updatedAt: Date.now() };
+          const newJson = {
+            quiz_submissions: finalSubs,
+            deletedQuizSubIds: Array.from(delSet),
+            kyu_ranking_reset_at: body.kyu_ranking_reset_at || currentData.kyu_ranking_reset_at || null,
+            updatedAt: Date.now()
+          };
           try { fs.writeFileSync(localPath, JSON.stringify(newJson, null, 2), 'utf8'); } catch(e) {}
           return res.status(200).json({ success: true, committed: finalSubs.length, data: newJson });
         } catch(e) {}
@@ -251,6 +256,7 @@ module.exports = async (req, res) => {
       const newJson = {
         quiz_submissions: finalSubs,
         deletedQuizSubIds: finalDeleted,
+        kyu_ranking_reset_at: body.kyu_ranking_reset_at || currentData.kyu_ranking_reset_at || null,
         updatedAt: Date.now()
       };
 

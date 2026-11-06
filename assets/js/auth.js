@@ -1056,6 +1056,14 @@
     return bStr || 'all';
   }
 
+  function isKyuCandidate(belt, kyu, role, username) {
+    if (username === 'irons365' || role === 'admin') return false;
+    const b = (belt || '').toLowerCase();
+    if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan')) return false;
+    if (kyu !== undefined && kyu !== null && Number(kyu) <= 0) return false;
+    return true;
+  }
+
   function deduplicateQuizSubmissions(list) {
     if (!Array.isArray(list)) return [];
     const sorted = [...list].filter(Boolean).sort((a, b) => {
@@ -1135,10 +1143,18 @@
         const res = await fetch('/api/submission-commit', { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && json.success && json.data && Array.isArray(json.data.quiz_submissions) && json.data.quiz_submissions.length > 0) {
-            fetchedSubs = json.data.quiz_submissions;
+          if (json && json.success && json.data) {
+            if (Array.isArray(json.data.quiz_submissions) && json.data.quiz_submissions.length > 0) {
+              fetchedSubs = json.data.quiz_submissions;
+            }
             if (Array.isArray(json.data.deletedQuizSubIds)) {
               json.data.deletedQuizSubIds.forEach(id => deletedSet.add(id));
+            }
+            if (json.data.kyu_ranking_reset_at) {
+              const localReset = localStorage.getItem('tkst_kyu_ranking_reset_at');
+              if (!localReset || new Date(json.data.kyu_ranking_reset_at) > new Date(localReset)) {
+                localStorage.setItem('tkst_kyu_ranking_reset_at', json.data.kyu_ranking_reset_at);
+              }
             }
           }
         }
@@ -1156,6 +1172,12 @@
               if (Array.isArray(rawJson.deletedQuizSubIds)) {
                 rawJson.deletedQuizSubIds.forEach(id => deletedSet.add(id));
               }
+              if (rawJson.kyu_ranking_reset_at) {
+                const localReset = localStorage.getItem('tkst_kyu_ranking_reset_at');
+                if (!localReset || new Date(rawJson.kyu_ranking_reset_at) > new Date(localReset)) {
+                  localStorage.setItem('tkst_kyu_ranking_reset_at', rawJson.kyu_ranking_reset_at);
+                }
+              }
             }
           }
         } catch(e) {}
@@ -1171,6 +1193,12 @@
               fetchedSubs = json.quiz_submissions;
               if (Array.isArray(json.deletedQuizSubIds)) {
                 json.deletedQuizSubIds.forEach(id => deletedSet.add(id));
+              }
+              if (json.kyu_ranking_reset_at) {
+                const localReset = localStorage.getItem('tkst_kyu_ranking_reset_at');
+                if (!localReset || new Date(json.kyu_ranking_reset_at) > new Date(localReset)) {
+                  localStorage.setItem('tkst_kyu_ranking_reset_at', json.kyu_ranking_reset_at);
+                }
               }
             }
           }
@@ -1321,13 +1349,15 @@
   async function pushQuizSubmissionsToServer(submissions, deletedIds) {
     if (!Array.isArray(submissions)) return;
     const deleted = Array.isArray(deletedIds) ? deletedIds : (JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || []);
+    const kyuRankingResetAt = localStorage.getItem('tkst_kyu_ranking_reset_at') || null;
     try {
       fetch('/api/submission-commit', {
         method: 'POST',
         headers: getClientAuthHeaders(),
         body: JSON.stringify({
           quiz_submissions: submissions,
-          deletedQuizSubIds: deleted
+          deletedQuizSubIds: deleted,
+          kyu_ranking_reset_at: kyuRankingResetAt
         })
       }).catch(() => {});
     } catch(err) {
@@ -1489,6 +1519,7 @@
         custom_subalbums,
         custom_curriculum: JSON.parse(localStorage.getItem(STORAGE_KEY_CURRICULUM)) || {},
         generated_exams: JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'),
+        kyu_ranking_reset_at: localStorage.getItem('tkst_kyu_ranking_reset_at') || null,
         deletedMediaIds,
         deletedAlbums,
         deletedSubAlbums,
@@ -1559,6 +1590,15 @@
   function applyCloudData(cloudData) {
     if (!cloudData || typeof cloudData !== 'object') return;
     let changed = false;
+
+    // 0. Sync Kyu Ranking Reset At
+    if (cloudData.kyu_ranking_reset_at) {
+      const currentReset = localStorage.getItem('tkst_kyu_ranking_reset_at');
+      if (!currentReset || new Date(cloudData.kyu_ranking_reset_at) > new Date(currentReset)) {
+        localStorage.setItem('tkst_kyu_ranking_reset_at', cloudData.kyu_ranking_reset_at);
+        changed = true;
+      }
+    }
 
     // 1. Sync Deleted Student IDs (Tombstones)
     let localDeleted = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED)) || [];
@@ -3864,6 +3904,92 @@
       pushQuizSubmissionsToServer(submissions, deletedSubs);
       pushToCloud();
       return { success: true, remaining: submissions.length };
+    },
+
+    isKyuCandidate: isKyuCandidate,
+
+    getKyuRankingResetAt: function() {
+      return localStorage.getItem('tkst_kyu_ranking_reset_at') || null;
+    },
+
+    resetKyuRanking: async function() {
+      const user = this.getCurrentUser();
+      const isDiego = user && (
+        (user.username || '').toLowerCase() === 'irons365' ||
+        ((user.name || '').toLowerCase().includes('diego')) ||
+        (user.username || '').toLowerCase() === 'carvalhonicole204@gmail.com' ||
+        user.id === 'std_1789162821949_aluw8' ||
+        (this.isMasterAdmin && this.isMasterAdmin())
+      );
+      if (!isDiego) {
+        throw new Error('Apenas o Sensei Diego pode zerar o ranking dos Kyus.');
+      }
+
+      const resetTime = new Date().toISOString();
+      localStorage.setItem('tkst_kyu_ranking_reset_at', resetTime);
+
+      try {
+        const subs = this.getAllQuizSubmissions() || [];
+        const kyuSubIds = [];
+        subs.forEach(s => {
+          if (s && s.id && isKyuCandidate(s.studentBelt, s.studentKyu, '', s.studentUsername)) {
+            kyuSubIds.push(s.id);
+          }
+        });
+
+        let deletedSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+        kyuSubIds.forEach(id => {
+          if (!deletedSubs.includes(id)) deletedSubs.push(id);
+        });
+        localStorage.setItem(STORAGE_KEY_DELETED_QUIZ_SUBS, JSON.stringify(deletedSubs));
+
+        // Limpa quizScores de alunos Kyu nos perfis locais
+        let allStudents = this.getAllStudents() || [];
+        let updatedStudents = false;
+        allStudents.forEach(st => {
+          if (st && isKyuCandidate(st.currentBelt, st.currentKyu, st.role, st.username)) {
+            if (Array.isArray(st.quizScores) && st.quizScores.length > 0) {
+              st.quizScores = [];
+              updatedStudents = true;
+            }
+          }
+        });
+        if (updatedStudents) {
+          localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(allStudents));
+        }
+
+        // Limpa pontuações de Kyu no cache de progresso
+        try {
+          const pRaw = localStorage.getItem('tkst_progress_v2');
+          if (pRaw) {
+            const pObj = JSON.parse(pRaw);
+            if (pObj && typeof pObj === 'object') {
+              Object.keys(pObj).forEach(k => {
+                if (pObj[k] && Array.isArray(pObj[k].quizScores)) {
+                  pObj[k].quizScores = [];
+                }
+              });
+              localStorage.setItem('tkst_progress_v2', JSON.stringify(pObj));
+            }
+          }
+        } catch (e) { }
+
+        // Invalida cache de submissões
+        this._cachedSubs = null;
+        this._cachedSubsRaw = null;
+        this._cachedSubsDelRaw = null;
+
+        const remainingSubs = (JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || []).filter(s => !deletedSubs.includes(s.id));
+        safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(remainingSubs));
+
+        pushQuizSubmissionsToServer(remainingSubs, deletedSubs);
+        pushToCloud();
+      } catch (e) {
+        console.warn('Erro ao processar zeramento de ranking:', e);
+      }
+
+      window.dispatchEvent(new CustomEvent('tkst_submissions_updated'));
+      return true;
     },
 
     getCustomQuizBank: function() {

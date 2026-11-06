@@ -7,12 +7,12 @@ let deferredInstallPrompt = null;
 
 function isAppInstalled() {
   try {
-    const isStandalone = (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches || 
-                                               window.matchMedia('(display-mode: fullscreen)').matches || 
-                                               window.matchMedia('(display-mode: minimal-ui)').matches)) || 
-                         window.navigator.standalone === true ||
-                         (document.referrer && document.referrer.includes('android-app://')) ||
-                         localStorage.getItem('tkst_pwa_installed') === 'true';
+    const isStandalone = (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      window.matchMedia('(display-mode: minimal-ui)').matches)) ||
+      window.navigator.standalone === true ||
+      (document.referrer && document.referrer.includes('android-app://')) ||
+      localStorage.getItem('tkst_pwa_installed') === 'true';
     return !!isStandalone;
   } catch (e) {
     return false;
@@ -68,21 +68,21 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     const savedSubTab = sessionStorage.getItem('tkst_admin_subtab');
     if (savedSubTab) adminSubTab = savedSubTab;
-  } catch(e) {}
+  } catch (e) { }
   let adminQuizSelectedKyu = 6;
   try {
     const savedKyu = sessionStorage.getItem('tkst_admin_quiz_kyu');
     if (savedKyu !== null && savedKyu !== undefined && !isNaN(parseInt(savedKyu, 10))) {
       adminQuizSelectedKyu = parseInt(savedKyu, 10);
     }
-  } catch(e) {}
+  } catch (e) { }
   let examGeneratorSelectedKyu = 6;
   try {
     const savedGenKyu = sessionStorage.getItem('tkst_exam_generator_kyu');
     if (savedGenKyu !== null && !isNaN(parseInt(savedGenKyu, 10))) {
       examGeneratorSelectedKyu = parseInt(savedGenKyu, 10);
     }
-  } catch(e) {}
+  } catch (e) { }
   let examGeneratorFormat = 'quiz'; // Modelo oficial de múltipla escolha
   let examPreviewGenerated = false; // false, 'exam', 'key'
   try {
@@ -90,14 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedPreview === 'exam' || savedPreview === 'key') {
       examPreviewGenerated = savedPreview;
     }
-  } catch(e) {}
+  } catch (e) { }
   let examCurrentRandomQuestions = null; // 10 questões sorteadas ativas
   try {
     const savedQuestions = sessionStorage.getItem('tkst_exam_random_questions');
     if (savedQuestions) {
       examCurrentRandomQuestions = JSON.parse(savedQuestions);
     }
-  } catch(e) {}
+  } catch (e) { }
   let examSelectedDojobookStudent = null; // Aluno selecionado do DojôBook para a prova
   try {
     const savedStudent = sessionStorage.getItem('tkst_exam_selected_student');
@@ -108,12 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedTyped) {
       window._examTypedStudentName = savedTyped;
     }
-  } catch(e) {}
+  } catch (e) { }
   let dojobookCandidatesCache = null; // Cache de alunos e candidatos do DojôBook
   let quizModalTempImage = '';
 
   // Camera Exam Scanner State removido permanentemente
-  
+
   // Quiz State
   let currentQuizIndex = 0;
   let quizScore = 0;
@@ -135,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
+  const APP_DISPLAY_VERSION = 'V-3.02';
   const APP_DISPLAY_VERSION = 'V-3.03';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
@@ -147,18 +148,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       try {
         localStorage.removeItem('tkst_quiz_official_stamp');
-      } catch(e) {}
+      } catch (e) { }
       if ('serviceWorker' in navigator) {
         try {
           const regs = await navigator.serviceWorker.getRegistrations();
           regs.forEach(r => r.unregister());
-        } catch(e) {}
+        } catch (e) { }
       }
       if ('caches' in window) {
         try {
           const names = await caches.keys();
           await Promise.all(names.map(name => caches.delete(name)));
-        } catch(e) {}
+        } catch (e) { }
       }
       setTimeout(() => {
         window.location.reload(true);
@@ -169,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Rastreamento de atividade do usuário para evitar qualquer reload enquanto ele estiver estudando
   ['click', 'keydown', 'touchstart'].forEach(evt => {
     window.addEventListener(evt, () => {
-      try { sessionStorage.setItem('tkst_last_user_action_ts', String(Date.now())); } catch(e) {}
+      try { sessionStorage.setItem('tkst_last_user_action_ts', String(Date.now())); } catch (e) { }
     }, { passive: true });
   });
 
@@ -213,13 +214,13 @@ document.addEventListener('DOMContentLoaded', () => {
               try {
                 const names = await caches.keys();
                 await Promise.all(names.map(n => caches.delete(n)));
-              } catch(e) {}
+              } catch (e) { }
             }
             if ('serviceWorker' in navigator) {
               try {
                 const regs = await navigator.serviceWorker.getRegistrations();
                 regs.forEach(r => r.unregister());
-              } catch(e) {}
+              } catch (e) { }
             }
             window.location.reload(true);
           } else {
@@ -231,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
-    } catch(e) {}
+    } catch (e) { }
   }
 
   // Executa checagem suave após 60 segundos e depois a cada 180 segundos
@@ -269,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     if (existingToasts.length >= 3) {
-      try { container.removeChild(existingToasts[0]); } catch(e) {}
+      try { container.removeChild(existingToasts[0]); } catch (e) { }
     }
 
     const toast = document.createElement('div');
@@ -680,19 +681,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const emergencyPool = category === 'defesas'
       ? ["Age Uke", "Soto Uke", "Uchi Uke", "Gedan Barai", "Shuto Uke"]
       : category === 'chutes'
-      ? ["Mae Geri", "Mawashi Geri", "Yoko Geri", "Ushiro Geri", "Hiza Geri"]
-      : category === 'bases'
-      ? ["Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi", "Sanchin Dachi"]
-      : category === 'socos'
-      ? ["Gyaku Tsuki", "Oi Tsuki", "Tate Tsuki", "Kizami Tsuki", "Uraken Uchi"]
-      : category === 'frases'
-      ? [
-          "Desenvolver harmonia perfeita entre corpo e mente",
-          "Manter a coluna reta e o abdômen contraído firmemente",
-          "Golpe desferido com o punho oposto à perna que avança",
-          "60% do peso na perna da frente e 40% na perna de trás"
-        ]
-      : ["Gyaku Tsuki", "Mae Geri", "Gedan Barai", "Zenkutsu Dachi"];
+        ? ["Mae Geri", "Mawashi Geri", "Yoko Geri", "Ushiro Geri", "Hiza Geri"]
+        : category === 'bases'
+          ? ["Zenkutsu Dachi", "Kokutsu Dachi", "Kiba Dachi", "Fudo Dachi", "Sanchin Dachi"]
+          : category === 'socos'
+            ? ["Gyaku Tsuki", "Oi Tsuki", "Tate Tsuki", "Kizami Tsuki", "Uraken Uchi"]
+            : category === 'frases'
+              ? [
+                "Desenvolver harmonia perfeita entre corpo e mente",
+                "Manter a coluna reta e o abdômen contraído firmemente",
+                "Golpe desferido com o punho oposto à perna que avança",
+                "60% do peso na perna da frente e 40% na perna de trás"
+              ]
+              : ["Gyaku Tsuki", "Mae Geri", "Gedan Barai", "Zenkutsu Dachi"];
 
     emergencyPool.sort((a, b) => Math.abs(a.length - targetLen) - Math.abs(b.length - targetLen));
 
@@ -715,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function ensureSmartQuestionOptions(q) {
     if (!q) return q;
     const hasPlaceholders = !Array.isArray(q.options) || q.options.length < 4 || q.options.some(opt => typeof opt !== 'string' || opt.toLowerCase().includes('alternativa') || opt.toLowerCase().includes('incorreta'));
-    
+
     if (hasPlaceholders) {
       const correctAnswer = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || "";
       if (correctAnswer && !correctAnswer.toLowerCase().includes('alternativa')) {
@@ -754,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
           img.crossOrigin = 'anonymous';
         }
 
-        img.onload = function() {
+        img.onload = function () {
           clearTimeout(timeoutId);
           try {
             const canvas = document.createElement('canvas');
@@ -783,12 +784,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Comprime para JPEG (~15KB-25KB)
             const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
             resolve(compressedDataUrl);
-          } catch(canvasErr) {
+          } catch (canvasErr) {
             resolve(trimmed);
           }
         };
 
-        img.onerror = function() {
+        img.onerror = function () {
           clearTimeout(timeoutId);
           resolve(trimmed);
         };
@@ -804,7 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function compressQuizImage(file, callback) {
     if (!file || !file.type || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
       compressImageSource(e.target.result, 400, 400, 0.62).then(callback);
     };
     reader.readAsDataURL(file);
@@ -1055,10 +1056,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-sincronização inicial com a nuvem (alunos e simulados)
     if (window.TKST_AUTH) {
       if (typeof window.TKST_AUTH.pullStudentsFromCloud === 'function') {
-        window.TKST_AUTH.pullStudentsFromCloud().catch(() => {});
+        window.TKST_AUTH.pullStudentsFromCloud().catch(() => { });
       }
       if (typeof window.TKST_AUTH.pullQuizSubmissionsFromCloud === 'function') {
-        window.TKST_AUTH.pullQuizSubmissionsFromCloud().catch(() => {});
+        window.TKST_AUTH.pullQuizSubmissionsFromCloud().catch(() => { });
       }
     }
 
@@ -1071,7 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (currentTab === 'ranking' && typeof renderLeaderboard === 'function') {
           renderLeaderboard();
         }
-      } catch(e) {}
+      } catch (e) { }
     });
 
     // Fecha dropdown de autocomplete do DojôBook ao clicar fora
@@ -1109,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const validTabs = ['dashboard', 'admin', 'my-exam', 'katas', 'kumite', 'glossary', 'media', 'quiz', 'philosophy'];
       const rawHash = (window.location.hash || '').replace(/^#/, '').trim();
       let savedTab = null;
-      try { savedTab = sessionStorage.getItem('tkst_active_tab'); } catch(e) {}
+      try { savedTab = sessionStorage.getItem('tkst_active_tab'); } catch (e) { }
 
       if (rawHash && validTabs.includes(rawHash)) {
         targetTab = rawHash;
@@ -1209,7 +1210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     currentTab = tabName;
-    try { sessionStorage.setItem('tkst_active_tab', tabName); } catch(e) {}
+    try { sessionStorage.setItem('tkst_active_tab', tabName); } catch (e) { }
     navLinks.forEach(l => {
       if (l.getAttribute('data-tab') === tabName) {
         l.classList.add('active');
@@ -1300,12 +1301,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function openAdminPanel(subTab) {
     if (subTab) {
       adminSubTab = subTab;
-      try { sessionStorage.setItem('tkst_admin_subtab', subTab); } catch(e) {}
+      try { sessionStorage.setItem('tkst_admin_subtab', subTab); } catch (e) { }
     } else {
       try {
         const savedSubTab = sessionStorage.getItem('tkst_admin_subtab');
         if (savedSubTab) adminSubTab = savedSubTab;
-      } catch(e) {}
+      } catch (e) { }
     }
     switchTab('admin');
   }
@@ -1798,13 +1799,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return getStudentRegTime(b) - getStudentRegTime(a);
     });
 
-    const todayStudents = typeof window.TKST_AUTH.getTodayRegisteredStudents === 'function' 
-      ? window.TKST_AUTH.getTodayRegisteredStudents() 
+    const todayStudents = typeof window.TKST_AUTH.getTodayRegisteredStudents === 'function'
+      ? window.TKST_AUTH.getTodayRegisteredStudents()
       : students.filter(s => {
-          if (!s || s.username === 'irons365') return false;
-          const regDate = s.createdAt ? s.createdAt.split('T')[0] : (s.approvedAt ? s.approvedAt.split('T')[0] : '');
-          return regDate === new Date().toISOString().split('T')[0];
-        });
+        if (!s || s.username === 'irons365') return false;
+        const regDate = s.createdAt ? s.createdAt.split('T')[0] : (s.approvedAt ? s.approvedAt.split('T')[0] : '');
+        return regDate === new Date().toISOString().split('T')[0];
+      });
     const pendingStudents = students.filter(s => s.status === 'pending');
     const approvedStudents = students.filter(s => s.status === 'approved');
     const adminUsers = students.filter(s => s.role === 'admin' || s.username === 'irons365');
@@ -2096,9 +2097,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </thead>
                 <tbody>
                   ${pendingStudents.map(s => {
-                    const online = window.TKST_AUTH.isOnline(s);
-                    const lastSeen = window.TKST_AUTH.getLastSeenText(s);
-                    return `
+      const online = window.TKST_AUTH.isOnline(s);
+      const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+      return `
                     <tr>
                       <td>
                         <div style="font-weight: 700; color: #FFF;">${s.name}</div>
@@ -2137,17 +2138,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                       </td>
                     </tr>
-                  `;}).join('')}
+                  `;
+    }).join('')}
                 </tbody>
               </table>
 
               <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
               <div class="admin-cards-mobile">
                 ${pendingStudents.map(s => {
-                  const online = window.TKST_AUTH.isOnline(s);
-                  const lastSeen = window.TKST_AUTH.getLastSeenText(s);
-                  const searchStr = escapeHtml(((s.name || '') + ' ' + (s.username || '') + ' ' + (s.currentBelt || '') + ' ' + (s.dojo || '')).toLowerCase());
-                return `
+      const online = window.TKST_AUTH.isOnline(s);
+      const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+      const searchStr = escapeHtml(((s.name || '') + ' ' + (s.username || '') + ' ' + (s.currentBelt || '') + ' ' + (s.dojo || '')).toLowerCase());
+      return `
                   <div class="admin-card-item admin-student-card" data-student-search="${searchStr}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                       <div>
@@ -2202,7 +2204,8 @@ document.addEventListener('DOMContentLoaded', () => {
                       </button>
                     </div>
                   </div>
-                `;}).join('')}
+                `;
+    }).join('')}
               </div>
             `}
           </div>
@@ -2267,12 +2270,12 @@ document.addEventListener('DOMContentLoaded', () => {
               </thead>
               <tbody>
                 ${students.map(s => {
-                  const isMaster = s.username === 'irons365';
-                  const isAdminRole = s.role === 'admin' || isMaster;
-                  const online = window.TKST_AUTH.isOnline(s);
-                  const lastSeen = window.TKST_AUTH.getLastSeenText(s);
-                  const searchStr = escapeHtml(((s.name || '') + ' ' + (s.username || '') + ' ' + (s.currentBelt || '') + ' ' + (s.dojo || '')).toLowerCase());
-                  return `
+      const isMaster = s.username === 'irons365';
+      const isAdminRole = s.role === 'admin' || isMaster;
+      const online = window.TKST_AUTH.isOnline(s);
+      const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+      const searchStr = escapeHtml(((s.name || '') + ' ' + (s.username || '') + ' ' + (s.currentBelt || '') + ' ' + (s.dojo || '')).toLowerCase());
+      return `
                     <tr class="admin-student-row" data-student-search="${searchStr}">
                       <td>
                         <div style="display: flex; align-items: center; gap: 10px;">
@@ -2350,18 +2353,18 @@ document.addEventListener('DOMContentLoaded', () => {
                       </td>
                     </tr>
                   `;
-                }).join('')}
+    }).join('')}
               </tbody>
             </table>
 
             <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
             <div class="admin-cards-mobile">
               ${students.map(s => {
-                const isMaster = s.username === 'irons365';
-                const isAdminRole = s.role === 'admin' || isMaster;
-                const online = window.TKST_AUTH.isOnline(s);
-                const lastSeen = window.TKST_AUTH.getLastSeenText(s);
-                return `
+      const isMaster = s.username === 'irons365';
+      const isAdminRole = s.role === 'admin' || isMaster;
+      const online = window.TKST_AUTH.isOnline(s);
+      const lastSeen = window.TKST_AUTH.getLastSeenText(s);
+      return `
                   <div class="admin-card-item">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
                       <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
@@ -2431,7 +2434,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                   </div>
                 `;
-              }).join('')}
+    }).join('')}
             </div>
           </div>
         </div>
@@ -2501,9 +2504,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px;">
             ${(window.TKST_KATAS || []).map((k, idx) => {
-              const videosList = normalizeKataVideos(customVideos[k.id], k);
-              const count = videosList.length;
-              return `
+      const videosList = normalizeKataVideos(customVideos[k.id], k);
+      const count = videosList.length;
+      return `
                 <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 16px; background: rgba(18, 23, 34, 0.85); border-left: 4px solid ${count > 0 ? 'var(--accent-emerald)' : 'var(--border-color)'}; gap: 12px;">
                   <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="font-weight: 700; color: #FFF; font-size: 1rem;">
@@ -2549,7 +2552,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </button>
                 </div>
               `;
-            }).join('')}
+    }).join('')}
           </div>
         </div>
       ` : ''}
@@ -2675,6 +2678,21 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              ${(function() {
+                const u = window.TKST_AUTH ? window.TKST_AUTH.getCurrentUser() : null;
+                const isDiego = u && (
+                  (u.username || '').toLowerCase() === 'irons365' ||
+                  ((u.name || '').toLowerCase().includes('diego')) ||
+                  (u.username || '').toLowerCase() === 'carvalhonicole204@gmail.com' ||
+                  u.id === 'std_1789162821949_aluw8' ||
+                  (window.TKST_AUTH && window.TKST_AUTH.isMasterAdmin && window.TKST_AUTH.isMasterAdmin())
+                );
+                return isDiego ? `
+                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="window.TKST_APP.promptResetKyuRanking()" style="font-size: 0.78rem; padding: 6px 12px; color: #EF4444; border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.12); display: inline-flex; align-items: center; gap: 6px; font-weight: 700;" title="Zerar Ranking dos Kyus do Simulado (Exclusivo Sensei Diego)">
+                    <i class="fas fa-undo-alt"></i> Zerar Ranking dos Kyus
+                  </button>
+                ` : '';
+              })()}
               <button type="button" class="btn btn-sm btn-gold" onclick="window.TKST_APP.openExamCameraScanner()" style="font-size: 0.78rem; padding: 6px 14px; font-weight: 800; background: #F5BE00; color: #000; border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(245, 190, 0, 0.35);" title="Corrigir Prova">
                 <i class="fas fa-pen-to-square"></i> Corrigir prova
               </button>
@@ -2707,9 +2725,9 @@ document.addEventListener('DOMContentLoaded', () => {
               </thead>
               <tbody>
                 ${quizSubmissions.map(sub => {
-                  const dateStr = sub.date ? new Date(sub.date).toLocaleString('pt-BR') : '-';
-                  const safeName = (sub.studentName || '').replace(/'/g, "\\'");
-                  return `
+      const dateStr = sub.date ? new Date(sub.date).toLocaleString('pt-BR') : '-';
+      const safeName = (sub.studentName || '').replace(/'/g, "\\'");
+      return `
                     <tr>
                       <td>
                         <div style="font-weight: 700; color: #FFF;">${sub.studentName || 'Aluno'}</div>
@@ -2738,16 +2756,16 @@ document.addEventListener('DOMContentLoaded', () => {
                       </td>
                     </tr>
                   `;
-                }).join('')}
+    }).join('')}
               </tbody>
             </table>
 
             <!-- Cards Responsivos para Celular (Sem Rolagem Lateral) -->
             <div class="admin-cards-mobile">
               ${quizSubmissions.map(sub => {
-                const dateStr = sub.date ? new Date(sub.date).toLocaleString('pt-BR') : '-';
-                const safeName = (sub.studentName || '').replace(/'/g, "\\'");
-                return `
+      const dateStr = sub.date ? new Date(sub.date).toLocaleString('pt-BR') : '-';
+      const safeName = (sub.studentName || '').replace(/'/g, "\\'");
+      return `
                   <div class="admin-card-item">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                       <div>
@@ -2787,7 +2805,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                   </div>
                 `;
-              }).join('')}
+    }).join('')}
             </div>
           `}
         </div>
@@ -2836,16 +2854,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Graduation Filter Buttons - Organizados rigorosamente pela ordem do Plano de Estudos (6º ao 1º Kyu e Dans) -->
           <div style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; background: rgba(0,0,0,0.25);">
             ${[
-              { kyu: 6, label: "6ºKyu (Branca p/ Amarela)", bg: "#F5BE00", color: "#0A0D14" },
-              { kyu: 5, label: "5ºKyu (Amarela p/ Vermelha)", bg: "#E63946", color: "#FFFFFF" },
-              { kyu: 4, label: "4ºKyu (Vermelha p/ Laranja)", bg: "#FF7700", color: "#FFFFFF" },
-              { kyu: 3, label: "3ºKyu (Laranja p/ Verde)", bg: "#10B981", color: "#FFFFFF" },
-              { kyu: 2, label: "2ºKyu (Verde p/ Roxa)", bg: "#8B5CF6", color: "#FFFFFF" },
-              { kyu: 1, label: "1ºKyu (Roxa p/ Marrom)", bg: "#78350F", color: "#FFFFFF" },
-              { kyu: 0, label: "1ºDan (Shodan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
-              { kyu: -1, label: "2ºDan (Nidan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
-              { kyu: -2, label: "3ºDan (Sandan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" }
-            ].map(b => `
+            { kyu: 6, label: "6ºKyu (Branca p/ Amarela)", bg: "#F5BE00", color: "#0A0D14" },
+            { kyu: 5, label: "5ºKyu (Amarela p/ Vermelha)", bg: "#E63946", color: "#FFFFFF" },
+            { kyu: 4, label: "4ºKyu (Vermelha p/ Laranja)", bg: "#FF7700", color: "#FFFFFF" },
+            { kyu: 3, label: "3ºKyu (Laranja p/ Verde)", bg: "#10B981", color: "#FFFFFF" },
+            { kyu: 2, label: "2ºKyu (Verde p/ Roxa)", bg: "#8B5CF6", color: "#FFFFFF" },
+            { kyu: 1, label: "1ºKyu (Roxa p/ Marrom)", bg: "#78350F", color: "#FFFFFF" },
+            { kyu: 0, label: "1ºDan (Shodan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
+            { kyu: -1, label: "2ºDan (Nidan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" },
+            { kyu: -2, label: "3ºDan (Sandan)", bg: "#18181B", color: "#F4F4F5", border: "1px solid #52525B" }
+          ].map(b => `
               <button 
                 onclick="window.TKST_APP.setAdminQuizSelectedKyu(${b.kyu})"
                 style="
@@ -2872,23 +2890,23 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Questions List Ordered -->
           <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px;">
             ${(() => {
-              const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
-              const currentKyuQuestions = allBank.map(q => ensureSmartQuestionOptions(q)).filter(q => {
-                const qKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6));
-                const targetKyu = Number(adminQuizSelectedKyu);
-                return (targetKyu === 6) ? (qKyu === 6 || qKyu === 7) : (qKyu === targetKyu);
-              });
-              if (currentKyuQuestions.length === 0) {
-                return `
+            const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+            const currentKyuQuestions = allBank.map(q => ensureSmartQuestionOptions(q)).filter(q => {
+              const qKyu = Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6));
+              const targetKyu = Number(adminQuizSelectedKyu);
+              return (targetKyu === 6) ? (qKyu === 6 || qKyu === 7) : (qKyu === targetKyu);
+            });
+            if (currentKyuQuestions.length === 0) {
+              return `
                   <div style="padding: 30px; text-align: center; color: #64748B;">
                     <i class="fas fa-question-circle" style="font-size: 2.2rem; margin-bottom: 8px; display: block;"></i>
                     Nenhuma questão cadastrada para ${getBeltNameFromKyu(adminQuizSelectedKyu)}. Clique no botão acima para adicionar a primeira!
                   </div>
                 `;
-              }
-              return currentKyuQuestions.map((q, idx) => {
-                const correctText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
-                return `
+            }
+            return currentKyuQuestions.map((q, idx) => {
+              const correctText = (q.options && q.options[q.correctIndex]) || (q.options && q.options[0]) || '';
+              return `
                   <div class="stat-card" style="flex-direction: column; align-items: stretch; padding: 18px; background: rgba(18, 23, 34, 0.9); border-left: 4px solid var(--accent-gold); gap: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                       <div style="display: flex; align-items: center; gap: 8px;">
@@ -2928,8 +2946,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                   </div>
                 `;
-              }).join('');
-            })()}
+            }).join('');
+          })()}
           </div>
         </div>
       ` : ''}
@@ -2965,16 +2983,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- SELETOR DE FAIXA / GRADUAÇÃO (DE FAIXA X PARA FAIXA Y) -->
           <div style="padding: 12px 14px; border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; background: rgba(0,0,0,0.2);">
             ${[
-              { kyu: 6, label: "Branca para Amarela", bg: "#F5BE00", color: "#0A0D14", border: "1px solid #D97706" },
-              { kyu: 5, label: "Amarela para Vermelha", bg: "#E63946", color: "#FFFFFF", border: "1px solid #DC2626" },
-              { kyu: 4, label: "Vermelha para Laranja", bg: "#FF7700", color: "#FFFFFF", border: "1px solid #EA580C" },
-              { kyu: 3, label: "Laranja para Verde", bg: "#10B981", color: "#FFFFFF", border: "1px solid #059669" },
-              { kyu: 2, label: "Verde para Roxa", bg: "#8B5CF6", color: "#FFFFFF", border: "1px solid #7C3AED" },
-              { kyu: 1, label: "Roxa para Marrom", bg: "#78350F", color: "#FFFFFF", border: "1px solid #92400E" },
-              { kyu: 0, label: "Marrom para Preta (Shodan)", bg: "#18181B", color: "#FFFFFF", border: "1px solid #3F3F46" },
-              { kyu: -1, label: "Shodan para Nidan (2º Dan)", bg: "#1E293B", color: "#FFFFFF", border: "1px solid #475569" },
-              { kyu: -2, label: "Nidan para Sandan (3º Dan)", bg: "#020617", color: "#FFFFFF", border: "1px solid #334155" }
-            ].map(b => `
+            { kyu: 6, label: "Branca para Amarela", bg: "#F5BE00", color: "#0A0D14", border: "1px solid #D97706" },
+            { kyu: 5, label: "Amarela para Vermelha", bg: "#E63946", color: "#FFFFFF", border: "1px solid #DC2626" },
+            { kyu: 4, label: "Vermelha para Laranja", bg: "#FF7700", color: "#FFFFFF", border: "1px solid #EA580C" },
+            { kyu: 3, label: "Laranja para Verde", bg: "#10B981", color: "#FFFFFF", border: "1px solid #059669" },
+            { kyu: 2, label: "Verde para Roxa", bg: "#8B5CF6", color: "#FFFFFF", border: "1px solid #7C3AED" },
+            { kyu: 1, label: "Roxa para Marrom", bg: "#78350F", color: "#FFFFFF", border: "1px solid #92400E" },
+            { kyu: 0, label: "Marrom para Preta (Shodan)", bg: "#18181B", color: "#FFFFFF", border: "1px solid #3F3F46" },
+            { kyu: -1, label: "Shodan para Nidan (2º Dan)", bg: "#1E293B", color: "#FFFFFF", border: "1px solid #475569" },
+            { kyu: -2, label: "Nidan para Sandan (3º Dan)", bg: "#020617", color: "#FFFFFF", border: "1px solid #334155" }
+          ].map(b => `
               <button class="btn btn-sm" onclick="window.TKST_APP.setExamGeneratorKyu(${b.kyu})" style="
                 background: ${b.bg};
                 color: ${b.color};
@@ -3171,13 +3189,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isAdmin = window.TKST_AUTH.isAdmin();
     const students = window.TKST_AUTH.getAllStudents();
-    const todayStudents = typeof window.TKST_AUTH.getTodayRegisteredStudents === 'function' 
-      ? window.TKST_AUTH.getTodayRegisteredStudents() 
+    const todayStudents = typeof window.TKST_AUTH.getTodayRegisteredStudents === 'function'
+      ? window.TKST_AUTH.getTodayRegisteredStudents()
       : students.filter(s => {
-          if (!s || s.username === 'irons365') return false;
-          const regDate = s.createdAt ? s.createdAt.split('T')[0] : (s.approvedAt ? s.approvedAt.split('T')[0] : '');
-          return regDate === new Date().toISOString().split('T')[0];
-        });
+        if (!s || s.username === 'irons365') return false;
+        const regDate = s.createdAt ? s.createdAt.split('T')[0] : (s.approvedAt ? s.approvedAt.split('T')[0] : '');
+        return regDate === new Date().toISOString().split('T')[0];
+      });
 
     // ==========================================
     // TOP 10 QUIZ RANKING CALCULATION
@@ -3185,13 +3203,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Faixas Pretas (Dans) e Sensei Master não entram no ranking.
     // Acerto = +1 pt, Erro = -1 pt.
     // ==========================================
-    const isKyuCandidate = (belt, kyu, role, username) => {
+    const isKyuCandidate = (window.TKST_AUTH && window.TKST_AUTH.isKyuCandidate) ? window.TKST_AUTH.isKyuCandidate : ((belt, kyu, role, username) => {
       if (username === 'irons365' || role === 'admin') return false;
       const b = (belt || '').toLowerCase();
       if (b.includes('preta') || b.includes('dan') || b.includes('sensei') || b.includes('shodan') || b.includes('nidan') || b.includes('sandan')) return false;
       if (kyu !== undefined && kyu !== null && Number(kyu) <= 0) return false;
       return true;
-    };
+    });
+
+    const rankingResetAt = localStorage.getItem('tkst_kyu_ranking_reset_at') || null;
+    const rankingResetTime = rankingResetAt ? new Date(rankingResetAt).getTime() : 0;
 
     const submissions = (window.TKST_AUTH ? window.TKST_AUTH.getAllQuizSubmissions() : []) || [];
     let allProgress = {};
@@ -3315,6 +3336,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       uniqueScores.forEach(item => {
+        const itemTime = item._t || (item._t = new Date(item.date || 0).getTime());
+        if (rankingResetTime > 0 && itemTime <= rankingResetTime) return;
         const score = typeof item.score === 'number' ? item.score : 0;
         const total = typeof item.total === 'number' ? item.total : 10;
         totalCorrect += score;
@@ -3536,8 +3559,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="ranking-subtitle">Top Classificação TKST • Alunos Kyu (Acerto +1 pt | Erro -1 pt)</p>
               </div>
             </div>
-            <div class="ranking-header-tag">
-              <i class="fas fa-award"></i> Oficial
+            <div class="ranking-header-tag" style="display: flex; align-items: center; gap: 8px;">
+              ${(function() {
+                const u = window.TKST_AUTH ? window.TKST_AUTH.getCurrentUser() : null;
+                const isDiego = u && (
+                  (u.username || '').toLowerCase() === 'irons365' ||
+                  ((u.name || '').toLowerCase().includes('diego')) ||
+                  (u.username || '').toLowerCase() === 'carvalhonicole204@gmail.com' ||
+                  u.id === 'std_1789162821949_aluw8' ||
+                  (window.TKST_AUTH && window.TKST_AUTH.isMasterAdmin && window.TKST_AUTH.isMasterAdmin())
+                );
+                return isDiego ? `
+                  <button type="button" class="btn btn-sm" onclick="window.TKST_APP.promptResetKyuRanking()" style="font-size: 0.72rem; padding: 4px 10px; background: rgba(239, 68, 68, 0.18); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.45); border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);" title="Zerar Ranking Oficial dos Kyus (Apenas Sensei Diego)">
+                    <i class="fas fa-trash-alt"></i> Zerar Ranking
+                  </button>
+                ` : '';
+              })()}
+              <span><i class="fas fa-award"></i> Oficial</span>
             </div>
           </div>
 
@@ -3611,7 +3649,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (homeSlideObserver) {
       try {
         homeSlideObserver.disconnect();
-      } catch(e) {}
+      } catch (e) { }
       homeSlideObserver = null;
     }
   }
@@ -3671,7 +3709,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const preImg = new Image();
       preImg.src = nextSrc;
       if (preImg.decode) {
-        preImg.decode().catch(() => {});
+        preImg.decode().catch(() => { });
       }
     }
   }
@@ -3789,7 +3827,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Pausa automática quando o card sai da tela do celular (economiza CPU, bateria e GPU)
   function setupHomeSlideVisibilityObserver() {
     if (homeSlideObserver) {
-      try { homeSlideObserver.disconnect(); } catch(e) {}
+      try { homeSlideObserver.disconnect(); } catch (e) { }
       homeSlideObserver = null;
     }
 
@@ -4999,9 +5037,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <!-- Desktop Belt Chips -->
         <div class="belt-transition-chips desktop-only-belt-chips">
           ${allCurriculums.map(c => {
-            const trans = transMap[c.kyuNumber] || { label: c.beltName, fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
-            const isActive = c.kyuNumber === selectedBeltKyu;
-            return `
+      const trans = transMap[c.kyuNumber] || { label: c.beltName, fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
+      const isActive = c.kyuNumber === selectedBeltKyu;
+      return `
               <button 
                 class="belt-trans-btn ${trans.isDark ? 'text-dark' : ''} ${isActive ? 'active' : ''}" 
                 onclick="window.TKST_APP.selectBelt(${c.kyuNumber})"
@@ -5012,7 +5050,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${isActive ? '<i class="fas fa-check-circle" style="font-size: 0.72rem; margin-left: 2px;"></i>' : ''}
               </button>
             `;
-          }).join('')}
+    }).join('')}
         </div>
 
         <!-- Mobile Belt Menu Selector -->
@@ -5046,9 +5084,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
               <div class="belt-mobile-options-list">
                 ${allCurriculums.map(c => {
-                  const trans = transMap[c.kyuNumber] || { label: c.beltName, fullLabel: c.beltName, kyuLabel: c.kyuNumber === 0 ? 'Shodan' : (c.kyuNumber === -1 ? 'Nidan' : (c.kyuNumber === -2 ? 'Sandan' : c.kyuNumber + 'º Kyu')), fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
-                  const isActive = c.kyuNumber === selectedBeltKyu;
-                  return `
+      const trans = transMap[c.kyuNumber] || { label: c.beltName, fullLabel: c.beltName, kyuLabel: c.kyuNumber === 0 ? 'Shodan' : (c.kyuNumber === -1 ? 'Nidan' : (c.kyuNumber === -2 ? 'Sandan' : c.kyuNumber + 'º Kyu')), fromColor: '#FFFFFF', toColor: c.beltColor, textColor: '#FFFFFF', isDark: false };
+      const isActive = c.kyuNumber === selectedBeltKyu;
+      return `
                     <div 
                       class="belt-mobile-option-item ${isActive ? 'active' : ''}"
                       onclick="window.TKST_APP.selectBeltMobile(${c.kyuNumber})"
@@ -5065,7 +5103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       </div>
                     </div>
                   `;
-                }).join('')}
+    }).join('')}
               </div>
             </div>
           </div>
@@ -5281,8 +5319,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   </button>
                   <div class="shodan-item-list" id="shodanBody_dachiWaza">
                     ${curr.shodanProgram.dachiWaza.map((t, idx) => {
-                      const baseName = t.name;
-                      return `
+      const baseName = t.name;
+      return `
                       <div class="shodan-tech-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
                           ${isAdmin ? `
@@ -5302,7 +5340,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <span class="shodan-arrow-badge ${t.direction === 'Mae' ? 'mae' : 'sagate'}">${t.arrow}</span>
                       </div>
-                    `;}).join('')}
+                    `;
+    }).join('')}
                     ${isAdmin ? `
                       <div style="padding: 8px; text-align: center;">
                         <button type="button" class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openAddCurriculumTechniqueModal(${curr.kyuNumber}, 'dachiWaza')" style="font-size: 0.74rem; padding: 4px 10px; color: #8B5CF6; border-color: rgba(139,92,246,0.4);"><i class="fas fa-plus"></i> Adicionar Base Dachi Waza</button>
@@ -5536,8 +5575,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="study-accordion-body ${isDachiOpen ? 'active' : ''}" id="studyBody_dachi">
             <div class="dachi-grid-quadrados">
               ${curr.dachiWaza.map((d, idx) => {
-                const baseName = typeof d === 'string' ? d : (d.name || '');
-                return `
+      const baseName = typeof d === 'string' ? d : (d.name || '');
+      return `
                 <div class="dachi-quadrado-card" onclick="window.TKST_APP.openDachiDetailFromCurriculum('${baseName.replace(/'/g, "\\'")}')" title="Toque para ver a foto da base ${baseName}">
                   ${isAdmin ? `
                     <div class="dachi-quadrado-admin" onclick="event.stopPropagation();">
@@ -5547,7 +5586,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   ` : ''}
                   <span class="dachi-quadrado-name">${baseName}</span>
                 </div>
-              `;}).join('')}
+              `;
+    }).join('')}
             </div>
             ${isAdmin ? `
               <div style="margin-top: 12px; text-align: center;">
@@ -5596,10 +5636,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="katas-grid">
         ${katas.map((k, idx) => {
-          const kyuText = k.graduation.includes('(') ? k.graduation.split('(')[0].trim() : k.graduation.trim();
-          const badgeClass = getBeltBadgeClass(k.graduation);
+      const kyuText = k.graduation.includes('(') ? k.graduation.split('(')[0].trim() : k.graduation.trim();
+      const badgeClass = getBeltBadgeClass(k.graduation);
 
-          return `
+      return `
             <div class="kata-card" onclick="window.TKST_APP.openKataDetail('${k.id}')" title="Toque para ver a aula e vídeos do Kata ${k.name}">
               <div>
                 <div class="kata-card-top-row">
@@ -5615,7 +5655,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
           `;
-        }).join('')}
+    }).join('')}
       </div>
     `;
 
@@ -5770,7 +5810,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        
+
         const outputScale = window.devicePixelRatio || 1;
         canvas.width = Math.floor(viewport.width * outputScale);
         canvas.height = Math.floor(viewport.height * outputScale);
@@ -5790,7 +5830,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         pageWrapper.appendChild(canvas);
-        
+
         if (pdf.numPages > 1) {
           const badge = document.createElement('div');
           badge.style.cssText = 'margin-top: 6px; font-size: 0.75rem; color: #94A3B8; font-weight: 600;';
@@ -6244,8 +6284,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
             ${kumite.kihonIpponKumite.categories.map((cat, idx) => {
-              const isSubOpen = openKumiteSubSections.has('kihonIppon_' + idx);
-              return `
+      const isSubOpen = openKumiteSubSections.has('kihonIppon_' + idx);
+      return `
               <div class="kumite-sub-accordion-card ${isSubOpen ? 'active' : ''}" id="subCard_kihonIppon_${idx}" data-subgroup="kihonIppon">
                 <button type="button" class="kumite-sub-header ${isSubOpen ? 'active' : ''}" id="subHeader_kihonIppon_${idx}" onclick="window.TKST_APP.toggleKumiteSubAccordion('kihonIppon_${idx}', 'kihonIppon')" aria-expanded="${isSubOpen}">
                   <div class="kumite-sub-title-wrap">
@@ -6271,7 +6311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             `;
-            }).join('')}
+    }).join('')}
           </div>
         </div>
       </div>
@@ -6307,8 +6347,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
             ${kumite.jiyuIpponKumite.categories ? kumite.jiyuIpponKumite.categories.map((cat, idx) => {
-              const isSubOpen = openKumiteSubSections.has('jiyuIppon_' + idx);
-              return `
+      const isSubOpen = openKumiteSubSections.has('jiyuIppon_' + idx);
+      return `
               <div class="kumite-sub-accordion-card ${isSubOpen ? 'active' : ''}" id="subCard_jiyuIppon_${idx}" data-subgroup="jiyuIppon">
                 <button type="button" class="kumite-sub-header ${isSubOpen ? 'active' : ''}" id="subHeader_jiyuIppon_${idx}" onclick="window.TKST_APP.toggleKumiteSubAccordion('jiyuIppon_${idx}', 'jiyuIppon')" aria-expanded="${isSubOpen}">
                   <div class="kumite-sub-title-wrap">
@@ -6333,7 +6373,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             `;
-            }).join('') : ''}
+    }).join('') : ''}
           </div>
         </div>
       </div>
@@ -6370,8 +6410,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px;">
             <!-- It Ban (1ª Sequência) -->
             ${(() => {
-              const isItBanOpen = openKumiteSubSections.has('kataForm_itBan');
-              return `
+        const isItBanOpen = openKumiteSubSections.has('kataForm_itBan');
+        return `
               <div class="kumite-sub-accordion-card ${isItBanOpen ? 'active' : ''}" id="subCard_kataForm_itBan" data-subgroup="kihonIpponKata">
                 <button type="button" class="kumite-sub-header ${isItBanOpen ? 'active' : ''}" id="subHeader_kataForm_itBan" onclick="window.TKST_APP.toggleKumiteSubAccordion('kataForm_itBan', 'kihonIpponKata')" aria-expanded="${isItBanOpen}">
                   <div class="kumite-sub-title-wrap">
@@ -6391,12 +6431,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             `;
-            })()}
+      })()}
 
             <!-- Ni Ban (2ª Sequência) -->
             ${(() => {
-              const isNiBanOpen = openKumiteSubSections.has('kataForm_niBan');
-              return `
+        const isNiBanOpen = openKumiteSubSections.has('kataForm_niBan');
+        return `
               <div class="kumite-sub-accordion-card ${isNiBanOpen ? 'active' : ''}" id="subCard_kataForm_niBan" data-subgroup="kihonIpponKata">
                 <button type="button" class="kumite-sub-header ${isNiBanOpen ? 'active' : ''}" id="subHeader_kataForm_niBan" onclick="window.TKST_APP.toggleKumiteSubAccordion('kataForm_niBan', 'kihonIpponKata')" aria-expanded="${isNiBanOpen}">
                   <div class="kumite-sub-title-wrap">
@@ -6416,7 +6456,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             `;
-            })()}
+      })()}
           </div>
         </div>
       </div>
@@ -6538,7 +6578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     interstellarAudio: null,
     isMuted: localStorage.getItem('tkst_quiz_muted') === 'true',
 
-    init: function() {
+    init: function () {
       if (!this.audioCtx) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (AudioContextClass) {
@@ -6552,11 +6592,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           this.interstellarAudio = new Audio('assets/audio/interstellar-ticktock-15s.mp3');
           this.interstellarAudio.preload = 'auto';
-        } catch(e) {}
+        } catch (e) { }
       }
     },
 
-    playInterstellarTrack: function() {
+    playInterstellarTrack: function () {
       if (this.isMuted) return;
       this.init();
       if (!this.interstellarAudio) return;
@@ -6577,16 +6617,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    stopInterstellarTrack: function() {
+    stopInterstellarTrack: function () {
       if (this.interstellarAudio) {
         try {
           this.interstellarAudio.pause();
           this.interstellarAudio.currentTime = 0;
-        } catch (e) {}
+        } catch (e) { }
       }
     },
 
-    toggleMute: function() {
+    toggleMute: function () {
       this.isMuted = !this.isMuted;
       localStorage.setItem('tkst_quiz_muted', String(this.isMuted));
       if (this.isMuted) {
@@ -6613,7 +6653,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     // Hans Zimmer "Miller's Planet" Interstellar Clock Ticking Fallback
-    playInterstellarTick: function(isCritical) {
+    playInterstellarTick: function (isCritical) {
       if (this.isMuted) return;
       this.init();
       if (!this.audioCtx) return;
@@ -6664,11 +6704,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         osc.start(now);
         osc.stop(now + 0.05);
-      } catch (err) {}
+      } catch (err) { }
     },
 
     // Microwave Oven End Timer Bell ("Plim / Ding!")
-    playMicrowaveDing: function() {
+    playMicrowaveDing: function () {
       if (this.isMuted) return;
       this.init();
       if (!this.audioCtx) return;
@@ -6704,11 +6744,11 @@ document.addEventListener('DOMContentLoaded', () => {
         osc2.start(now);
         osc1.stop(now + 1.45);
         osc2.stop(now + 0.95);
-      } catch (err) {}
+      } catch (err) { }
     },
 
     // Fullscreen Countdown Taiko / Martial Arts Gong
-    playCountdownBeat: function(step) {
+    playCountdownBeat: function (step) {
       if (this.isMuted) return;
       this.init();
       if (!this.audioCtx) return;
@@ -6760,7 +6800,7 @@ document.addEventListener('DOMContentLoaded', () => {
           osc.start(now);
           osc.stop(now + 0.38);
         }
-      } catch (err) {}
+      } catch (err) { }
     }
   };
 
@@ -7155,10 +7195,10 @@ document.addEventListener('DOMContentLoaded', () => {
         <!-- Grade de Níveis de Graduação em 3 Colunas -->
         <div class="quiz-levels-grid">
           ${quizLevels.map(lvl => {
-            const isUnlocked = isLevelUnlocked(lvl.kyu);
-            const fullName = `${lvl.name} ${lvl.kyuLabel}`;
+        const isUnlocked = isLevelUnlocked(lvl.kyu);
+        const fullName = `${lvl.name} ${lvl.kyuLabel}`;
 
-            return `
+        return `
               <div class="quiz-level-card ${isUnlocked ? 'unlocked' : 'locked'}" style="border-top: 3.5px solid ${lvl.color};">
                 <div class="quiz-level-header">
                   <span class="quiz-level-dot" style="background: ${lvl.color};"></span>
@@ -7177,7 +7217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `}
               </div>
             `;
-          }).join('')}
+      }).join('')}
         </div>
       `;
       mainContent.innerHTML = html;
@@ -7557,7 +7597,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dbPromise: null,
     urlCache: new Map(),
 
-    getDB: function() {
+    getDB: function () {
       if (this.dbPromise) return this.dbPromise;
       this.dbPromise = new Promise((resolve, reject) => {
         if (!window.indexedDB) {
@@ -7580,7 +7620,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return this.dbPromise;
     },
 
-    saveBlob: async function(id, blob, mimeType = '', filename = '') {
+    saveBlob: async function (id, blob, mimeType = '', filename = '') {
       try {
         const db = await this.getDB();
         if (!db) return false;
@@ -7604,7 +7644,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    getBlob: async function(id) {
+    getBlob: async function (id) {
       try {
         const db = await this.getDB();
         if (!db) return null;
@@ -7620,7 +7660,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    deleteBlob: async function(id) {
+    deleteBlob: async function (id) {
       try {
         if (this.urlCache.has(id)) {
           URL.revokeObjectURL(this.urlCache.get(id));
@@ -7640,7 +7680,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    getMediaUrl: async function(item) {
+    getMediaUrl: async function (item) {
       if (!item) return '';
       const url = item.url || '';
       if (!url.startsWith('idb:')) return url;
@@ -7675,8 +7715,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const albums = getAlbumsList();
     if (!albums || albums.length === 0) return [];
     const validAlbumIds = new Set(albums.map(a => a.id));
-    const deletedSubAlbums = (window.TKST_AUTH && window.TKST_AUTH.getDeletedSubAlbumKeys) 
-      ? window.TKST_AUTH.getDeletedSubAlbumKeys() 
+    const deletedSubAlbums = (window.TKST_AUTH && window.TKST_AUTH.getDeletedSubAlbumKeys)
+      ? window.TKST_AUTH.getDeletedSubAlbumKeys()
       : (JSON.parse(localStorage.getItem('tkst_deleted_subalbums')) || []);
 
     const rawList = (window.TKST_AUTH ? window.TKST_AUTH.getCustomMedia() : (window.TKST_DEFAULT_MEDIA || [])) || [];
@@ -7701,8 +7741,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Retorna álbuns padrão mesclados com álbuns customizados do admin
   function getAlbumsList() {
-    const deletedAlbumIds = (window.TKST_AUTH && window.TKST_AUTH.getDeletedAlbumIds) 
-      ? window.TKST_AUTH.getDeletedAlbumIds() 
+    const deletedAlbumIds = (window.TKST_AUTH && window.TKST_AUTH.getDeletedAlbumIds)
+      ? window.TKST_AUTH.getDeletedAlbumIds()
       : (JSON.parse(localStorage.getItem('tkst_deleted_album_ids')) || []);
     const deletedSet = new Set(deletedAlbumIds);
 
@@ -7776,23 +7816,23 @@ document.addEventListener('DOMContentLoaded', () => {
         ` : `
           <div class="albums-grid">
             ${albums.map(alb => {
-              const albMedia = allMedia.filter(m => m.album === alb.id);
-              const count = albMedia.length;
-              let subCountText = '';
-              if (alb.hasSubAlbums) {
-                const savedSubsForAlb = (window.TKST_AUTH && window.TKST_AUTH.getCustomSubAlbums) ? window.TKST_AUTH.getCustomSubAlbums(alb.id) : [];
-                const uniqueSubs = new Set([
-                  ...albMedia.map(m => m.subAlbum).filter(Boolean),
-                  ...savedSubsForAlb.map(s => s.name).filter(Boolean)
-                ]);
-                const subWord = alb.id === 'exames' ? 'exame' : 'subálbum';
-                const subWordPlural = alb.id === 'exames' ? 'exames' : 'subálbuns';
-                subCountText = `${uniqueSubs.size} ${uniqueSubs.size === 1 ? subWord : subWordPlural} • `;
-              }
-              const coverImg = (albMedia.length > 0 && albMedia[0].thumbUrl) ? albMedia[0].thumbUrl : (alb.cover || 'assets/images/logo-tkst-alunos.png');
-              const isCustom = alb._custom;
+        const albMedia = allMedia.filter(m => m.album === alb.id);
+        const count = albMedia.length;
+        let subCountText = '';
+        if (alb.hasSubAlbums) {
+          const savedSubsForAlb = (window.TKST_AUTH && window.TKST_AUTH.getCustomSubAlbums) ? window.TKST_AUTH.getCustomSubAlbums(alb.id) : [];
+          const uniqueSubs = new Set([
+            ...albMedia.map(m => m.subAlbum).filter(Boolean),
+            ...savedSubsForAlb.map(s => s.name).filter(Boolean)
+          ]);
+          const subWord = alb.id === 'exames' ? 'exame' : 'subálbum';
+          const subWordPlural = alb.id === 'exames' ? 'exames' : 'subálbuns';
+          subCountText = `${uniqueSubs.size} ${uniqueSubs.size === 1 ? subWord : subWordPlural} • `;
+        }
+        const coverImg = (albMedia.length > 0 && albMedia[0].thumbUrl) ? albMedia[0].thumbUrl : (alb.cover || 'assets/images/logo-tkst-alunos.png');
+        const isCustom = alb._custom;
 
-              return `
+        return `
                 <div class="album-card" title="Toque para abrir o álbum ${alb.title}">
                   <div class="album-card-cover-wrap" onclick="window.TKST_APP.openAlbum('${alb.id}')">
                     <img src="${coverImg}" alt="${alb.title}" class="album-card-cover" onerror="this.src='assets/images/logo-tkst-2.jpg'">
@@ -7826,7 +7866,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                 </div>
               `;
-            }).join('')}
+      }).join('')}
           </div>
         `}
       `;
@@ -7965,8 +8005,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ` : `
           <div class="subalbums-grid">
             ${subAlbumsList.map(sub => {
-              const formattedDate = sub.latestDate ? sub.latestDate.split('-').reverse().join('/') : '';
-              return `
+        const formattedDate = sub.latestDate ? sub.latestDate.split('-').reverse().join('/') : '';
+        return `
                 <div class="subalbum-card" onclick="window.TKST_APP.openSubAlbum('${escapeHtml(sub.name)}')" title="Abrir ${escapeHtml(sub.name)}">
                   <img src="${sub.cover}" alt="${escapeHtml(sub.name)}" class="subalbum-thumb" onerror="this.src='assets/images/logo-tkst-2.jpg'">
                   <div class="subalbum-info">
@@ -7994,7 +8034,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                 </div>
               `;
-            }).join('')}
+      }).join('')}
           </div>
         `}
       `;
@@ -8023,7 +8063,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let filteredMedia = targetMedia;
     if (currentMediaSearch && currentMediaSearch.trim()) {
       const q = currentMediaSearch.toLowerCase().trim();
-      filteredMedia = filteredMedia.filter(m => 
+      filteredMedia = filteredMedia.filter(m =>
         (m.title && m.title.toLowerCase().includes(q)) ||
         (m.description && m.description.toLowerCase().includes(q)) ||
         (m.dojo && m.dojo.toLowerCase().includes(q)) ||
@@ -8120,11 +8160,11 @@ document.addEventListener('DOMContentLoaded', () => {
       ` : `
         <div class="media-grid">
           ${filteredMedia.map(m => {
-            const isVideo = m.type === 'video';
-            const dateStr = m.date ? m.date.split('-').reverse().slice(0, 2).join('/') : '';
-            const isSelected = selectedMediaIds.has(m.id);
+      const isVideo = m.type === 'video';
+      const dateStr = m.date ? m.date.split('-').reverse().slice(0, 2).join('/') : '';
+      const isSelected = selectedMediaIds.has(m.id);
 
-            return `
+      return `
               <div class="media-card ${isSelected ? 'is-selected' : ''}" style="position: relative;">
                 ${mediaSelectionMode ? `
                   <div class="media-card-select-checkbox ${isSelected ? 'selected' : ''}" onclick="event.stopPropagation(); window.TKST_APP.toggleMediaSelection('${m.id}')" title="Marcar/Desmarcar">
@@ -8166,7 +8206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             `;
-          }).join('')}
+    }).join('')}
         </div>
       `}
     `;
@@ -8397,7 +8437,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const parentAlbumId = (document.getElementById('createAlbumSubParent') || {}).value || 'exames';
       const subName = ((document.getElementById('createAlbumSubNameInput') || {}).value || '').trim();
       if (!subName) { alert('Por favor, digite o nome do subálbum.'); return; }
-      
+
       // Salva o subálbum explicitamente na base permanente
       if (window.TKST_AUTH && window.TKST_AUTH.addSubAlbum) {
         window.TKST_AUTH.addSubAlbum(parentAlbumId, subName);
@@ -8490,7 +8530,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (currentMediaSearch && currentMediaSearch.trim()) {
       const q = currentMediaSearch.toLowerCase().trim();
-      target = target.filter(m => 
+      target = target.filter(m =>
         (m.title && m.title.toLowerCase().includes(q)) ||
         (m.description && m.description.toLowerCase().includes(q)) ||
         (m.dojo && m.dojo.toLowerCase().includes(q)) ||
@@ -8596,7 +8636,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dateEl.textContent = `${dateFormatted}${item.dojo ? ' • ' + item.dojo : ''}${item.subAlbum ? ' • ' + item.subAlbum : ''}`;
     }
     if (descEl) {
-      descEl.innerHTML = item.description 
+      descEl.innerHTML = item.description
         ? `<i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 5px;"></i> ${item.description}${item.author ? ` <span style="color: #94A3B8;">(Por: ${item.author})</span>` : ''}`
         : (item.author ? `<span style="color: #94A3B8;">Registro: ${item.author}</span>` : '');
     }
@@ -9291,6 +9331,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemTitle = total === 1 ? baseTitle : `${baseTitle} (${fileIdx})`;
 
             uploadedPayloads.push({
+
+              ...[truncated for diff preview]
               title: itemTitle,
               type: curType,
               album,
@@ -9466,7 +9508,49 @@ document.addEventListener('DOMContentLoaded', () => {
   // 7. PUBLIC APPLICATION API (Attached to window.TKST_APP)
   // =========================================================================
   window.TKST_APP = {
-    onAdminStudentSearchInput: function(query) {
+    promptResetKyuRanking: async function () {
+      const currentUser = window.TKST_AUTH ? window.TKST_AUTH.getCurrentUser() : null;
+      const isDiego = currentUser && (
+        (currentUser.username || '').toLowerCase() === 'irons365' ||
+        ((currentUser.name || '').toLowerCase().includes('diego')) ||
+        (currentUser.username || '').toLowerCase() === 'carvalhonicole204@gmail.com' ||
+        currentUser.id === 'std_1789162821949_aluw8' ||
+        (window.TKST_AUTH && window.TKST_AUTH.isMasterAdmin && window.TKST_AUTH.isMasterAdmin())
+      );
+
+      if (!isDiego) {
+        alert('⚠️ Acesso restrito: Somente o login do Sensei Diego tem autorização para zerar o ranking dos Kyus.');
+        return;
+      }
+
+      const confirmReset = confirm(
+        '🥋 CONFIRMAÇÃO DO SENSEI DIEGO:\n\n' +
+        'Deseja realmente ZERAR todo o Ranking Oficial de Kyus do Simulado?\n\n' +
+        '• Todas as notas e classificações atuais dos alunos Kyu no ranking serão zeradas.\n' +
+        '• A contagem do ranking começará do zero para novos simulados a partir de agora.\n\n' +
+        'Clique em OK para confirmar o zeramento.'
+      );
+
+      if (!confirmReset) return;
+
+      try {
+        const success = await window.TKST_AUTH.resetKyuRanking();
+        if (success) {
+          alert('✅ Ranking Oficial dos Kyus zerado com sucesso!');
+          if (typeof renderHomeDashboard === 'function') {
+            renderHomeDashboard();
+          }
+          if (typeof renderAdminMaster === 'function') {
+            renderAdminMaster();
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao zerar ranking:', err);
+        alert('Erro ao processar o zeramento do ranking. Tente novamente.');
+      }
+    },
+
+    onAdminStudentSearchInput: function (query) {
       window._adminStudentSearchQuery = query || '';
       const q = (query || '').toLowerCase().trim();
       const rows = document.querySelectorAll('.admin-student-row');
@@ -9496,7 +9580,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    clearAdminStudentSearch: function() {
+    clearAdminStudentSearch: function () {
       window._adminStudentSearchQuery = '';
       const inp = document.getElementById('adminStudentSearchInput');
       if (inp) {
@@ -9572,7 +9656,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         adminSubTab = subTab;
       }
-      try { sessionStorage.setItem('tkst_admin_subtab', adminSubTab || ''); } catch(e) {}
+      try { sessionStorage.setItem('tkst_admin_subtab', adminSubTab || ''); } catch (e) { }
       renderAdminMaster();
       if (adminSubTab) {
         setTimeout(() => {
@@ -9585,7 +9669,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (subTab === 'quizzes' && window.TKST_AUTH && window.TKST_AUTH.pullQuizSubmissionsFromCloud) {
         window.TKST_AUTH.pullQuizSubmissionsFromCloud().then(() => {
           if (adminSubTab === 'quizzes') renderAdminMaster();
-        }).catch(() => {});
+        }).catch(() => { });
       }
     },
     selectBelt: (kyu) => {
@@ -9799,7 +9883,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modal.classList.add('active');
     },
 
-    loadDojobookAniversariantes: async function(forceRefresh = false) {
+    loadDojobookAniversariantes: async function (forceRefresh = false) {
       if (!forceRefresh && window._tkstAniversariantesCache) {
         return window._tkstAniversariantesCache;
       }
@@ -9811,7 +9895,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window._tkstAniversariantesCache = parsed;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       try {
         const res = await fetch('https://dojobook-five.vercel.app/api/aniversariantes?todosMeses=1', { cache: 'no-store' });
@@ -9821,7 +9905,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window._tkstAniversariantesCache = data;
             try {
               localStorage.setItem('tkst_aniversariantes_cache', JSON.stringify(data));
-            } catch (e) {}
+            } catch (e) { }
 
             // Atualiza o subtítulo do botão na Home se houver aniversariante hoje
             const subEl = document.getElementById('homeAniversariantesSubtitle');
@@ -9846,7 +9930,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return window._tkstAniversariantesCache || { aniversariantes: [], aniversariantesHoje: [], todosPorMes: {} };
     },
 
-    openAniversariantesModal: async function(selectedMes = null) {
+    openAniversariantesModal: async function (selectedMes = null) {
       const modal = document.getElementById('detailModal');
       const modalTitle = document.getElementById('detailModalTitle');
       const modalBody = document.getElementById('detailModalBody');
@@ -9887,7 +9971,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.TKST_APP.renderAniversariantesModalContent(data, mesAtivo);
     },
 
-    renderAniversariantesModalContent: function(data, mesAtivo) {
+    renderAniversariantesModalContent: function (data, mesAtivo) {
       const modalBody = document.getElementById('detailModalBody');
       if (!modalBody) return;
 
@@ -9939,16 +10023,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Navegação por Mês (12 meses) -->
           <div class="aniversariantes-months-grid">
             ${MESES_CURTO.map((m, idx) => {
-              const numMes = idx + 1;
-              const isActive = numMes === mesAtivo;
-              const qtd = (data && data.todosPorMes && data.todosPorMes[numMes]) ? data.todosPorMes[numMes].length : 0;
-              return `
+        const numMes = idx + 1;
+        const isActive = numMes === mesAtivo;
+        const qtd = (data && data.todosPorMes && data.todosPorMes[numMes]) ? data.todosPorMes[numMes].length : 0;
+        return `
                 <div class="aniversariantes-month-pill ${isActive ? 'active' : ''}" onclick="window.TKST_APP.renderAniversariantesModalContent(window._tkstAniversariantesCache, ${numMes})">
                   <div>${m}</div>
                   ${qtd > 0 ? `<div style="font-size: 0.58rem; opacity: 0.85; margin-top: 1px;">(${qtd})</div>` : ''}
                 </div>
               `;
-            }).join('')}
+      }).join('')}
           </div>
 
           <!-- Título da listagem -->
@@ -9971,23 +10055,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="font-size: 0.74rem; margin-top: 4px;">Os cadastros com data de nascimento no DojôBook aparecem aqui automaticamente.</div>
               </div>
             ` : listaDoMes.map(a => {
-              const ehHoje = mesAtivo === mesHoje && a.dia === diaHoje;
-              const beltCol = (function(bName) {
-                if (!bName) return '#E2E8F0';
-                const b = bName.toLowerCase();
-                if (b.includes('preta') || b.includes('dan')) return '#18181B';
-                if (b.includes('marrom')) return '#78350F';
-                if (b.includes('roxa')) return '#8B5CF6';
-                if (b.includes('verde')) return '#10B981';
-                if (b.includes('laranja')) return '#FF7700';
-                if (b.includes('vermelha')) return '#E63946';
-                if (b.includes('amarela')) return '#F5BE00';
-                return '#E2E8F0';
-              })(a.graduacao_atual);
+        const ehHoje = mesAtivo === mesHoje && a.dia === diaHoje;
+        const beltCol = (function (bName) {
+          if (!bName) return '#E2E8F0';
+          const b = bName.toLowerCase();
+          if (b.includes('preta') || b.includes('dan')) return '#18181B';
+          if (b.includes('marrom')) return '#78350F';
+          if (b.includes('roxa')) return '#8B5CF6';
+          if (b.includes('verde')) return '#10B981';
+          if (b.includes('laranja')) return '#FF7700';
+          if (b.includes('vermelha')) return '#E63946';
+          if (b.includes('amarela')) return '#F5BE00';
+          return '#E2E8F0';
+        })(a.graduacao_atual);
 
-              const initials = (a.nome || 'A').trim().split(' ').filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+        const initials = (a.nome || 'A').trim().split(' ').filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
 
-              return `
+        return `
                 <div class="aniversariante-item-card ${ehHoje ? 'is-today' : ''}">
                   <div class="aniversariante-left-box">
                     <div class="aniversariante-day-badge ${ehHoje ? 'is-today' : ''}">
@@ -10022,7 +10106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </button>
                 </div>
               `;
-            }).join('')}
+      }).join('')}
           </div>
 
           <div style="display: flex; gap: 8px; margin-top: 4px;">
@@ -10037,7 +10121,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     },
 
-    copyBirthdayWish: function(nome) {
+    copyBirthdayWish: function (nome) {
       const msg = `Oss! Parabéns pelo seu aniversário, guerreiro(a) ${nome}! Muita saúde, foco, sabedoria e muita evolução nos treinos de Karatê-Do na TKST! 🥋🎂🎉`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(msg).then(() => {
@@ -10402,11 +10486,11 @@ document.addEventListener('DOMContentLoaded', () => {
     exitQuiz,
     setAdminQuizSelectedKyu: (kyu) => {
       adminQuizSelectedKyu = parseInt(kyu);
-      try { sessionStorage.setItem('tkst_admin_quiz_kyu', adminQuizSelectedKyu); } catch(e) {}
+      try { sessionStorage.setItem('tkst_admin_quiz_kyu', adminQuizSelectedKyu); } catch (e) { }
       renderAdminMaster();
     },
 
-    loadDojobookCandidates: async function() {
+    loadDojobookCandidates: async function () {
       // 1. In-memory cache (requer candidatos E alunos preenchidos)
       if (dojobookCandidatesCache && Array.isArray(dojobookCandidatesCache.candidatos) && dojobookCandidatesCache.candidatos.length > 0 && Array.isArray(dojobookCandidatesCache.alunos) && dojobookCandidatesCache.alunos.length > 0) {
         return dojobookCandidatesCache;
@@ -10423,13 +10507,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return dojobookCandidatesCache;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // 3. Fallback: busca com timeout curto de 3.5s
       return await window.TKST_APP.fetchDojobookCandidatesBackground();
     },
 
-    fetchDojobookCandidatesBackground: async function() {
+    fetchDojobookCandidatesBackground: async function () {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
@@ -10442,7 +10526,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dojobookCandidatesCache = data;
             try {
               localStorage.setItem('tkst_dojobook_candidates_cache', JSON.stringify(data));
-            } catch(e) {}
+            } catch (e) { }
             return data;
           }
         }
@@ -10452,7 +10536,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return dojobookCandidatesCache || { candidatos: [], alunos: [], exames: [] };
     },
 
-    getAllAvailableStudentsForExam: function() {
+    getAllAvailableStudentsForExam: function () {
       const results = [];
       const seen = new Set();
 
@@ -10479,7 +10563,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isExamCand: false
           });
         });
-      } catch(e) {}
+      } catch (e) { }
 
       // 2. Candidatos e Alunos do DojôBook (Cache)
       try {
@@ -10542,12 +10626,12 @@ document.addEventListener('DOMContentLoaded', () => {
             isExamCand: false
           });
         });
-      } catch(e) {}
+      } catch (e) { }
 
       return results;
     },
 
-    getDojobookExamDateFormatted: function(student = null) {
+    getDojobookExamDateFormatted: function (student = null) {
       function formatRawDate(raw) {
         if (!raw) return '';
         const s = String(raw).trim();
@@ -10588,25 +10672,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         }
-      } catch(e) {}
+      } catch (e) { }
 
       // 3. Data oficial padrão do exame marcado no DojôBook
       return "13/12/2026";
     },
 
-    onDojobookStudentSearchFocus: function(inputEl) {
+    onDojobookStudentSearchFocus: function (inputEl) {
       if (inputEl) {
         inputEl.select();
       }
       window.TKST_APP.onDojobookStudentSearchInput(inputEl ? inputEl.value : '');
     },
 
-    onDojobookStudentSearchInput: function(query) {
+    onDojobookStudentSearchInput: function (query) {
       const inputEl = document.getElementById('examDojobookStudentSearch');
       const clearBtn = document.getElementById('examDojobookClearBtn');
       const linkedBadge = document.getElementById('examDojobookLinkedBadge');
       const dropdown = document.getElementById('examDojobookAutocompleteDropdown');
-      
+
       const rawVal = query !== undefined ? query : (inputEl ? inputEl.value : '');
       const cleanQ = (rawVal || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
@@ -10683,7 +10767,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       } else {
         html += matches.map((m, idx) => {
-          const photoHtml = m.foto_url 
+          const photoHtml = m.foto_url
             ? `<img src="${m.foto_url}" alt="${m.nome}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent-gold); flex-shrink: 0;" onerror="this.onerror=null;this.src='assets/images/logo-tkst-alunos.png'">`
             : `<div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255,183,3,0.15); border: 1px solid var(--accent-gold); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-weight: bold; font-size: 0.8rem; flex-shrink: 0;">${(m.nome || 'A')[0]}</div>`;
 
@@ -10718,10 +10802,10 @@ document.addEventListener('DOMContentLoaded', () => {
       dropdown.innerHTML = html;
       dropdown.style.display = 'block';
 
-      window.TKST_APP.fetchDojobookCandidatesBackground().catch(() => {});
+      window.TKST_APP.fetchDojobookCandidatesBackground().catch(() => { });
     },
 
-    selectCustomTypedStudent: function(encodedName) {
+    selectCustomTypedStudent: function (encodedName) {
       const name = decodeURIComponent(encodedName).trim();
       if (!name) return;
       window._examTypedStudentName = name;
@@ -10762,7 +10846,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    selectDojobookCandidateByIndex: function(idx) {
+    selectDojobookCandidateByIndex: function (idx) {
       const matches = window._lastDojobookMatches || [];
       const candidate = matches[idx];
       if (candidate) {
@@ -10770,15 +10854,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    selectDojobookCandidate: function(candidate) {
+    selectDojobookCandidate: function (candidate) {
       window._examTypedStudentName = '';
       examSelectedDojobookStudent = candidate;
       try {
         sessionStorage.setItem('tkst_exam_selected_student', JSON.stringify(candidate));
         sessionStorage.removeItem('tkst_exam_typed_student');
-      } catch(e) {}
+      } catch (e) { }
       const targetBelt = candidate.vai_para || candidate.graduacao_destino || candidate.graduacao_atual || '';
-      
+
       const s = String(targetBelt).toLowerCase();
       let targetKyu = 6;
       if (s.includes('amarela') || s.includes('6º') || s.includes('6o')) targetKyu = 6;
@@ -10792,12 +10876,12 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (s.includes('sandan') || s.includes('3º dan')) targetKyu = -2;
 
       examGeneratorSelectedKyu = targetKyu;
-      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(targetKyu)); } catch(e) {}
+      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(targetKyu)); } catch (e) { }
       examCurrentRandomQuestions = null;
-      try { sessionStorage.removeItem('tkst_exam_random_questions'); } catch(e) {}
+      try { sessionStorage.removeItem('tkst_exam_random_questions'); } catch (e) { }
       if (examPreviewGenerated && window.TKST_EXAM_GENERATOR) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
-        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch(e) {}
+        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch (e) { }
       }
       renderAdminMaster();
       if (typeof showToast === 'function') {
@@ -10805,13 +10889,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    clearExamDojobookStudent: function() {
+    clearExamDojobookStudent: function () {
       window._examTypedStudentName = '';
       examSelectedDojobookStudent = null;
       try {
         sessionStorage.removeItem('tkst_exam_selected_student');
         sessionStorage.removeItem('tkst_exam_typed_student');
-      } catch(e) {}
+      } catch (e) { }
       renderAdminMaster();
       setTimeout(() => {
         const inp = document.getElementById('examDojobookStudentSearch');
@@ -10822,7 +10906,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 50);
     },
 
-    pushGradeToDojobook: async function({ studentName, studentId, score, total, beltName, kyu, examId }) {
+    pushGradeToDojobook: async function ({ studentName, studentId, score, total, beltName, kyu, examId }) {
       try {
         const isUuid = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ''));
         const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
@@ -10881,10 +10965,10 @@ document.addEventListener('DOMContentLoaded', () => {
               const freshData = await freshRes.json();
               todos = [...(freshData.candidatos || []), ...(freshData.alunos || [])];
               dojobookCandidatesCache = freshData;
-              try { localStorage.setItem('tkst_dojobook_candidates_cache', JSON.stringify(freshData)); } catch(e) {}
+              try { localStorage.setItem('tkst_dojobook_candidates_cache', JSON.stringify(freshData)); } catch (e) { }
               match = findMatch(todos);
             }
-          } catch(e) {
+          } catch (e) {
             console.warn('[DojôBook] Falha ao buscar lista fresca:', e);
           }
         }
@@ -10929,7 +11013,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 (dojobookCandidatesCache.alunos || []).forEach(updateItem);
                 localStorage.setItem('tkst_dojobook_candidates_cache', JSON.stringify(dojobookCandidatesCache));
               }
-            } catch(e) {}
+            } catch (e) { }
 
             if (typeof showToast === 'function') {
               showToast(`🥋 Nota ${score}/10 lançada com sucesso na ficha de ${targetName} no DojôBook!`, 'success', 4000);
@@ -10951,7 +11035,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return { success: false };
     },
 
-    onModalDojobookSearchInput: async function(query) {
+    onModalDojobookSearchInput: async function (query) {
       if (examGradingPendingResult) {
         examGradingPendingResult.detectedName = (query || '').trim();
       }
@@ -10995,7 +11079,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dropdown.innerHTML = matches.map((m, idx) => {
         const isExamCand = m.isExamCand;
         const targetBelt = m.vai_para || m.graduacao_destino || 'Amarela';
-        const photoHtml = m.foto_url 
+        const photoHtml = m.foto_url
           ? `<img src="${m.foto_url}" alt="${m.nome}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent-gold); flex-shrink: 0;" onerror="this.onerror=null;this.src='assets/images/logo-tkst-alunos.png'">`
           : `<div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,183,3,0.15); border: 1px solid var(--accent-gold); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); font-weight: bold; font-size: 0.82rem; flex-shrink: 0;">${(m.nome || 'A')[0]}</div>`;
 
@@ -11028,7 +11112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dropdown.style.display = 'block';
     },
 
-    selectModalDojobookCandidateByIndex: function(idx) {
+    selectModalDojobookCandidateByIndex: function (idx) {
       const matches = window._lastModalDojobookMatches || [];
       const candidate = matches[idx];
       if (candidate) {
@@ -11036,7 +11120,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    selectModalDojobookCandidate: function(candidate) {
+    selectModalDojobookCandidate: function (candidate) {
       if (examGradingPendingResult) {
         examGradingPendingResult.selectedDojobookStudent = candidate;
         examGradingPendingResult.selectedAppStudent = null;
@@ -11051,7 +11135,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
-    clearModalDojobookStudent: function() {
+    clearModalDojobookStudent: function () {
       if (examGradingPendingResult) {
         examGradingPendingResult.selectedDojobookStudent = null;
         examGradingPendingResult.selectedAppStudent = null;
@@ -11060,7 +11144,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.TKST_APP.refreshGradingReviewUI();
     },
 
-    onModalStudentSelectChange: function(selectEl) {
+    onModalStudentSelectChange: function (selectEl) {
       if (!selectEl) return;
       const customWrap = document.getElementById('examGradeCustomStudentWrap');
       if (customWrap) {
@@ -11103,9 +11187,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setExamGeneratorKyu: (kyu) => {
       examGeneratorSelectedKyu = parseInt(kyu);
-      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(examGeneratorSelectedKyu)); } catch(e) {}
+      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(examGeneratorSelectedKyu)); } catch (e) { }
       examCurrentRandomQuestions = null;
-      try { sessionStorage.removeItem('tkst_exam_random_questions'); } catch(e) {}
+      try { sessionStorage.removeItem('tkst_exam_random_questions'); } catch (e) { }
       renderAdminMaster();
     },
     setExamGeneratorFormat: (fmt) => {
@@ -11117,24 +11201,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const typedInp = document.getElementById('examDojobookStudentSearch');
       if (typedInp && typedInp.value.trim()) {
         window._examTypedStudentName = typedInp.value.trim();
-        try { sessionStorage.setItem('tkst_exam_typed_student', window._examTypedStudentName); } catch(e) {}
+        try { sessionStorage.setItem('tkst_exam_typed_student', window._examTypedStudentName); } catch (e) { }
       }
       if (window.TKST_EXAM_GENERATOR) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
-        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch(e) {}
+        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch (e) { }
       }
       examPreviewGenerated = mode;
-      try { sessionStorage.setItem('tkst_exam_preview_mode', mode); } catch(e) {}
-      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(examGeneratorSelectedKyu)); } catch(e) {}
+      try { sessionStorage.setItem('tkst_exam_preview_mode', mode); } catch (e) { }
+      try { sessionStorage.setItem('tkst_exam_generator_kyu', String(examGeneratorSelectedKyu)); } catch (e) { }
       if (examSelectedDojobookStudent) {
-        try { sessionStorage.setItem('tkst_exam_selected_student', JSON.stringify(examSelectedDojobookStudent)); } catch(e) {}
+        try { sessionStorage.setItem('tkst_exam_selected_student', JSON.stringify(examSelectedDojobookStudent)); } catch (e) { }
       }
       renderAdminMaster();
     },
     rerollExamQuestions: () => {
       if (window.TKST_EXAM_GENERATOR) {
         examCurrentRandomQuestions = window.TKST_EXAM_GENERATOR.getRandomQuizQuestionsForKyu(examGeneratorSelectedKyu, 10);
-        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch(e) {}
+        try { sessionStorage.setItem('tkst_exam_random_questions', JSON.stringify(examCurrentRandomQuestions)); } catch (e) { }
         if (typeof showToast === 'function') {
           showToast('🎲 10 novas questões sorteadas com sucesso!', 'success');
         }
@@ -11143,7 +11227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     closeExamPreview: () => {
       examPreviewGenerated = false;
-      try { sessionStorage.removeItem('tkst_exam_preview_mode'); } catch(e) {}
+      try { sessionStorage.removeItem('tkst_exam_preview_mode'); } catch (e) { }
       renderAdminMaster();
     },
     printCurrentExam: () => {
@@ -11364,7 +11448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (k.direction) {
           const dirFull = k.direction.includes('Mae') ? 'Mae (Avançando à frente)'
             : (k.direction.includes('Sagate') ? 'Sagate (Recuando para trás)'
-            : (k.direction.includes('Mawate') ? 'Mawate (Girando)' : k.direction));
+              : (k.direction.includes('Mawate') ? 'Mawate (Girando)' : k.direction));
           generatedCandidates.push({
             question: `Segundo o plano de estudos da ${beltName}, qual a direção de deslocamento ao executar '${k.technique}'?`,
             correctAnswer: dirFull,
@@ -11564,8 +11648,8 @@ document.addEventListener('DOMContentLoaded', () => {
             wrongAnswers: item.wrongAnswers,
             topic: item.topic || "Plano de Estudos",
             beltName: item.beltName || beltName,
-            toString: function() { return this.question; },
-            valueOf: function() { return this.question; }
+            toString: function () { return this.question; },
+            valueOf: function () { return this.question; }
           });
           if (selectedBatch.length >= count) break;
         }
@@ -11581,14 +11665,14 @@ document.addEventListener('DOMContentLoaded', () => {
           wrongAnswers: fallbackItem.wrongAnswers,
           topic: fallbackItem.topic || "Plano de Estudos",
           beltName: fallbackItem.beltName || beltName,
-          toString: function() { return this.question; },
-          valueOf: function() { return this.question; }
+          toString: function () { return this.question; },
+          valueOf: function () { return this.question; }
         });
       }
 
       try {
         sessionStorage.setItem('tkst_suggested_history', JSON.stringify(window._tkstSuggestedHistory.slice(-300)));
-      } catch (e) {}
+      } catch (e) { }
 
       return selectedBatch;
     },
@@ -11986,7 +12070,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!modal || !modalTitle || !modalBody) return;
 
       const beltName = getBeltNameFromKyu(kyu);
-      
+
       let initialQuestions = [];
       if (window.TKST_SHOTOKAN_ENGINE && typeof window.TKST_SHOTOKAN_ENGINE.formulateQuestions === 'function') {
         initialQuestions = window.TKST_SHOTOKAN_ENGINE.formulateQuestions(kyu, { count: 5, category: 'todos' });
@@ -12433,7 +12517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (quizModalTempImage) {
           try {
             quizModalTempImage = await compressImageSource(quizModalTempImage, 400, 400, 0.62);
-          } catch(imgErr) {
+          } catch (imgErr) {
             console.warn('Compress image fallback em add:', imgErr);
           }
         }
@@ -12686,7 +12770,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (quizModalTempImage) {
           try {
             quizModalTempImage = await compressImageSource(quizModalTempImage, 400, 400, 0.62);
-          } catch(imgErr) {}
+          } catch (imgErr) { }
         }
 
         const existing = bank[idx];
@@ -12713,7 +12797,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           editedMap[qId] = cleanToStore;
           localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(editedMap));
-        } catch(e) {}
+        } catch (e) { }
 
         if (Array.isArray(window.TKST_DEFAULT_QUIZ_BANK)) {
           const dIdx = window.TKST_DEFAULT_QUIZ_BANK.findIndex(item => item.id === qId);
@@ -12812,7 +12896,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openCopyTransferQuizModal: (qId) => {
       const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
       const q = allBank.find(item => item && item.id === qId) ||
-                (window.TKST_DEFAULT_QUIZ_BANK || []).find(item => item && item.id === qId);
+        (window.TKST_DEFAULT_QUIZ_BANK || []).find(item => item && item.id === qId);
 
       if (!q) {
         showToast('⚠️ Questão não encontrada.', 'warning');
@@ -13149,7 +13233,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deferredInstallPrompt = null;
             return;
           }
-        } catch(err) {
+        } catch (err) {
           console.warn('Install prompt error:', err);
         }
       }
@@ -13388,7 +13472,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await window.TKST_AUTH.recoverPassword(studentId, p1);
       if (res.success) {
         feedback.innerHTML = `<span style="color: #6EE7B7; font-weight: 700;">✓ Senha atualizada com sucesso! Entrando no sistema...</span>`;
-        
+
         const loginId = document.getElementById('loginIdentifier');
         const loginPass = document.getElementById('loginPassword');
         if (loginId && res.student) loginId.value = res.student.username;
@@ -14275,7 +14359,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       let generated_exams = {};
       try {
         generated_exams = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
-      } catch(e) {}
+      } catch (e) { }
 
       const backupData = {
         exportDate: new Date().toISOString(),
@@ -14314,7 +14398,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             const content = evt.target.result;
             const data = JSON.parse(content);
             window.TKST_APP.applyBackupData(data);
-          } catch(err) {
+          } catch (err) {
             alert('Erro ao processar o arquivo de backup: ' + err.message);
           }
         };
@@ -14462,7 +14546,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             }
             alert(`🎉 Sucesso! Banco atualizado com ${merged.length} questões e sincronizado.`);
             if (typeof renderAdminView === 'function') renderAdminView();
-          } catch(err) {
+          } catch (err) {
             alert('Erro ao importar arquivo de questões: ' + err.message);
           }
         };
@@ -14486,7 +14570,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           await window.TKST_AUTH.pushToCloud();
         }
         showToast(`✅ ${bank.length} questões transmitidas com sucesso!`, 'success', 4000);
-      } catch(e) {
+      } catch (e) {
         showToast('Erro ao transmitir questões: ' + e.message, 'danger', 4000);
       }
     },
@@ -14499,10 +14583,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
       const renderInviteBody = (mode) => {
         const isAccess = mode === 'access';
-        const url = isAccess 
-          ? 'https://tkst-alunos.pages.dev/' 
+        const url = isAccess
+          ? 'https://tkst-alunos.pages.dev/'
           : 'https://tkst-alunos.pages.dev/?cadastro=1';
-        
+
         const previewText = isAccess
           ? `OSS!!! 🥋\nAcesse o portal oficial de estudos e treinos TKST Alunos:\n\n👉 Toque no link abaixo para entrar no app:\n${url}`
           : `OSS!!! 🥋\nO Sensei Diego convida você para se cadastrar no portal de estudos TKST Alunos.\n\n👉 Toque no link abaixo para realizar seu cadastro:\n${url}`;
@@ -14654,7 +14738,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = 'ja-JP';
       utterance.rate = 0.85;
-      
+
       const voices = window.speechSynthesis.getVoices();
       const jaVoice = voices.find(v => v.lang === 'ja-JP' || v.lang.startsWith('ja'));
       if (jaVoice) {
@@ -15084,7 +15168,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             btn.innerHTML = '<i class="fas fa-plus-circle"></i> Cadastrar Termo';
           }
         }
-      } catch(err) {
+      } catch (err) {
         console.error('submitAddGlossaryTerm error:', err);
         alert('Erro ao cadastrar termo: ' + err.message);
         const btn = document.getElementById('btnAddGlossaryTerm');
@@ -15323,7 +15407,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             btn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
           }
         }
-      } catch(err) {
+      } catch (err) {
         console.error('submitEditGlossaryTerm error:', err);
         alert('Erro ao salvar termo: ' + err.message);
         const btn = document.getElementById('btnSaveGlossaryTerm');
@@ -16241,7 +16325,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    openExamCameraScanner: function(kyu) {
+    openExamCameraScanner: function (kyu) {
       const modal = document.getElementById('examOmrScannerModal');
       if (!modal) return;
 
@@ -16253,7 +16337,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             window.TKST_AUTH.applyCloudData(cloudData);
             this.renderOmrRecentExams();
           }
-        }).catch(() => {});
+        }).catch(() => { });
       }
 
       // Popula lista de alunos matriculados e candidatos do Dojobook
@@ -16272,7 +16356,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       modal.style.display = 'flex';
     },
 
-    populateOmrStudentsList: function(selectedStudentId) {
+    populateOmrStudentsList: function (selectedStudentId) {
       const sel = document.getElementById('omrStudentSelect');
       if (!sel) return;
       const students = (typeof this.getAllAvailableStudentsForExam === 'function')
@@ -16287,7 +16371,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         }).join('');
     },
 
-    renderOmrRecentExams: function() {
+    renderOmrRecentExams: function () {
       const container = document.getElementById('omrRecentExamsChips');
       if (!container) return;
 
@@ -16298,7 +16382,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       try {
         const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
         Object.assign(examsMap, store);
-      } catch(e) {}
+      } catch (e) { }
 
       const codes = Object.keys(examsMap);
       if (codes.length === 0) {
@@ -16328,7 +16412,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }).join(' ');
     },
 
-    selectOmrRecentExam: function(code) {
+    selectOmrRecentExam: function (code) {
       const input = document.getElementById('omrExamCodeInput');
       if (input) {
         input.value = code;
@@ -16336,7 +16420,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    goToOmrPhase: function(phase) {
+    goToOmrPhase: function (phase) {
       omrCurrentPhase = phase;
       const phase1View = document.getElementById('omrPhase1View');
       const phase2View = document.getElementById('omrPhase2View');
@@ -16458,13 +16542,13 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    searchOmrExamCode: async function() {
+    searchOmrExamCode: async function () {
       const input = document.getElementById('omrExamCodeInput');
       const val = input ? input.value : '';
       await this.identifyExamByCode(val, true);
     },
 
-    onOmrExamCodeInput: function(code) {
+    onOmrExamCodeInput: function (code) {
       const clean = (code || '').replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
       const code5 = clean.split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
       if (code5.length === 5) {
@@ -16481,14 +16565,14 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    toggleManualStudentOverride: function() {
+    toggleManualStudentOverride: function () {
       const wrap = document.getElementById('omrManualStudentOverrideWrap');
       if (wrap) {
         wrap.style.display = (wrap.style.display === 'none' || !wrap.style.display) ? 'block' : 'none';
       }
     },
 
-    onOmrStudentSelectChanged: function(studentId) {
+    onOmrStudentSelectChanged: function (studentId) {
       if (!studentId) return;
       const allStudents = (typeof this.getAllAvailableStudentsForExam === 'function')
         ? this.getAllAvailableStudentsForExam()
@@ -16517,7 +16601,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    identifyExamByCode: async function(codeStr, isExplicitSearch = false) {
+    identifyExamByCode: async function (codeStr, isExplicitSearch = false) {
       if (!codeStr) return;
       const rawInput = String(codeStr).trim();
       const clean = rawInput.replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
@@ -16562,7 +16646,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           try {
             const cache = window.TKST_GENERATED_EXAMS_CACHE || {};
             exam = cache[baseCode] || cache[clean];
-          } catch(e) {}
+          } catch (e) { }
         }
         if (!exam) {
           try {
@@ -16572,7 +16656,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
               const foundKey = Object.keys(store).find(k => k.trim().toUpperCase().split('-')[0] === baseCode);
               if (foundKey) exam = store[foundKey];
             }
-          } catch(e) {}
+          } catch (e) { }
         }
       }
 
@@ -16590,7 +16674,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
               break;
             }
           }
-        } catch(e) {}
+        } catch (e) { }
       }
 
       // 4. Busca instantânea no backend / arquivo estático de provas geradas se não tiver aluno local
@@ -16599,7 +16683,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           const qCode = (exam && exam.examId) || (baseCode.length === 5 ? baseCode : clean);
           const cloudExam = await window.TKST_AUTH.fetchExamFromCloud(qCode);
           if (cloudExam) exam = cloudExam;
-        } catch(e) {}
+        } catch (e) { }
       }
 
       // 5. Se o aluno foi identificado mas não tem prova sorteada salva, cria gabarito oficial para a faixa dele
@@ -16737,7 +16821,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             const lowName = studentName.toLowerCase().trim();
             for (let i = 0; i < studentSelect.options.length; i++) {
               if (studentSelect.options[i].text.toLowerCase().includes(lowName) ||
-                  lowName.includes(studentSelect.options[i].text.toLowerCase())) {
+                lowName.includes(studentSelect.options[i].text.toLowerCase())) {
                 studentSelect.selectedIndex = i;
                 matched = true;
                 break;
@@ -16782,7 +16866,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    openOmrNativeCamera: function() {
+    openOmrNativeCamera: function () {
       const input = document.getElementById('omrNativeCameraInput');
       if (input) {
         input.value = '';
@@ -16790,11 +16874,11 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    closeExamCameraScanner: function() {
+    closeExamCameraScanner: function () {
       this.closeExamOmrModal();
     },
 
-    closeExamOmrModal: function() {
+    closeExamOmrModal: function () {
       const modal = document.getElementById('examOmrScannerModal');
       if (modal) {
         modal.classList.remove('active');
@@ -16802,7 +16886,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    setOmrCaptureMode: function(mode) {
+    setOmrCaptureMode: function (mode) {
       omrCaptureMode = mode === 'sheet' ? 'sheet' : 'card';
       const cardBtn = document.getElementById('omrModeCardBtn');
       const sheetBtn = document.getElementById('omrModeSheetBtn');
@@ -16833,7 +16917,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    handleOmrFileUpload: function(event) {
+    handleOmrFileUpload: function (event) {
       const input = event.target;
       if (input.files && input.files[0]) {
         const file = input.files[0];
@@ -16845,7 +16929,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    onOmrKyuChanged: function() {
+    onOmrKyuChanged: function () {
       const kyuSelect = document.getElementById('omrKyuSelect');
       const kyu = kyuSelect ? Number(kyuSelect.value) : 6;
       omrCurrentExpectedKey = this.getExpectedKeyForKyu(kyu);
@@ -16854,7 +16938,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    getExpectedKeyForKyu: function(kyu) {
+    getExpectedKeyForKyu: function (kyu) {
       try {
         if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getExamData === 'function') {
           const exam = window.TKST_EXAM_GENERATOR.getExamData(kyu);
@@ -16862,7 +16946,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             return exam.questions.slice(0, 10).map(q => String.fromCharCode(65 + (q.correctIndex || 0)));
           }
         }
-      } catch(e) {}
+      } catch (e) { }
 
       const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
       const kyuQuestions = bank.filter(q => Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6)) === Number(kyu));
@@ -16872,7 +16956,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       return ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
     },
 
-    processOmrImage: async function(imageSrc, forceAi = true) {
+    processOmrImage: async function (imageSrc, forceAi = true) {
       omrCurrentSourceImage = imageSrc;
 
       const phase1View = document.getElementById('omrPhase1View');
@@ -16890,10 +16974,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (pTitle) pTitle.textContent = 'Analisando Prova com Gemini Vision...';
       if (pDesc) pDesc.textContent = 'Identificando cartão de respostas e marcações a lápis/caneta com IA...';
 
-      const examCode = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.examId) || 
-                       (document.getElementById('omrExamCodeInput') ? document.getElementById('omrExamCodeInput').value.trim() : '');
-      const kyu = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.kyu !== undefined) 
-        ? Number(omrCurrentIdentifiedExam.kyu) 
+      const examCode = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.examId) ||
+        (document.getElementById('omrExamCodeInput') ? document.getElementById('omrExamCodeInput').value.trim() : '');
+      const kyu = (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.kyu !== undefined)
+        ? Number(omrCurrentIdentifiedExam.kyu)
         : (document.getElementById('omrKyuSelect') ? Number(document.getElementById('omrKyuSelect').value) : 4);
 
       if (!omrCurrentExpectedKey || omrCurrentExpectedKey.length < 10) {
@@ -16941,7 +17025,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         } else {
           showToast('✅ Cartão lido com sucesso!', 'info', 3000);
         }
-      } catch(err) {
+      } catch (err) {
         console.error('Erro no processamento OMR:', err);
         if (processingView) processingView.style.display = 'none';
         if (phase2View) phase2View.style.display = 'block';
@@ -16949,7 +17033,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    renderOmrReviewView: function(scanResult) {
+    renderOmrReviewView: function (scanResult) {
       const cardImg = document.getElementById('omrScannedCardImg');
       if (cardImg && scanResult.croppedCardDataUrl) {
         cardImg.src = scanResult.croppedCardDataUrl;
@@ -17009,7 +17093,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       this.recalculateOmrScore();
     },
 
-    renderManualQuestionsList: function() {
+    renderManualQuestionsList: function () {
       const container = document.getElementById('omrManualQuestionsContainer');
       if (!container) return;
 
@@ -17045,8 +17129,8 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           statusHtml = `<button type="button" onclick="window.TKST_APP.setManualExamAnswer(${qNum}, null)" style="background: transparent; border: none; font-size: 0.65rem; color: #64748B; font-weight: 700; cursor: pointer; padding: 0; white-space: nowrap;" title="Gabarito: ${expectedAnswer}">[${expectedAnswer}]</button>`;
         }
 
-        const borderCol = isAnswered 
-          ? (isCorrect ? 'rgba(16, 185, 129, 0.45)' : 'rgba(239, 68, 68, 0.45)') 
+        const borderCol = isAnswered
+          ? (isCorrect ? 'rgba(16, 185, 129, 0.45)' : 'rgba(239, 68, 68, 0.45)')
           : 'rgba(255,255,255,0.08)';
 
         return `
@@ -17065,7 +17149,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }).join('');
     },
 
-    setManualExamAnswer: function(questionNum, letter) {
+    setManualExamAnswer: function (questionNum, letter) {
       if (!Array.isArray(omrManualAnswers) || omrManualAnswers.length !== 10) {
         omrManualAnswers = [null, null, null, null, null, null, null, null, null, null];
       }
@@ -17074,7 +17158,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       this.recalculateManualExamScore();
     },
 
-    recalculateManualExamScore: function() {
+    recalculateManualExamScore: function () {
       let hits = 0;
       if (Array.isArray(omrManualAnswers) && Array.isArray(omrCurrentExpectedKey)) {
         omrManualAnswers.forEach((ans, idx) => {
@@ -17106,15 +17190,15 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    overrideOmrAnswer: function(questionNum, letter) {
+    overrideOmrAnswer: function (questionNum, letter) {
       this.setManualExamAnswer(questionNum, letter);
     },
 
-    recalculateOmrScore: function() {
+    recalculateOmrScore: function () {
       this.recalculateManualExamScore();
     },
 
-    forceGeminiOmrValidation: async function() {
+    forceGeminiOmrValidation: async function () {
       if (!omrCurrentSourceImage) {
         alert('Nenhuma imagem carregada para validação.');
         return;
@@ -17122,7 +17206,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       await this.processOmrImage(omrCurrentSourceImage, true);
     },
 
-    resetOmrScanner: function() {
+    resetOmrScanner: function () {
       omrCurrentScanResult = null;
       omrCurrentSourceImage = null;
       omrCurrentIdentifiedExam = null;
@@ -17146,7 +17230,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       this.goToOmrPhase(1);
     },
 
-    saveManualExamGrade: async function() {
+    saveManualExamGrade: async function () {
       if (!omrCurrentIdentifiedExam || !omrCurrentExpectedKey || omrCurrentExpectedKey.length < 10) {
         alert('Nenhuma prova identificada para salvar.');
         return;
@@ -17171,8 +17255,8 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         : ((window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || []);
       let student = allStudents.find(s => s && (String(s.id) === String(studentId) || (s.nome && s.nome === (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.studentName))));
 
-      const resolvedStudentName = student 
-        ? (student.nome || student.name || student.username) 
+      const resolvedStudentName = student
+        ? (student.nome || student.name || student.username)
         : ((omrCurrentIdentifiedExam && (omrCurrentIdentifiedExam.studentName || omrCurrentIdentifiedExam.studentAbbr)) || 'Aluno TKST');
 
       const targetStudentId = student ? student.id : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : null);
@@ -17212,7 +17296,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           kyu: kyu,
           examId: submissionData.examCode
         });
-      } catch(err) {
+      } catch (err) {
         console.warn('[DojôBook] Erro ao sincronizar com DojôBook:', err);
       }
 
@@ -17228,7 +17312,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       this.goToOmrPhase(3);
     },
 
-    renderOmrFinalResultView: function(data, dojobookResult) {
+    renderOmrFinalResultView: function (data, dojobookResult) {
       const finalScore = document.getElementById('omrResultFinalScore');
       const finalBadge = document.getElementById('omrResultFinalBadge');
       const finalHits = document.getElementById('omrResultFinalHits');
@@ -17297,7 +17381,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
     },
 
-    saveOmrOfficialGrade: async function() {
+    saveOmrOfficialGrade: async function () {
       await this.saveManualExamGrade();
     }
   };
@@ -17329,7 +17413,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         v.currentTime = 0;
         v.removeAttribute('src');
         v.load();
-      } catch(e) {}
+      } catch (e) { }
     });
 
     // 3. Remove ou redefine imediatamente iframes de vídeo (YouTube, Vimeo, etc.)
@@ -17337,7 +17421,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     iframes.forEach(f => {
       try {
         f.src = 'about:blank';
-      } catch(e) {}
+      } catch (e) { }
     });
 
     // 4. Se houver wrappers de vídeo em cards de detalhe, limpa os iframes dentro deles
