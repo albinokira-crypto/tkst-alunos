@@ -9330,8 +9330,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemTitle = total === 1 ? baseTitle : `${baseTitle} (${fileIdx})`;
 
             uploadedPayloads.push({
-
-              ...[truncated for diff preview]
               title: itemTitle,
               type: curType,
               album,
