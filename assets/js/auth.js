@@ -2237,6 +2237,10 @@
                   handleIncomingExamRecord(cloudData.record);
                   continue;
                 }
+                if (cloudData.type === 'tkst_quiz_submission' && cloudData.submission) {
+                  handleIncomingQuizSubmission(cloudData.submission);
+                  continue;
+                }
                 if (cloudData.type === 'tkst_quiz_edit_delta') {
                   handleIncomingQuizEditDelta(cloudData);
                   continue;
@@ -2288,6 +2292,82 @@
     } catch(e) {}
   }
 
+  function handleIncomingQuizSubmission(sub) {
+    if (!sub || !sub.id) return;
+    try {
+      const deletedSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
+      if (deletedSubs.includes(sub.id)) return;
+      let localSubs = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_SUBMISSIONS)) || [];
+      const exists = localSubs.some(s => s && (s.id === sub.id || (s.studentId === sub.studentId && s.beltLevel === sub.beltLevel && s.score === sub.score && s.total === sub.total && Math.abs(new Date(s.date || 0) - new Date(sub.date || 0)) <= 60000)));
+      if (!exists) {
+        localSubs.unshift(sub);
+        localSubs = deduplicateQuizSubmissions(localSubs).slice(0, 500);
+        safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(localSubs));
+
+        // Atualiza notas do aluno local se existir
+        try {
+          let students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+          const sIdx = students.findIndex(st => st && (st.id === sub.studentId || st.username === sub.studentUsername));
+          if (sIdx !== -1) {
+            const st = students[sIdx];
+            if (!Array.isArray(st.quizScores)) st.quizScores = [];
+            const alreadyInProfile = st.quizScores.some(qs => qs && qs.score === sub.score && qs.total === sub.total && Math.abs(new Date(qs.date || 0) - new Date(sub.date || 0)) <= 60000);
+            if (!alreadyInProfile) {
+              st.quizScores.push({
+                date: sub.date,
+                score: sub.score,
+                total: sub.total,
+                percentage: sub.percentage,
+                beltLevel: sub.beltLevel,
+                beltKyu: sub.beltKyu
+              });
+              localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+            }
+          }
+        } catch(e) {}
+
+        window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: localSubs }));
+      }
+    } catch(e) {}
+  }
+
+  function broadcastQuizSubmission(submission) {
+    if (!submission) return;
+    try {
+      const payload = JSON.stringify({
+        type: 'tkst_quiz_submission',
+        submission: {
+          id: submission.id,
+          studentId: submission.studentId,
+          studentName: submission.studentName,
+          studentUsername: submission.studentUsername,
+          studentBelt: submission.studentBelt,
+          studentKyu: submission.studentKyu,
+          beltLevel: submission.beltLevel,
+          beltKyu: submission.beltKyu,
+          score: submission.score,
+          total: submission.total,
+          percentage: submission.percentage,
+          passed: submission.passed,
+          perfect: submission.perfect,
+          date: submission.date
+        },
+        senderId: CLIENT_SENDER_ID,
+        timestamp: Date.now()
+      });
+      if (payload.length <= 3500) {
+        fetch(SYNC_URL, {
+          method: 'POST',
+          headers: {
+            'Title': 'TKST_QUIZ_SUBMISSION',
+            'Content-Type': 'text/plain; charset=utf-8'
+          },
+          body: payload
+        }).catch(() => {});
+      }
+    } catch(e) {}
+  }
+
   function initRealtimeStream() {
     try {
       if (typeof EventSource !== 'undefined') {
@@ -2304,6 +2384,8 @@
                 }
                 if (cloudData.type === 'tkst_exam_generated' && cloudData.record) {
                   handleIncomingExamRecord(cloudData.record);
+                } else if (cloudData.type === 'tkst_quiz_submission' && cloudData.submission) {
+                  handleIncomingQuizSubmission(cloudData.submission);
                 } else if (cloudData.type === 'tkst_quiz_edit_delta') {
                   handleIncomingQuizEditDelta(cloudData);
                 } else if (cloudData.type === 'tkst_quiz_chunk') {
@@ -3839,6 +3921,7 @@
 
       const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
       pushQuizSubmissionsToServer(submissions, deletedQuizSubIds);
+      broadcastQuizSubmission(submission);
       pushToCloud();
       return submission;
     },

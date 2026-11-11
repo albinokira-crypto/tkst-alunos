@@ -114,7 +114,7 @@ module.exports = async (req, res) => {
       let body = req.body;
       if (typeof body === 'string') body = JSON.parse(body);
 
-      const incomingSubs = Array.isArray(body.quiz_submissions) ? body.quiz_submissions : (body.submission ? [body.submission] : []);
+      const incomingSubs = Array.isArray(body.quiz_submissions) ? body.quiz_submissions : (Array.isArray(body.submissions) ? body.submissions : (body.submission ? [body.submission] : []));
       const incomingDeleted = Array.isArray(body.deletedQuizSubIds) ? body.deletedQuizSubIds : [];
 
       function sanitizeSubmission(s) {

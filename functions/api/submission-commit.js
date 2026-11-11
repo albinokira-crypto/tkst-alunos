@@ -26,6 +26,28 @@ function fromBase64Utf8(b64) {
   return new TextDecoder().decode(bytes);
 }
 
+function normalizeSubmissionObject(parsed) {
+  if (Array.isArray(parsed)) {
+    return {
+      kyu_ranking_reset_at: null,
+      quiz_submissions: parsed,
+      deletedQuizSubIds: []
+    };
+  }
+  if (parsed && typeof parsed === 'object') {
+    return {
+      kyu_ranking_reset_at: parsed.kyu_ranking_reset_at || null,
+      quiz_submissions: Array.isArray(parsed.quiz_submissions) ? parsed.quiz_submissions : (Array.isArray(parsed.submissions) ? parsed.submissions : []),
+      deletedQuizSubIds: Array.isArray(parsed.deletedQuizSubIds) ? parsed.deletedQuizSubIds : []
+    };
+  }
+  return {
+    kyu_ranking_reset_at: null,
+    quiz_submissions: [],
+    deletedQuizSubIds: []
+  };
+}
+
 export async function onRequestOptions(context) {
   const { request, env } = context;
   return new Response(null, { status: 200, headers: getCorsHeaders(env, request) });
@@ -54,7 +76,7 @@ export async function onRequestGet(context) {
             success: true,
             source: 'github',
             sha: ghData.sha,
-            data: JSON.parse(raw)
+            data: normalizeSubmissionObject(JSON.parse(raw))
           }), { status: 200, headers });
         }
       }
@@ -72,7 +94,7 @@ export async function onRequestGet(context) {
         return new Response(JSON.stringify({
           success: true,
           source: 'cloudflare_assets',
-          data
+          data: normalizeSubmissionObject(data)
         }), { status: 200, headers });
       }
     } catch (e) {}
@@ -86,7 +108,7 @@ export async function onRequestGet(context) {
       return new Response(JSON.stringify({
         success: true,
         source: 'raw_github',
-        data
+        data: normalizeSubmissionObject(data)
       }), { status: 200, headers });
     }
   } catch (e) {}
@@ -94,7 +116,7 @@ export async function onRequestGet(context) {
   return new Response(JSON.stringify({
     success: true,
     source: 'empty',
-    data: []
+    data: { kyu_ranking_reset_at: null, quiz_submissions: [], deletedQuizSubIds: [] }
   }), { status: 200, headers });
 }
 
@@ -115,27 +137,33 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const incomingSubmissions = Array.isArray(body.submissions) ? body.submissions : (Array.isArray(body) ? body : (body.submission ? [body.submission] : []));
+    const rawIncoming = Array.isArray(body.quiz_submissions)
+      ? body.quiz_submissions
+      : (Array.isArray(body.submissions)
+        ? body.submissions
+        : (Array.isArray(body)
+          ? body
+          : (body.submission ? [body.submission] : [])));
+    const incomingDeleted = Array.isArray(body.deletedQuizSubIds) ? body.deletedQuizSubIds : [];
 
-    // Se não for admin, garante que o aluno só envie simulados dele mesmo
+    // Se não for admin, filtra para enviar apenas os simulados do próprio aluno logado
     const userRole = (auth.user.role || '').toLowerCase();
+    let toProcessSubmissions = rawIncoming;
+
     if (userRole !== 'admin') {
-      const userId = (auth.user.sub || '').toLowerCase();
+      const userId = (auth.user.sub || auth.user.id || '').toLowerCase();
       const userNick = (auth.user.username || '').toLowerCase();
-      const unauthorized = incomingSubmissions.some(s => {
+      toProcessSubmissions = rawIncoming.filter(s => {
         if (!s) return false;
         const sId = (s.studentId || '').toLowerCase();
         const sNick = (s.studentUsername || '').toLowerCase();
-        if (sId && sId !== userId && sId !== userNick) return true;
-        if (sNick && sNick !== userNick && sNick !== userId) return true;
-        return false;
+        const sUser = (s.username || '').toLowerCase();
+        const sUId = (s.userId || '').toLowerCase();
+        return (sId && (sId === userId || sId === userNick)) ||
+               (sNick && (sNick === userNick || sNick === userId)) ||
+               (sUser && (sUser === userNick || sUser === userId)) ||
+               (sUId && (sUId === userId || sUId === userNick));
       });
-      if (unauthorized) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'Acesso negado: você só pode submeter simulados da sua própria conta.'
-        }), { status: 403, headers });
-      }
     }
 
     if (!token) {
@@ -149,6 +177,8 @@ export async function onRequestPost(context) {
 
     let currentSha = null;
     let existingSubmissions = [];
+    let existingDeleted = [];
+    let kyuRankingResetAt = body.kyu_ranking_reset_at || null;
 
     const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`, {
       headers: {
@@ -164,24 +194,42 @@ export async function onRequestPost(context) {
       try {
         const raw = fromBase64Utf8(currentFile.content);
         const parsed = JSON.parse(raw);
-        existingSubmissions = Array.isArray(parsed) ? parsed : (parsed.submissions || parsed.quiz_submissions || []);
+        const norm = normalizeSubmissionObject(parsed);
+        existingSubmissions = norm.quiz_submissions;
+        existingDeleted = norm.deletedQuizSubIds;
+        if (norm.kyu_ranking_reset_at) {
+          kyuRankingResetAt = norm.kyu_ranking_reset_at;
+        }
       } catch (e) {}
     }
 
+    const allDeleted = Array.from(new Set([...existingDeleted, ...incomingDeleted]));
+    const delSet = new Set(allDeleted);
+
     const subMap = new Map();
     existingSubmissions.forEach(s => {
+      if (!s) return;
       const id = s.id || (s.timestamp ? `${s.username}_${s.timestamp}` : null);
-      if (id) subMap.set(id, s);
+      if (id && !delSet.has(id)) subMap.set(id, s);
     });
 
-    incomingSubmissions.forEach(s => {
+    toProcessSubmissions.forEach(s => {
       if (!s) return;
       const id = s.id || (s.timestamp ? `${s.username}_${s.timestamp}` : `sub_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`);
-      subMap.set(id, { ...s, id });
+      if (!delSet.has(id)) {
+        subMap.set(id, { ...s, id });
+      }
     });
 
-    const finalSubmissions = Array.from(subMap.values());
-    const newContentStr = JSON.stringify(finalSubmissions, null, 2);
+    const finalSubmissions = Array.from(subMap.values()).slice(0, 500);
+    const finalObject = {
+      kyu_ranking_reset_at: kyuRankingResetAt,
+      quiz_submissions: finalSubmissions,
+      deletedQuizSubIds: allDeleted,
+      updatedAt: new Date().toISOString()
+    };
+
+    const newContentStr = JSON.stringify(finalObject, null, 2);
     const newBase64 = toBase64Utf8(newContentStr);
 
     const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {

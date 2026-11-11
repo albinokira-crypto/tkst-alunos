@@ -32,8 +32,22 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=300">
-  <link rel="stylesheet" href="assets/css/components.css?v=300">
+  <link rel="stylesheet" href="assets/css/main.css?v=301">
+  <link rel="stylesheet" href="assets/css/components.css?v=301">
+
+  <!-- Early Session Detector: elimina tela preta removendo login-view-active se já houver sessão -->
+  <script>
+    (function() {
+      try {
+        if (localStorage.getItem('tkst_current_user')) {
+          document.documentElement.classList.add('user-logged-in');
+          document.addEventListener('DOMContentLoaded', function() {
+            if (document.body) document.body.classList.remove('login-view-active');
+          });
+        }
+      } catch(e) {}
+    })();
+  </script>
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
@@ -267,8 +281,39 @@
 
       <!-- Dynamic Page Content -->
       <main class="content-body" id="mainContent">
-        <!-- Injected dynamically by app.js -->
+        <!-- Initial Visual Skeleton / Loader (Garante que nunca haja tela preta) -->
+        <div id="initialAppLoader" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55vh; text-align: center; padding: 30px 20px;">
+          <div style="position: relative; width: 75px; height: 75px; margin-bottom: 16px;">
+            <img src="assets/images/logo-tkst.png" alt="TKST Logo" style="width: 100%; height: 100%; object-fit: contain; animation: tkstLoaderPulse 1.8s infinite ease-in-out;">
+          </div>
+          <div style="font-family: 'Cinzel', serif; font-size: 1.25rem; font-weight: 700; color: #FFB703; letter-spacing: 2px; margin-bottom: 6px;">
+            TKST ALUNOS
+          </div>
+          <div style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 20px;">
+            Carregando portal oficial...
+          </div>
+          <div style="width: 150px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; position: relative;">
+            <div style="width: 45%; height: 100%; background: linear-gradient(90deg, #E63946, #FFB703); border-radius: 999px; position: absolute; animation: tkstLoaderBar 1.4s infinite ease-in-out;"></div>
+          </div>
+        </div>
+        <style>
+          @keyframes tkstLoaderPulse { 0%, 100% { transform: scale(1); opacity: 0.88; } 50% { transform: scale(1.06); opacity: 1; } }
+          @keyframes tkstLoaderBar { 0% { left: -45%; width: 35%; } 50% { left: 30%; width: 55%; } 100% { left: 100%; width: 35%; } }
+        </style>
       </main>
+
+      <!-- Failsafe Watchdog: garante que a view seja renderizada mesmo se algum asset tardar -->
+      <script>
+        setTimeout(function() {
+          var loader = document.getElementById('initialAppLoader');
+          if (loader && window.TKST_APP && typeof window.TKST_APP.renderView === 'function') {
+            try {
+              var user = JSON.parse(localStorage.getItem('tkst_current_user') || 'null');
+              window.TKST_APP.renderView(user ? 'dashboard' : 'login');
+            } catch(e) {}
+          }
+        }, 2200);
+      </script>
 
     </div>
 
@@ -856,19 +901,19 @@
   </script>
 
   <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=300"></script>
-  <script src="assets/js/data-curriculum.js?v=300"></script>
-  <script src="assets/js/data-katas.js?v=300"></script>
-  <script src="assets/js/data-kumite.js?v=300"></script>
-  <script src="assets/js/data-glossary.js?v=300"></script>
-  <script src="assets/js/data-quiz.js?v=300"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=300"></script>
-  <script src="assets/js/data-media.js?v=300"></script>
-  <script src="assets/js/data-exams.js?v=300"></script>
-  <script src="assets/js/omr-engine.js?v=300"></script>
-  <script src="assets/js/qr-generator.js?v=300"></script>
-  <script src="assets/js/auth.js?v=300"></script>
-  <script src="assets/js/app.js?v=300"></script>
+  <script src="assets/js/jsqr.min.js?v=301"></script>
+  <script src="assets/js/data-curriculum.js?v=301"></script>
+  <script src="assets/js/data-katas.js?v=301"></script>
+  <script src="assets/js/data-kumite.js?v=301"></script>
+  <script src="assets/js/data-glossary.js?v=301"></script>
+  <script src="assets/js/data-quiz.js?v=301"></script>
+  <script src="assets/js/shotokan-ai-engine.js?v=301"></script>
+  <script src="assets/js/data-media.js?v=301"></script>
+  <script src="assets/js/data-exams.js?v=301"></script>
+  <script src="assets/js/omr-engine.js?v=301"></script>
+  <script src="assets/js/qr-generator.js?v=301"></script>
+  <script src="assets/js/auth.js?v=301"></script>
+  <script src="assets/js/app.js?v=301"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
@@ -894,7 +939,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=300', { updateViaCache: 'none' }).then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=301', { updateViaCache: 'none' }).then(reg => {
           try { reg.update(); } catch(e) {}
 
           reg.addEventListener('updatefound', () => {

@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.03';
+  const APP_DISPLAY_VERSION = 'V-3.04';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -1543,77 +1543,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Master View Switcher
   function renderView(viewName) {
-    const user = window.TKST_AUTH.getCurrentUser();
+    try {
+      const user = window.TKST_AUTH.getCurrentUser();
 
-    if (!user) {
-      document.body.classList.add('login-view-active');
-    } else {
-      document.body.classList.remove('login-view-active');
-    }
+      if (!user) {
+        document.body.classList.add('login-view-active');
+      } else {
+        document.body.classList.remove('login-view-active');
+      }
 
-    switch (viewName) {
-      case 'login':
-      case 'account':
-        if (!user) {
-          breadcrumbCurrent.textContent = 'Acesso ao Portal TKST';
-          renderLogin();
-        } else if (window.TKST_AUTH.isAdmin()) {
+      // Remove o loader inicial seguro se ainda estiver na tela
+      const initialLoader = document.getElementById('initialAppLoader');
+      if (initialLoader) {
+        initialLoader.remove();
+      }
+
+      switch (viewName) {
+        case 'login':
+        case 'account':
+          if (!user) {
+            breadcrumbCurrent.textContent = 'Acesso ao Portal TKST';
+            renderLogin();
+          } else if (window.TKST_AUTH.isAdmin()) {
+            breadcrumbCurrent.textContent = 'Painel Geral do Administrador (Sensei Diego)';
+            renderAdminMaster();
+          } else {
+            breadcrumbCurrent.textContent = 'Minha Conta do Aluno';
+            renderStudentAccount();
+          }
+          break;
+        case 'dashboard':
+          breadcrumbCurrent.textContent = 'Área do Aluno';
+          if (!user) { renderLogin(); return; }
+          renderDashboard();
+          break;
+        case 'my-exam':
+          breadcrumbCurrent.textContent = 'Plano de estudos';
+          renderMyExam();
+          break;
+        case 'katas':
+          breadcrumbCurrent.textContent = 'Biblioteca dos 26 Kata';
+          renderKatasLibrary();
+          break;
+        case 'kumite':
+          breadcrumbCurrent.textContent = 'Guia de Kumite & Aplicações';
+          renderKumiteGuide();
+          break;
+        case 'glossary':
+          breadcrumbCurrent.textContent = 'Dicionário Japonês de Karatê';
+          renderGlossary();
+          break;
+        case 'media':
+          breadcrumbCurrent.textContent = 'Galeria Oficial TKST (Fotos & Vídeos)';
+          renderMedia();
+          break;
+        case 'quiz':
+          breadcrumbCurrent.textContent = 'Simulador de Exame';
+          renderQuiz();
+          break;
+        case 'philosophy':
+          breadcrumbCurrent.textContent = 'Dojo Kun & Filosofia';
+          renderPhilosophy();
+          break;
+        case 'admin':
           breadcrumbCurrent.textContent = 'Painel Geral do Administrador (Sensei Diego)';
+          if (!window.TKST_AUTH.isAdmin()) {
+            alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
+            renderLogin();
+            return;
+          }
           renderAdminMaster();
-        } else {
-          breadcrumbCurrent.textContent = 'Minha Conta do Aluno';
-          renderStudentAccount();
-        }
-        break;
-      case 'dashboard':
-        breadcrumbCurrent.textContent = 'Área do Aluno';
-        if (!user) { renderLogin(); return; }
-        renderDashboard();
-        break;
-      case 'my-exam':
-        breadcrumbCurrent.textContent = 'Plano de estudos';
-        renderMyExam();
-        break;
-      case 'katas':
-        breadcrumbCurrent.textContent = 'Biblioteca dos 26 Kata';
-        renderKatasLibrary();
-        break;
-      case 'kumite':
-        breadcrumbCurrent.textContent = 'Guia de Kumite & Aplicações';
-        renderKumiteGuide();
-        break;
-      case 'glossary':
-        breadcrumbCurrent.textContent = 'Dicionário Japonês de Karatê';
-        renderGlossary();
-        break;
-      case 'media':
-        breadcrumbCurrent.textContent = 'Galeria Oficial TKST (Fotos & Vídeos)';
-        renderMedia();
-        break;
-      case 'quiz':
-        breadcrumbCurrent.textContent = 'Simulador de Exame';
-        renderQuiz();
-        break;
-      case 'philosophy':
-        breadcrumbCurrent.textContent = 'Dojo Kun & Filosofia';
-        renderPhilosophy();
-        break;
-      case 'admin':
-        breadcrumbCurrent.textContent = 'Painel Geral do Administrador (Sensei Diego)';
-        if (!window.TKST_AUTH.isAdmin()) {
-          alert('Acesso restrito ao Administrador Geral (Sensei Diego).');
-          renderLogin();
-          return;
-        }
-        renderAdminMaster();
-        break;
-      default:
-        if (!user) renderLogin();
-        else renderDashboard();
-    }
+          break;
+        default:
+          if (!user) renderLogin();
+          else renderDashboard();
+      }
 
-    setupUserDisplay();
-    updateInstallPromptsVisibility();
+      setupUserDisplay();
+      updateInstallPromptsVisibility();
+    } catch (err) {
+      console.error('[TKST App] Erro ao renderizar view:', err);
+      document.body.classList.remove('login-view-active');
+      const mc = document.getElementById('mainContent');
+      if (mc) {
+        mc.innerHTML = `
+          <div style="padding: 40px 20px; text-align: center; color: #E2E8F0;">
+            <div style="font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 12px;"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Atualizando interface...</h3>
+            <p style="font-size: 0.85rem; color: #94A3B8; margin-bottom: 20px;">Toque no botão abaixo para restaurar a visualização.</p>
+            <button class="btn btn-gold" onclick="window.location.hash='#dashboard'; window.location.reload();" style="padding: 10px 20px; font-weight: 700;">
+              <i class="fas fa-sync-alt"></i> Recarregar Painel
+            </button>
+          </div>
+        `;
+      }
+    }
   }
 
   // =========================================================================
@@ -3337,15 +3361,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const studentSubs = Array.from(matchedSubsSet);
 
-      // Coleta submissões ou notas diretas do perfil do aluno
-      let finalScoresList = [];
-      if (studentSubs.length > 0) {
-        finalScoresList = studentSubs;
-      } else {
-        const rawStudentObj = (student.id && studentsMapFast.get(student.id)) || (student.username && studentsMapFast.get(student.username));
-        const directScores = (rawStudentObj?.quizScores || allProgress[student.id]?.quizScores || allProgress[student.username]?.quizScores || []);
-        if (Array.isArray(directScores)) finalScoresList = directScores;
-      }
+      // Coleta submissões e notas diretas do perfil do aluno (unifica histórico completo)
+      const rawStudentObj = (student.id && studentsMapFast.get(student.id)) || (student.username && studentsMapFast.get(student.username));
+      const directScores = (rawStudentObj?.quizScores || allProgress[student.id]?.quizScores || allProgress[student.username]?.quizScores || []);
+      const finalScoresList = [...studentSubs, ...(Array.isArray(directScores) ? directScores : [])];
 
       // Deduplica submissões com timestamp pré-calculado
       const uniqueScores = [];
@@ -6976,7 +6995,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    currentQuizQuestions = uniqueSelected.length > 0 ? uniqueSelected : shuffled.slice(0, Math.min(questionCount, shuffled.length));
+    currentQuizQuestions = (uniqueSelected.length > 0 ? uniqueSelected : shuffled.slice(0, Math.min(questionCount, shuffled.length))).map(q => ({
+      ...q,
+      image: q.image || resolveQuestionImage(q) || ''
+    }));
     currentQuizIndex = 0;
     quizScore = 0;
     quizAnswered = false;
@@ -7298,11 +7320,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="quiz-question-text">${q.question}</div>
 
         ${(q.image || resolveQuestionImage(q)) ? `
-          <div class="quiz-image-box" style="text-align: center; margin: 4px 0 6px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px; display: flex; align-items: center; justify-content: center; position: relative;">
-            <img src="${q.image || resolveQuestionImage(q)}" alt="Ilustração da Questão" style="max-height: 95px; max-width: 100%; object-fit: contain; border-radius: 3px; cursor: pointer;" onclick="window.TKST_APP.openImagePreview(this.src)" title="Clique para ampliar">
-            <span style="position: absolute; right: 6px; bottom: 4px; font-size: 0.62rem; color: #94A3B8; background: rgba(0,0,0,0.65); padding: 1px 5px; border-radius: 3px; pointer-events: none;">
-              <i class="fas fa-search-plus"></i> Ampliar
-            </span>
+          <div class="quiz-image-box" style="text-align: center; margin: 6px 0 10px 0; background: rgba(0,0,0,0.5); border: 1.5px solid rgba(255, 183, 3, 0.4); border-radius: var(--radius-md); padding: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+            <img src="${q.image || resolveQuestionImage(q)}" alt="Ilustração da Questão" style="max-height: 180px; width: auto; max-width: 100%; object-fit: contain; border-radius: 4px; cursor: pointer;" onclick="window.TKST_APP.openImagePreview(this.src)" title="Toque para ampliar em tela cheia">
+            <div style="margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${(q.image || resolveQuestionImage(q)).replace(/'/g, "\\'")}')">
+              <span class="badge badge-gold" style="font-size: 0.72rem; padding: 2px 8px; cursor: pointer;">
+                <i class="fas fa-search-plus"></i> Toque na ilustração para ampliar em tela cheia
+              </span>
+            </div>
           </div>
         ` : ''}
 
