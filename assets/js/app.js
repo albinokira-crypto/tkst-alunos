@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.04';
+  const APP_DISPLAY_VERSION = 'V-3.05';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -13251,7 +13251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               ` : ''}
             </div>
-          `).join('')}
+          `; }).join('')}
         </div>
 
         <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
