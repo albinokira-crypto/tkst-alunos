@@ -727,6 +727,36 @@ document.addEventListener('DOMContentLoaded', () => {
     return q;
   }
 
+  function resolveQuestionImage(q) {
+    if (!q) return '';
+    if (q.image && typeof q.image === 'string' && q.image.trim()) return q.image;
+    if (q.imageUrl && typeof q.imageUrl === 'string' && q.imageUrl.trim()) return q.imageUrl;
+    if (q.img && typeof q.img === 'string' && q.img.trim()) return q.img;
+
+    const qId = q.id || '';
+    const qText = (q.question || '').trim().toLowerCase();
+
+    const banks = [
+      (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function') ? window.TKST_AUTH.getCustomQuizBank() : [],
+      window.TKST_QUIZ_BANK || [],
+      window.TKST_DEFAULT_QUIZ_BANK || [],
+      window.TKST_CUSTOM_VAULT_QUESTIONS || []
+    ];
+
+    for (const b of banks) {
+      if (!Array.isArray(b)) continue;
+      if (qId) {
+        const found = b.find(item => item && item.id === qId && item.image);
+        if (found && found.image) return found.image;
+      }
+      if (qText) {
+        const found = b.find(item => item && item.question && item.question.trim().toLowerCase() === qText && item.image);
+        if (found && found.image) return found.image;
+      }
+    }
+    return '';
+  }
+
   function compressImageSource(src, maxWidth = 400, maxHeight = 400, quality = 0.62) {
     return new Promise((resolve) => {
       if (!src || typeof src !== 'string' || !src.trim()) {
@@ -2929,9 +2959,9 @@ document.addEventListener('DOMContentLoaded', () => {
                       ${q.question}
                     </div>
 
-                    ${q.image ? `
+                    ${(q.image || resolveQuestionImage(q)) ? `
                       <div style="margin: 4px 0 8px 0; display: inline-flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); padding: 6px 12px;">
-                        <img src="${q.image}" alt="Imagem da Questão" style="height: 65px; max-width: 120px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${q.image}')" title="Clique para ampliar">
+                        <img src="${q.image || resolveQuestionImage(q)}" alt="Imagem da Questão" style="height: 65px; max-width: 120px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;" onclick="window.TKST_APP.openImagePreview(this.src)" title="Clique para ampliar">
                         <div>
                           <span class="badge badge-gold" style="font-size: 0.72rem; margin-bottom: 2px;"><i class="fas fa-image"></i> Possui Imagem Ilustrativa</span>
                           <div style="font-size: 0.76rem; color: #94A3B8;">Clique na miniatura para ampliar</div>
@@ -6981,8 +7011,9 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let i = quizSubmissionDetails.length; i < currentQuizQuestions.length; i++) {
         const remQ = currentQuizQuestions[i];
         quizSubmissionDetails.push({
+          id: remQ.id || '',
           question: remQ.question,
-          image: remQ.image || '',
+          image: remQ.image || resolveQuestionImage(remQ) || '',
           options: remQ.options,
           selectedIndex: -1,
           selectedText: 'Desistência / Não respondida',
@@ -7074,7 +7105,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <i class="fas fa-list-check" style="color: var(--accent-gold);"></i> Gabarito Detalhado da sua Prova
           </h4>
           <div style="display: flex; flex-direction: column; gap: 14px;">
-            ${quizSubmissionDetails.map((det, idx) => `
+            ${quizSubmissionDetails.map((det, idx) => {
+              const detImg = det.image || resolveQuestionImage(det);
+              return `
               <div style="background: rgba(255,255,255,0.02); border-left: 4px solid ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; border-radius: var(--radius-sm); padding: 14px 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <strong style="color: #FFF; font-size: 0.92rem;">Questão ${idx + 1}: ${det.question}</strong>
@@ -7082,9 +7115,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${det.isCorrect ? '✓ Acertou' : '✗ Errou'}
                   </span>
                 </div>
-                ${det.image ? `
-                  <div style="margin: 6px 0 10px 0;">
-                    <img src="${det.image}" alt="Ilustração" style="max-height: 120px; max-width: 100%; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${det.image}')" title="Clique para ampliar">
+                ${detImg ? `
+                  <div style="margin: 6px 0 10px 0; display: inline-flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); padding: 6px 12px;">
+                    <img src="${detImg}" alt="Ilustração da Questão" style="max-height: 110px; max-width: 130px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;" onclick="window.TKST_APP.openImagePreview(this.src)" title="Clique para ampliar">
+                    <div>
+                      <span class="badge badge-gold" style="font-size: 0.70rem; margin-bottom: 2px;"><i class="fas fa-image"></i> Possui Ilustração</span>
+                      <div style="font-size: 0.74rem; color: #94A3B8;">Clique para ampliar</div>
+                    </div>
                   </div>
                 ` : ''}
                 <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">
@@ -7096,7 +7133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                 ` : ''}
               </div>
-            `).join('')}
+            `;}).join('')}
           </div>
 
           <div style="display: flex; justify-content: center; margin-top: 24px;">
@@ -7260,9 +7297,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="quiz-question-text">${q.question}</div>
 
-        ${q.image ? `
+        ${(q.image || resolveQuestionImage(q)) ? `
           <div class="quiz-image-box" style="text-align: center; margin: 4px 0 6px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px; display: flex; align-items: center; justify-content: center; position: relative;">
-            <img src="${q.image}" alt="Ilustração da Questão" style="max-height: 95px; max-width: 100%; object-fit: contain; border-radius: 3px; cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${q.image}')" title="Clique para ampliar">
+            <img src="${q.image || resolveQuestionImage(q)}" alt="Ilustração da Questão" style="max-height: 95px; max-width: 100%; object-fit: contain; border-radius: 3px; cursor: pointer;" onclick="window.TKST_APP.openImagePreview(this.src)" title="Clique para ampliar">
             <span style="position: absolute; right: 6px; bottom: 4px; font-size: 0.62rem; color: #94A3B8; background: rgba(0,0,0,0.65); padding: 1px 5px; border-radius: 3px; pointer-events: none;">
               <i class="fas fa-search-plus"></i> Ampliar
             </span>
@@ -7358,8 +7395,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const q = currentQuizQuestions[currentQuizIndex];
     quizSubmissionDetails.push({
+      id: q.id || '',
       question: q.question,
-      image: q.image || '',
+      image: q.image || resolveQuestionImage(q) || '',
       options: q.options,
       selectedIndex: -1,
       selectedText: 'Tempo Esgotado (20s)',
@@ -7419,8 +7457,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isCorrect) quizScore++;
 
     quizSubmissionDetails.push({
+      id: q.id || '',
       question: q.question,
-      image: q.image || '',
+      image: q.image || resolveQuestionImage(q) || '',
       options: q.options,
       selectedIndex: optionIndex,
       selectedText: q.options[optionIndex],
@@ -12890,6 +12929,8 @@ document.addEventListener('DOMContentLoaded', () => {
       detailModal.classList.add('active');
     },
 
+    resolveQuestionImage: (q) => resolveQuestionImage(q),
+
     openCopyTransferQuizModal: (qId) => {
       const allBank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
       const q = allBank.find(item => item && item.id === qId) ||
@@ -13161,7 +13202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </h4>
 
         <div style="display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 4px;">
-          ${(sub.details || []).map((det, idx) => `
+          ${(sub.details || []).map((det, idx) => {
+            const detImg = det.image || resolveQuestionImage(det);
+            return `
             <div style="background: rgba(10, 13, 20, 0.6); border: 1px solid var(--border-color); border-left: 4px solid ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; border-radius: var(--radius-sm); padding: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <strong style="color: #FFF; font-size: 0.9rem;">${idx + 1}. ${det.question}</strong>
@@ -13169,9 +13212,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   ${det.isCorrect ? '✓ Acerto' : '✗ Erro'}
                 </span>
               </div>
-              ${det.image ? `
-                <div style="margin: 6px 0;">
-                  <img src="${det.image}" alt="Ilustração" style="max-height: 90px; max-width: 100%; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="window.TKST_APP.openImagePreview('${det.image}')">
+              ${detImg ? `
+                <div style="margin: 6px 0; display: inline-flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); padding: 4px 8px;">
+                  <img src="${detImg}" alt="Ilustração" style="max-height: 85px; max-width: 110px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;" onclick="window.TKST_APP.openImagePreview(this.src)" title="Clique para ampliar">
+                  <span style="font-size: 0.72rem; color: #94A3B8;">Clique p/ ampliar</span>
                 </div>
               ` : ''}
               <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">

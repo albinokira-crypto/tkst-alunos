@@ -78,18 +78,28 @@
     }
   }
 
-  // Remove imagens duplicadas das questões padrão (já empacotadas no window.TKST_DEFAULT_QUIZ_BANK)
+  // Remove imagens duplicadas das questões padrão e do cofre (já empacotadas no código estático)
   // para poupar até 95% do armazenamento no localStorage e prevenir QuotaExceededError em celulares
   function stripDefaultImages(bank) {
     if (!Array.isArray(bank)) return [];
-    const defaults = window.TKST_DEFAULT_QUIZ_BANK || [];
+    const defaults = [
+      ...(Array.isArray(window.TKST_DEFAULT_QUIZ_BANK) ? window.TKST_DEFAULT_QUIZ_BANK : []),
+      ...(Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS) ? window.TKST_CUSTOM_VAULT_QUESTIONS : [])
+    ];
     const defMap = new Map();
-    defaults.forEach(dq => { if (dq && dq.id) defMap.set(dq.id, dq); });
+    const defTextMap = new Map();
+    defaults.forEach(dq => {
+      if (dq && dq.id && dq.image) defMap.set(dq.id, dq.image);
+      if (dq && dq.question && dq.image) {
+        const norm = dq.question.trim().toLowerCase();
+        if (!defTextMap.has(norm)) defTextMap.set(norm, dq.image);
+      }
+    });
 
     return bank.map(q => {
       if (!q) return null;
-      const dq = defMap.get(q.id);
-      if (dq && q.image && dq.image === q.image) {
+      const refImg = (q.id && defMap.get(q.id)) || (q.question && defTextMap.get(q.question.trim().toLowerCase()));
+      if (refImg && q.image && refImg === q.image) {
         const { image, ...rest } = q;
         return { ...rest, image: '' };
       }
@@ -100,16 +110,26 @@
   // Restaura as imagens em base64 das questões padrão quando lidas do localStorage ou da nuvem
   function restoreDefaultImages(bank) {
     if (!Array.isArray(bank)) return [];
-    const defaults = window.TKST_DEFAULT_QUIZ_BANK || [];
+    const defaults = [
+      ...(Array.isArray(window.TKST_DEFAULT_QUIZ_BANK) ? window.TKST_DEFAULT_QUIZ_BANK : []),
+      ...(Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS) ? window.TKST_CUSTOM_VAULT_QUESTIONS : [])
+    ];
     const defMap = new Map();
-    defaults.forEach(dq => { if (dq && dq.id) defMap.set(dq.id, dq); });
+    const defTextMap = new Map();
+    defaults.forEach(dq => {
+      if (dq && dq.id && dq.image) defMap.set(dq.id, dq.image);
+      if (dq && dq.question && dq.image) {
+        const norm = dq.question.trim().toLowerCase();
+        if (!defTextMap.has(norm)) defTextMap.set(norm, dq.image);
+      }
+    });
 
     return bank.map(q => {
       if (!q) return null;
-      if ((!q.image || q.image === '') && defMap.has(q.id)) {
-        const dq = defMap.get(q.id);
-        if (dq && dq.image) {
-          return { ...q, image: dq.image };
+      if (!q.image || q.image === '') {
+        const img = (q.id && defMap.get(q.id)) || (q.question && defTextMap.get(q.question.trim().toLowerCase()));
+        if (img) {
+          return { ...q, image: img };
         }
       }
       return q;
@@ -167,7 +187,10 @@
       savedBank = restoreDefaultImages(savedBank);
     }
 
-    const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+    const defaultList = [
+      ...(Array.isArray(window.TKST_DEFAULT_QUIZ_BANK) ? window.TKST_DEFAULT_QUIZ_BANK : []),
+      ...(Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS) ? window.TKST_CUSTOM_VAULT_QUESTIONS : [])
+    ].filter(q => q && q.id && !deletedIds.includes(q.id));
     const bankMap = new Map();
     defaultList.forEach(q => bankMap.set(q.id, { ...q }));
     if (Array.isArray(window.TKST_QUIZ_BANK)) {
@@ -480,7 +503,10 @@
         _chunkBankMap = new Map();
         const curBank = window.TKST_QUIZ_BANK || [];
         curBank.forEach(q => { if (q && q.id) _chunkBankMap.set(q.id, q); });
-        const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+        const defaultList = [
+      ...(Array.isArray(window.TKST_DEFAULT_QUIZ_BANK) ? window.TKST_DEFAULT_QUIZ_BANK : []),
+      ...(Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS) ? window.TKST_CUSTOM_VAULT_QUESTIONS : [])
+    ].filter(q => q && q.id && !deletedIds.includes(q.id));
         defaultList.forEach(q => { if (!_chunkBankMap.has(q.id)) _chunkBankMap.set(q.id, { ...q }); });
       }
 
@@ -573,7 +599,10 @@
         localStorage.setItem('tkst_quiz_official_stamp', QUIZ_STAMP);
       }
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
-      const defaultList = (window.TKST_DEFAULT_QUIZ_BANK || []).filter(q => !deletedIds.includes(q.id));
+      const defaultList = [
+      ...(Array.isArray(window.TKST_DEFAULT_QUIZ_BANK) ? window.TKST_DEFAULT_QUIZ_BANK : []),
+      ...(Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS) ? window.TKST_CUSTOM_VAULT_QUESTIONS : [])
+    ].filter(q => q && q.id && !deletedIds.includes(q.id));
       let localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK)) || [];
 
       // Mantém todas as questões válidas do banco
@@ -3994,7 +4023,10 @@
 
     getCustomQuizBank: function() {
       const del = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
-      const rawDefault = (window.TKST_DEFAULT_QUIZ_BANK || window.TKST_QUIZ || []).filter(q => !del.includes(q.id));
+      const rawDefault = [
+        ...(Array.isArray(window.TKST_DEFAULT_QUIZ_BANK) ? window.TKST_DEFAULT_QUIZ_BANK : []),
+        ...(Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS) ? window.TKST_CUSTOM_VAULT_QUESTIONS : [])
+      ].filter(q => q && q.id && !del.includes(q.id));
       
       const bankMap = new Map();
       rawDefault.forEach(q => { if (q && q.id) bankMap.set(q.id, { ...q }); });
