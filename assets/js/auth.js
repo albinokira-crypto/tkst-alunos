@@ -1258,21 +1258,34 @@
         });
       }
 
-      // Helper para verificar se simulado equivalente já existe em subMap
+      // Helper para verificar se simulado equivalente já existe em subMap com índice O(1) de alta performance
+      const existingSubIndex = new Set();
+      subMap.forEach(s => {
+        if (!s) return;
+        const sId = (s.studentId || '').toString().trim().toLowerCase();
+        const sUser = (s.studentUsername || '').toString().trim().toLowerCase();
+        const sBelt = normalizeBelt(s.beltLevel, s.beltKyu);
+        const dtMinute = Math.floor(new Date(s.date || 0).getTime() / 60000);
+        if (sId) {
+          existingSubIndex.add(`${sId}|${sBelt}|${s.score}|${s.total}|${dtMinute}`);
+          existingSubIndex.add(`${sId}|${sBelt}|${s.score}|${s.total}|${dtMinute - 1}`);
+          existingSubIndex.add(`${sId}|${sBelt}|${s.score}|${s.total}|${dtMinute + 1}`);
+        }
+        if (sUser) {
+          existingSubIndex.add(`${sUser}|${sBelt}|${s.score}|${s.total}|${dtMinute}`);
+          existingSubIndex.add(`${sUser}|${sBelt}|${s.score}|${s.total}|${dtMinute - 1}`);
+          existingSubIndex.add(`${sUser}|${sBelt}|${s.score}|${s.total}|${dtMinute + 1}`);
+        }
+      });
+
       const hasEquivalentSubmission = (sid, suser, belt, score, total, date) => {
-        const dt = new Date(date || 0).getTime();
+        const dtMinute = Math.floor(new Date(date || 0).getTime() / 60000);
         const targetSid = (sid || '').toString().trim().toLowerCase();
         const targetUser = (suser || '').toString().trim().toLowerCase();
         const targetBelt = normalizeBelt(belt);
-        return Array.from(subMap.values()).some(s => {
-          if (!s) return false;
-          const sId = (s.studentId || '').toString().trim().toLowerCase();
-          const sUser = (s.studentUsername || '').toString().trim().toLowerCase();
-          const sameStd = (targetSid && (targetSid === sId || targetSid === sUser)) ||
-                          (targetUser && (targetUser === sId || targetUser === sUser));
-          const sBelt = normalizeBelt(s.beltLevel, s.beltKyu);
-          return sameStd && sBelt === targetBelt && Number(s.score) === Number(score) && Number(s.total) === Number(total) && Math.abs(new Date(s.date || 0).getTime() - dt) <= 60000;
-        });
+        if (targetSid && existingSubIndex.has(`${targetSid}|${targetBelt}|${score}|${total}|${dtMinute}`)) return true;
+        if (targetUser && existingSubIndex.has(`${targetUser}|${targetBelt}|${score}|${total}|${dtMinute}`)) return true;
+        return false;
       };
 
       // 5. Auto-recupera simulados salvos em tkst_student_progress caso não existam ainda em submissions
@@ -1352,7 +1365,7 @@
           }
         });
 
-        if (recoveredAny) {
+        if (recoveredAny && window.TKST_AUTH && typeof window.TKST_AUTH.isMasterAdmin === 'function' && window.TKST_AUTH.isMasterAdmin()) {
           const syncList = deduplicateQuizSubmissions(Array.from(subMap.values()));
           pushQuizSubmissionsToServer(syncList, Array.from(deletedSet));
         }
@@ -2408,15 +2421,11 @@
     } catch(err) {}
   }
 
-  // Start automatic stream & initial pull
-  pullFromCloud().then(() => {
-    // Initial bootstrap push if cloud was empty
-    const students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
-    if (students.length > 0) {
-      pushToCloud();
-    }
-  });
-  initRealtimeStream();
+  // Sincronização inicial em background diferida (nunca bloqueia o boot e nunca faz push sem ação do usuário)
+  setTimeout(() => {
+    pullFromCloud().catch(() => {});
+    initRealtimeStream();
+  }, 1200);
 
   // Automatic pull on window visibility change (respeita throttle de 60s)
   if (typeof document !== 'undefined') {
@@ -2607,8 +2616,7 @@
       }
     } catch(e) {}
 
-    // Pull from cloud immediately on boot
-    pullFromCloud(false);
+    // Inicialização do storage concluída
   }
 
   initStorage();

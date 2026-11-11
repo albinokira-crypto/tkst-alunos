@@ -55,7 +55,10 @@ window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) =
   updateInstallPromptsVisibility();
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+let _tkstAppBooted = false;
+function bootTkstApp() {
+  if (_tkstAppBooted) return;
+  _tkstAppBooted = true;
   // State
   let currentTab = 'login';
   let selectedBeltKyu = 6;
@@ -135,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.05';
+  const APP_DISPLAY_VERSION = 'V-3.06';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -1082,15 +1085,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // O registro do Service Worker com auto-update imediato é gerenciado no index.html (sw.js?v=258)
 
-    // Auto-sincronização inicial com a nuvem (alunos e simulados)
-    if (window.TKST_AUTH) {
-      if (typeof window.TKST_AUTH.pullStudentsFromCloud === 'function') {
-        window.TKST_AUTH.pullStudentsFromCloud().catch(() => { });
+    // Auto-sincronização inicial com a nuvem em background leve (diferida para priorizar render imediato)
+    setTimeout(() => {
+      if (window.TKST_AUTH) {
+        if (typeof window.TKST_AUTH.pullStudentsFromCloud === 'function') {
+          window.TKST_AUTH.pullStudentsFromCloud().catch(() => { });
+        }
+        if (typeof window.TKST_AUTH.pullQuizSubmissionsFromCloud === 'function') {
+          window.TKST_AUTH.pullQuizSubmissionsFromCloud().catch(() => { });
+        }
       }
-      if (typeof window.TKST_AUTH.pullQuizSubmissionsFromCloud === 'function') {
-        window.TKST_AUTH.pullQuizSubmissionsFromCloud().catch(() => { });
-      }
-    }
+    }, 2000);
 
     // Atualiza automaticamente as telas de admin e ranking quando simulados forem sincronizados ou saneados
     window.addEventListener('tkst_submissions_updated', () => {
@@ -17579,4 +17584,13 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
   // Start
   init();
-});
+}
+
+window.bootTkstApp = bootTkstApp;
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootTkstApp);
+} else {
+  // Documento já interativo ou completo (ex: PWA, scripts async ou reloads)
+  bootTkstApp();
+}
