@@ -1,6 +1,24 @@
 {
   "customQuestions": [],
-  "editedQuestions": {},
+  "editedQuestions": {
+    "q_custom_5_1792247091190": {
+      "id": "q_custom_5_1792247091190",
+      "kyuNumber": 5,
+      "kyu": 5,
+      "beltName": "Faixa Branca 7º Kyu",
+      "question": "Qual o nome da base mostrada na ilustração?",
+      "options": [
+        "Seiza",
+        "Zenkutsu Dachi",
+        "Kokutsu Dachi",
+        "Kiba Dachi"
+      ],
+      "correctIndex": 0,
+      "_edited": true,
+      "_custom": true,
+      "updatedAt": 1794508000000
+    }
+  },
   "deletedQuizIds": [],
-  "updatedAt": 1729350000000
+  "updatedAt": 1794508000000
 }

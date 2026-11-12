@@ -594,9 +594,12 @@
 
   async function pullQuizBankFromCloud() {
     try {
-      const QUIZ_STAMP = 'tkst_quiz_stamp_v275_clean';
+      const QUIZ_STAMP = 'tkst_quiz_stamp_v308_clean';
       if (localStorage.getItem('tkst_quiz_official_stamp') !== QUIZ_STAMP) {
         localStorage.setItem('tkst_quiz_official_stamp', QUIZ_STAMP);
+        // Limpa cache estático antigo para alunos receberem as correções de gabarito imediatamente
+        try { localStorage.removeItem(STORAGE_KEY_QUIZ_BANK); } catch(e) {}
+        try { localStorage.removeItem('tkst_quiz_vault_permanent'); } catch(e) {}
       }
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       const defaultList = [

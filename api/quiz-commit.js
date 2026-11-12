@@ -9,7 +9,7 @@ const path = require('path');
 const REPO = process.env.GITHUB_REPO || 'albinokira-crypto/tkst-alunos';
 const FILE_PATH = 'assets/data/quiz-custom.json';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
-const NTFY_TOPIC = process.env.NTFY_TOPIC || 'tkst-alunos-sync-v3';
+const NTFY_TOPIC = process.env.NTFY_TOPIC || 'tkst_karate_sync_v3_live';
 
 function githubRequest(method, reqPath, token, body) {
   return new Promise((resolve, reject) => {

@@ -11,7 +11,7 @@ const TMP_CUSTOM_FILE = path.join('/tmp', 'tkst_quiz_custom.json');
 const REPO = process.env.GITHUB_REPO || 'albinokira-crypto/tkst-alunos';
 const CUSTOM_FILE_PATH = 'assets/data/quiz-custom.json';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
-const NTFY_TOPIC = process.env.NTFY_TOPIC || 'tkst-alunos-sync-v3';
+const NTFY_TOPIC = process.env.NTFY_TOPIC || 'tkst_karate_sync_v3_live';
 
 // Módulo-level cache
 let moduleBaseQuestions = null;

@@ -1,24 +1,24 @@
-const CACHE_NAME = 'tkst-alunos-v306';
+const CACHE_NAME = 'tkst-alunos-v308';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './sincronizar.html',
-  './assets/css/main.css?v=306',
-  './assets/css/components.css?v=306',
-  './assets/js/jsqr.min.js?v=306',
-  './assets/js/data-curriculum.js?v=306',
-  './assets/js/data-katas.js?v=306',
-  './assets/js/data-kumite.js?v=306',
-  './assets/js/data-glossary.js?v=306',
-  './assets/js/data-quiz.js?v=306',
-  './assets/js/shotokan-ai-engine.js?v=306',
-  './assets/js/data-media.js?v=306',
-  './assets/js/data-exams.js?v=306',
-  './assets/js/omr-engine.js?v=306',
-  './assets/js/qr-generator.js?v=306',
-  './assets/js/auth.js?v=306',
-  './assets/js/app.js?v=306',
-  './assets/data/kumite-videos.json?v=306',
+  './assets/css/main.css?v=308',
+  './assets/css/components.css?v=308',
+  './assets/js/jsqr.min.js?v=308',
+  './assets/js/data-curriculum.js?v=308',
+  './assets/js/data-katas.js?v=308',
+  './assets/js/data-kumite.js?v=308',
+  './assets/js/data-glossary.js?v=308',
+  './assets/js/data-quiz.js?v=308',
+  './assets/js/shotokan-ai-engine.js?v=308',
+  './assets/js/data-media.js?v=308',
+  './assets/js/data-exams.js?v=308',
+  './assets/js/omr-engine.js?v=308',
+  './assets/js/qr-generator.js?v=308',
+  './assets/js/auth.js?v=308',
+  './assets/js/app.js?v=308',
+  './assets/data/kumite-videos.json?v=308',
   './assets/audio/interstellar-ticktock-15s.mp3',
   './assets/images/logo-tkst.png',
   './assets/images/logo-tkst-alunos.png',
@@ -82,15 +82,15 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('fetch', (event) => {
   // Bypass cache for Cloud Sync API, student authentication, external videos and non-GET requests
-  if (event.request.method !== 'GET' || 
-      event.request.url.includes('/api/') ||
-      event.request.url.includes('ntfy.sh') ||
-      event.request.url.includes('github') ||
-      event.request.url.includes('assets/data/') ||
-      event.request.url.includes('api.restful-api.dev') || 
-      event.request.url.includes('youtube.com') || 
-      event.request.url.includes('vimeo.com') ||
-      event.request.url.includes('cloudflare.com')) {
+  if (event.request.method !== 'GET' ||
+    event.request.url.includes('/api/') ||
+    event.request.url.includes('ntfy.sh') ||
+    event.request.url.includes('github') ||
+    event.request.url.includes('assets/data/') ||
+    event.request.url.includes('api.restful-api.dev') ||
+    event.request.url.includes('youtube.com') ||
+    event.request.url.includes('vimeo.com') ||
+    event.request.url.includes('cloudflare.com')) {
     return event.respondWith(fetch(event.request));
   }
 

@@ -9,6 +9,27 @@ const path = require('path');
 const REPO = process.env.GITHUB_REPO || 'albinokira-crypto/tkst-alunos';
 const FILE_PATH = 'assets/data/submissions.json';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
+const NTFY_TOPIC = process.env.NTFY_TOPIC || 'tkst_karate_sync_v3_live';
+
+function notifyNtfy(data) {
+  try {
+    const postData = typeof data === 'string' ? data : JSON.stringify(data);
+    const options = {
+      hostname: 'ntfy.sh',
+      path: '/' + encodeURIComponent(NTFY_TOPIC),
+      method: 'POST',
+      headers: {
+        'Title': 'TKST_SUBMISSION_COMMIT',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+    const req = https.request(options, () => {});
+    req.on('error', () => {});
+    req.write(postData);
+    req.end();
+  } catch (e) {}
+}
 
 function githubRequest(method, reqPath, token, body) {
   return new Promise((resolve, reject) => {
@@ -94,7 +115,7 @@ module.exports = async (req, res) => {
           return res.status(200).json({ success: true, data: parsed });
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // Fallback: lê arquivo local empacotado
     try {
@@ -103,7 +124,7 @@ module.exports = async (req, res) => {
         const parsed = JSON.parse(fs.readFileSync(localPath, 'utf8'));
         return res.status(200).json({ success: true, data: parsed });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     return res.status(200).json({ success: true, data: { quiz_submissions: [], deletedQuizSubIds: [], kyu_ranking_reset_at: null } });
   }
@@ -157,7 +178,7 @@ module.exports = async (req, res) => {
             const kStudentUser = (k.studentUsername || '').toString().trim().toLowerCase();
             const kBelt = (k.beltLevel || k.beltKyu || '').toString().trim();
             const sameStd = (itemStudentId && (itemStudentId === kStudentId || itemStudentId === kStudentUser)) ||
-                            (itemStudentUser && (itemStudentUser === kStudentId || itemStudentUser === kStudentUser));
+              (itemStudentUser && (itemStudentUser === kStudentId || itemStudentUser === kStudentUser));
             if (sameStd && kBelt === itemBelt && Number(k.score) === itemScore && Number(k.total) === itemTotal && Math.abs(itemTime - kTime) <= 60000) {
               matchIdx = i;
               break;
@@ -203,9 +224,10 @@ module.exports = async (req, res) => {
             kyu_ranking_reset_at: body.kyu_ranking_reset_at || currentData.kyu_ranking_reset_at || null,
             updatedAt: Date.now()
           };
-          try { fs.writeFileSync(localPath, JSON.stringify(newJson, null, 2), 'utf8'); } catch(e) {}
+          try { fs.writeFileSync(localPath, JSON.stringify(newJson, null, 2), 'utf8'); } catch (e) { }
+          notifyNtfy({ type: 'quiz_submission_committed', count: finalSubs.length, timestamp: Date.now() });
           return res.status(200).json({ success: true, committed: finalSubs.length, data: newJson });
-        } catch(e) {}
+        } catch (e) { }
         return res.status(200).json({
           success: true,
           data: { quiz_submissions: incomingSubs.map(sanitizeSubmission).filter(Boolean), deletedQuizSubIds: incomingDeleted }
@@ -224,7 +246,7 @@ module.exports = async (req, res) => {
         try {
           const raw = Buffer.from(getResult.data.content.replace(/\n/g, ''), 'base64').toString('utf8');
           currentData = JSON.parse(raw);
-        } catch (e) {}
+        } catch (e) { }
       }
 
       // 2. Mescla deleted IDs
@@ -233,6 +255,7 @@ module.exports = async (req, res) => {
       const finalDeleted = Array.from(deletedSet);
 
       // 3. Mescla simulados por ID preservando todos os envios
+      const subMap = new Map();
       (currentData.quiz_submissions || []).forEach(s => {
         const clean = sanitizeSubmission(s);
         if (clean && clean.id && !deletedSet.has(clean.id)) {
@@ -275,6 +298,7 @@ module.exports = async (req, res) => {
       const putResult = await githubRequestWithRetry('PUT', `/repos/${REPO}/contents/${FILE_PATH}`, token, putBody);
 
       if (putResult.status === 200 || putResult.status === 201) {
+        notifyNtfy({ type: 'quiz_submission_committed', count: finalSubs.length, timestamp: Date.now() });
         return res.status(200).json({
           success: true,
           committed: finalSubs.length,

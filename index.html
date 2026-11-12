@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TKST Alunos - Portal Oficial de Estudo</title>
-  <meta name="description" content="Portal oficial de estudos e exames de faixa da Associação de Karatê-Dô Shotokan TKST.">
+  <meta name="description"
+    content="Portal oficial de estudos e exames de faixa da Associação de Karatê-Dô Shotokan TKST.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://tkst-alunos.pages.dev/">
   <meta property="og:title" content="TKST Alunos - Portal Oficial de Estudo">
   <meta property="og:site_name" content="TKST Alunos">
-  <meta property="og:description" content="Portal oficial de estudos e exames de faixa da Associação de Karatê-Dô Shotokan TKST.">
+  <meta property="og:description"
+    content="Portal oficial de estudos e exames de faixa da Associação de Karatê-Dô Shotokan TKST.">
   <meta property="og:image" content="https://tkst-alunos.pages.dev/assets/images/logo-tkst-alunos.png">
   <meta property="og:image:secure_url" content="https://tkst-alunos.pages.dev/assets/images/logo-tkst-alunos.png">
   <meta property="og:image:type" content="image/png">
@@ -18,7 +21,8 @@
   <meta property="og:image:alt" content="TKST Alunos Logo Oficial">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="TKST Alunos - Portal Oficial de Estudo">
-  <meta name="twitter:description" content="Portal oficial de estudos e exames de faixa da Associação de Karatê-Dô Shotokan TKST.">
+  <meta name="twitter:description"
+    content="Portal oficial de estudos e exames de faixa da Associação de Karatê-Dô Shotokan TKST.">
   <meta name="twitter:image" content="https://tkst-alunos.pages.dev/assets/images/logo-tkst-alunos.png">
   <meta name="theme-color" content="#0A0D14">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,26 +36,26 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=306">
-  <link rel="stylesheet" href="assets/css/components.css?v=306">
+  <link rel="stylesheet" href="assets/css/main.css?v=308">
+  <link rel="stylesheet" href="assets/css/components.css?v=308">
 
   <!-- Early Session Detector: elimina tela preta removendo login-view-active se já houver sessão -->
   <script>
-    (function() {
+    (function () {
       try {
         if (localStorage.getItem('tkst_current_user')) {
           document.documentElement.classList.add('user-logged-in');
-          document.addEventListener('DOMContentLoaded', function() {
+          document.addEventListener('DOMContentLoaded', function () {
             if (document.body) document.body.classList.remove('login-view-active');
           });
         }
-      } catch(e) {}
+      } catch (e) { }
     })();
   </script>
 
   <!-- Mobile-Only Guard: bloqueia acesso em desktop para alunos, mas permite admin e bypass -->
   <script>
-    (function() {
+    (function () {
       var MOBILE_MAX = 820; // px — qualquer tela maior que isso é considerada desktop
       function checkDevice() {
         var bypass = sessionStorage.getItem('tkst_desktop_bypass') === 'true';
@@ -60,15 +64,15 @@
           if (user && (user.role === 'admin' || user.username === 'irons365' || (user.name && user.name.toLowerCase().includes('diego')))) {
             bypass = true;
           }
-        } catch(e) {}
+        } catch (e) { }
 
         var isDesktop = window.innerWidth > MOBILE_MAX && !bypass;
         var overlay = document.getElementById('desktop-block-overlay');
         var app = document.getElementById('app-root');
         if (overlay) overlay.style.display = isDesktop ? 'flex' : 'none';
-        if (app)     app.style.display     = isDesktop ? 'none' : '';
+        if (app) app.style.display = isDesktop ? 'none' : '';
       }
-      window.bypassDesktopGuard = function() {
+      window.bypassDesktopGuard = function () {
         sessionStorage.setItem('tkst_desktop_bypass', 'true');
         checkDevice();
       };
@@ -78,6 +82,7 @@
     })();
   </script>
 </head>
+
 <body class="login-view-active">
 
   <!-- OVERLAY: Acesso bloqueado em desktop -->
@@ -99,7 +104,8 @@
       </div>
       <p class="dbo-hint">Escaneie o QR Code ou digite o endereço no navegador do seu celular.</p>
       <div style="margin-top: 14px;">
-        <button type="button" onclick="window.bypassDesktopGuard()" style="font-size: 0.78rem; padding: 7px 16px; border-radius: 20px; background: rgba(255,255,255,0.06); color: #94A3B8; border: 1px solid rgba(255,255,255,0.18); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+        <button type="button" onclick="window.bypassDesktopGuard()"
+          style="font-size: 0.78rem; padding: 7px 16px; border-radius: 20px; background: rgba(255,255,255,0.06); color: #94A3B8; border: 1px solid rgba(255,255,255,0.18); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
           <i class="fas fa-laptop"></i> Acessar no Computador (Sensei / Admin)
         </button>
       </div>
@@ -109,871 +115,1069 @@
   <!-- Wrapper principal do app (escondido no desktop) -->
   <div id="app-root">
 
-  <!-- Japanese Background Watermark Graphics (Transparent & Non-Intrusive) -->
-  <div class="kanji-watermark">空手</div>
-  <div class="kanji-watermark-bg" style="position: fixed; right: 2%; top: 12%; width: 130px; height: 360px; background: url('assets/images/logo-tkst-kanji-vertical.png') no-repeat center right; background-size: contain; opacity: 0.035; pointer-events: none; z-index: 0;"></div>
-  <div class="kanji-watermark-left" style="position: fixed; left: 2%; bottom: 8%; width: 90px; height: 260px; background: url('assets/images/logo-tkst-kanji-frente.png') no-repeat center left; background-size: contain; opacity: 0.025; pointer-events: none; z-index: 0;"></div>
+    <!-- Japanese Background Watermark Graphics (Transparent & Non-Intrusive) -->
+    <div class="kanji-watermark">空手</div>
+    <div class="kanji-watermark-bg"
+      style="position: fixed; right: 2%; top: 12%; width: 130px; height: 360px; background: url('assets/images/logo-tkst-kanji-vertical.png') no-repeat center right; background-size: contain; opacity: 0.035; pointer-events: none; z-index: 0;">
+    </div>
+    <div class="kanji-watermark-left"
+      style="position: fixed; left: 2%; bottom: 8%; width: 90px; height: 260px; background: url('assets/images/logo-tkst-kanji-frente.png') no-repeat center left; background-size: contain; opacity: 0.025; pointer-events: none; z-index: 0;">
+    </div>
 
-  <div class="app-container">
+    <div class="app-container">
 
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <img src="assets/images/logo-tkst-projeto-transp.png" alt="TKST Logo" class="sidebar-logo">
-        <div class="sidebar-title-group">
-          <h1>TKST ALUNOS</h1>
-          <span>Tradicional Karatê-Dô Shotokan Tsuyoi</span>
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo-tkst-projeto-transp.png" alt="TKST Logo" class="sidebar-logo">
+          <div class="sidebar-title-group">
+            <h1>TKST ALUNOS</h1>
+            <span>Tradicional Karatê-Dô Shotokan Tsuyoi</span>
+          </div>
         </div>
-      </div>
 
-      <div class="nav-section-title">Navegação Principal</div>
-      <ul class="nav-list">
-        <li class="nav-item">
-          <a class="nav-link" data-tab="dashboard">
-            <i class="fas fa-home"></i>
-            <span>Área do Aluno</span>
-          </a>
-        </li>
-        <!-- Master Admin Only Link -->
-        <li class="nav-item admin-only-nav" style="display: none;">
-          <a class="nav-link" data-tab="admin" onclick="window.TKST_APP.openAdminPanel()" style="color: var(--accent-gold); font-weight: 700; cursor: pointer; background: rgba(255, 183, 3, 0.08); border-left: 3px solid var(--accent-gold);">
-            <i class="fas fa-crown" style="color: var(--accent-gold);"></i>
-            <span>Painel do Sensei (Admin)</span>
-          </a>
-        </li>
-        <!-- Sincronizar Celular / PC (Ocultado a pedido do Sensei, sincronização 100% em tempo real ativa) -->
-        <li class="nav-item" style="display: none !important;">
-          <a class="nav-link" href="sincronizar.html" target="_blank" style="color: #86EFAC; font-weight: 600; cursor: pointer; background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22C55E;">
-            <i class="fas fa-sync-alt" style="color: #22C55E;"></i>
-            <span>Sincronizar Celular / PC</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-tab="my-exam">
-            <i class="fas fa-graduation-cap"></i>
-            <span>Plano de estudos</span>
-            <span class="nav-badge">2026</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-tab="katas">
-            <i class="fas fa-book-open"></i>
-            <span>Os 26 Kata</span>
-            <span class="nav-badge" style="background: rgba(255,183,3,0.2); color: #FFB703;">26</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-tab="kumite">
-            <i class="fas fa-fist-raised"></i>
-            <span>Guia de Kumite</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-tab="glossary">
-            <i class="fas fa-language"></i>
-            <span>Dicionário Japonês</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-tab="media">
-            <i class="fas fa-photo-video"></i>
-            <span>Galeria de Mídia</span>
-            <span class="nav-badge" style="background: rgba(230,57,70,0.2); color: #FF808A;">Fotos & Vídeos</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-tab="quiz">
-            <i class="fas fa-brain"></i>
-            <span>Simulador de Exame</span>
-          </a>
-        </li>
-      </ul>
+        <div class="nav-section-title">Navegação Principal</div>
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a class="nav-link" data-tab="dashboard">
+              <i class="fas fa-home"></i>
+              <span>Área do Aluno</span>
+            </a>
+          </li>
+          <!-- Master Admin Only Link -->
+          <li class="nav-item admin-only-nav" style="display: none;">
+            <a class="nav-link" data-tab="admin" onclick="window.TKST_APP.openAdminPanel()"
+              style="color: var(--accent-gold); font-weight: 700; cursor: pointer; background: rgba(255, 183, 3, 0.08); border-left: 3px solid var(--accent-gold);">
+              <i class="fas fa-crown" style="color: var(--accent-gold);"></i>
+              <span>Painel do Sensei (Admin)</span>
+            </a>
+          </li>
+          <!-- Sincronizar Celular / PC (Ocultado a pedido do Sensei, sincronização 100% em tempo real ativa) -->
+          <li class="nav-item" style="display: none !important;">
+            <a class="nav-link" href="sincronizar.html" target="_blank"
+              style="color: #86EFAC; font-weight: 600; cursor: pointer; background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22C55E;">
+              <i class="fas fa-sync-alt" style="color: #22C55E;"></i>
+              <span>Sincronizar Celular / PC</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="my-exam">
+              <i class="fas fa-graduation-cap"></i>
+              <span>Plano de estudos</span>
+              <span class="nav-badge">2026</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="katas">
+              <i class="fas fa-book-open"></i>
+              <span>Os 26 Kata</span>
+              <span class="nav-badge" style="background: rgba(255,183,3,0.2); color: #FFB703;">26</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="kumite">
+              <i class="fas fa-fist-raised"></i>
+              <span>Guia de Kumite</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="glossary">
+              <i class="fas fa-language"></i>
+              <span>Dicionário Japonês</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="media">
+              <i class="fas fa-photo-video"></i>
+              <span>Galeria de Mídia</span>
+              <span class="nav-badge" style="background: rgba(230,57,70,0.2); color: #FF808A;">Fotos & Vídeos</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="quiz">
+              <i class="fas fa-brain"></i>
+              <span>Simulador de Exame</span>
+            </a>
+          </li>
+        </ul>
 
-      <div class="nav-section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
-        <span>Sessão & Conta</span>
-        <span class="app-version-badge" id="appVersionBadge" title="Versão V-2.99. Toque para atualizar o app.">V-2.99</span>
-      </div>
-      <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
-        <li class="nav-item">
-          <a class="nav-link" data-tab="philosophy">
-            <i class="fas fa-scroll"></i>
-            <span>Dojo Kun & Filosofia</span>
-          </a>
-        </li>
-        <!-- Master Admin Only Link -->
-        <li class="nav-item admin-only-nav" style="display: none;">
-          <a class="nav-link" data-tab="admin" style="color: var(--accent-gold); font-weight: 700;">
-            <i class="fas fa-crown" style="color: var(--accent-gold);"></i>
-            <span>Painel Master (Sensei Diego)</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" data-tab="login">
-            <i class="fas fa-user-circle"></i>
-            <span>Login / Nova Conta</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" style="color: #FF808A; cursor: pointer;" onclick="window.TKST_APP.handleLogout()">
-            <i class="fas fa-sign-out-alt" style="color: #FF808A;"></i>
-            <span>Deslogar / Sair</span>
-          </a>
-        </li>
-      </ul>
-
-      <!-- Install PWA Box in Sidebar -->
-      <div id="sidebarInstallPwa" style="margin: 12px 14px; padding: 12px; background: rgba(255, 183, 3, 0.06); border: 1px dashed rgba(255, 183, 3, 0.3); border-radius: var(--radius-md); text-align: center;">
-        <div style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 2px;">
-          <i class="fas fa-desktop" style="color: var(--accent-gold); margin-right: 6px;"></i> Aplicativo TKST
+        <div class="nav-section-title"
+          style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
+          <span>Sessão & Conta</span>
+          <span class="app-version-badge" id="appVersionBadge"
+            title="Versão V-2.99. Toque para atualizar o app.">V-2.99</span>
         </div>
-        <div style="font-size: 0.72rem; color: #94A3B8; margin-bottom: 8px;">Adicionar à Área de Trabalho</div>
-        <button class="btn btn-gold" onclick="window.TKST_APP.installPwa()" style="width: 100%; font-size: 0.76rem; padding: 6px 10px; font-weight: 700;">
-          <i class="fas fa-download"></i> Instalar App
-        </button>
-      </div>
+        <ul class="nav-list" style="flex: 0; padding-bottom: 12px;">
+          <li class="nav-item">
+            <a class="nav-link" data-tab="philosophy">
+              <i class="fas fa-scroll"></i>
+              <span>Dojo Kun & Filosofia</span>
+            </a>
+          </li>
+          <!-- Master Admin Only Link -->
+          <li class="nav-item admin-only-nav" style="display: none;">
+            <a class="nav-link" data-tab="admin" style="color: var(--accent-gold); font-weight: 700;">
+              <i class="fas fa-crown" style="color: var(--accent-gold);"></i>
+              <span>Painel Master (Sensei Diego)</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" data-tab="login">
+              <i class="fas fa-user-circle"></i>
+              <span>Login / Nova Conta</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" style="color: #FF808A; cursor: pointer;" onclick="window.TKST_APP.handleLogout()">
+              <i class="fas fa-sign-out-alt" style="color: #FF808A;"></i>
+              <span>Deslogar / Sair</span>
+            </a>
+          </li>
+        </ul>
 
-      <!-- User Profile Box in Footer -->
-      <div class="sidebar-footer" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-        <div class="user-mini-card" style="flex: 1; min-width: 0; cursor: pointer;" onclick="window.TKST_APP.openUserAccountOrAdmin()" title="Clique para abrir sua conta ou painel">
-          <img src="assets/images/tigre.png" alt="Avatar do Aluno" class="user-avatar user-avatar-display">
-          <div class="user-info" style="min-width: 0;">
-            <div class="user-name user-name-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carregando...</div>
-            <div class="user-belt-badge">
-              <i class="fas fa-circle" style="font-size: 0.5rem; color: var(--accent-gold);"></i>
-              <span class="user-belt-display">Faixa Branca</span>
+        <!-- Install PWA Box in Sidebar -->
+        <div id="sidebarInstallPwa"
+          style="margin: 12px 14px; padding: 12px; background: rgba(255, 183, 3, 0.06); border: 1px dashed rgba(255, 183, 3, 0.3); border-radius: var(--radius-md); text-align: center;">
+          <div style="font-size: 0.82rem; font-weight: 700; color: #FFF; margin-bottom: 2px;">
+            <i class="fas fa-desktop" style="color: var(--accent-gold); margin-right: 6px;"></i> Aplicativo TKST
+          </div>
+          <div style="font-size: 0.72rem; color: #94A3B8; margin-bottom: 8px;">Adicionar à Área de Trabalho</div>
+          <button class="btn btn-gold" onclick="window.TKST_APP.installPwa()"
+            style="width: 100%; font-size: 0.76rem; padding: 6px 10px; font-weight: 700;">
+            <i class="fas fa-download"></i> Instalar App
+          </button>
+        </div>
+
+        <!-- User Profile Box in Footer -->
+        <div class="sidebar-footer"
+          style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div class="user-mini-card" style="flex: 1; min-width: 0; cursor: pointer;"
+            onclick="window.TKST_APP.openUserAccountOrAdmin()" title="Clique para abrir sua conta ou painel">
+            <img src="assets/images/tigre.png" alt="Avatar do Aluno" class="user-avatar user-avatar-display">
+            <div class="user-info" style="min-width: 0;">
+              <div class="user-name user-name-display"
+                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carregando...</div>
+              <div class="user-belt-badge">
+                <i class="fas fa-circle" style="font-size: 0.5rem; color: var(--accent-gold);"></i>
+                <span class="user-belt-display">Faixa Branca</span>
+              </div>
             </div>
           </div>
-        </div>
-        <button class="btn btn-icon" onclick="window.TKST_APP.handleLogout()" title="Deslogar e Sair" style="background: rgba(230, 57, 70, 0.2); color: #FF808A; border-color: rgba(230, 57, 70, 0.4); flex-shrink: 0;">
-          <i class="fas fa-power-off"></i>
-        </button>
-      </div>
-    </aside>
-
-    <!-- Sidebar Backdrop Overlay -->
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
-    <!-- Main Content Wrapper -->
-    <div class="main-wrapper">
-      
-      <!-- Top Sticky Header -->
-      <header class="top-header">
-        <div class="header-left">
-          <button class="btn btn-icon mobile-menu-btn" id="mobileMenuToggle" aria-label="Abrir Menu">
-            <i class="fas fa-bars"></i>
+          <button class="btn btn-icon" onclick="window.TKST_APP.handleLogout()" title="Deslogar e Sair"
+            style="background: rgba(230, 57, 70, 0.2); color: #FF808A; border-color: rgba(230, 57, 70, 0.4); flex-shrink: 0;">
+            <i class="fas fa-power-off"></i>
           </button>
-          <div class="page-breadcrumb">
-            <span>TKST</span>
-            <i class="fas fa-chevron-right" style="font-size: 0.65rem;"></i>
-            <span class="current" id="breadcrumbCurrent">Acesso ao Portal TKST</span>
-          </div>
         </div>
+      </aside>
 
-        <div class="header-actions">
-          <button class="btn btn-secondary pwa-install-trigger" onclick="window.TKST_APP.installPwa()" style="font-size: 0.78rem; padding: 6px 12px; border-color: rgba(255, 183, 3, 0.4); color: var(--accent-gold); white-space: nowrap;" title="Instalar aplicativo na área de trabalho">
-            <i class="fas fa-download"></i> <span class="hide-mobile">Instalar App</span>
-          </button>
-          <div id="headerUserArea" style="display: flex; align-items: center; gap: 8px;">
-            <!-- Rendered cleanly with single buttons via JS -->
-          </div>
-        </div>
-      </header>
+      <!-- Sidebar Backdrop Overlay -->
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-      <!-- Dynamic Page Content -->
-      <main class="content-body" id="mainContent">
-        <!-- Initial Visual Skeleton / Loader (Garante que nunca haja tela preta) -->
-        <div id="initialAppLoader" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55vh; text-align: center; padding: 30px 20px;">
-          <div style="position: relative; width: 75px; height: 75px; margin-bottom: 16px;">
-            <img src="assets/images/logo-tkst.png" alt="TKST Logo" style="width: 100%; height: 100%; object-fit: contain; animation: tkstLoaderPulse 1.8s infinite ease-in-out;">
-          </div>
-          <div style="font-family: 'Cinzel', serif; font-size: 1.25rem; font-weight: 700; color: #FFB703; letter-spacing: 2px; margin-bottom: 6px;">
-            TKST ALUNOS
-          </div>
-          <div style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 20px;">
-            Carregando portal oficial...
-          </div>
-          <div style="width: 150px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; position: relative;">
-            <div style="width: 45%; height: 100%; background: linear-gradient(90deg, #E63946, #FFB703); border-radius: 999px; position: absolute; animation: tkstLoaderBar 1.4s infinite ease-in-out;"></div>
-          </div>
-        </div>
-        <style>
-          @keyframes tkstLoaderPulse { 0%, 100% { transform: scale(1); opacity: 0.88; } 50% { transform: scale(1.06); opacity: 1; } }
-          @keyframes tkstLoaderBar { 0% { left: -45%; width: 35%; } 50% { left: 30%; width: 55%; } 100% { left: 100%; width: 35%; } }
-        </style>
-      </main>
+      <!-- Main Content Wrapper -->
+      <div class="main-wrapper">
 
-      <!-- Failsafe Watchdog: garante que a tela inicial carregue imediatamente sem travar -->
-      <script>
-        (function() {
-          var removeLoader = function() {
+        <!-- Top Sticky Header -->
+        <header class="top-header">
+          <div class="header-left">
+            <button class="btn btn-icon mobile-menu-btn" id="mobileMenuToggle" aria-label="Abrir Menu">
+              <i class="fas fa-bars"></i>
+            </button>
+            <div class="page-breadcrumb">
+              <span>TKST</span>
+              <i class="fas fa-chevron-right" style="font-size: 0.65rem;"></i>
+              <span class="current" id="breadcrumbCurrent">Acesso ao Portal TKST</span>
+            </div>
+          </div>
+
+          <div class="header-actions">
+            <button class="btn btn-secondary pwa-install-trigger" onclick="window.TKST_APP.installPwa()"
+              style="font-size: 0.78rem; padding: 6px 12px; border-color: rgba(255, 183, 3, 0.4); color: var(--accent-gold); white-space: nowrap;"
+              title="Instalar aplicativo na área de trabalho">
+              <i class="fas fa-download"></i> <span class="hide-mobile">Instalar App</span>
+            </button>
+            <div id="headerUserArea" style="display: flex; align-items: center; gap: 8px;">
+              <!-- Rendered cleanly with single buttons via JS -->
+            </div>
+          </div>
+        </header>
+
+        <!-- Dynamic Page Content -->
+        <main class="content-body" id="mainContent">
+          <!-- Initial Visual Skeleton / Loader (Garante que nunca haja tela preta) -->
+          <div id="initialAppLoader"
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55vh; text-align: center; padding: 30px 20px;">
+            <div style="position: relative; width: 75px; height: 75px; margin-bottom: 16px;">
+              <img src="assets/images/logo-tkst.png" alt="TKST Logo"
+                style="width: 100%; height: 100%; object-fit: contain; animation: tkstLoaderPulse 1.8s infinite ease-in-out;">
+            </div>
+            <div
+              style="font-family: 'Cinzel', serif; font-size: 1.25rem; font-weight: 700; color: #FFB703; letter-spacing: 2px; margin-bottom: 6px;">
+              TKST ALUNOS
+            </div>
+            <div style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 20px;">
+              Carregando portal oficial...
+            </div>
+            <div
+              style="width: 150px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; position: relative;">
+              <div
+                style="width: 45%; height: 100%; background: linear-gradient(90deg, #E63946, #FFB703); border-radius: 999px; position: absolute; animation: tkstLoaderBar 1.4s infinite ease-in-out;">
+              </div>
+            </div>
+          </div>
+          <style>
+            @keyframes tkstLoaderPulse {
+
+              0%,
+              100% {
+                transform: scale(1);
+                opacity: 0.88;
+              }
+
+              50% {
+                transform: scale(1.06);
+                opacity: 1;
+              }
+            }
+
+            @keyframes tkstLoaderBar {
+              0% {
+                left: -45%;
+                width: 35%;
+              }
+
+              50% {
+                left: 30%;
+                width: 55%;
+              }
+
+              100% {
+                left: 100%;
+                width: 35%;
+              }
+            }
+          </style>
+        </main>
+
+        <!-- Failsafe Watchdog: garante que a view seja renderizada mesmo se algum asset tardar -->
+        <script>
+          setTimeout(function () {
             var loader = document.getElementById('initialAppLoader');
-            if (loader) {
-              loader.style.transition = 'opacity 0.25s ease-out';
-              loader.style.opacity = '0';
-              setTimeout(function() { if (loader && loader.parentNode) loader.remove(); }, 250);
-            }
-            if (typeof window.bootTkstApp === 'function') {
-              try { window.bootTkstApp(); } catch(e) {}
-            }
-            if (window.TKST_APP && typeof window.TKST_APP.renderView === 'function') {
+            if (loader && window.TKST_APP && typeof window.TKST_APP.renderView === 'function') {
               try {
                 var user = JSON.parse(localStorage.getItem('tkst_current_user') || 'null');
                 window.TKST_APP.renderView(user ? 'dashboard' : 'login');
-              } catch(e) {}
+              } catch (e) { }
             }
-          };
-          setTimeout(removeLoader, 1000);
-        })();
-      </script>
+          }, 2200);
+        </script>
+
+      </div>
+
+      <!-- Mobile Bottom Navigation Bar -->
+      <nav class="mobile-bottom-nav">
+        <a class="mobile-nav-item" data-tab="dashboard">
+          <i class="fas fa-home"></i>
+          <span>Início</span>
+        </a>
+        <a class="mobile-nav-item" data-tab="my-exam">
+          <i class="fas fa-graduation-cap"></i>
+          <span>Plano de estudos</span>
+        </a>
+        <a class="mobile-nav-item" data-tab="katas">
+          <i class="fas fa-book-open"></i>
+          <span>Kata</span>
+        </a>
+        <a class="mobile-nav-item" data-tab="kumite">
+          <i class="fas fa-fist-raised"></i>
+          <span>Kumite</span>
+        </a>
+        <a class="mobile-nav-item" data-tab="quiz">
+          <i class="fas fa-brain"></i>
+          <span>Simulador</span>
+        </a>
+        <a class="mobile-nav-item active" data-tab="login">
+          <i class="fas fa-user-lock"></i>
+          <span>Conta</span>
+        </a>
+      </nav>
 
     </div>
 
-    <!-- Mobile Bottom Navigation Bar -->
-    <nav class="mobile-bottom-nav">
-      <a class="mobile-nav-item" data-tab="dashboard">
-        <i class="fas fa-home"></i>
-        <span>Início</span>
-      </a>
-      <a class="mobile-nav-item" data-tab="my-exam">
-        <i class="fas fa-graduation-cap"></i>
-        <span>Plano de estudos</span>
-      </a>
-      <a class="mobile-nav-item" data-tab="katas">
-        <i class="fas fa-book-open"></i>
-        <span>Kata</span>
-      </a>
-      <a class="mobile-nav-item" data-tab="kumite">
-        <i class="fas fa-fist-raised"></i>
-        <span>Kumite</span>
-      </a>
-      <a class="mobile-nav-item" data-tab="quiz">
-        <i class="fas fa-brain"></i>
-        <span>Simulador</span>
-      </a>
-      <a class="mobile-nav-item active" data-tab="login">
-        <i class="fas fa-user-lock"></i>
-        <span>Conta</span>
-      </a>
-    </nav>
-
-  </div>
-
-  <!-- Detail Modal (Katas / Techniques) -->
-  <div class="modal-overlay" id="detailModal">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3 id="detailModalTitle">Detalhes do Kata</h3>
-        <button class="modal-close-btn" aria-label="Fechar" onclick="window.TKST_APP.closeDetailModal()">&times;</button>
-      </div>
-      <div class="modal-body" id="detailModalBody">
-        <!-- Injected via JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Video Player Modal (Plays Embedded in App Without Leaving) -->
-  <div class="modal-overlay" id="videoModal">
-    <div class="modal-container" style="max-width: 900px; width: 95%;">
-      <div class="modal-header">
-        <h3 id="videoModalTitle">Vídeo Técnico do Kata</h3>
-        <button class="modal-close-btn" aria-label="Fechar">&times;</button>
-      </div>
-      <div class="modal-body" style="padding: 0;">
-        <div class="modal-video-wrapper" id="videoModalContainer">
-          <!-- Dynamically injected iframe / video element -->
+    <!-- Detail Modal (Katas / Techniques) -->
+    <div class="modal-overlay" id="detailModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 id="detailModalTitle">Detalhes do Kata</h3>
+          <button class="modal-close-btn" aria-label="Fechar"
+            onclick="window.TKST_APP.closeDetailModal()">&times;</button>
         </div>
-        <div id="videoModalFooter" style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 8px;">
-          <p style="color: #94A3B8; font-size: 0.85rem; margin: 0;">
-            <i class="fas fa-film" style="color: var(--accent-gold); margin-right: 6px;"></i> Reprodução integrada oficial TKST Alunos.
-          </p>
+        <div class="modal-body" id="detailModalBody">
+          <!-- Injected via JS -->
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Media Lightbox In-App Viewer Modal (Fotos & Vídeos em Tela Cheia sem Sair do App) -->
-  <div class="modal-overlay media-lightbox-overlay" id="mediaLightboxModal">
-    <div class="modal-container media-lightbox-container">
-      <div class="modal-header media-lightbox-header">
-        <div class="media-lightbox-meta-left">
-          <span class="media-lightbox-badge" id="mediaLightboxCategory">Exames de Faixa</span>
-          <h3 id="mediaLightboxTitle">Título da Foto</h3>
-          <span class="media-lightbox-date" id="mediaLightboxDate">01/03/2026</span>
+    <!-- Video Player Modal (Plays Embedded in App Without Leaving) -->
+    <div class="modal-overlay" id="videoModal">
+      <div class="modal-container" style="max-width: 900px; width: 95%;">
+        <div class="modal-header">
+          <h3 id="videoModalTitle">Vídeo Técnico do Kata</h3>
+          <button class="modal-close-btn" aria-label="Fechar">&times;</button>
         </div>
-        <div class="media-lightbox-actions" style="display: flex; align-items: center; gap: 8px;">
-          <button type="button" class="btn btn-gold btn-sm" id="mediaLightboxDownloadBtn" onclick="window.TKST_APP.downloadCurrentLightboxMedia()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;" title="Baixar foto ou vídeo no seu celular">
-            <i class="fas fa-download"></i> <span>Baixar</span>
-          </button>
-          <button type="button" class="btn btn-crimson btn-sm" id="mediaLightboxDeleteBtn" onclick="window.TKST_APP.deleteCurrentLightboxMedia()" style="font-weight: 700; display: none; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(230, 57, 70, 0.25); border: 1px solid rgba(230, 57, 70, 0.6); color: #FF808A;" title="Excluir esta mídia da galeria">
-            <i class="fas fa-trash-alt"></i> <span>Excluir</span>
-          </button>
-          <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeMediaLightbox()" aria-label="Fechar">&times;</button>
+        <div class="modal-body" style="padding: 0;">
+          <div class="modal-video-wrapper" id="videoModalContainer">
+            <!-- Dynamically injected iframe / video element -->
+          </div>
+          <div id="videoModalFooter"
+            style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 8px;">
+            <p style="color: #94A3B8; font-size: 0.85rem; margin: 0;">
+              <i class="fas fa-film" style="color: var(--accent-gold); margin-right: 6px;"></i> Reprodução integrada
+              oficial TKST Alunos.
+            </p>
+          </div>
         </div>
-      </div>
-      <div class="modal-body media-lightbox-body" id="mediaLightboxBody">
-        <!-- Injected dynamically via JS: Imagem em alta definição ou Player de Vídeo Integrado -->
-      </div>
-      <div class="media-lightbox-footer">
-        <div class="media-lightbox-nav-row">
-          <button type="button" class="btn btn-secondary btn-sm media-nav-btn" id="mediaLightboxPrevBtn" onclick="window.TKST_APP.navigateMediaLightbox(-1)" title="Mídia Anterior">
-            <i class="fas fa-chevron-left"></i> Anterior
-          </button>
-          <span class="media-lightbox-counter" id="mediaLightboxCounter">1 de 8</span>
-          <button type="button" class="btn btn-secondary btn-sm media-nav-btn" id="mediaLightboxNextBtn" onclick="window.TKST_APP.navigateMediaLightbox(1)" title="Próxima Mídia">
-            Próxima <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-        <div class="media-lightbox-desc" id="mediaLightboxDesc"></div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal de Cadastro/Edição de Mídia (Sensei / Admin) -->
-  <div class="modal-overlay" id="adminMediaModal">
-    <div class="modal-container" style="max-width: 600px; width: 95%;">
-      <div class="modal-header">
-        <h3 id="adminMediaModalTitle"><i class="fas fa-photo-video" style="color: var(--accent-gold); margin-right: 8px;"></i> Cadastrar Nova Mídia</h3>
-        <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeAdminMediaModal()" aria-label="Fechar">&times;</button>
-      </div>
-      <div class="modal-body" style="padding: 20px;">
-        <form id="adminMediaForm" onsubmit="window.TKST_APP.handleSaveMediaSubmit(event)">
-          <input type="hidden" id="adminMediaId" value="">
-          <input type="hidden" id="adminMediaSourceMode" value="file">
-          <input type="hidden" id="adminMediaFileBase64" value="">
-          <input type="hidden" id="adminMediaFileThumb" value="">
-          <input type="hidden" id="adminMediaFileBlobKey" value="">
-          
-          <div class="form-group" style="margin-bottom: 14px;">
-            <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Título da Foto ou Vídeo *</label>
-            <input type="text" id="adminMediaTitleInput" class="form-control" required placeholder="Ex: Exame de Faixa 2026 - Dojô Central" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+    <!-- Media Lightbox In-App Viewer Modal (Fotos & Vídeos em Tela Cheia sem Sair do App) -->
+    <div class="modal-overlay media-lightbox-overlay" id="mediaLightboxModal">
+      <div class="modal-container media-lightbox-container">
+        <div class="modal-header media-lightbox-header">
+          <div class="media-lightbox-meta-left">
+            <span class="media-lightbox-badge" id="mediaLightboxCategory">Exames de Faixa</span>
+            <h3 id="mediaLightboxTitle">Título da Foto</h3>
+            <span class="media-lightbox-date" id="mediaLightboxDate">01/03/2026</span>
           </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-            <div class="form-group">
-              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Tipo de Mídia *</label>
-              <select id="adminMediaTypeSelect" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-                <option value="image">📷 Foto / Imagem</option>
-                <option value="video">🎬 Vídeo Técnico</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Álbum *</label>
-              <select id="adminMediaCategorySelect" class="form-control" onchange="window.TKST_APP.handleMediaAlbumSelectChange(this.value)" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-                <!-- Populado dinamicamente via JS (todos os álbuns, incluindo customizados) -->
-              </select>
-            </div>
+          <div class="media-lightbox-actions" style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="btn btn-gold btn-sm" id="mediaLightboxDownloadBtn"
+              onclick="window.TKST_APP.downloadCurrentLightboxMedia()"
+              style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;"
+              title="Baixar foto ou vídeo no seu celular">
+              <i class="fas fa-download"></i> <span>Baixar</span>
+            </button>
+            <button type="button" class="btn btn-crimson btn-sm" id="mediaLightboxDeleteBtn"
+              onclick="window.TKST_APP.deleteCurrentLightboxMedia()"
+              style="font-weight: 700; display: none; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(230, 57, 70, 0.25); border: 1px solid rgba(230, 57, 70, 0.6); color: #FF808A;"
+              title="Excluir esta mídia da galeria">
+              <i class="fas fa-trash-alt"></i> <span>Excluir</span>
+            </button>
+            <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeMediaLightbox()"
+              aria-label="Fechar">&times;</button>
           </div>
-
-          <!-- Campo de Subálbum de Exame (Visível para Exames de Faixa) -->
-          <div class="form-group" id="adminMediaSubAlbumGroup" style="margin-bottom: 14px;">
-            <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">
-              Subálbum do Exame de Faixa *
-            </label>
-            <input type="text" id="adminMediaSubAlbumInput" list="adminMediaSubAlbumList" class="form-control" placeholder="Ex: Exame de Faixa 2026 - Dojô Central" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-            <datalist id="adminMediaSubAlbumList">
-              <!-- Populado dinamicamente via JS -->
-            </datalist>
-            <span style="font-size: 0.74rem; color: #94A3B8; margin-top: 4px; display: block;">
-              Selecione um exame existente ou digite o nome de um novo exame de faixa para criar o subálbum.
-            </span>
-          </div>
-
-          <!-- Origem da Mídia: Enviar Arquivo vs Link da Web -->
-          <div class="form-group" style="margin-bottom: 14px;">
-            <label style="display: block; font-weight: 700; color: #FFF; font-size: 0.85rem; margin-bottom: 8px;">Como deseja enviar? *</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <button type="button" id="mediaSourceTabFile" class="btn btn-sm" onclick="window.TKST_APP.setMediaSourceMode('file')" style="background: rgba(255, 183, 3, 0.15); border: 1.5px solid var(--accent-gold); color: var(--accent-gold); font-weight: 700; padding: 10px 8px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;">
-                <i class="fas fa-mobile-alt"></i> Foto / Vídeo do Celular
-              </button>
-              <button type="button" id="mediaSourceTabUrl" class="btn btn-sm" onclick="window.TKST_APP.setMediaSourceMode('url')" style="background: rgba(255, 255, 255, 0.05); border: 1.5px solid rgba(255, 255, 255, 0.15); color: #94A3B8; font-weight: 600; padding: 10px 8px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;">
-                <i class="fas fa-link"></i> Link (YouTube / Web)
-              </button>
-            </div>
-          </div>
-
-          <!-- Seção de Envio de Arquivo do Celular -->
-          <div id="mediaSourceFileGroup" style="margin-bottom: 14px;">
-            <div class="file-upload-zone" id="adminMediaDropzone" onclick="document.getElementById('adminMediaFileInput').click()" style="padding: 24px 14px; border: 2px dashed rgba(255, 183, 3, 0.45); background: rgba(255, 183, 3, 0.04); border-radius: var(--radius-sm); text-align: center; cursor: pointer; transition: all 0.2s;">
-              <i class="fas fa-cloud-upload-alt" style="font-size: 2.4rem; color: var(--accent-gold); margin-bottom: 8px; display: block;"></i>
-              <div style="font-weight: 700; color: #FFF; font-size: 0.95rem;">
-                Escolher Fotos ou Vídeos do Celular
-              </div>
-              <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 4px;">
-                Toque para abrir a galeria • Selecione <strong>uma ou várias fotos</strong> (ou vídeos) de uma vez
-              </div>
-              <input type="file" id="adminMediaFileInput" style="display: none;" accept="image/*,video/*" multiple onchange="window.TKST_APP.handleMediaFileSelected(this)">
-            </div>
-
-            <!-- Preview do Arquivo Selecionado -->
-            <div id="mediaFilePreviewContainer" style="display: none; margin-top: 10px; padding: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: var(--radius-sm);">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <span id="mediaFileBadge" class="badge badge-amarela" style="font-size: 0.72rem; padding: 2px 8px;">📷 Foto Selecionada</span>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="window.TKST_APP.clearSelectedMediaFile()" style="font-size: 0.72rem; padding: 3px 8px; color: #FF808A; border-color: rgba(230,57,70,0.4); background: rgba(230,57,70,0.1);">
-                  <i class="fas fa-times"></i> Trocar Arquivo
-                </button>
-              </div>
-
-              <!-- Miniaturas para múltiplas fotos selecionadas -->
-              <div id="mediaMultiPreviewWrapper" style="display: none; margin-bottom: 8px;">
-                <div id="mediaMultiThumbsGrid" style="display: flex; gap: 8px; overflow-x: auto; padding: 6px 2px; scrollbar-width: thin;"></div>
-              </div>
-              
-              <div id="mediaImagePreviewWrapper" style="display: none; text-align: center;">
-                <img id="mediaImagePreview" src="" alt="Preview" style="max-width: 100%; max-height: 190px; border-radius: 6px; object-fit: contain; border: 1px solid rgba(255,255,255,0.1);">
-              </div>
-
-              <div id="mediaVideoPreviewWrapper" style="display: none;">
-                <video id="mediaVideoPreview" controls playsinline style="width: 100%; max-height: 190px; background: #000; border-radius: 6px;"></video>
-              </div>
-
-              <div id="mediaFileInfoText" style="font-size: 0.78rem; color: #CBD5E1; margin-top: 6px; text-align: center; word-break: break-all;"></div>
-            </div>
-
-            <!-- Barra de progresso do upload para o Cloudinary -->
-            <div id="mediaUploadProgressWrap" style="display: none; margin-top: 10px; padding: 10px 12px; background: rgba(255,183,3,0.06); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm);">
-              <div id="mediaUploadProgressText" style="font-size: 0.78rem; color: var(--accent-gold); margin-bottom: 6px; font-weight: 600;">⬆️ Enviando para Cloudinary... 0%</div>
-              <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                <div id="mediaUploadProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-gold), #FF808A); transition: width 0.25s ease; border-radius: 3px;"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Seção de Link da Web -->
-          <div id="mediaSourceUrlGroup" style="display: none; margin-bottom: 14px;">
-            <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">
-              Link Direto da Imagem ou Vídeo (URL)
-            </label>
-            <input type="url" id="adminMediaUrlInput" class="form-control" placeholder="https://exemplo.com/imagem.jpg ou link do YouTube" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-            <span style="font-size: 0.74rem; color: #94A3B8; margin-top: 4px; display: block;">
-              Dica: Cole links diretos de fotos ou vídeos (ex: ImgBB, Cloudinary, YouTube, Drive, etc.).
-            </span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-            <div class="form-group">
-              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Data do Evento</label>
-              <input type="date" id="adminMediaDateInput" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-            </div>
-
-            <div class="form-group">
-              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Dojô / Unidade</label>
-              <input type="text" id="adminMediaDojoInput" class="form-control" placeholder="Ex: TKST Matriz" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-            </div>
-          </div>
-
-          <div class="form-group" style="margin-bottom: 18px;">
-            <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Descrição / Contexto</label>
-            <textarea id="adminMediaDescInput" class="form-control" rows="2" placeholder="Informações adicionais sobre o momento ou técnica..." style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; resize: vertical;"></textarea>
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; gap: 10px;">
-            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeAdminMediaModal()">Cancelar</button>
-            <button type="submit" id="adminMediaSubmitBtn" class="btn btn-primary" style="font-weight: 700;">
-              <i class="fas fa-save"></i> Salvar Mídia
+        </div>
+        <div class="modal-body media-lightbox-body" id="mediaLightboxBody">
+          <!-- Injected dynamically via JS: Imagem em alta definição ou Player de Vídeo Integrado -->
+        </div>
+        <div class="media-lightbox-footer">
+          <div class="media-lightbox-nav-row">
+            <button type="button" class="btn btn-secondary btn-sm media-nav-btn" id="mediaLightboxPrevBtn"
+              onclick="window.TKST_APP.navigateMediaLightbox(-1)" title="Mídia Anterior">
+              <i class="fas fa-chevron-left"></i> Anterior
+            </button>
+            <span class="media-lightbox-counter" id="mediaLightboxCounter">1 de 8</span>
+            <button type="button" class="btn btn-secondary btn-sm media-nav-btn" id="mediaLightboxNextBtn"
+              onclick="window.TKST_APP.navigateMediaLightbox(1)" title="Próxima Mídia">
+              Próxima <i class="fas fa-chevron-right"></i>
             </button>
           </div>
-        </form>
+          <div class="media-lightbox-desc" id="mediaLightboxDesc"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal de Criar Álbum (Admin) -->
-  <div class="modal-overlay" id="createAlbumModal">
-    <div class="modal-container" style="max-width: 520px; width: 95%;">
-      <div class="modal-header">
-        <h3><i class="fas fa-folder-plus" style="color: var(--accent-gold); margin-right: 8px;"></i> Criar Álbum</h3>
-        <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeCreateAlbumModal()" aria-label="Fechar">&times;</button>
-      </div>
-      <div class="modal-body" style="padding: 20px;">
-        <form id="createAlbumForm" onsubmit="window.TKST_APP.handleSaveAlbum(event)">
-          <input type="hidden" id="createAlbumMode" value="principal">
-
-          <!-- Seletor de Tipo -->
-          <div id="createAlbumTypeSelectorWrap" style="margin-bottom: 18px;">
-            <label style="display: block; font-weight: 700; color: #FFF; font-size: 0.85rem; margin-bottom: 10px;">Tipo de Álbum</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <label class="album-type-option selected" id="albumTypeOptPrincipal">
-                <input type="radio" name="albumTypeRadio" value="principal" checked style="display:none;">
-                <i class="fas fa-folder-open" style="font-size: 1.4rem; margin-bottom: 6px; display: block; color: var(--accent-gold);"></i>
-                <span style="font-weight: 700; font-size: 0.82rem;">Álbum Principal</span>
-                <span style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px; display: block;">Ex: Treinos Livres, Seminários...</span>
-              </label>
-              <label class="album-type-option" id="albumTypeOptSub">
-                <input type="radio" name="albumTypeRadio" value="sub-exame" style="display:none;">
-                <i class="fas fa-graduation-cap" style="font-size: 1.4rem; margin-bottom: 6px; display: block; color: #60A5FA;"></i>
-                <span style="font-weight: 700; font-size: 0.82rem;">Subálbum de Exame</span>
-                <span style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px; display: block;">Novo exame de faixa ou competição</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Campos para Álbum Principal -->
-          <div id="createAlbumMainGroup">
-            <div class="form-group" style="margin-bottom: 14px;">
-              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Nome do Álbum *</label>
-              <input type="text" id="createAlbumTitleInput" class="form-control" placeholder="Ex: Seminários, Treinos Abertos..." style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-            </div>
+    <!-- Modal de Cadastro/Edição de Mídia (Sensei / Admin) -->
+    <div class="modal-overlay" id="adminMediaModal">
+      <div class="modal-container" style="max-width: 600px; width: 95%;">
+        <div class="modal-header">
+          <h3 id="adminMediaModalTitle"><i class="fas fa-photo-video"
+              style="color: var(--accent-gold); margin-right: 8px;"></i> Cadastrar Nova Mídia</h3>
+          <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeAdminMediaModal()"
+            aria-label="Fechar">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <form id="adminMediaForm" onsubmit="window.TKST_APP.handleSaveMediaSubmit(event)">
+            <input type="hidden" id="adminMediaId" value="">
+            <input type="hidden" id="adminMediaSourceMode" value="file">
+            <input type="hidden" id="adminMediaFileBase64" value="">
+            <input type="hidden" id="adminMediaFileThumb" value="">
+            <input type="hidden" id="adminMediaFileBlobKey" value="">
 
             <div class="form-group" style="margin-bottom: 14px;">
-              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Descrição</label>
-              <input type="text" id="createAlbumDescInput" class="form-control" placeholder="Breve descrição do álbum..." style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+              <label
+                style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Título da
+                Foto ou Vídeo *</label>
+              <input type="text" id="adminMediaTitleInput" class="form-control" required
+                placeholder="Ex: Exame de Faixa 2026 - Dojô Central"
+                style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
               <div class="form-group">
-                <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Ícone</label>
-                <select id="createAlbumIconSelect" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-                  <option value="fas fa-folder">📁 Pasta</option>
-                  <option value="fas fa-star">⭐ Estrela</option>
-                  <option value="fas fa-dumbbell">💪 Treino</option>
-                  <option value="fas fa-users">👥 Turma</option>
-                  <option value="fas fa-calendar-check">📅 Evento</option>
-                  <option value="fas fa-medal">🥇 Medalha</option>
-                  <option value="fas fa-camera">📷 Fotos</option>
-                  <option value="fas fa-video">🎬 Vídeos</option>
-                  <option value="fas fa-book-open">📖 Estudo</option>
-                  <option value="fas fa-heart">❤️ Especial</option>
+                <label
+                  style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Tipo de
+                  Mídia *</label>
+                <select id="adminMediaTypeSelect" class="form-control"
+                  style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+                  <option value="image">📷 Foto / Imagem</option>
+                  <option value="video">🎬 Vídeo Técnico</option>
                 </select>
               </div>
 
-              <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #CBD5E1; font-size: 0.84rem;">
-                  <input type="checkbox" id="createAlbumHasSubAlbums" style="width: 16px; height: 16px; accent-color: var(--accent-gold);">
-                  <span>Permite subálbuns</span>
-                </label>
-                <span style="font-size: 0.71rem; color: #64748B; margin-top: 4px;">Ative para organizar em subpastas</span>
+              <div class="form-group">
+                <label
+                  style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Álbum
+                  *</label>
+                <select id="adminMediaCategorySelect" class="form-control"
+                  onchange="window.TKST_APP.handleMediaAlbumSelectChange(this.value)"
+                  style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+                  <!-- Populado dinamicamente via JS (todos os álbuns, incluindo customizados) -->
+                </select>
               </div>
             </div>
-          </div>
 
-          <!-- Campos para Subálbum de Exame -->
-          <div id="createAlbumSubGroup" style="display:none;">
-            <div class="form-group" style="margin-bottom: 14px;">
-              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Álbum Pai</label>
-              <select id="createAlbumSubParent" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-                <!-- Populado via JS -->
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom: 14px;">
-              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Nome do Subálbum *</label>
-              <input type="text" id="createAlbumSubNameInput" list="adminMediaSubAlbumList" class="form-control" placeholder="Ex: Exame de Faixa Junho 2026..." style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
-              <span style="font-size: 0.74rem; color: #94A3B8; margin-top: 4px; display: block;">Digite o nome do evento ou exame — o subálbum será salvo imediatamente na galeria.</span>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
-            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeCreateAlbumModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" style="font-weight: 700;">
-              <i class="fas fa-folder-plus"></i> Criar Álbum
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de Correção de Provas OMR & Gemini Vision (Sensei) -->
-  <div class="modal-overlay" id="examOmrScannerModal" style="display:none;">
-    <div class="modal-container" style="max-width: 780px; width: min(780px, 98vw); max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box;">
-      <div class="modal-header" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-bottom: 1px solid var(--border-color); padding: 10px 14px;">
-        <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-          <i class="fas fa-check-double" style="color: var(--accent-gold);"></i>
-          <span>Corrigir Prova</span>
-        </h3>
-        <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeExamOmrModal()" aria-label="Fechar">&times;</button>
-      </div>
-
-      <div class="modal-body" style="padding: 6px 8px; overflow-x: hidden; overflow-y: auto; flex: 1; box-sizing: border-box; width: 100%;">
-        <!-- Stepper Indicador de Fases (Fase 1 -> Fase 2 -> Fase 3) -->
-        <div id="omrPhaseStepper" style="display: flex; gap: 4px; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; width: 100%; box-sizing: border-box; overflow: hidden;">
-          <button type="button" id="omrStepTab1" onclick="window.TKST_APP.goToOmrPhase(1)" style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 800; background: rgba(245, 190, 0, 0.15); border: 1px solid var(--accent-gold); color: var(--accent-gold); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s;">
-            <i class="fas fa-barcode"></i> 1. Identificar Código
-          </button>
-          <button type="button" id="omrStepTab2" onclick="window.TKST_APP.goToOmrPhase(2)" style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s;">
-            <i class="fas fa-pen-to-square"></i> 2. Corrigir prova
-          </button>
-          <button type="button" id="omrStepTab3" style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: default; transition: all 0.2s; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            <i class="fas fa-award"></i> 3. Nota Oficial
-          </button>
-        </div>
-
-        <!-- 1. FASE 1: IDENTIFICAÇÃO DO CÓDIGO DA PROVA POR DIGITAÇÃO -->
-        <div id="omrPhase1View">
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px;">
-            <div style="text-align: center; margin-bottom: 14px;">
-              <h4 style="font-size: 1.05rem; font-weight: 800; color: #FFF; margin-bottom: 4px;">
-                <i class="fas fa-barcode" style="color: var(--accent-gold);"></i> Digite o Código da Prova
-              </h4>
-              <p style="font-size: 0.80rem; color: #94A3B8; margin: 0;">
-                O código de 5 caracteres impresso no cabeçalho identifica automaticamente a prova, o aluno e o gabarito oficial.
-              </p>
-            </div>
-
-            <!-- Campo de Digitação com Botão -->
-            <div style="display: flex; gap: 8px; max-width: 440px; margin: 0 auto 10px auto;">
-              <input type="text" id="omrExamCodeInput" class="form-control" placeholder="Ex: 18ZK4 ou 1AR40" style="padding: 10px 14px; font-size: 1.25rem; font-weight: 900; font-family: monospace; text-transform: uppercase; letter-spacing: 2px; text-align: center; background: #07090E; border: 2px solid var(--accent-gold); color: #FFB703; border-radius: 8px;" oninput="window.TKST_APP.onOmrExamCodeInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();window.TKST_APP.searchOmrExamCode();}">
-              <button type="button" class="btn btn-gold" onclick="window.TKST_APP.searchOmrExamCode()" style="font-weight: 800; padding: 0 18px; white-space: nowrap; border-radius: 8px;">
-                <i class="fas fa-search"></i> Identificar
-              </button>
-            </div>
-
-            <!-- Atalhos de Provas Recentes -->
-            <div id="omrRecentExamsContainer" style="margin-bottom: 14px; text-align: center;">
-              <span style="font-size: 0.74rem; color: #94A3B8; margin-right: 6px;">Atalhos rápidos:</span>
-              <span id="omrRecentExamsChips" style="display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
-                <!-- Preenchido via JS com badges clicáveis de provas recentes -->
+            <!-- Campo de Subálbum de Exame (Visível para Exames de Faixa) -->
+            <div class="form-group" id="adminMediaSubAlbumGroup" style="margin-bottom: 14px;">
+              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">
+                Subálbum do Exame de Faixa *
+              </label>
+              <input type="text" id="adminMediaSubAlbumInput" list="adminMediaSubAlbumList" class="form-control"
+                placeholder="Ex: Exame de Faixa 2026 - Dojô Central"
+                style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+              <datalist id="adminMediaSubAlbumList">
+                <!-- Populado dinamicamente via JS -->
+              </datalist>
+              <span style="font-size: 0.74rem; color: #94A3B8; margin-top: 4px; display: block;">
+                Selecione um exame existente ou digite o nome de um novo exame de faixa para criar o subálbum.
               </span>
             </div>
 
-            <!-- Card de Identificação da Prova (Detalhes: Prova, Aluno, Gabarito) -->
-            <div id="omrExamIdentificationCard" style="display: none; background: #0B0E14; border: 1.5px solid #10B981; border-radius: 8px; padding: 14px; margin-bottom: 6px;">
-              <!-- Cabeçalho do Card Identificado -->
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="background: #065F46; color: #34D399; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 4px;">
-                    <i class="fas fa-check-circle"></i> PROVA IDENTIFICADA
-                  </span>
-                  <span id="omrIdentifiedCodeBadge" style="font-family: monospace; font-size: 1.05rem; font-weight: 900; color: var(--accent-gold);"></span>
+            <!-- Origem da Mídia: Enviar Arquivo vs Link da Web -->
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label style="display: block; font-weight: 700; color: #FFF; font-size: 0.85rem; margin-bottom: 8px;">Como
+                deseja enviar? *</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button type="button" id="mediaSourceTabFile" class="btn btn-sm"
+                  onclick="window.TKST_APP.setMediaSourceMode('file')"
+                  style="background: rgba(255, 183, 3, 0.15); border: 1.5px solid var(--accent-gold); color: var(--accent-gold); font-weight: 700; padding: 10px 8px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;">
+                  <i class="fas fa-mobile-alt"></i> Foto / Vídeo do Celular
+                </button>
+                <button type="button" id="mediaSourceTabUrl" class="btn btn-sm"
+                  onclick="window.TKST_APP.setMediaSourceMode('url')"
+                  style="background: rgba(255, 255, 255, 0.05); border: 1.5px solid rgba(255, 255, 255, 0.15); color: #94A3B8; font-weight: 600; padding: 10px 8px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;">
+                  <i class="fas fa-link"></i> Link (YouTube / Web)
+                </button>
+              </div>
+            </div>
+
+            <!-- Seção de Envio de Arquivo do Celular -->
+            <div id="mediaSourceFileGroup" style="margin-bottom: 14px;">
+              <div class="file-upload-zone" id="adminMediaDropzone"
+                onclick="document.getElementById('adminMediaFileInput').click()"
+                style="padding: 24px 14px; border: 2px dashed rgba(255, 183, 3, 0.45); background: rgba(255, 183, 3, 0.04); border-radius: var(--radius-sm); text-align: center; cursor: pointer; transition: all 0.2s;">
+                <i class="fas fa-cloud-upload-alt"
+                  style="font-size: 2.4rem; color: var(--accent-gold); margin-bottom: 8px; display: block;"></i>
+                <div style="font-weight: 700; color: #FFF; font-size: 0.95rem;">
+                  Escolher Fotos ou Vídeos do Celular
                 </div>
-                <div id="omrIdentifiedDate" style="font-size: 0.75rem; color: #94A3B8;"></div>
+                <div style="font-size: 0.76rem; color: #94A3B8; margin-top: 4px;">
+                  Toque para abrir a galeria • Selecione <strong>uma ou várias fotos</strong> (ou vídeos) de uma vez
+                </div>
+                <input type="file" id="adminMediaFileInput" style="display: none;" accept="image/*,video/*" multiple
+                  onchange="window.TKST_APP.handleMediaFileSelected(this)">
               </div>
 
-              <!-- Grid de Dados da Prova e Aluno -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                <!-- Bloco 1: Prova / Kyu -->
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px;">
-                  <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Prova / Graduação</div>
-                  <div id="omrIdentifiedBeltText" style="font-size: 0.92rem; font-weight: 800; color: #FFF;"></div>
-                  <div id="omrIdentifiedDojoText" style="font-size: 0.72rem; color: #64748B; margin-top: 2px;"></div>
+              <!-- Preview do Arquivo Selecionado -->
+              <div id="mediaFilePreviewContainer"
+                style="display: none; margin-top: 10px; padding: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 183, 3, 0.35); border-radius: var(--radius-sm);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span id="mediaFileBadge" class="badge badge-amarela" style="font-size: 0.72rem; padding: 2px 8px;">📷
+                    Foto Selecionada</span>
+                  <button type="button" class="btn btn-secondary btn-sm"
+                    onclick="window.TKST_APP.clearSelectedMediaFile()"
+                    style="font-size: 0.72rem; padding: 3px 8px; color: #FF808A; border-color: rgba(230,57,70,0.4); background: rgba(230,57,70,0.1);">
+                    <i class="fas fa-times"></i> Trocar Arquivo
+                  </button>
                 </div>
 
-                <!-- Bloco 2: Aluno Vinculado -->
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: center;">
-                  <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Aluno Vinculado à Prova</div>
-                  <div id="omrIdentifiedStudentText" style="font-size: 0.98rem; font-weight: 900; color: #38BDF8; word-break: break-word;"></div>
-                  <div id="omrIdentifiedStudentSub" style="font-size: 0.72rem; color: #10B981; margin-top: 3px; font-weight: 700;">
-                    <i class="fas fa-check-circle"></i> Vinculado automaticamente pelo código
-                  </div>
-                  <div id="omrManualStudentOverrideWrap" style="display: none; margin-top: 6px;">
-                    <select id="omrStudentSelect" class="form-control" style="width: 100%; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; background: #07090E; border: 1px solid var(--border-color); color: #CBD5E1;" onchange="window.TKST_APP.onOmrStudentSelectChanged(this.value)">
-                      <option value="">Alterar para outro aluno...</option>
-                    </select>
-                  </div>
-                  <div style="margin-top: 4px;">
-                    <a href="javascript:void(0)" onclick="window.TKST_APP.toggleManualStudentOverride()" style="font-size: 0.68rem; color: #64748B; text-decoration: underline;">
-                      Trocar aluno se necessário
-                    </a>
-                  </div>
+                <!-- Miniaturas para múltiplas fotos selecionadas -->
+                <div id="mediaMultiPreviewWrapper" style="display: none; margin-bottom: 8px;">
+                  <div id="mediaMultiThumbsGrid"
+                    style="display: flex; gap: 8px; overflow-x: auto; padding: 6px 2px; scrollbar-width: thin;"></div>
+                </div>
+
+                <div id="mediaImagePreviewWrapper" style="display: none; text-align: center;">
+                  <img id="mediaImagePreview" src="" alt="Preview"
+                    style="max-width: 100%; max-height: 190px; border-radius: 6px; object-fit: contain; border: 1px solid rgba(255,255,255,0.1);">
+                </div>
+
+                <div id="mediaVideoPreviewWrapper" style="display: none;">
+                  <video id="mediaVideoPreview" controls playsinline
+                    style="width: 100%; max-height: 190px; background: #000; border-radius: 6px;"></video>
+                </div>
+
+                <div id="mediaFileInfoText"
+                  style="font-size: 0.78rem; color: #CBD5E1; margin-top: 6px; text-align: center; word-break: break-all;">
                 </div>
               </div>
 
-              <!-- Bloco 3: Gabarito Oficial da Prova em Questão -->
-              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px 12px; margin-bottom: 14px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <span style="font-size: 0.75rem; font-weight: 800; color: #FFF; text-transform: uppercase;">
-                    <i class="fas fa-list-check" style="color: var(--accent-gold);"></i> Gabarito Oficial da Prova
-                  </span>
-                  <span style="font-size: 0.70rem; color: #34D399; font-weight: 700;">10 Questões Carregadas</span>
-                </div>
-                <div id="omrIdentifiedKeyGrid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; text-align: center;">
-                  <!-- Gerado via JS: Q01=A, Q02=B, etc. -->
+              <!-- Barra de progresso do upload para o Cloudinary -->
+              <div id="mediaUploadProgressWrap"
+                style="display: none; margin-top: 10px; padding: 10px 12px; background: rgba(255,183,3,0.06); border: 1px solid rgba(255,183,3,0.3); border-radius: var(--radius-sm);">
+                <div id="mediaUploadProgressText"
+                  style="font-size: 0.78rem; color: var(--accent-gold); margin-bottom: 6px; font-weight: 600;">⬆️
+                  Enviando para Cloudinary... 0%</div>
+                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                  <div id="mediaUploadProgressBar"
+                    style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-gold), #FF808A); transition: width 0.25s ease; border-radius: 3px;">
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Botão de Avanço para Fase 2 -->
-              <button type="button" id="omrAdvancePhaseBtn" class="btn btn-gold" onclick="window.TKST_APP.goToOmrPhase(2)" style="width: 100%; padding: 11px; font-size: 1rem; font-weight: 900; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #FFF; border: none; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
-                <span>Corrigir prova </span>
-                <i class="fas fa-arrow-right"></i>
+            <!-- Seção de Link da Web -->
+            <div id="mediaSourceUrlGroup" style="display: none; margin-bottom: 14px;">
+              <label style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">
+                Link Direto da Imagem ou Vídeo (URL)
+              </label>
+              <input type="url" id="adminMediaUrlInput" class="form-control"
+                placeholder="https://exemplo.com/imagem.jpg ou link do YouTube"
+                style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+              <span style="font-size: 0.74rem; color: #94A3B8; margin-top: 4px; display: block;">
+                Dica: Cole links diretos de fotos ou vídeos (ex: ImgBB, Cloudinary, YouTube, Drive, etc.).
+              </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div class="form-group">
+                <label
+                  style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Data do
+                  Evento</label>
+                <input type="date" id="adminMediaDateInput" class="form-control"
+                  style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+              </div>
+
+              <div class="form-group">
+                <label
+                  style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Dojô /
+                  Unidade</label>
+                <input type="text" id="adminMediaDojoInput" class="form-control" placeholder="Ex: TKST Matriz"
+                  style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 18px;">
+              <label
+                style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Descrição
+                / Contexto</label>
+              <textarea id="adminMediaDescInput" class="form-control" rows="2"
+                placeholder="Informações adicionais sobre o momento ou técnica..."
+                style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF; resize: vertical;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button type="button" class="btn btn-secondary"
+                onclick="window.TKST_APP.closeAdminMediaModal()">Cancelar</button>
+              <button type="submit" id="adminMediaSubmitBtn" class="btn btn-primary" style="font-weight: 700;">
+                <i class="fas fa-save"></i> Salvar Mídia
               </button>
             </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
-            <!-- Placeholder quando ainda não identificou -->
-            <div id="omrExamIdentificationPlaceholder" style="background: rgba(0,0,0,0.25); border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 24px 16px; text-align: center; color: #64748B;">
-              <i class="fas fa-keyboard" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.5;"></i>
-              <div style="font-size: 0.85rem; font-weight: 700; color: #94A3B8;">Aguardando digitação do código da prova</div>
-              <div style="font-size: 0.75rem; margin-top: 4px;">Digite o código acima ou clique em um atalho para carregar o aluno e o gabarito.</div>
+    <!-- Modal de Criar Álbum (Admin) -->
+    <div class="modal-overlay" id="createAlbumModal">
+      <div class="modal-container" style="max-width: 520px; width: 95%;">
+        <div class="modal-header">
+          <h3><i class="fas fa-folder-plus" style="color: var(--accent-gold); margin-right: 8px;"></i> Criar Álbum</h3>
+          <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeCreateAlbumModal()"
+            aria-label="Fechar">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <form id="createAlbumForm" onsubmit="window.TKST_APP.handleSaveAlbum(event)">
+            <input type="hidden" id="createAlbumMode" value="principal">
+
+            <!-- Seletor de Tipo -->
+            <div id="createAlbumTypeSelectorWrap" style="margin-bottom: 18px;">
+              <label
+                style="display: block; font-weight: 700; color: #FFF; font-size: 0.85rem; margin-bottom: 10px;">Tipo de
+                Álbum</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <label class="album-type-option selected" id="albumTypeOptPrincipal">
+                  <input type="radio" name="albumTypeRadio" value="principal" checked style="display:none;">
+                  <i class="fas fa-folder-open"
+                    style="font-size: 1.4rem; margin-bottom: 6px; display: block; color: var(--accent-gold);"></i>
+                  <span style="font-weight: 700; font-size: 0.82rem;">Álbum Principal</span>
+                  <span style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px; display: block;">Ex: Treinos Livres,
+                    Seminários...</span>
+                </label>
+                <label class="album-type-option" id="albumTypeOptSub">
+                  <input type="radio" name="albumTypeRadio" value="sub-exame" style="display:none;">
+                  <i class="fas fa-graduation-cap"
+                    style="font-size: 1.4rem; margin-bottom: 6px; display: block; color: #60A5FA;"></i>
+                  <span style="font-weight: 700; font-size: 0.82rem;">Subálbum de Exame</span>
+                  <span style="font-size: 0.72rem; color: #94A3B8; margin-top: 3px; display: block;">Novo exame de faixa
+                    ou competição</span>
+                </label>
+              </div>
             </div>
 
-            <!-- Kyu Select (sincronizado automaticamente) -->
-            <select id="omrKyuSelect" style="display:none;" onchange="window.TKST_APP.onOmrKyuChanged()">
-              <option value="6">6º Kyu (Branca para Amarela)</option>
-              <option value="5">5º Kyu (Amarela para Vermelha)</option>
-              <option value="4">4º Kyu (Vermelha para Laranja)</option>
-              <option value="3">3º Kyu (Laranja para Verde)</option>
-              <option value="2">2º Kyu (Verde para Roxa)</option>
-              <option value="1">1º Kyu (Roxa para Marrom)</option>
-              <option value="0">1º Dan (Marrom para Preta Shodan)</option>
-              <option value="-1">2º Dan (Nidan)</option>
-              <option value="-2">3º Dan (Sandan)</option>
-            </select>
-          </div>
+            <!-- Campos para Álbum Principal -->
+            <div id="createAlbumMainGroup">
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label
+                  style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Nome do
+                  Álbum *</label>
+                <input type="text" id="createAlbumTitleInput" class="form-control"
+                  placeholder="Ex: Seminários, Treinos Abertos..."
+                  style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label
+                  style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Descrição</label>
+                <input type="text" id="createAlbumDescInput" class="form-control"
+                  placeholder="Breve descrição do álbum..."
+                  style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <div class="form-group">
+                  <label
+                    style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Ícone</label>
+                  <select id="createAlbumIconSelect" class="form-control"
+                    style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+                    <option value="fas fa-folder">📁 Pasta</option>
+                    <option value="fas fa-star">⭐ Estrela</option>
+                    <option value="fas fa-dumbbell">💪 Treino</option>
+                    <option value="fas fa-users">👥 Turma</option>
+                    <option value="fas fa-calendar-check">📅 Evento</option>
+                    <option value="fas fa-medal">🥇 Medalha</option>
+                    <option value="fas fa-camera">📷 Fotos</option>
+                    <option value="fas fa-video">🎬 Vídeos</option>
+                    <option value="fas fa-book-open">📖 Estudo</option>
+                    <option value="fas fa-heart">❤️ Especial</option>
+                  </select>
+                </div>
+
+                <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
+                  <label
+                    style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #CBD5E1; font-size: 0.84rem;">
+                    <input type="checkbox" id="createAlbumHasSubAlbums"
+                      style="width: 16px; height: 16px; accent-color: var(--accent-gold);">
+                    <span>Permite subálbuns</span>
+                  </label>
+                  <span style="font-size: 0.71rem; color: #64748B; margin-top: 4px;">Ative para organizar em
+                    subpastas</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campos para Subálbum de Exame -->
+            <div id="createAlbumSubGroup" style="display:none;">
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label
+                  style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Álbum
+                  Pai</label>
+                <select id="createAlbumSubParent" class="form-control"
+                  style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+                  <!-- Populado via JS -->
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label
+                  style="display: block; font-weight: 600; color: #FFF; font-size: 0.85rem; margin-bottom: 6px;">Nome do
+                  Subálbum *</label>
+                <input type="text" id="createAlbumSubNameInput" list="adminMediaSubAlbumList" class="form-control"
+                  placeholder="Ex: Exame de Faixa Junho 2026..."
+                  style="width: 100%; padding: 10px; border-radius: var(--radius-sm); background: #0B0E14; border: 1px solid var(--border-color); color: #FFF;">
+                <span style="font-size: 0.74rem; color: #94A3B8; margin-top: 4px; display: block;">Digite o nome do
+                  evento ou exame — o subálbum será salvo imediatamente na galeria.</span>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
+              <button type="button" class="btn btn-secondary"
+                onclick="window.TKST_APP.closeCreateAlbumModal()">Cancelar</button>
+              <button type="submit" class="btn btn-primary" style="font-weight: 700;">
+                <i class="fas fa-folder-plus"></i> Criar Álbum
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Correção de Provas OMR & Gemini Vision (Sensei) -->
+    <div class="modal-overlay" id="examOmrScannerModal" style="display:none;">
+      <div class="modal-container"
+        style="max-width: 780px; width: min(780px, 98vw); max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box;">
+        <div class="modal-header"
+          style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-bottom: 1px solid var(--border-color); padding: 10px 14px;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-check-double" style="color: var(--accent-gold);"></i>
+            <span>Corrigir Prova</span>
+          </h3>
+          <button type="button" class="modal-close-btn" onclick="window.TKST_APP.closeExamOmrModal()"
+            aria-label="Fechar">&times;</button>
         </div>
 
-        <!-- 2. FASE 2: MARCAÇÃO MANUAL DAS 10 RESPOSTAS DO ALUNO (100% COMPACTA SEM ROLAGEM) -->
-        <div id="omrPhase2View" style="display:none; width: 100%; box-sizing: border-box; overflow: hidden;">
-          <!-- Barra Superior Compacta: Aluno, Faixa e Nota em 1 única linha -->
-          <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(245, 190, 0, 0.35); border-radius: 6px; padding: 4px 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; gap: 4px; width: 100%; box-sizing: border-box; overflow: hidden;">
-            <div style="display: flex; align-items: center; gap: 4px; min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-              <span id="omrPhase2ExamCode" style="color: var(--accent-gold); font-family: monospace; font-weight: 900; font-size: 0.82rem; flex-shrink: 0;"></span>
-              <span style="color: #64748B;">•</span>
-              <span id="omrPhase2Belt" style="font-weight: 700; color: #FFF; font-size: 0.78rem; flex-shrink: 0;"></span>
-              <span style="color: #64748B;">•</span>
-              <span style="color: #38BDF8; font-weight: 800; font-size: 0.80rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fas fa-user" style="font-size: 0.70rem;"></i> <span id="omrPhase2Student"></span></span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
-              <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 700;">Nota:</span>
-              <span id="omrManualScoreDisplay" style="font-size: 1.05rem; font-weight: 900; color: var(--accent-gold); line-height: 1;">0,0</span>
-              <span id="omrManualScoreBadge" class="badge badge-danger" style="font-size: 0.64rem; padding: 2px 4px; font-weight: 800; background: #DC2626; color: #FFF;">REPROVADO</span>
-              <span id="omrManualHitsDisplay" style="font-size: 0.68rem; color: #94A3B8; font-weight: 700;">(0/10)</span>
+        <div class="modal-body"
+          style="padding: 6px 8px; overflow-x: hidden; overflow-y: auto; flex: 1; box-sizing: border-box; width: 100%;">
+          <!-- Stepper Indicador de Fases (Fase 1 -> Fase 2 -> Fase 3) -->
+          <div id="omrPhaseStepper"
+            style="display: flex; gap: 4px; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; width: 100%; box-sizing: border-box; overflow: hidden;">
+            <button type="button" id="omrStepTab1" onclick="window.TKST_APP.goToOmrPhase(1)"
+              style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 800; background: rgba(245, 190, 0, 0.15); border: 1px solid var(--accent-gold); color: var(--accent-gold); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s;">
+              <i class="fas fa-barcode"></i> 1. Identificar Código
+            </button>
+            <button type="button" id="omrStepTab2" onclick="window.TKST_APP.goToOmrPhase(2)"
+              style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s;">
+              <i class="fas fa-pen-to-square"></i> 2. Corrigir prova
+            </button>
+            <button type="button" id="omrStepTab3"
+              style="flex: 1; min-width: 0; text-align: center; padding: 5px 4px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; cursor: default; transition: all 0.2s; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              <i class="fas fa-award"></i> 3. Nota Oficial
+            </button>
+          </div>
+
+          <!-- 1. FASE 1: IDENTIFICAÇÃO DO CÓDIGO DA PROVA POR DIGITAÇÃO -->
+          <div id="omrPhase1View">
+            <div
+              style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px;">
+              <div style="text-align: center; margin-bottom: 14px;">
+                <h4 style="font-size: 1.05rem; font-weight: 800; color: #FFF; margin-bottom: 4px;">
+                  <i class="fas fa-barcode" style="color: var(--accent-gold);"></i> Digite o Código da Prova
+                </h4>
+                <p style="font-size: 0.80rem; color: #94A3B8; margin: 0;">
+                  O código de 5 caracteres impresso no cabeçalho identifica automaticamente a prova, o aluno e o
+                  gabarito oficial.
+                </p>
+              </div>
+
+              <!-- Campo de Digitação com Botão -->
+              <div style="display: flex; gap: 8px; max-width: 440px; margin: 0 auto 10px auto;">
+                <input type="text" id="omrExamCodeInput" class="form-control" placeholder="Ex: 18ZK4 ou 1AR40"
+                  style="padding: 10px 14px; font-size: 1.25rem; font-weight: 900; font-family: monospace; text-transform: uppercase; letter-spacing: 2px; text-align: center; background: #07090E; border: 2px solid var(--accent-gold); color: #FFB703; border-radius: 8px;"
+                  oninput="window.TKST_APP.onOmrExamCodeInput(this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();window.TKST_APP.searchOmrExamCode();}">
+                <button type="button" class="btn btn-gold" onclick="window.TKST_APP.searchOmrExamCode()"
+                  style="font-weight: 800; padding: 0 18px; white-space: nowrap; border-radius: 8px;">
+                  <i class="fas fa-search"></i> Identificar
+                </button>
+              </div>
+
+              <!-- Atalhos de Provas Recentes -->
+              <div id="omrRecentExamsContainer" style="margin-bottom: 14px; text-align: center;">
+                <span style="font-size: 0.74rem; color: #94A3B8; margin-right: 6px;">Atalhos rápidos:</span>
+                <span id="omrRecentExamsChips"
+                  style="display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+                  <!-- Preenchido via JS com badges clicáveis de provas recentes -->
+                </span>
+              </div>
+
+              <!-- Card de Identificação da Prova (Detalhes: Prova, Aluno, Gabarito) -->
+              <div id="omrExamIdentificationCard"
+                style="display: none; background: #0B0E14; border: 1.5px solid #10B981; border-radius: 8px; padding: 14px; margin-bottom: 6px;">
+                <!-- Cabeçalho do Card Identificado -->
+                <div
+                  style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span
+                      style="background: #065F46; color: #34D399; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 4px;">
+                      <i class="fas fa-check-circle"></i> PROVA IDENTIFICADA
+                    </span>
+                    <span id="omrIdentifiedCodeBadge"
+                      style="font-family: monospace; font-size: 1.05rem; font-weight: 900; color: var(--accent-gold);"></span>
+                  </div>
+                  <div id="omrIdentifiedDate" style="font-size: 0.75rem; color: #94A3B8;"></div>
+                </div>
+
+                <!-- Grid de Dados da Prova e Aluno -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                  <!-- Bloco 1: Prova / Kyu -->
+                  <div
+                    style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px;">
+                    <div
+                      style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">
+                      Prova / Graduação</div>
+                    <div id="omrIdentifiedBeltText" style="font-size: 0.92rem; font-weight: 800; color: #FFF;"></div>
+                    <div id="omrIdentifiedDojoText" style="font-size: 0.72rem; color: #64748B; margin-top: 2px;"></div>
+                  </div>
+
+                  <!-- Bloco 2: Aluno Vinculado -->
+                  <div
+                    style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: center;">
+                    <div
+                      style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">
+                      Aluno Vinculado à Prova</div>
+                    <div id="omrIdentifiedStudentText"
+                      style="font-size: 0.98rem; font-weight: 900; color: #38BDF8; word-break: break-word;"></div>
+                    <div id="omrIdentifiedStudentSub"
+                      style="font-size: 0.72rem; color: #10B981; margin-top: 3px; font-weight: 700;">
+                      <i class="fas fa-check-circle"></i> Vinculado automaticamente pelo código
+                    </div>
+                    <div id="omrManualStudentOverrideWrap" style="display: none; margin-top: 6px;">
+                      <select id="omrStudentSelect" class="form-control"
+                        style="width: 100%; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; background: #07090E; border: 1px solid var(--border-color); color: #CBD5E1;"
+                        onchange="window.TKST_APP.onOmrStudentSelectChanged(this.value)">
+                        <option value="">Alterar para outro aluno...</option>
+                      </select>
+                    </div>
+                    <div style="margin-top: 4px;">
+                      <a href="javascript:void(0)" onclick="window.TKST_APP.toggleManualStudentOverride()"
+                        style="font-size: 0.68rem; color: #64748B; text-decoration: underline;">
+                        Trocar aluno se necessário
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bloco 3: Gabarito Oficial da Prova em Questão -->
+                <div
+                  style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px 12px; margin-bottom: 14px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: #FFF; text-transform: uppercase;">
+                      <i class="fas fa-list-check" style="color: var(--accent-gold);"></i> Gabarito Oficial da Prova
+                    </span>
+                    <span style="font-size: 0.70rem; color: #34D399; font-weight: 700;">10 Questões Carregadas</span>
+                  </div>
+                  <div id="omrIdentifiedKeyGrid"
+                    style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; text-align: center;">
+                    <!-- Gerado via JS: Q01=A, Q02=B, etc. -->
+                  </div>
+                </div>
+
+                <!-- Botão de Avanço para Fase 2 -->
+                <button type="button" id="omrAdvancePhaseBtn" class="btn btn-gold"
+                  onclick="window.TKST_APP.goToOmrPhase(2)"
+                  style="width: 100%; padding: 11px; font-size: 1rem; font-weight: 900; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #FFF; border: none; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                  <span>Corrigir prova </span>
+                  <i class="fas fa-arrow-right"></i>
+                </button>
+              </div>
+
+              <!-- Placeholder quando ainda não identificou -->
+              <div id="omrExamIdentificationPlaceholder"
+                style="background: rgba(0,0,0,0.25); border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 24px 16px; text-align: center; color: #64748B;">
+                <i class="fas fa-keyboard" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.5;"></i>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #94A3B8;">Aguardando digitação do código da
+                  prova</div>
+                <div style="font-size: 0.75rem; margin-top: 4px;">Digite o código acima ou clique em um atalho para
+                  carregar o aluno e o gabarito.</div>
+              </div>
+
+              <!-- Kyu Select (sincronizado automaticamente) -->
+              <select id="omrKyuSelect" style="display:none;" onchange="window.TKST_APP.onOmrKyuChanged()">
+                <option value="6">6º Kyu (Branca para Amarela)</option>
+                <option value="5">5º Kyu (Amarela para Vermelha)</option>
+                <option value="4">4º Kyu (Vermelha para Laranja)</option>
+                <option value="3">3º Kyu (Laranja para Verde)</option>
+                <option value="2">2º Kyu (Verde para Roxa)</option>
+                <option value="1">1º Kyu (Roxa para Marrom)</option>
+                <option value="0">1º Dan (Marrom para Preta Shodan)</option>
+                <option value="-1">2º Dan (Nidan)</option>
+                <option value="-2">3º Dan (Sandan)</option>
+              </select>
             </div>
           </div>
 
-          <!-- Container Dinâmico com as 10 Questões em 2 Colunas lado a lado (Altura Fixa sem Rolagem) -->
-          <div id="omrManualQuestionsContainer" style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(5, auto); grid-auto-flow: column; gap: 3px; margin-bottom: 5px; width: 100%; box-sizing: border-box; overflow: hidden;">
-            <!-- Gerado via JavaScript: 10 questões (Q01-Q05 na col 1, Q06-Q10 na col 2) -->
-          </div>
-
-          <!-- Rodapé de Ações Ultra-Compacto -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; gap: 6px; width: 100%; box-sizing: border-box;">
-            <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.goToOmrPhase(1)" style="font-size: 0.74rem; padding: 4px 10px; color: #94A3B8; border-color: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 4px; height: 32px; box-sizing: border-box;">
-              <i class="fas fa-arrow-left"></i> Voltar
-            </button>
-            <button type="button" id="omrSaveManualGradeBtn" class="btn btn-primary" onclick="window.TKST_APP.saveManualExamGrade()" style="font-weight: 900; font-size: 0.82rem; padding: 4px 14px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none; border-radius: 6px; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35); display: inline-flex; align-items: center; gap: 5px; cursor: pointer; height: 32px; box-sizing: border-box;">
-              <i class="fas fa-check-circle" style="font-size: 0.90rem;"></i> Salvar e Lançar Nota na Ficha
-            </button>
-          </div>
-        </div>
-
-        <!-- 3. FASE 3: TELA DE RESULTADO OFICIAL PARA ANOTAR NA PROVA -->
-        <div id="omrPhase3ResultView" style="display:none; text-align: center; padding: 10px 0;">
-          <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.05) 100%); border: 2px solid #10B981; border-radius: 12px; padding: 20px; max-width: 500px; margin: 0 auto 16px auto; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
-            <div style="font-size: 2.8rem; margin-bottom: 6px;">🏆</div>
-            <h3 style="color: #FFF; font-weight: 900; font-size: 1.25rem; margin-bottom: 4px;">PROVA CORRIGIDA COM SUCESSO!</h3>
-            <p style="color: #34D399; font-size: 0.82rem; font-weight: 700; margin-bottom: 12px;">
-              A nota oficial foi lançada na ficha do aluno e sincronizada.
-            </p>
-
-            <!-- Aviso dinâmico de confirmação com DojôBook -->
-            <div id="omrResultDojobookNotice" style="display: none; margin-bottom: 12px; padding: 6px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 800; border: 1px solid #10B981; color: #34D399; background: rgba(16, 185, 129, 0.15); align-items: center; justify-content: center; gap: 8px;"></div>
-
-            <!-- Quadro de Destaque da Nota para o Sensei Anotar de Caneta -->
-            <div style="background: #000; border: 2px dashed var(--accent-gold); border-radius: 10px; padding: 16px; margin-bottom: 16px;">
-              <div style="font-size: 0.75rem; color: #F5BE00; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">
-                ✍️ ANOTE DE CANETA NA FOLHA DO ALUNO:
+          <!-- 2. FASE 2: MARCAÇÃO MANUAL DAS 10 RESPOSTAS DO ALUNO (100% COMPACTA SEM ROLAGEM) -->
+          <div id="omrPhase2View" style="display:none; width: 100%; box-sizing: border-box; overflow: hidden;">
+            <!-- Barra Superior Compacta: Aluno, Faixa e Nota em 1 única linha -->
+            <div
+              style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(245, 190, 0, 0.35); border-radius: 6px; padding: 4px 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; gap: 4px; width: 100%; box-sizing: border-box; overflow: hidden;">
+              <div
+                style="display: flex; align-items: center; gap: 4px; min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                <span id="omrPhase2ExamCode"
+                  style="color: var(--accent-gold); font-family: monospace; font-weight: 900; font-size: 0.82rem; flex-shrink: 0;"></span>
+                <span style="color: #64748B;">•</span>
+                <span id="omrPhase2Belt"
+                  style="font-weight: 700; color: #FFF; font-size: 0.78rem; flex-shrink: 0;"></span>
+                <span style="color: #64748B;">•</span>
+                <span
+                  style="color: #38BDF8; font-weight: 800; font-size: 0.80rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i
+                    class="fas fa-user" style="font-size: 0.70rem;"></i> <span id="omrPhase2Student"></span></span>
               </div>
-              <div id="omrResultFinalScore" style="font-size: 3rem; font-weight: 900; color: var(--accent-gold); font-family: 'Consolas', monospace; margin: 4px 0; line-height: 1;">
-                0,0
-              </div>
-              <div id="omrResultFinalBadge" class="badge badge-success" style="font-size: 1rem; padding: 6px 18px; font-weight: 900; margin-bottom: 6px;">
-                APROVADO
-              </div>
-              <div id="omrResultFinalHits" style="font-size: 0.85rem; color: #CBD5E1; font-weight: 700;">
-                0 de 10 acertos (0%)
+              <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+                <span style="font-size: 0.70rem; color: #94A3B8; font-weight: 700;">Nota:</span>
+                <span id="omrManualScoreDisplay"
+                  style="font-size: 1.05rem; font-weight: 900; color: var(--accent-gold); line-height: 1;">0,0</span>
+                <span id="omrManualScoreBadge" class="badge badge-danger"
+                  style="font-size: 0.64rem; padding: 2px 4px; font-weight: 800; background: #DC2626; color: #FFF;">REPROVADO</span>
+                <span id="omrManualHitsDisplay"
+                  style="font-size: 0.68rem; color: #94A3B8; font-weight: 700;">(0/10)</span>
               </div>
             </div>
 
-            <!-- Dados do Aluno e Prova -->
-            <div style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.6; text-align: left; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px;">
-              <div><strong>Aluno:</strong> <span id="omrResultStudentName" style="color: #38BDF8;"></span></div>
-              <div><strong>Graduação:</strong> <span id="omrResultBeltName"></span></div>
-              <div><strong>Código da Prova:</strong> <span id="omrResultExamCode" style="color: var(--accent-gold); font-family: monospace; font-weight: 800;"></span></div>
+            <!-- Container Dinâmico com as 10 Questões em 2 Colunas lado a lado (Altura Fixa sem Rolagem) -->
+            <div id="omrManualQuestionsContainer"
+              style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(5, auto); grid-auto-flow: column; gap: 3px; margin-bottom: 5px; width: 100%; box-sizing: border-box; overflow: hidden;">
+              <!-- Gerado via JavaScript: 10 questões (Q01-Q05 na col 1, Q06-Q10 na col 2) -->
             </div>
 
-            <!-- Resumo das 10 Questões -->
-            <div style="margin-bottom: 14px;">
-              <div style="font-size: 0.75rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; margin-bottom: 6px;">Resumo das Respostas:</div>
-              <div id="omrResultQuestionsPills" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;">
-                <!-- Gerado dinamicamente -->
-              </div>
+            <!-- Rodapé de Ações Ultra-Compacto -->
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; gap: 6px; width: 100%; box-sizing: border-box;">
+              <button type="button" class="btn btn-sm btn-outline" onclick="window.TKST_APP.goToOmrPhase(1)"
+                style="font-size: 0.74rem; padding: 4px 10px; color: #94A3B8; border-color: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 4px; height: 32px; box-sizing: border-box;">
+                <i class="fas fa-arrow-left"></i> Voltar
+              </button>
+              <button type="button" id="omrSaveManualGradeBtn" class="btn btn-primary"
+                onclick="window.TKST_APP.saveManualExamGrade()"
+                style="font-weight: 900; font-size: 0.82rem; padding: 4px 14px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none; border-radius: 6px; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35); display: inline-flex; align-items: center; gap: 5px; cursor: pointer; height: 32px; box-sizing: border-box;">
+                <i class="fas fa-check-circle" style="font-size: 0.90rem;"></i> Salvar e Lançar Nota na Ficha
+              </button>
             </div>
           </div>
 
-          <!-- Botões de Encerramento -->
-          <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-gold" onclick="window.TKST_APP.resetOmrScanner()" style="font-weight: 900; padding: 10px 20px; font-size: 0.90rem;">
-              <i class="fas fa-plus"></i> Corrigir Outra Prova
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeExamOmrModal()" style="font-weight: 700; padding: 10px 18px; font-size: 0.90rem;">
-              <i class="fas fa-times"></i> Fechar
-            </button>
+          <!-- 3. FASE 3: TELA DE RESULTADO OFICIAL PARA ANOTAR NA PROVA -->
+          <div id="omrPhase3ResultView" style="display:none; text-align: center; padding: 10px 0;">
+            <div
+              style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.05) 100%); border: 2px solid #10B981; border-radius: 12px; padding: 20px; max-width: 500px; margin: 0 auto 16px auto; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+              <div style="font-size: 2.8rem; margin-bottom: 6px;">🏆</div>
+              <h3 style="color: #FFF; font-weight: 900; font-size: 1.25rem; margin-bottom: 4px;">PROVA CORRIGIDA COM
+                SUCESSO!</h3>
+              <p style="color: #34D399; font-size: 0.82rem; font-weight: 700; margin-bottom: 12px;">
+                A nota oficial foi lançada na ficha do aluno e sincronizada.
+              </p>
+
+              <!-- Aviso dinâmico de confirmação com DojôBook -->
+              <div id="omrResultDojobookNotice"
+                style="display: none; margin-bottom: 12px; padding: 6px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 800; border: 1px solid #10B981; color: #34D399; background: rgba(16, 185, 129, 0.15); align-items: center; justify-content: center; gap: 8px;">
+              </div>
+
+              <!-- Quadro de Destaque da Nota para o Sensei Anotar de Caneta -->
+              <div
+                style="background: #000; border: 2px dashed var(--accent-gold); border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+                <div
+                  style="font-size: 0.75rem; color: #F5BE00; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">
+                  ✍️ ANOTE DE CANETA NA FOLHA DO ALUNO:
+                </div>
+                <div id="omrResultFinalScore"
+                  style="font-size: 3rem; font-weight: 900; color: var(--accent-gold); font-family: 'Consolas', monospace; margin: 4px 0; line-height: 1;">
+                  0,0
+                </div>
+                <div id="omrResultFinalBadge" class="badge badge-success"
+                  style="font-size: 1rem; padding: 6px 18px; font-weight: 900; margin-bottom: 6px;">
+                  APROVADO
+                </div>
+                <div id="omrResultFinalHits" style="font-size: 0.85rem; color: #CBD5E1; font-weight: 700;">
+                  0 de 10 acertos (0%)
+                </div>
+              </div>
+
+              <!-- Dados do Aluno e Prova -->
+              <div
+                style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.6; text-align: left; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px;">
+                <div><strong>Aluno:</strong> <span id="omrResultStudentName" style="color: #38BDF8;"></span></div>
+                <div><strong>Graduação:</strong> <span id="omrResultBeltName"></span></div>
+                <div><strong>Código da Prova:</strong> <span id="omrResultExamCode"
+                    style="color: var(--accent-gold); font-family: monospace; font-weight: 800;"></span></div>
+              </div>
+
+              <!-- Resumo das 10 Questões -->
+              <div style="margin-bottom: 14px;">
+                <div
+                  style="font-size: 0.75rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; margin-bottom: 6px;">
+                  Resumo das Respostas:</div>
+                <div id="omrResultQuestionsPills"
+                  style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;">
+                  <!-- Gerado dinamicamente -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Botões de Encerramento -->
+            <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-gold" onclick="window.TKST_APP.resetOmrScanner()"
+                style="font-weight: 900; padding: 10px 20px; font-size: 0.90rem;">
+                <i class="fas fa-plus"></i> Corrigir Outra Prova
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeExamOmrModal()"
+                style="font-weight: 700; padding: 10px 18px; font-size: 0.90rem;">
+                <i class="fas fa-times"></i> Fechar
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Mozilla PDF.js Engine for Native Mobile & Desktop PDF Rendering -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    if (typeof pdfjsLib !== 'undefined') {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
-  </script>
+    <!-- Mozilla PDF.js Engine for Native Mobile & Desktop PDF Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+    </script>
 
-  <!-- JavaScript Modules -->
-  <script src="assets/js/jsqr.min.js?v=306"></script>
-  <script src="assets/js/data-curriculum.js?v=306"></script>
-  <script src="assets/js/data-katas.js?v=306"></script>
-  <script src="assets/js/data-kumite.js?v=306"></script>
-  <script src="assets/js/data-glossary.js?v=306"></script>
-  <script src="assets/js/data-quiz.js?v=306"></script>
-  <script src="assets/js/shotokan-ai-engine.js?v=306"></script>
-  <script src="assets/js/data-media.js?v=306"></script>
-  <script src="assets/js/data-exams.js?v=306"></script>
-  <script src="assets/js/omr-engine.js?v=306"></script>
-  <script src="assets/js/qr-generator.js?v=306"></script>
-  <script src="assets/js/auth.js?v=306"></script>
-  <script src="assets/js/app.js?v=306"></script>
+    <!-- JavaScript Modules -->
+    <script src="assets/js/jsqr.min.js?v=308"></script>
+    <script src="assets/js/data-curriculum.js?v=308"></script>
+    <script src="assets/js/data-katas.js?v=308"></script>
+    <script src="assets/js/data-kumite.js?v=308"></script>
+    <script src="assets/js/data-glossary.js?v=308"></script>
+    <script src="assets/js/data-quiz.js?v=308"></script>
+    <script src="assets/js/shotokan-ai-engine.js?v=308"></script>
+    <script src="assets/js/data-media.js?v=308"></script>
+    <script src="assets/js/data-exams.js?v=308"></script>
+    <script src="assets/js/omr-engine.js?v=308"></script>
+    <script src="assets/js/qr-generator.js?v=308"></script>
+    <script src="assets/js/auth.js?v=308"></script>
+    <script src="assets/js/app.js?v=308"></script>
 
-  <!-- PWA Service Worker Registration -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      let isRefreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Bloqueio rigoroso: NUNCA recarrega automaticamente enquanto o usuário estiver interagindo com o app
-        const omrModal = document.getElementById('examOmrScannerModal');
-        const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
-        const isAnyModalActive = !!document.querySelector('.modal-overlay.active, .modal-backdrop.active, .modal.active');
-        const isStudying = typeof currentTab !== 'undefined' && currentTab !== 'dashboard';
-        if (isOmrActive || isAnyModalActive || isStudying) {
-          console.log('[SW] Recarregamento postergado: usuário em atividade ativa.');
-          return;
-        }
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        let isRefreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          // Bloqueio rigoroso: NUNCA recarrega automaticamente enquanto o usuário estiver interagindo com o app
+          const omrModal = document.getElementById('examOmrScannerModal');
+          const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
+          const isAnyModalActive = !!document.querySelector('.modal-overlay.active, .modal-backdrop.active, .modal.active');
+          const isStudying = typeof currentTab !== 'undefined' && currentTab !== 'dashboard';
+          if (isOmrActive || isAnyModalActive || isStudying) {
+            console.log('[SW] Recarregamento postergado: usuário em atividade ativa.');
+            return;
+          }
 
-        const lastSwReload = Number(sessionStorage.getItem('tkst_sw_reload_ts') || 0);
-        if (!isRefreshing && (Date.now() - lastSwReload > 180000)) {
-          isRefreshing = true;
-          sessionStorage.setItem('tkst_sw_reload_ts', String(Date.now()));
-          window.location.reload();
-        }
-      });
+          const lastSwReload = Number(sessionStorage.getItem('tkst_sw_reload_ts') || 0);
+          if (!isRefreshing && (Date.now() - lastSwReload > 180000)) {
+            isRefreshing = true;
+            sessionStorage.setItem('tkst_sw_reload_ts', String(Date.now()));
+            window.location.reload();
+          }
+        });
 
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=306', { updateViaCache: 'none' }).then(reg => {
-          try { reg.update(); } catch(e) {}
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js?v=301', { updateViaCache: 'none' }).then(reg => {
+            navigator.serviceWorker.register('./sw.js?v=302', { updateViaCache: 'none' }).then(reg => {
+              try { reg.update(); } catch (e) { }
 
-          reg.addEventListener('updatefound', () => {
-            const installing = reg.installing;
-            if (installing) {
-              installing.addEventListener('statechange', () => {
-                if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-                  const omrModal = document.getElementById('examOmrScannerModal');
-                  const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
-                  if (!isOmrActive) {
-                    installing.postMessage({ type: 'SKIP_WAITING' });
-                  }
+              reg.addEventListener('updatefound', () => {
+                const installing = reg.installing;
+                if (installing) {
+                  installing.addEventListener('statechange', () => {
+                    if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                      const omrModal = document.getElementById('examOmrScannerModal');
+                      const isOmrActive = !!omrModal && (omrModal.classList.contains('active') || omrModal.style.display !== 'none');
+                      if (!isOmrActive) {
+                        installing.postMessage({ type: 'SKIP_WAITING' });
+                      }
+                    }
+                  });
                 }
               });
-            }
+            }).catch(err => {
+              console.log('SW registration note:', err);
+            });
           });
-        }).catch(err => {
-          console.log('SW registration note:', err);
-        });
-      });
-    }
-  </script>
+        }
+    </script>
 
   </div><!-- /#app-root -->
 </body>
+
 </html>
