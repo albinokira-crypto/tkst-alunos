@@ -29,7 +29,7 @@ function readBaseQuestions() {
         return moduleBaseQuestions;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
   return [];
 }
 
@@ -109,7 +109,7 @@ async function getCustomDataFromCloud(token) {
         lastFetchTime = now;
         return moduleCustomData;
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // 2. Fallback: Raw GitHub sem auth
@@ -120,7 +120,7 @@ async function getCustomDataFromCloud(token) {
       lastFetchTime = now;
       return moduleCustomData;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // 3. Fallback: /tmp
   try {
@@ -131,7 +131,7 @@ async function getCustomDataFromCloud(token) {
         return moduleCustomData;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // 4. Fallback: arquivo local
   try {
@@ -143,7 +143,7 @@ async function getCustomDataFromCloud(token) {
         return moduleCustomData;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   return { customQuestions: [], editedQuestions: {}, deletedQuizIds: [] };
 }
@@ -194,11 +194,11 @@ function notifyNtfy(payload) {
         'Title': 'TKST Quiz Sync',
         'Priority': 'urgent'
       }
-    }, () => {});
-    req.on('error', () => {});
+    }, () => { });
+    req.on('error', () => { });
     req.write(data);
     req.end();
-  } catch (e) {}
+  } catch (e) { }
 }
 
 module.exports = async (req, res) => {
@@ -284,7 +284,7 @@ module.exports = async (req, res) => {
       lastFetchTime = Date.now();
       try {
         fs.writeFileSync(TMP_CUSTOM_FILE, JSON.stringify(updatedCustomData), 'utf8');
-      } catch (e) {}
+      } catch (e) { }
 
       // Se token estiver disponível, commita no GitHub
       if (token) {

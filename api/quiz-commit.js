@@ -85,11 +85,11 @@ function notifyNtfy(payload) {
         'Title': 'TKST Quiz Bank Sync',
         'Priority': 'urgent'
       }
-    }, () => {});
-    req.on('error', () => {});
+    }, () => { });
+    req.on('error', () => { });
     req.write(data);
     req.end();
-  } catch (e) {}
+  } catch (e) { }
 }
 
 module.exports = async (req, res) => {
@@ -112,7 +112,7 @@ module.exports = async (req, res) => {
           return res.status(200).json({ success: true, data: JSON.parse(raw) });
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // Fallback: lê arquivo local
     try {
@@ -121,7 +121,7 @@ module.exports = async (req, res) => {
         const raw = fs.readFileSync(localPath, 'utf8');
         return res.status(200).json({ success: true, data: JSON.parse(raw) });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     return res.status(200).json({
       success: true,
@@ -157,7 +157,7 @@ module.exports = async (req, res) => {
         try {
           const raw = Buffer.from(getResult.data.content.replace(/\n/g, ''), 'base64').toString('utf8');
           currentData = JSON.parse(raw);
-        } catch (e) {}
+        } catch (e) { }
       }
 
       // 2. Mescla deletedQuizIds
