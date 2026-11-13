@@ -2089,10 +2089,10 @@ function bootTkstApp() {
         </div>
       </div>
 
-      <!-- Modal para Abas do Painel de Controle (Abertura em Janela Modal Flutuante com rolagem fluida e aceleração de hardware) -->
+      <!-- Modal para Abas do Painel de Controle (Abertura em Janela Modal Flutuante com rolagem fluida e livre) -->
       ${adminSubTab ? `
-        <div class="modal-overlay active" id="adminTabModal" style="display: flex; position: fixed; inset: 0; z-index: 9999; background: rgba(8, 11, 18, 0.96); align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; overscroll-behavior: contain; touch-action: pan-y;" onclick="if(event.target===this) window.TKST_APP.setAdminSubTab(null)">
-          <div class="modal-container" style="max-width: 1200px; width: min(1200px, 98vw); max-height: 94vh; height: 94vh; display: flex; flex-direction: column; background: #0F172A; border: 1.5px solid rgba(255, 183, 3, 0.45); border-radius: var(--radius-lg); box-shadow: 0 20px 60px rgba(0,0,0,0.85); overflow: hidden; box-sizing: border-box; overscroll-behavior: contain; transform: translateZ(0);">
+        <div class="modal-overlay active" id="adminTabModal" style="display: flex; position: fixed; inset: 0; z-index: 9999; background: rgba(8, 11, 18, 0.96); align-items: center; justify-content: center; padding: 10px; box-sizing: border-box;" onclick="if(event.target===this) window.TKST_APP.setAdminSubTab(null)">
+          <div class="modal-container" style="max-width: 1200px; width: min(1200px, 98vw); max-height: 94vh; height: 94vh; display: flex; flex-direction: column; background: #0F172A; border: 1.5px solid rgba(255, 183, 3, 0.45); border-radius: var(--radius-lg); box-shadow: 0 20px 60px rgba(0,0,0,0.85); overflow: hidden; box-sizing: border-box;">
             
             <!-- Modal Header -->
             <div class="modal-header" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-bottom: 1.5px solid rgba(255, 255, 255, 0.1); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
@@ -2114,8 +2114,8 @@ function bootTkstApp() {
               </div>
             </div>
 
-            <!-- Modal Body (Rolagem Própria ultra-suave com touch pan-y sem travamentos) -->
-            <div class="modal-body" style="padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; will-change: scroll-position;">
+            <!-- Modal Body (Rolagem nativa suave e irrestrita) -->
+            <div class="modal-body" style="padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch;">
 
       ${adminSubTab === 'pending' ? `
         <!-- PENDING STUDENTS APPROVAL LIST -->
@@ -2974,7 +2974,6 @@ function bootTkstApp() {
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                       <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="badge badge-gold" style="font-weight: 800; font-size: 0.78rem;">Questão ${idx + 1}</span>
-                        <span style="font-size: 0.76rem; color: #94A3B8;">ID: ${q.id}</span>
                       </div>
                       <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                         <button class="btn btn-sm btn-secondary" onclick="window.TKST_APP.openCopyTransferQuizModal('${q.id}')" style="font-size: 0.76rem; padding: 5px 11px; font-weight: 700; background: rgba(59, 130, 246, 0.16); border: 1px solid rgba(59, 130, 246, 0.45); color: #93C5FD; display: inline-flex; align-items: center; gap: 5px;" title="Copiar ou Transferir esta questão para outra graduação">
@@ -3005,7 +3004,7 @@ function bootTkstApp() {
 
                     <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid var(--accent-emerald); border-radius: var(--radius-sm); padding: 10px 14px; color: #6EE7B7; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                       <i class="fas fa-check-circle" style="color: var(--accent-emerald); font-size: 1.05rem;"></i>
-                      <span><strong>Resposta Correta (Gabarito):</strong> ${correctText}</span>
+                      <span><strong>Resposta Correta:</strong> ${correctText}</span>
                     </div>
                   </div>
                 `;
@@ -12506,7 +12505,7 @@ function bootTkstApp() {
               <!-- Resposta Correta -->
               <div class="form-group" style="margin-bottom: 0; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 6px 9px;">
                 <label class="form-label" style="font-size: 0.76rem; margin-bottom: 3px; color: #6EE7B7; font-weight: 700; display: flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta (Gabarito Oficial):
+                  <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta:
                 </label>
                 <input type="text" id="newQuizCorrectAnswerInput" class="form-input" value="${escapeHtml(cText)}" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.82rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.45); border-color: rgba(16, 185, 129, 0.4); padding: 5px 8px;">
               </div>
@@ -12703,7 +12702,7 @@ function bootTkstApp() {
       const w2Text = wrongList[1] || '';
       const w3Text = wrongList[2] || '';
 
-      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.68rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-lock"></i> ID: ${q.id}</span></div>`;
+      modalTitle.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;"><span><i class="fas fa-edit" style="color: var(--accent-gold);"></i> Editar Questão (${beltName})</span><span class="badge badge-gold" style="font-size: 0.68rem; font-weight: 600; white-space: nowrap;"><i class="fas fa-edit"></i> Edição</span></div>`;
 
       modalBody.innerHTML = `
         <form onsubmit="event.preventDefault(); window.TKST_APP.submitEditQuizQuestion('${q.id}');" style="display: flex; flex-direction: column; gap: 8px; margin: 0;">
@@ -12744,7 +12743,7 @@ function bootTkstApp() {
                     <i class="fas fa-camera"></i> Foto/Arquivo
                     <input type="file" accept="image/*" id="quizModalFileInput" style="display: none;" onchange="window.TKST_APP.handleQuizModalImageUpload(this)">
                   </label>
-                  <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou link (https://...)" oninput="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; font-size: 0.74rem; padding: 4px 8px; min-width: 0;">
+                  <input type="url" id="quizModalUrlInput" class="form-input" placeholder="Ou link (https://...)" onchange="window.TKST_APP.handleQuizModalImageUrl(this.value)" style="flex: 1; font-size: 0.74rem; padding: 4px 8px; min-width: 0;">
                 </div>
               </div>
             </div>
@@ -12754,7 +12753,7 @@ function bootTkstApp() {
               <!-- Resposta Correta -->
               <div class="form-group" style="margin-bottom: 0; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 6px 9px;">
                 <label class="form-label" style="font-size: 0.76rem; margin-bottom: 3px; color: #6EE7B7; font-weight: 700; display: flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta (Gabarito Oficial):
+                  <i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Resposta Correta:
                 </label>
                 <input type="text" id="editQuizCorrectAnswerInput" class="form-input" value="${escapeHtml(cText)}" required placeholder="Digite a resposta correta oficial..." style="font-size: 0.82rem; font-weight: 600; color: #FFF; background: rgba(0,0,0,0.45); border-color: rgba(16, 185, 129, 0.4); padding: 5px 8px;">
               </div>
@@ -12849,49 +12848,8 @@ function bootTkstApp() {
         const existing = bank[idx];
         const numKyu = Number(existing.kyuNumber !== undefined ? existing.kyuNumber : (existing.kyu !== undefined ? existing.kyu : 6));
 
-        // Rastreamento e eliminação definitiva de duplicatas e versões antigas com mesmo enunciado
-        const normTarget = questionText.trim().toLowerCase();
-        let deletedIds = [];
-        try {
-          deletedIds = JSON.parse(localStorage.getItem('tkst_deleted_quiz_ids') || '[]');
-          if (!Array.isArray(deletedIds)) deletedIds = [];
-        } catch (e) { deletedIds = []; }
-
-        const duplicateIndices = [];
-        bank.forEach((other, oIdx) => {
-          if (oIdx !== idx && other && other.id !== qId && other.question && other.question.trim().toLowerCase() === normTarget) {
-            duplicateIndices.push(oIdx);
-            if (!deletedIds.includes(other.id)) {
-              deletedIds.push(other.id);
-            }
-            if (!quizModalTempImage && !existing.image && other.image) {
-              existing.image = other.image;
-            }
-          }
-        });
-
-        // Remove duplicatas encontradas no array local
-        duplicateIndices.sort((a, b) => b - a).forEach(dIdx => {
-          const removed = bank.splice(dIdx, 1)[0];
-          if (removed) {
-            if (Array.isArray(window.TKST_DEFAULT_QUIZ_BANK)) {
-              const defIdx = window.TKST_DEFAULT_QUIZ_BANK.findIndex(item => item.id === removed.id);
-              if (defIdx !== -1) window.TKST_DEFAULT_QUIZ_BANK.splice(defIdx, 1);
-            }
-            if (Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS)) {
-              const vIdx = window.TKST_CUSTOM_VAULT_QUESTIONS.findIndex(item => item.id === removed.id);
-              if (vIdx !== -1) window.TKST_CUSTOM_VAULT_QUESTIONS.splice(vIdx, 1);
-            }
-          }
-        });
-
-        try {
-          localStorage.setItem('tkst_deleted_quiz_ids', JSON.stringify(deletedIds));
-        } catch (e) { }
-
-        // Localiza novamente o índice do item caso tenha havido splice anterior
-        const targetIdx = bank.findIndex(item => item.id === qId);
-        const saveIdx = targetIdx !== -1 ? targetIdx : idx;
+        // Salva e substitui exatamente a questão editada mantendo todas as demais intocadas
+        const saveIdx = idx;
 
         bank[saveIdx] = {
           ...existing,

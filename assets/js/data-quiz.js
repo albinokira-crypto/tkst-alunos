@@ -22,7 +22,7 @@ window.TKST_CUSTOM_VAULT_QUESTIONS = [
   "beltName": "Faixa Branca 7º Kyu",
   "question": "Qual o nome da base mostrada na ilustração?",
   "options": [
-    "Zenkutsu Dachi",
+    "Seiza",
     "Shiko Dachi",
     "Heisoku Dachi",
     "Kosa Dachi"

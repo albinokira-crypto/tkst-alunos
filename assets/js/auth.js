@@ -594,12 +594,14 @@
 
   async function pullQuizBankFromCloud() {
     try {
-      const QUIZ_STAMP = 'tkst_quiz_stamp_v308_clean';
+      const QUIZ_STAMP = 'tkst_quiz_stamp_v310_restore_all';
       if (localStorage.getItem('tkst_quiz_official_stamp') !== QUIZ_STAMP) {
         localStorage.setItem('tkst_quiz_official_stamp', QUIZ_STAMP);
-        // Limpa cache estático antigo para alunos receberem as correções de gabarito imediatamente
+        // Limpa cache estático antigo e IDs deletados por engano para restaurar todas as 170 questoes imediatamente
         try { localStorage.removeItem(STORAGE_KEY_QUIZ_BANK); } catch(e) {}
         try { localStorage.removeItem('tkst_quiz_vault_permanent'); } catch(e) {}
+        try { localStorage.removeItem(STORAGE_KEY_DELETED_QUIZZES); } catch(e) {}
+        try { localStorage.removeItem('tkst_deleted_quiz_ids'); } catch(e) {}
       }
       const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
       const defaultList = [
@@ -747,7 +749,7 @@
         });
       }
 
-      // Re-aplica TODAS as questões editadas do Sensei com prioridade absoluta e expurga duplicatas
+      // Re-aplica TODAS as questões editadas do Sensei com prioridade absoluta substituindo exatamente pelo ID
       Object.keys(activeEditedMap).forEach(qId => {
         const eq = activeEditedMap[qId];
         if (eq && eq.id && eq.question && !deletedIds.includes(eq.id)) {
@@ -755,17 +757,6 @@
           const finalItem = { ...(vaultQ || {}), ...eq, _edited: true, _custom: true, image: eq.image || (vaultQ && vaultQ.image) || '' };
           bankMap.set(eq.id, finalItem);
           activeEditedMap[qId] = finalItem;
-
-          // Expurga qualquer questão antiga ou duplicata com o mesmo enunciado exato mas ID diferente
-          const eqPrompt = eq.question.trim().toLowerCase();
-          for (const [existingId, existingQ] of bankMap.entries()) {
-            if (existingId !== eq.id && existingQ && existingQ.question && existingQ.question.trim().toLowerCase() === eqPrompt) {
-              bankMap.delete(existingId);
-              if (!deletedIds.includes(existingId)) {
-                deletedIds.push(existingId);
-              }
-            }
-          }
         }
       });
 

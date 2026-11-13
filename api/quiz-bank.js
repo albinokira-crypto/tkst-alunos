@@ -168,21 +168,13 @@ function mergeAllQuestions(baseQuestions, customData) {
     }
   });
 
-  // 3. Edições sobrescrevem com prioridade e expurgam duplicatas
+  // 3. Edições sobrescrevem com prioridade substituindo diretamente pelo ID
   Object.keys(editedMap).forEach(qId => {
     if (deletedSet.has(qId)) return;
     const eq = editedMap[qId];
     if (eq && eq.id && eq.question) {
       const existing = bankMap.get(qId);
       bankMap.set(qId, existing ? { ...existing, ...eq, _edited: true } : { ...eq, _edited: true });
-
-      // Expurga duplicatas antigas com o mesmo enunciado mas ID diferente
-      const eqPrompt = eq.question.trim().toLowerCase();
-      for (const [existingId, existingQ] of bankMap.entries()) {
-        if (existingId !== eq.id && existingQ && existingQ.question && existingQ.question.trim().toLowerCase() === eqPrompt) {
-          bankMap.delete(existingId);
-        }
-      }
     }
   });
 
