@@ -186,11 +186,25 @@ module.exports = async (req, res) => {
         });
       }
 
-      // 4. Mescla editedQuestions
+      // 4. Mescla editedQuestions e expurga duplicatas com mesmo enunciado
       const finalEdited = {
         ...(currentData.editedQuestions || {}),
         ...incomingEdited
       };
+
+      // Adiciona ao finalDeleted qualquer questão em questionMap com mesmo enunciado mas ID diferente de uma editada
+      Object.values(finalEdited).forEach(eq => {
+        if (!eq || !eq.id || !eq.question) return;
+        const eqText = eq.question.trim().toLowerCase();
+        for (const [qId, q] of questionMap.entries()) {
+          if (qId !== eq.id && q && q.question && q.question.trim().toLowerCase() === eqText) {
+            questionMap.delete(qId);
+            deletedSet.add(qId);
+          }
+        }
+      });
+
+      const finalDeleted = Array.from(deletedSet);
       // Remove do mapa de edições itens que foram excluídos
       finalDeleted.forEach(id => { delete finalEdited[id]; });
 

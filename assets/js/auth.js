@@ -747,7 +747,7 @@
         });
       }
 
-      // Re-aplica TODAS as questões editadas do Sensei com prioridade absoluta
+      // Re-aplica TODAS as questões editadas do Sensei com prioridade absoluta e expurga duplicatas
       Object.keys(activeEditedMap).forEach(qId => {
         const eq = activeEditedMap[qId];
         if (eq && eq.id && eq.question && !deletedIds.includes(eq.id)) {
@@ -755,8 +755,23 @@
           const finalItem = { ...(vaultQ || {}), ...eq, _edited: true, _custom: true, image: eq.image || (vaultQ && vaultQ.image) || '' };
           bankMap.set(eq.id, finalItem);
           activeEditedMap[qId] = finalItem;
+
+          // Expurga qualquer questão antiga ou duplicata com o mesmo enunciado exato mas ID diferente
+          const eqPrompt = eq.question.trim().toLowerCase();
+          for (const [existingId, existingQ] of bankMap.entries()) {
+            if (existingId !== eq.id && existingQ && existingQ.question && existingQ.question.trim().toLowerCase() === eqPrompt) {
+              bankMap.delete(existingId);
+              if (!deletedIds.includes(existingId)) {
+                deletedIds.push(existingId);
+              }
+            }
+          }
         }
       });
+
+      try {
+        localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(deletedIds));
+      } catch(e) {}
 
       try {
         localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(activeEditedMap));

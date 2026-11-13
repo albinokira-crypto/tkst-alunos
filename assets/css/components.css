@@ -6742,3 +6742,48 @@ body.login-view-active .content-body {
     padding: 8px 10px !important;
   }
 }
+
+
+/* ==========================================================================
+   Performance Fix: Rolagem Suave do Banco de Questões e Zero Lag de Digitação
+   ========================================================================== */
+#adminTabModal {
+  z-index: 9999 !important;
+  overscroll-behavior: contain !important;
+  touch-action: pan-y !important;
+}
+#adminTabModal .modal-container {
+  max-height: 94dvh !important;
+  max-height: 94vh !important;
+  height: 94vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+#adminTabModal .modal-body {
+  overflow-y: scroll !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  touch-action: pan-y !important;
+}
+#detailModal.active {
+  z-index: 10005 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(4, 7, 13, 0.94) !important;
+}
+#detailModal .modal-container.quiz-modal-compact {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+}
+.quiz-modal-compact input,
+.quiz-modal-compact textarea,
+#editQuizQuestionInput,
+#editQuizCorrectAnswerInput,
+#editQuizWrong1Input,
+#editQuizWrong2Input,
+#editQuizWrong3Input {
+  font-size: 16px !important;
+  touch-action: manipulation !important;
+}

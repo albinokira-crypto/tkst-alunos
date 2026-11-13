@@ -169,10 +169,15 @@ function bootTkstApp() {
     };
   }
 
-  // Rastreamento de atividade do usuário para evitar qualquer reload enquanto ele estiver estudando
+  // Rastreamento suave de atividade do usuário com throttle de 5s (evita I/O síncrono a cada tecla digitada)
+  let _lastUserActionThrottle = 0;
   ['click', 'keydown', 'touchstart'].forEach(evt => {
     window.addEventListener(evt, () => {
-      try { sessionStorage.setItem('tkst_last_user_action_ts', String(Date.now())); } catch (e) { }
+      const now = Date.now();
+      if (now - _lastUserActionThrottle > 5000) {
+        _lastUserActionThrottle = now;
+        try { sessionStorage.setItem('tkst_last_user_action_ts', String(now)); } catch (e) { }
+      }
     }, { passive: true });
   });
 
@@ -2084,10 +2089,10 @@ function bootTkstApp() {
         </div>
       </div>
 
-      <!-- Modal para Abas do Painel de Controle (Abertura em Janela Modal Flutuante) -->
+      <!-- Modal para Abas do Painel de Controle (Abertura em Janela Modal Flutuante com rolagem fluida e aceleração de hardware) -->
       ${adminSubTab ? `
-        <div class="modal-overlay active" id="adminTabModal" style="display: flex; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 12px; box-sizing: border-box;" onclick="if(event.target===this) window.TKST_APP.setAdminSubTab(null)">
-          <div class="modal-container" style="max-width: 1200px; width: min(1200px, 98vw); max-height: 94vh; height: 94vh; display: flex; flex-direction: column; background: #0F172A; border: 1.5px solid rgba(255, 183, 3, 0.45); border-radius: var(--radius-lg); box-shadow: 0 20px 60px rgba(0,0,0,0.85); overflow: hidden; box-sizing: border-box;">
+        <div class="modal-overlay active" id="adminTabModal" style="display: flex; position: fixed; inset: 0; z-index: 9999; background: rgba(8, 11, 18, 0.96); align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; overscroll-behavior: contain; touch-action: pan-y;" onclick="if(event.target===this) window.TKST_APP.setAdminSubTab(null)">
+          <div class="modal-container" style="max-width: 1200px; width: min(1200px, 98vw); max-height: 94vh; height: 94vh; display: flex; flex-direction: column; background: #0F172A; border: 1.5px solid rgba(255, 183, 3, 0.45); border-radius: var(--radius-lg); box-shadow: 0 20px 60px rgba(0,0,0,0.85); overflow: hidden; box-sizing: border-box; overscroll-behavior: contain; transform: translateZ(0);">
             
             <!-- Modal Header -->
             <div class="modal-header" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-bottom: 1.5px solid rgba(255, 255, 255, 0.1); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
@@ -2109,8 +2114,8 @@ function bootTkstApp() {
               </div>
             </div>
 
-            <!-- Modal Body (Rolagem Própria sem quebrar o layout da página) -->
-            <div class="modal-body" style="padding: 18px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch;">
+            <!-- Modal Body (Rolagem Própria ultra-suave com touch pan-y sem travamentos) -->
+            <div class="modal-body" style="padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; will-change: scroll-position;">
 
       ${adminSubTab === 'pending' ? `
         <!-- PENDING STUDENTS APPROVAL LIST -->
@@ -9716,10 +9721,13 @@ function bootTkstApp() {
     setAdminSubTab: (subTab, forceOpen = false) => {
       if (subTab === null) {
         adminSubTab = null;
+        try { document.body.style.overflow = ''; } catch (e) { }
       } else if (adminSubTab === subTab && !forceOpen) {
         adminSubTab = null;
+        try { document.body.style.overflow = ''; } catch (e) { }
       } else {
         adminSubTab = subTab;
+        try { document.body.style.overflow = 'hidden'; } catch (e) { }
       }
       try { sessionStorage.setItem('tkst_admin_subtab', adminSubTab || ''); } catch (e) { }
       renderAdminMaster();
@@ -12840,7 +12848,52 @@ function bootTkstApp() {
 
         const existing = bank[idx];
         const numKyu = Number(existing.kyuNumber !== undefined ? existing.kyuNumber : (existing.kyu !== undefined ? existing.kyu : 6));
-        bank[idx] = {
+
+        // Rastreamento e eliminação definitiva de duplicatas e versões antigas com mesmo enunciado
+        const normTarget = questionText.trim().toLowerCase();
+        let deletedIds = [];
+        try {
+          deletedIds = JSON.parse(localStorage.getItem('tkst_deleted_quiz_ids') || '[]');
+          if (!Array.isArray(deletedIds)) deletedIds = [];
+        } catch (e) { deletedIds = []; }
+
+        const duplicateIndices = [];
+        bank.forEach((other, oIdx) => {
+          if (oIdx !== idx && other && other.id !== qId && other.question && other.question.trim().toLowerCase() === normTarget) {
+            duplicateIndices.push(oIdx);
+            if (!deletedIds.includes(other.id)) {
+              deletedIds.push(other.id);
+            }
+            if (!quizModalTempImage && !existing.image && other.image) {
+              existing.image = other.image;
+            }
+          }
+        });
+
+        // Remove duplicatas encontradas no array local
+        duplicateIndices.sort((a, b) => b - a).forEach(dIdx => {
+          const removed = bank.splice(dIdx, 1)[0];
+          if (removed) {
+            if (Array.isArray(window.TKST_DEFAULT_QUIZ_BANK)) {
+              const defIdx = window.TKST_DEFAULT_QUIZ_BANK.findIndex(item => item.id === removed.id);
+              if (defIdx !== -1) window.TKST_DEFAULT_QUIZ_BANK.splice(defIdx, 1);
+            }
+            if (Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS)) {
+              const vIdx = window.TKST_CUSTOM_VAULT_QUESTIONS.findIndex(item => item.id === removed.id);
+              if (vIdx !== -1) window.TKST_CUSTOM_VAULT_QUESTIONS.splice(vIdx, 1);
+            }
+          }
+        });
+
+        try {
+          localStorage.setItem('tkst_deleted_quiz_ids', JSON.stringify(deletedIds));
+        } catch (e) { }
+
+        // Localiza novamente o índice do item caso tenha havido splice anterior
+        const targetIdx = bank.findIndex(item => item.id === qId);
+        const saveIdx = targetIdx !== -1 ? targetIdx : idx;
+
+        bank[saveIdx] = {
           ...existing,
           kyuNumber: numKyu,
           kyu: numKyu,
@@ -12856,28 +12909,30 @@ function bootTkstApp() {
         // Salvar imediatamente no mapa de questões editadas para garantia total de persistência
         try {
           const editedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
-          const cleanToStore = { ...bank[idx] };
+          const cleanToStore = { ...bank[saveIdx] };
           if (cleanToStore.image && cleanToStore.image.length > 50000) {
             cleanToStore.image = '';
           }
           editedMap[qId] = cleanToStore;
+          // Limpa do editedMap quaisquer IDs duplicados que foram deletados
+          deletedIds.forEach(dId => { delete editedMap[dId]; });
           localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(editedMap));
         } catch (e) { }
 
         if (Array.isArray(window.TKST_DEFAULT_QUIZ_BANK)) {
           const dIdx = window.TKST_DEFAULT_QUIZ_BANK.findIndex(item => item.id === qId);
           if (dIdx !== -1) {
-            window.TKST_DEFAULT_QUIZ_BANK[dIdx] = { ...window.TKST_DEFAULT_QUIZ_BANK[dIdx], ...bank[idx] };
+            window.TKST_DEFAULT_QUIZ_BANK[dIdx] = { ...window.TKST_DEFAULT_QUIZ_BANK[dIdx], ...bank[saveIdx] };
           }
         }
         if (Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS)) {
           const vIdx = window.TKST_CUSTOM_VAULT_QUESTIONS.findIndex(item => item.id === qId);
           if (vIdx !== -1) {
-            window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx] = { ...window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx], ...bank[idx] };
+            window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx] = { ...window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx], ...bank[saveIdx] };
           }
         }
 
-        window.TKST_AUTH.saveCustomQuizBank(bank);
+        window.TKST_AUTH.saveCustomQuizBank(bank, deletedIds);
         detailModal.classList.remove('active');
         const modalContainer = detailModal.querySelector('.modal-container');
         if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
