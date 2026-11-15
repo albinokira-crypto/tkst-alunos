@@ -68,3 +68,4 @@ Opera de forma 100% autônoma na nuvem, compatível com smartphone, tablet e des
 2. **Alterações de Currículo/Katas:** `assets/js/data-curriculum.js` e `assets/js/data-katas.js`.
 3. **Alterações de Visual/Layout:** `assets/css/` e `index.html`.
 4. **Deploy Automático Obrigatório:** Enviar commit para `main` imediatamente após a alteração.
+

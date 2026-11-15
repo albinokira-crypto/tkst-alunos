@@ -12610,10 +12610,18 @@ function bootTkstApp() {
         };
 
         bank.push(newQuestion);
-        window.TKST_AUTH.saveCustomQuizBank(bank);
-        detailModal.classList.remove('active');
-        const modalContainer = detailModal.querySelector('.modal-container');
-        if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.saveCustomQuizBank === 'function') {
+          window.TKST_AUTH.saveCustomQuizBank(bank);
+        }
+        quizModalTempImage = null;
+        const modal = document.getElementById('detailModal') || detailModal;
+        if (modal) {
+          modal.removeAttribute('data-prevent-outside-close');
+          modal.classList.remove('active');
+          const modalContainer = modal.querySelector('.modal-container');
+          if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
+          if (typeof stopModalMedia === 'function') stopModalMedia(modal);
+        }
         showToast('✅ Nova questão cadastrada com sucesso!', 'success');
         renderAdminMaster();
       } catch (err) {
@@ -12814,7 +12822,7 @@ function bootTkstApp() {
 
       try {
         const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
-        const idx = bank.findIndex(item => item.id === qId);
+        const idx = bank.findIndex(item => item && (item.id === qId || String(item.id) === String(qId)));
         if (idx === -1) {
           alert('Questão não encontrada no banco.');
           return;
@@ -12873,27 +12881,38 @@ function bootTkstApp() {
           }
           editedMap[qId] = cleanToStore;
           // Limpa do editedMap quaisquer IDs duplicados que foram deletados
-          deletedIds.forEach(dId => { delete editedMap[dId]; });
+          const deletedIds = JSON.parse(localStorage.getItem('tkst_deleted_quiz_ids') || '[]');
+          if (Array.isArray(deletedIds)) {
+            deletedIds.forEach(dId => { delete editedMap[dId]; });
+          }
           localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(editedMap));
         } catch (e) { }
 
         if (Array.isArray(window.TKST_DEFAULT_QUIZ_BANK)) {
-          const dIdx = window.TKST_DEFAULT_QUIZ_BANK.findIndex(item => item.id === qId);
+          const dIdx = window.TKST_DEFAULT_QUIZ_BANK.findIndex(item => item && (item.id === qId || String(item.id) === String(qId)));
           if (dIdx !== -1) {
             window.TKST_DEFAULT_QUIZ_BANK[dIdx] = { ...window.TKST_DEFAULT_QUIZ_BANK[dIdx], ...bank[saveIdx] };
           }
         }
         if (Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS)) {
-          const vIdx = window.TKST_CUSTOM_VAULT_QUESTIONS.findIndex(item => item.id === qId);
+          const vIdx = window.TKST_CUSTOM_VAULT_QUESTIONS.findIndex(item => item && (item.id === qId || String(item.id) === String(qId)));
           if (vIdx !== -1) {
             window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx] = { ...window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx], ...bank[saveIdx] };
           }
         }
 
-        window.TKST_AUTH.saveCustomQuizBank(bank, deletedIds);
-        detailModal.classList.remove('active');
-        const modalContainer = detailModal.querySelector('.modal-container');
-        if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.saveCustomQuizBank === 'function') {
+          window.TKST_AUTH.saveCustomQuizBank(bank);
+        }
+        quizModalTempImage = null;
+        const modal = document.getElementById('detailModal') || detailModal;
+        if (modal) {
+          modal.removeAttribute('data-prevent-outside-close');
+          modal.classList.remove('active');
+          const modalContainer = modal.querySelector('.modal-container');
+          if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
+          if (typeof stopModalMedia === 'function') stopModalMedia(modal);
+        }
         showToast('✅ Questão atualizada com sucesso!', 'success');
         renderAdminMaster();
       } catch (err) {
