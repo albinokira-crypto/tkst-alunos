@@ -195,7 +195,7 @@
       } catch(e) {}
     }
 
-    if (Array.isArray(savedBank)) {
+    if (Array.isArray(savedBank) && savedBank.length > 0) {
       savedBank = restoreDefaultImages(savedBank);
     }
 
@@ -204,28 +204,29 @@
       ...(Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS) ? window.TKST_CUSTOM_VAULT_QUESTIONS : [])
     ].filter(q => q && q.id && !deletedIds.includes(q.id));
     const bankMap = new Map();
-    defaultList.forEach(q => bankMap.set(q.id, { ...q }));
-    if (Array.isArray(window.TKST_QUIZ_BANK)) {
-      window.TKST_QUIZ_BANK.forEach(q => {
-        if (!deletedIds.includes(q.id)) {
-          const vaultQ = bankMap.get(q.id);
-          if (vaultQ) {
-            q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
-          }
-          bankMap.set(q.id, q);
-        }
-      });
-    }
+
     if (Array.isArray(savedBank) && savedBank.length > 0) {
+      // Quando existe um banco curado salvo (ex: 182 questões do celular), ele é a autoridade!
+      // Registra quaisquer questões padrão ausentes em deletedIds para nunca ressuscitarem
+      const savedIds = new Set(savedBank.map(q => q && q.id).filter(Boolean));
+      let addedDel = false;
+      defaultList.forEach(dq => {
+        if (!savedIds.has(dq.id) && !deletedIds.includes(dq.id)) {
+          deletedIds.push(dq.id);
+          addedDel = true;
+        }
+      });
+      if (addedDel) {
+        try { localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(deletedIds)); } catch(e) {}
+      }
+
       savedBank.forEach(q => {
-        if (!deletedIds.includes(q.id)) {
-          const vaultQ = bankMap.get(q.id);
-          if (vaultQ) {
-            q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
-          }
+        if (q && q.id && !deletedIds.includes(q.id)) {
           bankMap.set(q.id, q);
         }
       });
+    } else {
+      defaultList.forEach(q => bankMap.set(q.id, { ...q }));
     }
 
     // Sobrepõe prioritariamente o cofre dedicado de edições locais do usuário
@@ -328,6 +329,12 @@
         }).catch(() => {});
 
         fetch(`${fbUrl}/quiz_bank/custom_bank.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(customOnly)
+        }).catch(() => {});
+
+        fetch(`${fbUrl}/quiz_bank/master_bank.json`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(customOnly)
@@ -747,10 +754,13 @@
                 try {
                   const curDel = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES) || '[]');
                   const setDel = new Set([...curDel, ...fbData.deleted_ids]);
-                  localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(Array.from(setDel)));
+                  deletedIds = Array.from(setDel);
+                  localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(deletedIds));
                 } catch(e) {}
               }
-              if (Array.isArray(fbData.custom_bank) && fbData.custom_bank.length > 0) {
+              if (Array.isArray(fbData.master_bank) && fbData.master_bank.length > 0) {
+                fbData.master_bank.forEach(q => { if (q && q.id) cloudMap.set(q.id, q); });
+              } else if (Array.isArray(fbData.custom_bank) && fbData.custom_bank.length > 0) {
                 fbData.custom_bank.forEach(q => { if (q && q.id) cloudMap.set(q.id, q); });
               }
             }
@@ -838,13 +848,27 @@
       } catch(e) {}
 
       if (cloudQuestions.length > 0) {
+        // Master Bank ou Custom Bank da nuvem é a autoridade máxima!
+        // Questões locais/padrão que não estão no banco da nuvem foram excluídas na curadoria
+        const cloudIds = new Set(cloudQuestions.map(q => q && q.id).filter(Boolean));
+        let addedDel = false;
+        defaultList.forEach(dq => {
+          if (dq && dq.id && !cloudIds.has(dq.id) && !deletedIds.includes(dq.id)) {
+            deletedIds.push(dq.id);
+            addedDel = true;
+          }
+        });
+        if (addedDel) {
+          try { localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(deletedIds)); } catch(e) {}
+        }
+
+        // Reconstrói o banco a partir do cloudQuestions sem ressuscitar itens deletados
+        bankMap.clear();
         const restoredCloud = restoreDefaultImages(cloudQuestions);
         restoredCloud.forEach(q => {
           if (q && q.id && q.question && !deletedIds.includes(q.id)) {
-            // Se a questão já foi editada pelo Sensei localmente, JAMAIS sobrescreve com padrão antigo da nuvem!
             if (activeEditedMap[q.id]) {
               const eq = activeEditedMap[q.id];
-              // Só aceita a versão da nuvem se for explicitamente editada e tiver timestamp mais recente
               if (q._edited && q.updatedAt && eq.updatedAt && q.updatedAt > eq.updatedAt) {
                 activeEditedMap[q.id] = q;
                 bankMap.set(q.id, q);
@@ -852,12 +876,7 @@
                 bankMap.set(q.id, eq);
               }
             } else {
-              const localQ = bankMap.get(q.id);
-              const updatedItem = { ...(localQ || {}), ...q, image: q.image || (localQ && localQ.image) || '' };
-              bankMap.set(q.id, updatedItem);
-              if (q._edited) {
-                activeEditedMap[q.id] = updatedItem;
-              }
+              bankMap.set(q.id, q);
             }
           }
         });
@@ -2559,6 +2578,17 @@
         let modified = false;
 
         if (path === '/' || path === '') {
+          if (Array.isArray(data.master_bank) && data.master_bank.length > 0) {
+            safeSaveQuizBank(data.master_bank);
+            window.TKST_QUIZ_BANK = restoreDefaultImages(data.master_bank);
+            window.TKST_QUIZ = window.TKST_QUIZ_BANK;
+            modified = true;
+          } else if (Array.isArray(data.custom_bank) && data.custom_bank.length > 0) {
+            safeSaveQuizBank(data.custom_bank);
+            window.TKST_QUIZ_BANK = restoreDefaultImages(data.custom_bank);
+            window.TKST_QUIZ = window.TKST_QUIZ_BANK;
+            modified = true;
+          }
           if (data.edited_questions && typeof data.edited_questions === 'object') {
             Object.keys(data.edited_questions).forEach(k => {
               const q = data.edited_questions[k];
@@ -2576,6 +2606,15 @@
             const setDel = new Set([...curDel, ...data.deleted_ids]);
             localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(Array.from(setDel)));
           }
+        } else if (path.startsWith('/master_bank') || path.startsWith('/custom_bank')) {
+          if (Array.isArray(data) && data.length > 0) {
+            safeSaveQuizBank(data);
+            window.TKST_QUIZ_BANK = restoreDefaultImages(data);
+            window.TKST_QUIZ = window.TKST_QUIZ_BANK;
+            modified = true;
+          }
+        } else if (path.startsWith('/sync_meta')) {
+          pullQuizBankFromCloud();
         } else if (path.startsWith('/edited_questions')) {
           if (data && data.id && data.question) {
             const cur = localEditedMap[data.id];
@@ -4423,20 +4462,9 @@
         ...(Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS) ? window.TKST_CUSTOM_VAULT_QUESTIONS : [])
       ].filter(q => q && q.id && !del.includes(q.id));
       
-      const bankMap = new Map();
-      rawDefault.forEach(q => { if (q && q.id) bankMap.set(q.id, { ...q }); });
-
-      // Preserva e mescla questões já em memória
-      if (Array.isArray(window.TKST_QUIZ_BANK)) {
-        window.TKST_QUIZ_BANK.forEach(q => {
-          if (q && q.id && !del.includes(q.id)) {
-            bankMap.set(q.id, q);
-          }
-        });
-      }
-
+      let saved = null;
       try {
-        let saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK));
         if (Array.isArray(saved) && saved.length > 0) {
           saved = restoreDefaultImages(saved);
         }
@@ -4448,19 +4476,32 @@
             saved = restoreDefaultImages(vault);
           }
         }
-
-        if (Array.isArray(saved) && saved.length > 0) {
-          saved.forEach(q => {
-            if (q && q.id && !del.includes(q.id)) {
-              const vaultQ = bankMap.get(q.id);
-              if (vaultQ) {
-                q = { ...vaultQ, ...q, image: q.image || vaultQ.image };
-              }
-              bankMap.set(q.id, q);
-            }
-          });
-        }
       } catch(e) {}
+
+      const bankMap = new Map();
+
+      if (Array.isArray(saved) && saved.length > 0) {
+        // Banco salvo/curado tem prioridade absoluta! Não ressuscitamos questões deletadas
+        const savedIds = new Set(saved.map(q => q && q.id).filter(Boolean));
+        let addedDel = false;
+        rawDefault.forEach(dq => {
+          if (!savedIds.has(dq.id) && !del.includes(dq.id)) {
+            del.push(dq.id);
+            addedDel = true;
+          }
+        });
+        if (addedDel) {
+          try { localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(del)); } catch(e) {}
+        }
+
+        saved.forEach(q => {
+          if (q && q.id && !del.includes(q.id)) {
+            bankMap.set(q.id, q);
+          }
+        });
+      } else {
+        rawDefault.forEach(q => { if (q && q.id) bankMap.set(q.id, { ...q }); });
+      }
 
       // Sobrepõe o mapa permanente de edições locais do usuário
       try {
@@ -4527,13 +4568,17 @@
       // 3. Envia ao sync geral (ntfy.sh + /api/sync) para outros dados
       pushToCloud();
 
-      // 4. Dispara evento de sync para atualizar badge na UI
-      window.dispatchEvent(new CustomEvent('tkst_quiz_bank_saved', {
-        detail: { count: cleanBank.length, savedAt: new Date() }
-      }));
-      window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
-        detail: cleanBank
-      }));
+      // 4. Dispara evento de sync para atualizar badge na UI de forma assíncrona
+      setTimeout(() => {
+        try {
+          window.dispatchEvent(new CustomEvent('tkst_quiz_bank_saved', {
+            detail: { count: cleanBank.length, savedAt: new Date() }
+          }));
+          window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
+            detail: cleanBank
+          }));
+        } catch(e) {}
+      }, 50);
 
       return true;
     },
@@ -5520,6 +5565,48 @@
     broadcastQuizEditDelta: broadcastQuizEditDelta,
     pushToCloud: pushToCloud,
     pullQuizBankFromCloud: pullQuizBankFromCloud,
+    publishDeviceAsMasterBank: async function() {
+      try {
+        const bank = this.getCustomQuizBank();
+        const deletedIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES)) || [];
+        const customOnly = stripDefaultImages((bank || []).filter(q => q && q.id && q.question));
+        let editedMap = {};
+        try { editedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}'); } catch(e) {}
+        const fbUrl = getEffectiveFirebaseUrl();
+        if (fbUrl) {
+          await fetch(`${fbUrl}/quiz_bank/master_bank.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(customOnly)
+          });
+          await fetch(`${fbUrl}/quiz_bank/custom_bank.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(customOnly)
+          });
+          await fetch(`${fbUrl}/quiz_bank/deleted_ids.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(deletedIds)
+          });
+          await fetch(`${fbUrl}/quiz_bank/edited_questions.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(editedMap)
+          });
+          await fetch(`${fbUrl}/quiz_bank/sync_meta.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timestamp: Date.now(), senderId: CLIENT_SENDER_ID, count: customOnly.length })
+          });
+        }
+        pushToCloud();
+        return { success: true, count: customOnly.length };
+      } catch(err) {
+        console.error('Error publishing master bank:', err);
+        return { success: false, error: err };
+      }
+    },
     getFirebaseUrl: function() { return getEffectiveFirebaseUrl(); },
     setFirebaseUrl: function(url) {
       if (!url || !url.trim()) {
@@ -5533,6 +5620,27 @@
     },
     initFirebaseRealtimeStream: initFirebaseRealtimeStream
   };
+
+  // Monitor em tempo real via Firebase polling leve a cada 12 segundos
+  setInterval(() => {
+    try {
+      const fbUrl = getEffectiveFirebaseUrl();
+      if (fbUrl) {
+        fetch(fbUrl + '/quiz_bank/sync_meta.json', { cache: 'no-store' })
+          .then(r => r.json())
+          .then(meta => {
+            if (meta && meta.senderId && meta.senderId !== CLIENT_SENDER_ID) {
+              const lastSeenTs = Number(sessionStorage.getItem('tkst_last_fb_meta_ts') || 0);
+              if (meta.timestamp && meta.timestamp > lastSeenTs) {
+                sessionStorage.setItem('tkst_last_fb_meta_ts', String(meta.timestamp));
+                pullQuizBankFromCloud();
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    } catch(e) {}
+  }, 12000);
 
   // Background Heartbeat Engine (Executa discretamente a cada 45s apenas em background)
   setInterval(() => {

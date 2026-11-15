@@ -138,7 +138,7 @@ function bootTkstApp() {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.10';
+  const APP_DISPLAY_VERSION = 'V-3.11';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -2907,8 +2907,11 @@ function bootTkstApp() {
               <button class="btn btn-secondary" onclick="window.TKST_APP.importQuizQuestionsFile()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(34, 197, 94, 0.4); color: #86EFAC;" title="Carregar arquivo JSON de questões do celular ou PC">
                 <i class="fas fa-file-import"></i> Importar Questões (Arquivo)
               </button>
-              <button class="btn btn-secondary" onclick="window.TKST_APP.syncQuizQuestionsNow()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(59, 130, 246, 0.4); color: #93C5FD;" title="Forçar envio de todas as questões em tempo real para os outros aparelhos">
-                <i class="fas fa-sync-alt"></i> Sincronizar com Outro Aparelho
+              <button class="btn btn-secondary" onclick="window.TKST_APP.syncQuizQuestionsNow()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(59, 130, 246, 0.4); color: #93C5FD;" title="Sincronizar questões imediatamente com a nuvem">
+                <i class="fas fa-sync-alt"></i> Sincronizar com Nuvem
+              </button>
+              <button class="btn btn-secondary" onclick="window.TKST_APP.publishThisDeviceAsMaster()" style="font-size: 0.82rem; padding: 8px 14px; border-color: rgba(245, 190, 0, 0.5); color: #F5BE00;" title="Definir as questões deste aparelho como a Base Oficial definitiva para todos os dispositivos">
+                <i class="fas fa-crown"></i> Definir como Base Oficial
               </button>
             </div>
           </div>
@@ -12836,11 +12839,23 @@ function bootTkstApp() {
           return;
         }
 
-        const questionText = document.getElementById('editQuizQuestionInput').value.trim();
-        const correctAnswer = document.getElementById('editQuizCorrectAnswerInput').value.trim();
-        let wrong1 = (document.getElementById('editQuizWrong1Input')?.value || '').trim();
-        let wrong2 = (document.getElementById('editQuizWrong2Input')?.value || '').trim();
-        let wrong3 = (document.getElementById('editQuizWrong3Input')?.value || '').trim();
+        const qInput = document.getElementById('editQuizQuestionInput');
+        const cInput = document.getElementById('editQuizCorrectAnswerInput');
+        const w1Input = document.getElementById('editQuizWrong1Input');
+        const w2Input = document.getElementById('editQuizWrong2Input');
+        const w3Input = document.getElementById('editQuizWrong3Input');
+
+        if (!qInput || !cInput) {
+          console.error('Campos de pergunta ou resposta não encontrados no formulário.');
+          alert('Erro: Campos do formulário não encontrados.');
+          return;
+        }
+
+        const questionText = qInput.value.trim();
+        const correctAnswer = cInput.value.trim();
+        let wrong1 = (w1Input ? w1Input.value : '').trim();
+        let wrong2 = (w2Input ? w2Input.value : '').trim();
+        let wrong3 = (w3Input ? w3Input.value : '').trim();
 
         if (!questionText || !correctAnswer) {
           alert('Por favor, preencha a pergunta e a resposta correta.');
@@ -12848,11 +12863,17 @@ function bootTkstApp() {
         }
 
         if (!wrong1 || !wrong2 || !wrong3) {
-          const smart = generateSmartOptions(questionText, correctAnswer);
-          const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
-          if (!wrong1) wrong1 = fallback[0] || 'Opção B';
-          if (!wrong2) wrong2 = fallback[1] || 'Opção C';
-          if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+          try {
+            const smart = generateSmartOptions(questionText, correctAnswer);
+            const fallback = (smart.options || []).filter(o => o.trim().toLowerCase() !== correctAnswer.toLowerCase());
+            if (!wrong1) wrong1 = fallback[0] || 'Opção B';
+            if (!wrong2) wrong2 = fallback[1] || 'Opção C';
+            if (!wrong3) wrong3 = fallback[2] || 'Opção D';
+          } catch(e) {
+            if (!wrong1) wrong1 = 'Alternativa B';
+            if (!wrong2) wrong2 = 'Alternativa C';
+            if (!wrong3) wrong3 = 'Alternativa D';
+          }
         }
 
         if (quizModalTempImage) {
@@ -12926,19 +12947,26 @@ function bootTkstApp() {
           window.TKST_AUTH.saveCustomQuizBank(bank);
         }
         quizModalTempImage = null;
-        const modal = document.getElementById('detailModal') || detailModal;
+        const modal = document.getElementById('detailModal') || (typeof detailModal !== 'undefined' ? detailModal : null);
         if (modal) {
           modal.removeAttribute('data-prevent-outside-close');
           modal.classList.remove('active');
           const modalContainer = modal.querySelector('.modal-container');
           if (modalContainer) modalContainer.classList.remove('quiz-modal-compact');
-          if (typeof stopModalMedia === 'function') stopModalMedia(modal);
+          try {
+            if (typeof stopModalMedia === 'function') stopModalMedia(modal);
+          } catch(mErr) {}
         }
         showToast('✅ Questão atualizada com sucesso!', 'success');
-        renderAdminMaster();
+
+        if (typeof scheduleRerender === 'function') {
+          scheduleRerender(() => renderAdminMaster());
+        } else if (typeof renderAdminMaster === 'function') {
+          try { renderAdminMaster(); } catch(rErr) { console.warn(rErr); }
+        }
       } catch (err) {
         console.error('Erro ao editar questão:', err);
-        alert('Ocorreu um erro ao editar a questão.');
+        alert('Ocorreu um erro ao editar a questão: ' + (err?.message || err));
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -14679,28 +14707,42 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
     },
 
     syncQuizQuestionsNow: async () => {
-      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
-      if (!bank || bank.length === 0) {
-        alert('Nenhuma questão para sincronizar.');
-        return;
-      }
-      showToast(`🔄 Transmitindo ${bank.length} questões para todos os aparelhos...`, 'sync', 4000);
+      showToast('🔄 Sincronizando com a Nuvem...', 'sync', 4000);
       try {
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.pullQuizBankFromCloud === 'function') {
+          await window.TKST_AUTH.pullQuizBankFromCloud();
+        }
+        const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
         if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastQuizEditDelta === 'function') {
           await window.TKST_AUTH.broadcastQuizEditDelta();
-        }
-        if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastQuizBank === 'function') {
-          await window.TKST_AUTH.broadcastQuizBank(bank);
-        }
-        if (window.TKST_AUTH && typeof window.TKST_AUTH.pushToCloud === 'function') {
-          await window.TKST_AUTH.pushToCloud();
         }
         if (typeof renderAdminMaster === 'function') {
           renderAdminMaster();
         }
-        showToast(`✅ ${bank.length} questões transmitidas com sucesso!`, 'success', 4000);
+        showToast(`✅ Sincronizado com sucesso! Total: ${bank.length} questões.`, 'success', 4000);
       } catch (e) {
-        showToast('Erro ao transmitir questões: ' + e.message, 'danger', 4000);
+        showToast('Erro ao sincronizar: ' + e.message, 'danger', 4000);
+      }
+    },
+
+    publishThisDeviceAsMaster: async () => {
+      const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+      if (!confirm(`Deseja definir este aparelho (${bank.length} questões) como a Base Oficial definitiva na Nuvem para todos os dispositivos?`)) {
+        return;
+      }
+      showToast('🚀 Gravando como Base Oficial na Nuvem...', 'sync', 4000);
+      try {
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.publishDeviceAsMasterBank === 'function') {
+          const res = await window.TKST_AUTH.publishDeviceAsMasterBank();
+          if (res.success) {
+            showToast(`✅ Definido com sucesso! ${res.count} questões na Base Oficial da Nuvem.`, 'success', 5000);
+            if (typeof renderAdminMaster === 'function') renderAdminMaster();
+            return;
+          }
+        }
+        showToast('Erro ao gravar na nuvem.', 'danger', 4000);
+      } catch(e) {
+        showToast('Erro: ' + e.message, 'danger', 4000);
       }
     },
 
