@@ -138,7 +138,7 @@ function bootTkstApp() {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.13';
+  const APP_DISPLAY_VERSION = 'V-3.14';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -11583,7 +11583,11 @@ function bootTkstApp() {
         date: (window.TKST_APP && typeof window.TKST_APP.getDojobookExamDateFormatted === 'function')
           ? window.TKST_APP.getDojobookExamDateFormatted(c)
           : (c.exame_data ? formatRawDate(c.exame_data) : '13/12/2026')
-      }));
+      })).sort((a, b) => {
+        // Ordenação por Graduação (Amarela 6º Kyu até Faixa Preta) e secundária por Ordem Alfabética (A a Z)
+        if (b.targetKyu !== a.targetKyu) return b.targetKyu - a.targetKyu;
+        return String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR', { sensitivity: 'base' });
+      });
 
       const html = window.TKST_EXAM_GENERATOR.buildBatchCandidateExamsHtml(candidateList);
       window.TKST_EXAM_GENERATOR.printHtml(`Provas em Lote - ${examTitle} (${candidateList.length} Alunos)`, html);

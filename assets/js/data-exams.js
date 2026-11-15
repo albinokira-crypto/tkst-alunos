@@ -1622,7 +1622,17 @@ window.TKST_EXAM_GENERATOR = {
   // Gera o Caderno de Provas Nominais em Lote para Todos os Alunos Inscritos no Exame de Kyu
   buildBatchCandidateExamsHtml: function(candidateList = []) {
     if (!Array.isArray(candidateList) || candidateList.length === 0) return '';
-    return candidateList.map((cand, idx) => {
+    // Ordenação Oficial: 1º por Graduação (Amarela 6º Kyu até Faixa Preta), 2º por Ordem Alfabética (A a Z)
+    const sortedList = [...candidateList].sort((a, b) => {
+      const kyuA = (typeof a.targetKyu === 'number') ? a.targetKyu : 6;
+      const kyuB = (typeof b.targetKyu === 'number') ? b.targetKyu : 6;
+      if (kyuB !== kyuA) return kyuB - kyuA; // Ordem progressiva de Kyus: 6, 5, 4, 3, 2, 1, 0, -1, -2
+      const nameA = String(a.nome || a.studentName || '');
+      const nameB = String(b.nome || b.studentName || '');
+      return nameA.localeCompare(nameB, 'pt-BR', { sensitivity: 'base' });
+    });
+
+    return sortedList.map((cand, idx) => {
       const kyu = (typeof cand.targetKyu === 'number') ? cand.targetKyu : 6;
       const questions = this.getRandomQuizQuestionsForKyu(kyu, 10);
       const studentOptions = {
