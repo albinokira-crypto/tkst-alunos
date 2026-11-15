@@ -3667,7 +3667,7 @@ function bootTkstApp() {
                   </span>
                 </div>
 
-                <!-- Linha 2: Faixa, Dojo e Acertos organizados sem espremer o nome -->
+                <!-- Linha 2: Faixa e Dojo (sem quantidade de acertos) -->
                 <div class="ranking-row-line-2">
                   <div class="ranking-row-details">
                     ${item.currentBelt ? `<span class="ranking-belt-badge">${item.currentBelt}</span>` : ''}
@@ -3676,11 +3676,6 @@ function bootTkstApp() {
                         <i class="fas fa-landmark"></i> <span>${item.dojo}</span>
                       </div>
                     ` : ''}
-                  </div>
-                  <div class="ranking-row-metrics">
-                    <span class="ranking-stat-pill">
-                      <i class="fas fa-check-circle"></i> ${item.totalCorrect} ${item.totalCorrect === 1 ? 'acerto' : 'acertos'}
-                    </span>
                   </div>
                 </div>
               </div>
