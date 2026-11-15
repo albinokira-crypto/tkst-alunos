@@ -772,31 +772,41 @@ window.TKST_EXAM_GENERATOR = {
     };
   },
 
-  // Regra Oficial de Abreviação de Nomes Próprios da Língua Portuguesa do Brasil (ABNT / Cartório):
-  // 1. O primeiro nome e o último sobrenome NUNCA são abreviados.
-  // 2. Conectivos e preposições ("de", "da", "do", "das", "dos", "e") são descartados nos nomes do meio abreviados.
-  // 3. Os nomes intermediários (do meio) são abreviados com a inicial maiúscula seguida de ponto final ("E.", "S.").
-  // 4. Agnomes de parentesco ("Júnior", "Filho", "Neto", "Sobrinho") são preservados junto ao último sobrenome.
-  abbreviateStudentNamePtBr: function(fullName, maxChars = 21) {
+  // Regra Oficial de Abreviação de Nomes Próprios da Língua Portuguesa do Brasil (ABNT / Cartório / TKST):
+  // 1. O primeiro nome NUNCA é abreviado.
+  // 2. NOME COMPOSTO NUNCA SE ABREVIA (ex: Ana Clara, João Gabriel, Rosa Flávia, Maria Eduarda).
+  //    Ambos os nomes do prenome composto são mantidos por extenso. Apenas os sobrenomes intermediários são abreviados.
+  // 3. Conectivos e preposições ("de", "da", "do", "das", "dos", "e") são descartados nos sobrenomes do meio abreviados.
+  // 4. Os sobrenomes intermediários (do meio) são abreviados com a inicial maiúscula seguida de ponto ("C.", "F.").
+  // 5. O último sobrenome e eventuais agnomes de parentesco ("Júnior", "Filho", "Neto", "Sobrinho") são preservados intactos.
+  abbreviateStudentNamePtBr: function(fullName, maxChars = 24) {
     if (!fullName || typeof fullName !== 'string') return '';
     const clean = fullName.trim().replace(/\s+/g, ' ');
-
-    const parts = clean.split(' ');
-    if (parts.length <= 2) {
-      if (clean.length > maxChars) {
-        return clean.slice(0, maxChars - 1).trim() + '…';
-      }
-      return clean;
-    }
-
-    // Se tiver 3 ou mais palavras e o nome for longo (> 18 caracteres ou > maxChars),
-    // aplica a regra oficial de abreviação brasileira (ABNT/Cartório)
-    if (clean.length <= 18 && clean.length <= maxChars) {
-      return clean;
-    }
+    if (!clean) return '';
 
     const preposicoes = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
     const agnomes = new Set(['filho', 'filha', 'junior', 'júnior', 'neto', 'neta', 'sobrinho', 'sobrinha', 'segundo', 'terceiro']);
+
+    // Função para manter o padrão estético de maiúsculas/minúsculas
+    const capitalize = (w) => {
+      if (!w) return '';
+      const low = w.toLowerCase();
+      if (preposicoes.has(low)) return low;
+      return low.charAt(0).toUpperCase() + low.slice(1);
+    };
+
+    const rawParts = clean.split(' ').filter(Boolean);
+    if (rawParts.length === 0) return '';
+    if (rawParts.length === 1) return capitalize(rawParts[0]);
+
+    const parts = rawParts.map(p => capitalize(p));
+
+    // Se tiver apenas 2 palavras (ex: "Carlos Silva" ou "Ana Clara")
+    if (parts.length === 2) {
+      const full2 = parts.join(' ');
+      if (full2.length > maxChars) return full2.slice(0, maxChars - 1).trim() + '…';
+      return full2;
+    }
 
     let lastIdx = parts.length - 1;
     let agnomeStr = '';
@@ -805,22 +815,81 @@ window.TKST_EXAM_GENERATOR = {
       lastIdx--;
     }
 
-    const primeiro = parts[0];
-    const ultimo = parts[lastIdx];
-    const meios = parts.slice(1, lastIdx);
+    const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-    // Abrevia nomes do meio descartando preposições
+    // Dicionário de primeiros e segundos nomes que formam PRENOME COMPOSTO
+    const PRIMEIROS_COMPOSTOS = new Set([
+      'ana', 'maria', 'joao', 'pedro', 'luiz', 'luis', 'carlos', 'jose', 'paulo',
+      'marcos', 'lucas', 'davi', 'david', 'enzo', 'arthur', 'artur', 'vitor', 'victor',
+      'felipe', 'gustavo', 'guilherme', 'gabriel', 'mateus', 'matheus', 'caio', 'bruno',
+      'leonardo', 'thiago', 'tiago', 'rodrigo', 'julio', 'francisco', 'antonio',
+      'eduardo', 'alexandre', 'marcelo', 'rafael', 'rosa', 'laura', 'clara', 'beatriz', 'sarah', 'sara'
+    ]);
+
+    const SEGUNDOS_COMPOSTOS = new Set([
+      'clara', 'luiza', 'luisa', 'beatriz', 'carolina', 'caroline', 'paula', 'julia',
+      'laura', 'flavia', 'maria', 'cecilia', 'livia', 'sophia', 'sofia', 'vitoria',
+      'cristina', 'eduarda', 'alice', 'fernanda', 'rita', 'helena', 'aparecida',
+      'gabriel', 'pedro', 'victor', 'vitor', 'guilherme', 'miguel', 'lucas', 'lucca',
+      'paulo', 'marcos', 'felipe', 'marcelo', 'henrique', 'arthur', 'artur', 'otavio',
+      'augusto', 'eduardo', 'alexandre', 'daniel', 'carlos', 'antonio', 'roberto',
+      'hugo', 'fernando', 'gustavo', 'emanuel', 'emanoel', 'emanuelle', 'emanuela',
+      'valeria', 'inacio', 'alessandro', 'alessandra', 'manuela', 'lorena', 'valentina',
+      'heloisa', 'isabela', 'isabella', 'yasmin', 'yasmim', 'rebeca', 'rafaela', 'camila'
+    ]);
+
+    let isCompound = false;
+    let compoundOffset = 1;
+
+    // Caso especial: Maria de Fátima, Maria das Dores, etc.
+    if (parts.length >= 4 && norm(parts[0]) === 'maria' && preposicoes.has(norm(parts[1])) && ['fatima', 'lourdes', 'gracas', 'dores', 'conceicao'].includes(norm(parts[2]))) {
+      isCompound = true;
+      compoundOffset = 3; // "Maria de Fátima"
+    } else if (parts.length >= 3 && PRIMEIROS_COMPOSTOS.has(norm(parts[0])) && SEGUNDOS_COMPOSTOS.has(norm(parts[1]))) {
+      isCompound = true;
+      compoundOffset = 2; // ex: "Ana Clara", "João Gabriel", "Rosa Flávia"
+    }
+
+    let primeiro = '';
+    let meios = [];
+    let ultimo = parts[lastIdx];
+
+    if (isCompound) {
+      primeiro = parts.slice(0, compoundOffset).join(' ');
+      meios = parts.slice(compoundOffset, lastIdx);
+    } else {
+      primeiro = parts[0];
+      meios = parts.slice(1, lastIdx);
+    }
+
+    // Se não há sobrenomes intermediários para abreviar (ex: "Ana Clara Campos")
+    if (meios.length === 0) {
+      const fullNoMiddle = `${primeiro} ${ultimo}${agnomeStr}`.trim();
+      if (fullNoMiddle.length > maxChars) return fullNoMiddle.slice(0, maxChars - 1).trim() + '…';
+      return fullNoMiddle;
+    }
+
+    // Se o nome completo por extenso couber perfeitamente e for curto, mantém por extenso
+    const fullOriginal = `${primeiro} ${meios.join(' ')} ${ultimo}${agnomeStr}`.trim();
+    if (fullOriginal.length <= 18 && fullOriginal.length <= maxChars) {
+      return fullOriginal;
+    }
+
+    // Abrevia SOMENTE os sobrenomes do meio, descartando conectivos ("de", "da", "do")
     let meiosAbreviados = meios.map(m => {
-      if (preposicoes.has(m.toLowerCase())) return '';
+      const low = norm(m);
+      if (preposicoes.has(low)) return '';
       return m[0].toUpperCase() + '.';
     }).filter(Boolean);
 
     let formatado = `${primeiro} ${meiosAbreviados.join(' ')} ${ultimo}${agnomeStr}`.replace(/\s+/g, ' ').trim();
 
+    // Se ainda exceder o limite útil, mantém apenas a inicial do primeiro sobrenome intermediário
     if (formatado.length > maxChars && meiosAbreviados.length > 1) {
       formatado = `${primeiro} ${meiosAbreviados[0]} ${ultimo}${agnomeStr}`.replace(/\s+/g, ' ').trim();
     }
 
+    // Se ainda assim ultrapassar, aplica truncamento suave com reticências
     if (formatado.length > maxChars) {
       formatado = formatado.slice(0, maxChars - 1).trim() + '…';
     }
@@ -1127,7 +1196,7 @@ window.TKST_EXAM_GENERATOR = {
       }
     }
     const rawStudentName = this.sanitizePtBrText(options.studentName || options.name || "");
-    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 21);
+    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 24);
     const dojoName = this.sanitizePtBrText(options.dojoName || options.dojo || "");
     const studentId = options.studentId || options.id || '';
 
@@ -1831,16 +1900,17 @@ window.TKST_EXAM_GENERATOR = {
         border-radius: 3px !important;
         background: #F8FAFC !important;
         box-shadow: 1px 1px 0px #0F172A !important;
-        padding: 3px 8px !important;
+        padding: 2.5px 6px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
         gap: 6px !important;
         box-sizing: border-box !important;
         white-space: nowrap !important;
+        overflow: hidden !important;
       }
       .exam-field-name {
-        flex: 1.6 !important;
+        flex: 1 1 auto !important;
         display: flex !important;
         align-items: flex-end !important;
         gap: 3px !important;
@@ -1858,7 +1928,7 @@ window.TKST_EXAM_GENERATOR = {
         font-weight: 800 !important;
         letter-spacing: -0.15px !important;
         color: #000000 !important;
-        padding-left: 4px !important;
+        padding-left: 3px !important;
         padding-bottom: 1.5px !important;
         display: inline-flex !important;
         align-items: flex-end !important;
@@ -1868,12 +1938,15 @@ window.TKST_EXAM_GENERATOR = {
         box-sizing: border-box !important;
       }
       .exam-field-dojo {
-        flex: 0.8 !important;
+        flex: 0 0 34mm !important;
+        width: 34mm !important;
+        min-width: 28mm !important;
+        max-width: 36mm !important;
         display: flex !important;
         align-items: flex-end !important;
-        gap: 3px !important;
-        min-width: 0 !important;
-        font-size: 8.5pt !important;
+        gap: 2.5px !important;
+        font-size: 8.2pt !important;
+        box-sizing: border-box !important;
       }
       .exam-field-line-dojo {
         flex: 1 !important;
@@ -1882,10 +1955,10 @@ window.TKST_EXAM_GENERATOR = {
         height: 18px !important;
         min-height: 18px !important;
         line-height: 1.25 !important;
-        font-size: 8.2pt !important;
+        font-size: 7.8pt !important;
         font-weight: 700 !important;
         color: #000000 !important;
-        padding-left: 4px !important;
+        padding-left: 2px !important;
         padding-bottom: 1.5px !important;
         display: inline-flex !important;
         align-items: flex-end !important;
@@ -1895,12 +1968,15 @@ window.TKST_EXAM_GENERATOR = {
         box-sizing: border-box !important;
       }
       .exam-field-date {
-        flex: 0.6 !important;
+        flex: 0 0 25mm !important;
+        width: 25mm !important;
+        min-width: 25mm !important;
+        max-width: 25.5mm !important;
         display: flex !important;
         align-items: flex-end !important;
-        gap: 3px !important;
-        min-width: 0 !important;
-        font-size: 8.5pt !important;
+        gap: 2px !important;
+        font-size: 8.2pt !important;
+        box-sizing: border-box !important;
       }
       .exam-field-line-date {
         flex: 1 !important;
@@ -1909,13 +1985,15 @@ window.TKST_EXAM_GENERATOR = {
         height: 18px !important;
         min-height: 18px !important;
         line-height: 1.25 !important;
-        font-size: 8.2pt !important;
+        font-size: 7.8pt !important;
         font-weight: 800 !important;
         color: #000000 !important;
-        padding-left: 2px !important;
+        padding-left: 1px !important;
         padding-bottom: 1.5px !important;
         display: inline-flex !important;
         align-items: flex-end !important;
+        justify-content: center !important;
+        text-align: center !important;
         white-space: nowrap !important;
         box-sizing: border-box !important;
       }
@@ -1971,12 +2049,12 @@ window.TKST_EXAM_GENERATOR = {
       /* CARTÃO OFICIAL DE RESPOSTAS (GABARITO OMR COM NOTA INTEGRADA) */
       .exam-header-omr-card {
         flex: 0 0 auto !important;
-        width: 90mm !important;
-        max-width: 92mm !important;
+        width: 75mm !important;
+        max-width: 76mm !important;
         border: 1.8px solid #0F172A !important;
         border-radius: 4px !important;
         background: #F8FAFC !important;
-        padding: 1.8mm 2.8mm !important;
+        padding: 1.5mm 2.2mm !important;
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: column !important;
@@ -2035,7 +2113,7 @@ window.TKST_EXAM_GENERATOR = {
       .exam-omr-grid-2col {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 12px !important;
+        gap: 6px !important;
         width: 100% !important;
       }
       .exam-omr-col {
