@@ -138,7 +138,7 @@ function bootTkstApp() {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.08';
+  const APP_DISPLAY_VERSION = 'V-3.09';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -324,14 +324,14 @@ function bootTkstApp() {
     console.log('[Sync Background] Questões salvas no GitHub:', e.detail?.count);
   });
   window.addEventListener('tkst_quiz_bank_updated', (e) => {
-    console.log('[Sync Background] Banco de questões atualizado silenciosamente');
-    if (activeTab === 'admin') {
+    console.log('[Sync Background] Banco de questões atualizado:', e?.detail);
+    if (typeof currentTab !== 'undefined' && currentTab === 'admin') {
       if (typeof renderAdminMaster === 'function') {
         renderAdminMaster();
       } else if (typeof renderAdminView === 'function') {
         renderAdminView();
       }
-    } else if (activeTab === 'quiz' && !quizActive) {
+    } else if (typeof currentTab !== 'undefined' && currentTab === 'quiz' && !quizActive) {
       if (typeof renderQuiz === 'function') {
         renderQuiz();
       }
@@ -1520,6 +1520,14 @@ function bootTkstApp() {
         scheduleRerender(() => renderDashboard());
       } else if (currentTab === 'admin' && adminSubTab === 'quizzes') {
         scheduleRerender(() => renderAdminMaster());
+      }
+    });
+
+    window.addEventListener('tkst_quiz_bank_updated', () => {
+      if (currentTab === 'admin') {
+        scheduleRerender(() => renderAdminMaster());
+      } else if (currentTab === 'quiz' && !quizActive) {
+        scheduleRerender(() => renderQuiz());
       }
     });
 
@@ -14665,11 +14673,17 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
       showToast(`🔄 Transmitindo ${bank.length} questões para todos os aparelhos...`, 'sync', 4000);
       try {
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastQuizEditDelta === 'function') {
+          await window.TKST_AUTH.broadcastQuizEditDelta();
+        }
         if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastQuizBank === 'function') {
           await window.TKST_AUTH.broadcastQuizBank(bank);
         }
         if (window.TKST_AUTH && typeof window.TKST_AUTH.pushToCloud === 'function') {
           await window.TKST_AUTH.pushToCloud();
+        }
+        if (typeof renderAdminMaster === 'function') {
+          renderAdminMaster();
         }
         showToast(`✅ ${bank.length} questões transmitidas com sucesso!`, 'success', 4000);
       } catch (e) {

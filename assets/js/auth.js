@@ -323,7 +323,7 @@
     }
   }
 
-  // Transmite delta direto de questões editadas em pacote ultra-leve (< 2KB) via NTFY
+  // Transmite delta direto de questões editadas em pacote ultra-leve (< 3.5KB) via NTFY
   async function broadcastQuizEditDelta(editedMap, questions) {
     try {
       const localEdited = (editedMap && Object.keys(editedMap).length > 0)
@@ -342,26 +342,29 @@
       const keys = Object.keys(cleanEditedMap);
       if (keys.length === 0) return;
 
-      // Pacotes compactos garantindo estritamente < 2.5KB por envio no ntfy.sh
-      if (keys.length <= 4) {
-        const msg = {
-          type: 'tkst_quiz_edit_delta',
-          senderId: CLIENT_SENDER_ID,
-          editedMap: cleanEditedMap,
-          timestamp: Date.now()
-        };
+      const fullPayload = JSON.stringify({
+        type: 'tkst_quiz_edit_delta',
+        senderId: CLIENT_SENDER_ID,
+        editedMap: cleanEditedMap,
+        timestamp: Date.now()
+      });
+
+      // Se couber em um único pacote NTFY (< 3500 bytes), transmite de forma atômica e instantânea
+      if (fullPayload.length <= 3500) {
         await fetch(SYNC_URL, {
           method: 'POST',
           headers: {
             'Title': 'TKST_QUIZ_EDIT_DELTA',
             'Content-Type': 'text/plain; charset=utf-8'
           },
-          body: JSON.stringify(msg)
+          body: fullPayload
         });
       } else {
-        for (let i = 0; i < keys.length; i += 2) {
+        // Ordena por updatedAt decrescente para priorizar as alterações mais recentes
+        const sortedKeys = keys.sort((a, b) => (cleanEditedMap[b].updatedAt || 0) - (cleanEditedMap[a].updatedAt || 0));
+        for (let i = 0; i < sortedKeys.length; i += 5) {
           const chunkMap = {};
-          keys.slice(i, i + 2).forEach(k => { chunkMap[k] = cleanEditedMap[k]; });
+          sortedKeys.slice(i, i + 5).forEach(k => { chunkMap[k] = cleanEditedMap[k]; });
           const msg = {
             type: 'tkst_quiz_edit_delta',
             senderId: CLIENT_SENDER_ID,
@@ -376,6 +379,7 @@
             },
             body: JSON.stringify(msg)
           });
+          if (sortedKeys.length > 5) await new Promise(r => setTimeout(r, 120));
         }
       }
 
@@ -427,13 +431,48 @@
 
       if (modified) {
         localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(localEditedMap));
-        // Atualiza o banco oficial em memória e cofre local
-        if (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function') {
-          const updatedBank = window.TKST_AUTH.getCustomQuizBank();
-          window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
-            detail: { count: updatedBank.length, updated: true, fromDelta: true }
-          }));
+
+        // Atualiza referências globais em memória caso existam
+        if (Array.isArray(window.TKST_DEFAULT_QUIZ_BANK)) {
+          Object.keys(localEditedMap).forEach(qId => {
+            const eq = localEditedMap[qId];
+            const dIdx = window.TKST_DEFAULT_QUIZ_BANK.findIndex(item => item && (item.id === qId || String(item.id) === String(qId)));
+            if (dIdx !== -1) {
+              window.TKST_DEFAULT_QUIZ_BANK[dIdx] = { ...window.TKST_DEFAULT_QUIZ_BANK[dIdx], ...eq };
+            }
+          });
         }
+        if (Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS)) {
+          Object.keys(localEditedMap).forEach(qId => {
+            const eq = localEditedMap[qId];
+            const vIdx = window.TKST_CUSTOM_VAULT_QUESTIONS.findIndex(item => item && (item.id === qId || String(item.id) === String(qId)));
+            if (vIdx !== -1) {
+              window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx] = { ...window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx], ...eq };
+            }
+          });
+        }
+
+        // Atualiza o banco oficial em memória e cofre local
+        let updatedBank = [];
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function') {
+          updatedBank = window.TKST_AUTH.getCustomQuizBank();
+        } else {
+          const rawSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_QUIZ_BANK) || '[]');
+          const bMap = new Map();
+          rawSaved.forEach(q => { if (q && q.id) bMap.set(q.id, q); });
+          Object.keys(localEditedMap).forEach(k => {
+            const eq = localEditedMap[k];
+            if (eq && eq.id) bMap.set(eq.id, { ...(bMap.get(eq.id) || {}), ...eq });
+          });
+          updatedBank = Array.from(bMap.values());
+          window.TKST_QUIZ_BANK = updatedBank;
+          window.TKST_QUIZ = updatedBank;
+          safeSaveQuizBank(updatedBank);
+        }
+
+        window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
+          detail: { count: updatedBank.length, updated: true, fromDelta: true }
+        }));
       }
     } catch(err) {
       console.warn('handleIncomingQuizEditDelta error:', err);
@@ -2191,7 +2230,7 @@
   let lastPullTime = 0;
   async function pullFromCloud(force = false) {
     const now = Date.now();
-    if (!force && (now - lastPullTime < 60000)) {
+    if (!force && (now - lastPullTime < 4000)) {
       return; // Já sincronizou recentemente; evita tempestade de rede e travamentos
     }
     lastPullTime = now;
@@ -2239,57 +2278,64 @@
         }
       } catch(e) {}
 
-      // 3. Poll ntfy.sh (tempo real — dados mais recentes das últimas 24h)
-      const res = await fetch(SYNC_URL + '/json?poll=1');
-      if (res.ok) {
-        const text = await res.text();
-        if (text && text.trim()) {
-          const lines = text.trim().split('\n');
-          let appliedMainCloudData = false;
-          for (let i = lines.length - 1; i >= 0; i--) {
-            try {
-              const item = JSON.parse(lines[i]);
-              const cloudData = await parseNtfyItem(item);
-              if (cloudData) {
-                // Previne auto-eco: se a mensagem foi originada por esta mesma aba/dispositivo, ignora
-                if (cloudData.senderId && cloudData.senderId === CLIENT_SENDER_ID) {
-                  continue;
-                }
-                if (cloudData.type === 'tkst_exam_generated' && cloudData.record) {
-                  handleIncomingExamRecord(cloudData.record);
-                  continue;
-                }
-                if (cloudData.type === 'tkst_quiz_submission' && cloudData.submission) {
-                  handleIncomingQuizSubmission(cloudData.submission);
-                  continue;
-                }
-                if (cloudData.type === 'tkst_quiz_edit_delta') {
-                  handleIncomingQuizEditDelta(cloudData);
-                  continue;
-                }
-                if (cloudData.type === 'tkst_quiz_chunk') {
-                  handleIncomingQuizChunk(cloudData);
-                  continue;
-                }
-                if (cloudData.type === 'quiz_sync_broadcast' && Array.isArray(cloudData.bank)) {
-                  handleIncomingQuizChunk({ questions: cloudData.bank });
-                  continue;
-                }
-                if (cloudData.type === 'sync_notification') {
+      // 3. Poll ntfy.sh (tempo real — histórico completo das últimas 24h com timeout)
+      try {
+        const pollController = new AbortController();
+        const pollTimeout = setTimeout(() => pollController.abort(), 3500);
+        const res = await fetch(SYNC_URL + '/json?poll=1&since=24h', { signal: pollController.signal });
+        clearTimeout(pollTimeout);
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.trim()) {
+            const lines = text.trim().split('\n');
+            let appliedMainCloudData = false;
+            for (let i = lines.length - 1; i >= 0; i--) {
+              try {
+                const item = JSON.parse(lines[i]);
+                const cloudData = await parseNtfyItem(item);
+                if (cloudData) {
+                  // Previne auto-eco: se a mensagem foi originada por esta mesma aba/dispositivo, ignora
+                  if (cloudData.senderId && cloudData.senderId === CLIENT_SENDER_ID) {
+                    continue;
+                  }
+                  if (cloudData.type === 'tkst_exam_generated' && cloudData.record) {
+                    handleIncomingExamRecord(cloudData.record);
+                    continue;
+                  }
+                  if (cloudData.type === 'tkst_quiz_submission' && cloudData.submission) {
+                    handleIncomingQuizSubmission(cloudData.submission);
+                    continue;
+                  }
+                  if (cloudData.type === 'tkst_quiz_edit_delta') {
+                    handleIncomingQuizEditDelta(cloudData);
+                    continue;
+                  }
+                  if (cloudData.type === 'tkst_quiz_chunk') {
+                    handleIncomingQuizChunk(cloudData);
+                    continue;
+                  }
+                  if (cloudData.type === 'quiz_sync_broadcast' && Array.isArray(cloudData.bank)) {
+                    handleIncomingQuizChunk({ questions: cloudData.bank });
+                    continue;
+                  }
+                  if (cloudData.type === 'sync_notification') {
+                    if (!appliedMainCloudData) {
+                      pullFromCloud(true);
+                      appliedMainCloudData = true;
+                    }
+                    continue;
+                  }
                   if (!appliedMainCloudData) {
-                    pullFromCloud(true);
+                    applyCloudData(cloudData);
                     appliedMainCloudData = true;
                   }
-                  continue;
                 }
-                if (!appliedMainCloudData) {
-                  applyCloudData(cloudData);
-                  appliedMainCloudData = true;
-                }
-              }
-            } catch(e) {}
+              } catch(e) {}
+            }
           }
         }
+      } catch(pollErr) {
+        // Timeout ou falha transitória do ntfy silenciosa
       }
     } catch(err) {
       console.warn('Initial cloud pull notice:', err);
@@ -2390,10 +2436,16 @@
     } catch(e) {}
   }
 
+  let _activeEventSource = null;
   function initRealtimeStream() {
     try {
       if (typeof EventSource !== 'undefined') {
+        if (_activeEventSource) {
+          try { _activeEventSource.close(); } catch(e) {}
+          _activeEventSource = null;
+        }
         const es = new EventSource(SYNC_URL + '/sse');
+        _activeEventSource = es;
         es.onmessage = async function(e) {
           try {
             const parsed = JSON.parse(e.data);
@@ -2424,7 +2476,15 @@
           } catch(err) {}
         };
         es.onerror = function() {
-          // EventSource auto-reconnects on disconnection
+          if (es.readyState === 2) { // EventSource.CLOSED
+            try { es.close(); } catch(e) {}
+            _activeEventSource = null;
+            setTimeout(() => {
+              if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+                initRealtimeStream();
+              }
+            }, 4000);
+          }
         };
       }
     } catch(err) {}
@@ -2432,14 +2492,22 @@
 
   // Sincronização inicial em background diferida (nunca bloqueia o boot e nunca faz push sem ação do usuário)
   setTimeout(() => {
-    pullFromCloud().catch(() => {});
+    pullFromCloud(true).catch(() => {});
     initRealtimeStream();
   }, 1200);
 
-  // Automatic pull on window visibility change (respeita throttle de 60s)
+  // Sincronização automática em caso de retorno do app ou desbloqueio de tela
   if (typeof document !== 'undefined') {
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') pullFromCloud();
+      if (document.visibilityState === 'visible') {
+        pullFromCloud(true);
+        if (!_activeEventSource || _activeEventSource.readyState === 2) {
+          initRealtimeStream();
+        }
+      }
+    });
+    window.addEventListener('focus', () => {
+      pullFromCloud(true);
     });
     window.addEventListener('DOMContentLoaded', () => {
       pullGlossaryFromCloud();
@@ -5211,6 +5279,8 @@
 
     deduplicateQuizSubmissions: deduplicateQuizSubmissions,
     broadcastQuizBank: broadcastQuizBankChunks,
+    broadcastQuizEditDelta: broadcastQuizEditDelta,
+    pushToCloud: pushToCloud,
     pullQuizBankFromCloud: pullQuizBankFromCloud
   };
 
