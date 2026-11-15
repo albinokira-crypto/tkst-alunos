@@ -777,16 +777,21 @@ window.TKST_EXAM_GENERATOR = {
   // 2. Conectivos e preposições ("de", "da", "do", "das", "dos", "e") são descartados nos nomes do meio abreviados.
   // 3. Os nomes intermediários (do meio) são abreviados com a inicial maiúscula seguida de ponto final ("E.", "S.").
   // 4. Agnomes de parentesco ("Júnior", "Filho", "Neto", "Sobrinho") são preservados junto ao último sobrenome.
-  abbreviateStudentNamePtBr: function(fullName, maxChars = 28) {
+  abbreviateStudentNamePtBr: function(fullName, maxChars = 21) {
     if (!fullName || typeof fullName !== 'string') return '';
     const clean = fullName.trim().replace(/\s+/g, ' ');
-    if (clean.length <= maxChars) return clean;
 
     const parts = clean.split(' ');
     if (parts.length <= 2) {
       if (clean.length > maxChars) {
         return clean.slice(0, maxChars - 1).trim() + '…';
       }
+      return clean;
+    }
+
+    // Se tiver 3 ou mais palavras e o nome for longo (> 18 caracteres ou > maxChars),
+    // aplica a regra oficial de abreviação brasileira (ABNT/Cartório)
+    if (clean.length <= 18 && clean.length <= maxChars) {
       return clean;
     }
 
@@ -1122,7 +1127,7 @@ window.TKST_EXAM_GENERATOR = {
       }
     }
     const rawStudentName = this.sanitizePtBrText(options.studentName || options.name || "");
-    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 26);
+    const studentName = this.abbreviateStudentNamePtBr(rawStudentName, 21);
     const dojoName = this.sanitizePtBrText(options.dojoName || options.dojo || "");
     const studentId = options.studentId || options.id || '';
 
@@ -1642,8 +1647,9 @@ window.TKST_EXAM_GENERATOR = {
         date: cand.date || '13/12/2026'
       };
       const pageHtml = this.buildQuizExamSheetHtml(kyu, questions, studentOptions);
+      const isLast = idx === sortedList.length - 1;
       return `
-        <div class="exam-batch-student-page single-student-exam-sheet" style="page-break-after: always !important; break-after: page !important; page-break-inside: avoid !important; break-inside: avoid !important; margin: 0; padding: 0;">
+        <div class="exam-batch-student-page single-student-exam-sheet" style="page-break-before: auto !important; break-before: auto !important; ${isLast ? 'page-break-after: auto !important; break-after: auto !important;' : 'page-break-after: always !important; break-after: page !important;'} page-break-inside: avoid !important; break-inside: avoid !important; margin: 0; padding: 0; display: block; clear: both;">
           <div class="exam-print-bundle">
             <div class="single-page-wrapper" style="page-break-inside: avoid !important;">
               ${pageHtml}
@@ -1721,11 +1727,15 @@ window.TKST_EXAM_GENERATOR = {
         break-inside: avoid !important;
       }
       .exam-batch-student-page {
+        page-break-before: auto !important;
+        break-before: auto !important;
         page-break-after: always !important;
         break-after: page !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         display: block !important;
+        clear: both !important;
+        position: relative !important;
       }
       .exam-batch-student-page:last-child {
         page-break-after: auto !important;
@@ -1830,7 +1840,7 @@ window.TKST_EXAM_GENERATOR = {
         white-space: nowrap !important;
       }
       .exam-field-name {
-        flex: 1.35 !important;
+        flex: 1.6 !important;
         display: flex !important;
         align-items: flex-end !important;
         gap: 3px !important;
@@ -1846,6 +1856,7 @@ window.TKST_EXAM_GENERATOR = {
         line-height: 1.25 !important;
         font-size: 8.2pt !important;
         font-weight: 800 !important;
+        letter-spacing: -0.15px !important;
         color: #000000 !important;
         padding-left: 4px !important;
         padding-bottom: 1.5px !important;
@@ -1857,7 +1868,7 @@ window.TKST_EXAM_GENERATOR = {
         box-sizing: border-box !important;
       }
       .exam-field-dojo {
-        flex: 0.95 !important;
+        flex: 0.8 !important;
         display: flex !important;
         align-items: flex-end !important;
         gap: 3px !important;
@@ -1884,7 +1895,7 @@ window.TKST_EXAM_GENERATOR = {
         box-sizing: border-box !important;
       }
       .exam-field-date {
-        flex: 0.72 !important;
+        flex: 0.6 !important;
         display: flex !important;
         align-items: flex-end !important;
         gap: 3px !important;
@@ -2447,8 +2458,9 @@ window.TKST_EXAM_GENERATOR = {
               padding: 0 !important;
               background: #FFF !important;
               width: 100% !important;
-              height: 100% !important;
-              overflow: hidden !important;
+              height: auto !important;
+              min-height: 100% !important;
+              overflow: visible !important;
             }
             .no-print-bar {
               display: none !important;
@@ -2459,11 +2471,15 @@ window.TKST_EXAM_GENERATOR = {
               padding: 0 !important;
             }
             .exam-batch-student-page {
+              page-break-before: auto !important;
+              break-before: auto !important;
               page-break-after: always !important;
               break-after: page !important;
               page-break-inside: avoid !important;
               break-inside: avoid !important;
               display: block !important;
+              clear: both !important;
+              position: relative !important;
             }
             .exam-batch-student-page:last-child {
               page-break-after: auto !important;
@@ -2472,8 +2488,6 @@ window.TKST_EXAM_GENERATOR = {
             .single-page-a4,
             .single-page-wrapper,
             .exam-page-break-wrapper {
-              page-break-after: avoid !important;
-              break-after: avoid !important;
               page-break-inside: avoid !important;
               break-inside: avoid !important;
             }
