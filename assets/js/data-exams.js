@@ -1619,6 +1619,31 @@ window.TKST_EXAM_GENERATOR = {
     }).join('');
   },
 
+  // Gera o Caderno de Provas Nominais em Lote para Todos os Alunos Inscritos no Exame de Kyu
+  buildBatchCandidateExamsHtml: function(candidateList = []) {
+    if (!Array.isArray(candidateList) || candidateList.length === 0) return '';
+    return candidateList.map((cand, idx) => {
+      const kyu = (typeof cand.targetKyu === 'number') ? cand.targetKyu : 6;
+      const questions = this.getRandomQuizQuestionsForKyu(kyu, 10);
+      const studentOptions = {
+        studentName: cand.nome,
+        studentId: cand.id,
+        dojoName: cand.dojo_nome || 'TKST',
+        date: cand.date || '13/12/2026'
+      };
+      const pageHtml = this.buildQuizExamSheetHtml(kyu, questions, studentOptions);
+      return `
+        <div class="exam-batch-student-page single-student-exam-sheet" style="page-break-after: always !important; break-after: page !important; page-break-inside: avoid !important; break-inside: avoid !important; margin: 0; padding: 0;">
+          <div class="exam-print-bundle">
+            <div class="single-page-wrapper" style="page-break-inside: avoid !important;">
+              ${pageHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
   // CSS de Impressão Direta A4 / Carta (Modo Retrato / 2 Colunas / Folha Única)
   getPrintStyles: function() {
     return `
@@ -1684,6 +1709,17 @@ window.TKST_EXAM_GENERATOR = {
         page-break-inside: avoid !important;
         break-after: avoid !important;
         break-inside: avoid !important;
+      }
+      .exam-batch-student-page {
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        display: block !important;
+      }
+      .exam-batch-student-page:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
       }
       .exam-page-break-wrapper {
         page-break-after: avoid;
@@ -2411,6 +2447,17 @@ window.TKST_EXAM_GENERATOR = {
               display: block !important;
               margin: 0 !important;
               padding: 0 !important;
+            }
+            .exam-batch-student-page {
+              page-break-after: always !important;
+              break-after: page !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              display: block !important;
+            }
+            .exam-batch-student-page:last-child {
+              page-break-after: auto !important;
+              break-after: auto !important;
             }
             .single-page-a4,
             .single-page-wrapper,

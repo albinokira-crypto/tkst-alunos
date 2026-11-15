@@ -3045,8 +3045,8 @@ function bootTkstApp() {
               <button class="btn btn-gold" onclick="window.TKST_APP.printMasterAnswerKey()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; color: #000; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.25);">
                 <i class="fas fa-key"></i> Imprimir Gabarito Geral (Todas as Faixas)
               </button>
-              <button class="btn btn-secondary" onclick="window.TKST_APP.printAllExams()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; border-color: rgba(255,255,255,0.2);">
-                <i class="fas fa-print"></i> Imprimir Todas as Provas (Lote)
+              <button class="btn btn-secondary" onclick="window.TKST_APP.printAllExams()" style="font-size: 0.82rem; padding: 8px 14px; font-weight: 700; border-color: rgba(255,255,255,0.2);" title="Gerar e imprimir provas de todos os alunos inscritos no Exame de Kyu">
+                <i class="fas fa-print"></i> Imprimir Provas em Lote (Inscritos no Exame)
               </button>
             </div>
           </div>
@@ -3654,7 +3654,7 @@ function bootTkstApp() {
               </div>
             ` : top10Leaderboard.map((item, idx) => `
               <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
-                <!-- Linha 1: Lugar, Nome completo (com todo o espaço horizontal livre) e Pontos -->
+                <!-- Linha 1: Somente Posição/Medalha e Nome Completo (100% livre) -->
                 <div class="ranking-row-line-1">
                   <div class="ranking-row-user-block">
                     <span class="ranking-pos-medal ${idx < 3 ? 'is-podium' : ''}">
@@ -3662,12 +3662,9 @@ function bootTkstApp() {
                     </span>
                     <span class="ranking-student-name" title="${item.fullName}">${item.fullName}</span>
                   </div>
-                  <span class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
-                    ${item.points > 0 ? '+' : ''}${item.points} pts
-                  </span>
                 </div>
 
-                <!-- Linha 2: Faixa e Dojo (sem quantidade de acertos) -->
+                <!-- Linha 2: Faixa, Dojo e Pontuação Total destacada -->
                 <div class="ranking-row-line-2">
                   <div class="ranking-row-details">
                     ${item.currentBelt ? `<span class="ranking-belt-badge">${item.currentBelt}</span>` : ''}
@@ -3677,6 +3674,9 @@ function bootTkstApp() {
                       </div>
                     ` : ''}
                   </div>
+                  <span class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
+                    ${item.points > 0 ? '+' : ''}${item.points} pts
+                  </span>
                 </div>
               </div>
             `).join('')}
@@ -11356,10 +11356,77 @@ function bootTkstApp() {
       const html = window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
       window.TKST_EXAM_GENERATOR.printHtml(`Gabarito Oficial - ${exam.title}`, html);
     },
-    printAllExams: () => {
+    printAllExams: async () => {
       if (!window.TKST_EXAM_GENERATOR) return;
-      const html = window.TKST_EXAM_GENERATOR.buildAllExamsHtml('quiz');
-      window.TKST_EXAM_GENERATOR.printHtml("Caderno de Provas Completo (6º Kyu ao 3º Dan)", html);
+      if (typeof showToast === 'function') {
+        showToast('🔍 Buscando alunos inscritos no Exame de Kyu...', 'info', 2500);
+      }
+
+      let candidatesData = null;
+      try {
+        if (window.TKST_APP && typeof window.TKST_APP.loadDojobookCandidates === 'function') {
+          candidatesData = await window.TKST_APP.loadDojobookCandidates();
+        }
+      } catch (e) { }
+
+      const allStudents = (window.TKST_APP && typeof window.TKST_APP.getAllAvailableStudentsForExam === 'function')
+        ? window.TKST_APP.getAllAvailableStudentsForExam()
+        : [];
+
+      let examCands = allStudents.filter(s => s && s.isExamCand);
+
+      // Fallback para candidatos diretos da API DojôBook caso não marcados
+      if (examCands.length === 0 && candidatesData && Array.isArray(candidatesData.candidatos) && candidatesData.candidatos.length > 0) {
+        examCands = candidatesData.candidatos.map(c => ({
+          id: c.id,
+          nome: c.nome,
+          vai_para: c.vai_para || c.graduacao_destino || c.faixa_pretendida || c.graduacao_atual || 'Amarela',
+          dojo_nome: c.dojo_nome || 'TKST',
+          exame_data: c.exame_data || ''
+        }));
+      }
+
+      function mapBeltToKyu(beltText) {
+        const s = String(beltText || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (s.includes('amarela') || s.includes('6o') || s.includes('6 kyu') || s.includes('6º')) return 6;
+        if (s.includes('vermelha') || s.includes('5o') || s.includes('5 kyu') || s.includes('5º')) return 5;
+        if (s.includes('laranja') || s.includes('4o') || s.includes('4 kyu') || s.includes('4º')) return 4;
+        if (s.includes('verde') || s.includes('3o') || s.includes('3 kyu') || s.includes('3º')) return 3;
+        if (s.includes('roxa') || s.includes('2o') || s.includes('2 kyu') || s.includes('2º')) return 2;
+        if (s.includes('marrom') || s.includes('1o') || s.includes('1 kyu') || s.includes('1º')) return 1;
+        if (s.includes('shodan') || s.includes('preta') || s.includes('1o dan') || s.includes('1º dan')) return 0;
+        if (s.includes('nidan') || s.includes('2o dan') || s.includes('2º dan')) return -1;
+        if (s.includes('sandan') || s.includes('3o dan') || s.includes('3º dan')) return -2;
+        return 6;
+      }
+
+      if (examCands.length > 0) {
+        const candidateList = examCands.map(c => ({
+          id: c.id,
+          nome: c.nome,
+          dojo_nome: c.dojo_nome || 'TKST',
+          targetKyu: mapBeltToKyu(c.vai_para || c.graduacao_atual),
+          date: (window.TKST_APP && typeof window.TKST_APP.getDojobookExamDateFormatted === 'function')
+            ? window.TKST_APP.getDojobookExamDateFormatted(c)
+            : '13/12/2026'
+        }));
+
+        const html = window.TKST_EXAM_GENERATOR.buildBatchCandidateExamsHtml(candidateList);
+        window.TKST_EXAM_GENERATOR.printHtml(`Provas em Lote - ${candidateList.length} Alunos Inscritos no Exame de Kyu`, html);
+        if (typeof showToast === 'function') {
+          showToast(`🥋 Geradas ${candidateList.length} provas nominais para os alunos inscritos no exame!`, 'success', 4000);
+        }
+      } else {
+        const confirmBlank = confirm(
+          '⚠️ NENHUM ALUNO INSCRITO NO EXAME ENCONTRADO:\n\n' +
+          'Não há alunos marcados como inscritos no Exame de Kyu no momento.\n\n' +
+          'Deseja gerar o Caderno de Provas Completo em branco (uma folha de cada graduação)?'
+        );
+        if (confirmBlank) {
+          const html = window.TKST_EXAM_GENERATOR.buildAllExamsHtml('quiz');
+          window.TKST_EXAM_GENERATOR.printHtml("Caderno de Provas Completo (6º Kyu ao 3º Dan)", html);
+        }
+      }
     },
     printMasterAnswerKey: () => {
       if (!window.TKST_EXAM_GENERATOR) return;
