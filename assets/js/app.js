@@ -138,7 +138,7 @@ function bootTkstApp() {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.12';
+  const APP_DISPLAY_VERSION = 'V-3.13';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -11356,10 +11356,19 @@ function bootTkstApp() {
       const html = window.TKST_EXAM_GENERATOR.buildQuizAnswerKeySheetHtml(examGeneratorSelectedKyu, examCurrentRandomQuestions);
       window.TKST_EXAM_GENERATOR.printHtml(`Gabarito Oficial - ${exam.title}`, html);
     },
-    printAllExams: async () => {
+    closeDetailModal: function() {
+      const modal = document.getElementById('detailModal');
+      if (modal) {
+        modal.classList.remove('active');
+        try {
+          if (typeof stopModalMedia === 'function') stopModalMedia(modal);
+        } catch(e) {}
+      }
+    },
+    printAllExams: async function () {
       if (!window.TKST_EXAM_GENERATOR) return;
       if (typeof showToast === 'function') {
-        showToast('🔍 Buscando alunos inscritos no Exame de Kyu...', 'info', 2500);
+        showToast('🔍 Carregando exames e alunos cadastrados...', 'info', 2500);
       }
 
       let candidatesData = null;
@@ -11369,21 +11378,177 @@ function bootTkstApp() {
         }
       } catch (e) { }
 
-      const allStudents = (window.TKST_APP && typeof window.TKST_APP.getAllAvailableStudentsForExam === 'function')
-        ? window.TKST_APP.getAllAvailableStudentsForExam()
-        : [];
+      if (!candidatesData || !Array.isArray(candidatesData.exames) || candidatesData.exames.length === 0) {
+        try {
+          const freshRes = await fetch(`https://dojobook-five.vercel.app/api/exames/candidatos?t=${Date.now()}`, { cache: 'no-store' });
+          if (freshRes.ok) {
+            candidatesData = await freshRes.json();
+            dojobookCandidatesCache = candidatesData;
+            try { localStorage.setItem('tkst_dojobook_candidates_cache', JSON.stringify(candidatesData)); } catch(e) {}
+          }
+        } catch (e) { }
+      }
 
-      let examCands = allStudents.filter(s => s && s.isExamCand);
+      const exames = Array.isArray(candidatesData?.exames) ? candidatesData.exames : [];
+      const candidatos = Array.isArray(candidatesData?.candidatos) ? candidatesData.candidatos : [];
 
-      // Fallback para candidatos diretos da API DojôBook caso não marcados
-      if (examCands.length === 0 && candidatesData && Array.isArray(candidatesData.candidatos) && candidatesData.candidatos.length > 0) {
-        examCands = candidatesData.candidatos.map(c => ({
-          id: c.id,
-          nome: c.nome,
-          vai_para: c.vai_para || c.graduacao_destino || c.faixa_pretendida || c.graduacao_atual || 'Amarela',
-          dojo_nome: c.dojo_nome || 'TKST',
-          exame_data: c.exame_data || ''
-        }));
+      // Se houver mais de um exame programado, abre modal para o Sensei escolher qual imprimir
+      if (exames.length > 1) {
+        this.openBatchExamSelectModal(exames, candidatos);
+        return;
+      }
+
+      // Se houver exatamente 1 exame programado, também abre a opção clara
+      if (exames.length === 1) {
+        this.openBatchExamSelectModal(exames, candidatos);
+        return;
+      }
+
+      // Fallback: se não houver array de exames mas houver candidatos com exame_id
+      if (candidatos.length > 0) {
+        const uniqueExamIds = Array.from(new Set(candidatos.map(c => c.exame_id).filter(Boolean)));
+        if (uniqueExamIds.length > 1) {
+          const simulatedExames = uniqueExamIds.map((eId, idx) => {
+            const first = candidatos.find(c => c.exame_id === eId);
+            return {
+              id: eId,
+              titulo: first?.exame_titulo || `Exame #${idx + 1}`,
+              data: first?.exame_data || '13/12/2026',
+              dojos: { nome: first?.dojo_nome || 'TKST' }
+            };
+          });
+          this.openBatchExamSelectModal(simulatedExames, candidatos);
+          return;
+        }
+        this.executePrintBatchExam('all');
+        return;
+      }
+
+      const confirmBlank = confirm(
+        '⚠️ NENHUM ALUNO CADASTRADO NO EXAME ENCONTRADO:\n\n' +
+        'Não há alunos cadastrados em exames no momento.\n\n' +
+        'Deseja gerar o Caderno de Provas Completo em branco (uma folha de cada graduação)?'
+      );
+      if (confirmBlank) {
+        const html = window.TKST_EXAM_GENERATOR.buildAllExamsHtml('quiz');
+        window.TKST_EXAM_GENERATOR.printHtml("Caderno de Provas Completo (6º Kyu ao 3º Dan)", html);
+      }
+    },
+    openBatchExamSelectModal: function (exames, candidatos) {
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('detailModalTitle');
+      const modalBody = document.getElementById('detailModalBody');
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-print" style="color: var(--accent-gold);"></i>
+          <span>Selecionar Exame de Faixa para Impressão em Lote</span>
+        </div>
+      `;
+
+      function formatRawDate(raw) {
+        if (!raw) return 'Data a definir';
+        const s = String(raw).trim();
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+          const parts = s.split('T')[0].split('-');
+          if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return s;
+      }
+
+      const examCardsHtml = (exames || []).map((ex, idx) => {
+        // Alunos cadastrados neste exame INDEPENDENTE DO STATUS
+        const examCands = (candidatos || []).filter(c => c && String(c.exame_id) === String(ex.id));
+        const dateStr = formatRawDate(ex.data || ex.exame_data);
+        const dojoName = ex.dojos ? (ex.dojos.nome || (Array.isArray(ex.dojos) ? ex.dojos.map(d => d.nome).join(', ') : '')) : 'Todos os Dojôs';
+        const title = ex.titulo || `Exame de Faixa #${idx + 1}`;
+        const count = examCands.length;
+
+        return `
+          <div style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.95)); border: 1.5px solid rgba(245, 190, 0, 0.45); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; transition: all 0.2s;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+                <h4 style="color: #FFF; font-size: 1.08rem; font-family: var(--font-heading); margin: 0; line-height: 1.3;">
+                  <i class="fas fa-award" style="color: var(--accent-gold); margin-right: 6px;"></i> ${title}
+                </h4>
+                <span class="badge badge-gold" style="font-size: 0.74rem; padding: 4px 9px; font-weight: 800; white-space: nowrap;">
+                  ${count} aluno${count !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div style="font-size: 0.84rem; color: #CBD5E1; display: flex; flex-direction: column; gap: 5px; margin-top: 8px;">
+                <div><i class="fas fa-calendar-alt" style="color: var(--accent-gold); width: 18px;"></i> <strong>Data:</strong> ${dateStr}</div>
+                <div><i class="fas fa-map-marker-alt" style="color: #38BDF8; width: 18px;"></i> <strong>Local / Dojô:</strong> ${dojoName}</div>
+                <div style="font-size: 0.76rem; color: #34D399; margin-top: 4px; line-height: 1.35;">
+                  <i class="fas fa-check-double"></i> Imprime todos os inscritos deste exame independente do status.
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-gold" onclick="window.TKST_APP.executePrintBatchExam('${ex.id}')" style="width: 100%; padding: 11px; font-size: 0.90rem; font-weight: 800; color: #000; box-shadow: 0 4px 12px rgba(245, 190, 0, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 6px;">
+              <i class="fas fa-print"></i> Imprimir Provas deste Exame (${count})
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      modalBody.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 16px; padding: 4px;">
+          <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.3); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.85rem; color: #F1F5F9; line-height: 1.45;">
+            <i class="fas fa-info-circle" style="color: var(--accent-gold); margin-right: 6px;"></i>
+            Foram identificados <strong>${(exames || []).length} exames programados</strong> no sistema. Escolha qual exame você deseja imprimir para gerar as provas nominais personalizadas de <strong>todos os alunos cadastrados</strong>:
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            ${examCardsHtml}
+          </div>
+
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.closeDetailModal()" style="padding: 9px 18px; font-size: 0.84rem;">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="window.TKST_APP.executePrintBatchExam('all')" style="padding: 9px 18px; font-size: 0.84rem; color: var(--accent-gold); border-color: rgba(255,183,3,0.45); font-weight: 700;">
+              <i class="fas fa-layer-group"></i> Imprimir de Todos os Exames Juntos (${(candidatos || []).length} alunos)
+            </button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    },
+    executePrintBatchExam: async function (examId) {
+      this.closeDetailModal();
+
+      let candidatesData = dojobookCandidatesCache;
+      if (!candidatesData) {
+        try {
+          const freshRes = await fetch(`https://dojobook-five.vercel.app/api/exames/candidatos?t=${Date.now()}`, { cache: 'no-store' });
+          if (freshRes.ok) candidatesData = await freshRes.json();
+        } catch (e) { }
+      }
+
+      const allCandidatos = Array.isArray(candidatesData?.candidatos) ? candidatesData.candidatos : [];
+      const exames = Array.isArray(candidatesData?.exames) ? candidatesData.exames : [];
+
+      let selectedCandidatos = [];
+      let examTitle = 'Exame de Faixa';
+
+      if (examId === 'all') {
+        selectedCandidatos = allCandidatos;
+        examTitle = 'Todos os Exames Programados';
+      } else {
+        selectedCandidatos = allCandidatos.filter(c => c && String(c.exame_id) === String(examId));
+        const foundExam = exames.find(e => String(e.id) === String(examId));
+        if (foundExam && foundExam.titulo) {
+          examTitle = foundExam.titulo;
+        } else if (selectedCandidatos.length > 0 && selectedCandidatos[0].exame_titulo) {
+          examTitle = selectedCandidatos[0].exame_titulo;
+        }
+      }
+
+      if (selectedCandidatos.length === 0) {
+        alert(`Nenhum aluno cadastrado no exame selecionado (${examTitle}).`);
+        return;
       }
 
       function mapBeltToKyu(beltText) {
@@ -11400,32 +11565,30 @@ function bootTkstApp() {
         return 6;
       }
 
-      if (examCands.length > 0) {
-        const candidateList = examCands.map(c => ({
-          id: c.id,
-          nome: c.nome,
-          dojo_nome: c.dojo_nome || 'TKST',
-          targetKyu: mapBeltToKyu(c.vai_para || c.graduacao_atual),
-          date: (window.TKST_APP && typeof window.TKST_APP.getDojobookExamDateFormatted === 'function')
-            ? window.TKST_APP.getDojobookExamDateFormatted(c)
-            : '13/12/2026'
-        }));
+      function formatRawDate(raw) {
+        if (!raw) return '13/12/2026';
+        const s = String(raw).trim();
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+          const parts = s.split('T')[0].split('-');
+          if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return s;
+      }
 
-        const html = window.TKST_EXAM_GENERATOR.buildBatchCandidateExamsHtml(candidateList);
-        window.TKST_EXAM_GENERATOR.printHtml(`Provas em Lote - ${candidateList.length} Alunos Inscritos no Exame de Kyu`, html);
-        if (typeof showToast === 'function') {
-          showToast(`🥋 Geradas ${candidateList.length} provas nominais para os alunos inscritos no exame!`, 'success', 4000);
-        }
-      } else {
-        const confirmBlank = confirm(
-          '⚠️ NENHUM ALUNO INSCRITO NO EXAME ENCONTRADO:\n\n' +
-          'Não há alunos marcados como inscritos no Exame de Kyu no momento.\n\n' +
-          'Deseja gerar o Caderno de Provas Completo em branco (uma folha de cada graduação)?'
-        );
-        if (confirmBlank) {
-          const html = window.TKST_EXAM_GENERATOR.buildAllExamsHtml('quiz');
-          window.TKST_EXAM_GENERATOR.printHtml("Caderno de Provas Completo (6º Kyu ao 3º Dan)", html);
-        }
+      const candidateList = selectedCandidatos.map(c => ({
+        id: c.id,
+        nome: c.nome,
+        dojo_nome: c.dojo_nome || 'TKST',
+        targetKyu: mapBeltToKyu(c.vai_para || c.kyu_dan_proximo || c.graduacao_destino || c.graduacao_atual),
+        date: (window.TKST_APP && typeof window.TKST_APP.getDojobookExamDateFormatted === 'function')
+          ? window.TKST_APP.getDojobookExamDateFormatted(c)
+          : (c.exame_data ? formatRawDate(c.exame_data) : '13/12/2026')
+      }));
+
+      const html = window.TKST_EXAM_GENERATOR.buildBatchCandidateExamsHtml(candidateList);
+      window.TKST_EXAM_GENERATOR.printHtml(`Provas em Lote - ${examTitle} (${candidateList.length} Alunos)`, html);
+      if (typeof showToast === 'function') {
+        showToast(`🥋 Geradas ${candidateList.length} provas nominais para ${examTitle}!`, 'success', 4000);
       }
     },
     printMasterAnswerKey: () => {
@@ -13011,6 +13174,13 @@ function bootTkstApp() {
         if (window.TKST_AUTH && typeof window.TKST_AUTH.saveCustomQuizBank === 'function') {
           window.TKST_AUTH.saveCustomQuizBank(bank);
         }
+        window.TKST_QUIZ_BANK = bank;
+        window.TKST_QUIZ = bank;
+        try {
+          localStorage.setItem('tkst_custom_quiz_bank', JSON.stringify(bank));
+          localStorage.setItem('tkst_quiz_vault_permanent', JSON.stringify(bank));
+        } catch(e) {}
+
         quizModalTempImage = null;
         const modal = document.getElementById('detailModal') || (typeof detailModal !== 'undefined' ? detailModal : null);
         if (modal) {
@@ -13024,11 +13194,12 @@ function bootTkstApp() {
         }
         showToast('✅ Questão atualizada com sucesso!', 'success');
 
-        if (typeof scheduleRerender === 'function') {
-          scheduleRerender(() => renderAdminMaster());
-        } else if (typeof renderAdminMaster === 'function') {
+        if (typeof renderAdminMaster === 'function') {
           try { renderAdminMaster(); } catch(rErr) { console.warn(rErr); }
         }
+        try {
+          window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', { detail: bank }));
+        } catch(e) {}
       } catch (err) {
         console.error('Erro ao editar questão:', err);
         alert('Ocorreu um erro ao editar a questão: ' + (err?.message || err));
@@ -13379,10 +13550,13 @@ function bootTkstApp() {
         <div style="display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 4px;">
           ${(sub.details || []).map((det, idx) => {
             const detImg = det.image || resolveQuestionImage(det);
+            const qTitle = det.question || `Questão ${det.num || (idx + 1)}`;
+            const selAns = det.selectedText || (det.studentAnswer ? `Opção (${det.studentAnswer})` : (det.options && det.options[det.selectedIndex]) || '-');
+            const corAns = det.correctText || (det.correctAnswer ? `Opção (${det.correctAnswer})` : (det.options && det.options[det.correctIndex]) || '-');
             return `
             <div style="background: rgba(10, 13, 20, 0.6); border: 1px solid var(--border-color); border-left: 4px solid ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'}; border-radius: var(--radius-sm); padding: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <strong style="color: #FFF; font-size: 0.9rem;">${idx + 1}. ${det.question}</strong>
+                <strong style="color: #FFF; font-size: 0.9rem;">${idx + 1}. ${qTitle}</strong>
                 <span class="badge ${det.isCorrect ? 'badge-verde' : 'badge-vermelha'}" style="font-size: 0.7rem;">
                   ${det.isCorrect ? '✓ Acerto' : '✗ Erro'}
                 </span>
@@ -13394,11 +13568,11 @@ function bootTkstApp() {
                 </div>
               ` : ''}
               <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 4px;">
-                Marcou: <strong style="color: ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">${det.selectedText || (det.options && det.options[det.selectedIndex]) || '-'}</strong>
+                Marcou: <strong style="color: ${det.isCorrect ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};">${selAns}</strong>
               </div>
               ${!det.isCorrect ? `
                 <div style="font-size: 0.84rem; color: #6EE7B7;">
-                  Correta: <strong>${det.correctText || (det.options && det.options[det.correctIndex]) || '-'}</strong>
+                  Correta: <strong>${corAns}</strong>
                 </div>
               ` : ''}
             </div>
@@ -17120,6 +17294,9 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         modal.classList.remove('active');
         modal.style.display = 'none';
       }
+      if (typeof renderAdminMaster === 'function') {
+        try { renderAdminMaster(); } catch(e) {}
+      }
     },
 
     setOmrCaptureMode: function (mode) {
@@ -17497,6 +17674,61 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
 
       const targetStudentId = student ? student.id : (omrCurrentIdentifiedExam ? omrCurrentIdentifiedExam.studentId : null);
 
+      // Recupera as 10 questões da prova ou do kyu para montar os detalhes completos
+      let examQuestions = [];
+      if (omrCurrentIdentifiedExam && Array.isArray(omrCurrentIdentifiedExam.questions) && omrCurrentIdentifiedExam.questions.length >= 10) {
+        examQuestions = omrCurrentIdentifiedExam.questions;
+      } else if (window.TKST_EXAM_GENERATOR && typeof window.TKST_EXAM_GENERATOR.getExamData === 'function') {
+        const exData = window.TKST_EXAM_GENERATOR.getExamData(kyu);
+        if (exData && Array.isArray(exData.questions)) {
+          examQuestions = exData.questions;
+        }
+      }
+      if (!examQuestions || examQuestions.length === 0) {
+        const bank = window.TKST_AUTH ? window.TKST_AUTH.getCustomQuizBank() : (window.TKST_QUIZ_BANK || []);
+        examQuestions = bank.filter(q => Number(q.kyuNumber !== undefined ? q.kyuNumber : (q.kyu !== undefined ? q.kyu : 6)) === Number(kyu));
+      }
+
+      const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+      const enrichedDetails = (Array.isArray(omrManualAnswers) ? omrManualAnswers : []).map((ans, idx) => {
+        const qObj = (examQuestions && examQuestions[idx]) || {};
+        const qText = qObj.question || qObj.title || `Questão ${idx + 1}`;
+        const expLetter = (omrCurrentExpectedKey && omrCurrentExpectedKey[idx]) || 'A';
+        const isCorrect = Boolean(ans && ans === expLetter);
+
+        let selText = '-';
+        if (ans) {
+          const ansIdx = letterMap[ans];
+          if (qObj.options && Array.isArray(qObj.options) && ansIdx !== undefined && qObj.options[ansIdx]) {
+            selText = `(${ans}) ${qObj.options[ansIdx]}`;
+          } else {
+            selText = `Alternativa (${ans})`;
+          }
+        } else {
+          selText = 'Em branco (Não respondeu)';
+        }
+
+        let corText = '-';
+        const expIdx = letterMap[expLetter];
+        if (qObj.options && Array.isArray(qObj.options) && expIdx !== undefined && qObj.options[expIdx]) {
+          corText = `(${expLetter}) ${qObj.options[expIdx]}`;
+        } else {
+          corText = `Alternativa (${expLetter})`;
+        }
+
+        return {
+          num: idx + 1,
+          question: qText,
+          studentAnswer: ans,
+          correctAnswer: expLetter,
+          selectedText: selText,
+          correctText: corText,
+          isCorrect: isCorrect,
+          image: qObj.image || qObj.fallbackImage || '',
+          options: qObj.options || []
+        };
+      });
+
       const submissionData = {
         score: hits,
         total: 10,
@@ -17504,15 +17736,12 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         beltKyu: kyu,
         studentId: targetStudentId,
         studentName: resolvedStudentName,
+        studentUsername: (student && (student.username || student.cod)) || (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.studentAbbr) || 'aluno',
+        studentBelt: (student && (student.graduacao_atual || student.currentBelt)) || beltName,
         isOmr: false,
         isManualGrading: true,
         examCode: (omrCurrentIdentifiedExam && omrCurrentIdentifiedExam.examId) || '',
-        details: (Array.isArray(omrManualAnswers) ? omrManualAnswers : []).map((ans, idx) => ({
-          num: idx + 1,
-          studentAnswer: ans,
-          correctAnswer: omrCurrentExpectedKey[idx],
-          isCorrect: ans === omrCurrentExpectedKey[idx]
-        }))
+        details: enrichedDetails
       };
 
       // 1. Grava no Portal TKST

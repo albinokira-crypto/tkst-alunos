@@ -4268,6 +4268,8 @@
       submissions.unshift(submission);
       submissions = deduplicateQuizSubmissions(submissions).slice(0, 500);
       safeLocalStorageSet(STORAGE_KEY_QUIZ_SUBMISSIONS, JSON.stringify(submissions));
+      this._cachedSubs = submissions;
+      this._cachedSubsRaw = JSON.stringify(submissions);
       window.dispatchEvent(new CustomEvent('tkst_submissions_updated', { detail: submissions }));
 
       const deletedQuizSubIds = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZ_SUBS)) || [];
