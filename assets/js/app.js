@@ -138,7 +138,7 @@ function bootTkstApp() {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.11';
+  const APP_DISPLAY_VERSION = 'V-3.12';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -3615,7 +3615,7 @@ function bootTkstApp() {
           <!-- Ocupado 100% pelas fotos do slide -->
         </div>
 
-        <!-- Lado Direito: Ranking Oficial de Kyus -->
+        <!-- Lado Direito: Rank do Simulado -->
         <div class="stat-card ranking-card">
           <div class="ranking-header">
             <div class="ranking-header-title">
@@ -3623,8 +3623,7 @@ function bootTkstApp() {
                 <i class="fas fa-trophy"></i>
               </div>
               <div style="min-width: 0;">
-                <h3 class="ranking-title">Ranking Oficial de Kyus</h3>
-                <p class="ranking-subtitle">Top Classificação TKST • Alunos Kyu (Acerto +1 pt | Erro -1 pt)</p>
+                <h3 class="ranking-title">Rank do Simulado</h3>
               </div>
             </div>
             <div class="ranking-header-tag" style="display: flex; align-items: center; gap: 8px;">
@@ -3638,7 +3637,7 @@ function bootTkstApp() {
                   (window.TKST_AUTH && window.TKST_AUTH.isMasterAdmin && window.TKST_AUTH.isMasterAdmin())
                 );
                 return isDiego ? `
-                  <button type="button" class="btn btn-sm" onclick="window.TKST_APP.promptResetKyuRanking()" style="font-size: 0.72rem; padding: 4px 10px; background: rgba(239, 68, 68, 0.18); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.45); border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);" title="Zerar Ranking Oficial dos Kyus (Apenas Sensei Diego)">
+                  <button type="button" class="btn btn-sm" onclick="window.TKST_APP.promptResetKyuRanking()" style="font-size: 0.72rem; padding: 4px 10px; background: rgba(239, 68, 68, 0.18); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.45); border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);" title="Zerar Rank do Simulado (Apenas Sensei Diego)">
                     <i class="fas fa-trash-alt"></i> Zerar Ranking
                   </button>
                 ` : '';
@@ -3655,7 +3654,7 @@ function bootTkstApp() {
               </div>
             ` : top10Leaderboard.map((item, idx) => `
               <div class="ranking-single-row ${idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''))}">
-                <!-- Linha 1: Lugar, Nome completo, Graduação -->
+                <!-- Linha 1: Lugar, Nome completo (com todo o espaço horizontal livre) e Pontos -->
                 <div class="ranking-row-line-1">
                   <div class="ranking-row-user-block">
                     <span class="ranking-pos-medal ${idx < 3 ? 'is-podium' : ''}">
@@ -3663,20 +3662,24 @@ function bootTkstApp() {
                     </span>
                     <span class="ranking-student-name" title="${item.fullName}">${item.fullName}</span>
                   </div>
-                  <span class="ranking-belt-badge">${item.currentBelt}</span>
+                  <span class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
+                    ${item.points > 0 ? '+' : ''}${item.points} pts
+                  </span>
                 </div>
 
-                <!-- Linha 2: Dojo, Quantidade de Acertos, Quantidade de Pontos -->
+                <!-- Linha 2: Faixa, Dojo e Acertos organizados sem espremer o nome -->
                 <div class="ranking-row-line-2">
-                  <div class="ranking-student-dojo" title="${item.dojo}">
-                    <i class="fas fa-landmark"></i> <span>${item.dojo}</span>
+                  <div class="ranking-row-details">
+                    ${item.currentBelt ? `<span class="ranking-belt-badge">${item.currentBelt}</span>` : ''}
+                    ${item.dojo ? `
+                      <div class="ranking-student-dojo" title="${item.dojo}">
+                        <i class="fas fa-landmark"></i> <span>${item.dojo}</span>
+                      </div>
+                    ` : ''}
                   </div>
                   <div class="ranking-row-metrics">
                     <span class="ranking-stat-pill">
                       <i class="fas fa-check-circle"></i> ${item.totalCorrect} ${item.totalCorrect === 1 ? 'acerto' : 'acertos'}
-                    </span>
-                    <span class="ranking-row-points ${item.points > 0 ? 'positive' : (item.points < 0 ? 'negative' : 'zero')}">
-                      ${item.points > 0 ? '+' : ''}${item.points} pts
                     </span>
                   </div>
                 </div>
