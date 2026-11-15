@@ -138,7 +138,7 @@ function bootTkstApp() {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.09';
+  const APP_DISPLAY_VERSION = 'V-3.10';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -12894,6 +12894,19 @@ function bootTkstApp() {
             deletedIds.forEach(dId => { delete editedMap[dId]; });
           }
           localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(editedMap));
+
+          // Transmissão direta e atômica para o Google Firebase Realtime Database (< 100ms)
+          try {
+            const fbUrl = (window.TKST_AUTH && typeof window.TKST_AUTH.getFirebaseUrl === 'function' && window.TKST_AUTH.getFirebaseUrl()) || 'https://tkst-alunos-default-rtdb.firebaseio.com';
+            if (fbUrl) {
+              const cleanFb = fbUrl.replace(/\/+$/, '');
+              fetch(`${cleanFb}/quiz_bank/edited_questions/${qId}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cleanToStore)
+              }).catch(() => {});
+            }
+          } catch(e) {}
         } catch (e) { }
 
         if (Array.isArray(window.TKST_DEFAULT_QUIZ_BANK)) {

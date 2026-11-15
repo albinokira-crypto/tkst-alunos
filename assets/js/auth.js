@@ -26,6 +26,18 @@
   const STORAGE_KEY_DELETED_SUBALBUMS = 'tkst_deleted_subalbums';
   const STORAGE_KEY_CURRICULUM = 'tkst_custom_curriculum';
   const AUTH_VERSION_KEY = 'tkst_auth_v3_nick';
+  const DEFAULT_FIREBASE_URL = 'https://tkst-alunos-default-rtdb.firebaseio.com';
+  const STORAGE_KEY_FIREBASE = 'tkst_custom_firebase_url';
+
+  function getEffectiveFirebaseUrl() {
+    try {
+      const custom = localStorage.getItem(STORAGE_KEY_FIREBASE);
+      if (custom && custom.trim()) {
+        return custom.trim().replace(/\/+$/, '');
+      }
+    } catch(e) {}
+    return DEFAULT_FIREBASE_URL;
+  }
 
   const SYNC_TOPIC = 'tkst_karate_sync_v3_live';
   const SYNC_URL = 'https://ntfy.sh/' + SYNC_TOPIC;
@@ -299,6 +311,34 @@
       try {
         editedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
       } catch(e) {}
+
+      // 0. Persistência Permanente no Google Firebase Realtime Database (Nuvem em Tempo Real)
+      const fbUrl = getEffectiveFirebaseUrl();
+      if (fbUrl) {
+        fetch(`${fbUrl}/quiz_bank/edited_questions.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editedMap)
+        }).catch(() => {});
+
+        fetch(`${fbUrl}/quiz_bank/deleted_ids.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(deleted)
+        }).catch(() => {});
+
+        fetch(`${fbUrl}/quiz_bank/custom_bank.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(customOnly)
+        }).catch(() => {});
+
+        fetch(`${fbUrl}/quiz_bank/sync_meta.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ timestamp: Date.now(), senderId: CLIENT_SENDER_ID, count: customOnly.length })
+        }).catch(() => {});
+      }
 
       // 1. Endpoint dedicado /api/quiz-bank (persistência entre requisições)
       fetch('/api/quiz-bank', {
@@ -683,9 +723,44 @@
         });
       }
 
-      // 3. 1ª tentativa: endpoint dedicado /api/quiz-bank
+      // 3. 1ª tentativa: Google Firebase Realtime Database (Nuvem Oficial Permanente)
       let cloudQuestions = [];
       const cloudMap = new Map();
+      const fbUrl = getEffectiveFirebaseUrl();
+      if (fbUrl) {
+        try {
+          const fbController = new AbortController();
+          const fbTimeout = setTimeout(() => fbController.abort(), 4000);
+          const fbRes = await fetch(fbUrl + '/quiz_bank.json', { cache: 'no-store', signal: fbController.signal });
+          clearTimeout(fbTimeout);
+          if (fbRes.ok) {
+            const fbData = await fbRes.json();
+            if (fbData && typeof fbData === 'object') {
+              if (fbData.edited_questions && typeof fbData.edited_questions === 'object') {
+                try {
+                  const curMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}');
+                  Object.assign(curMap, fbData.edited_questions);
+                  localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(curMap));
+                } catch(e) {}
+              }
+              if (Array.isArray(fbData.deleted_ids) && fbData.deleted_ids.length > 0) {
+                try {
+                  const curDel = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES) || '[]');
+                  const setDel = new Set([...curDel, ...fbData.deleted_ids]);
+                  localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(Array.from(setDel)));
+                } catch(e) {}
+              }
+              if (Array.isArray(fbData.custom_bank) && fbData.custom_bank.length > 0) {
+                fbData.custom_bank.forEach(q => { if (q && q.id) cloudMap.set(q.id, q); });
+              }
+            }
+          }
+        } catch(fbErr) {
+          console.warn('Firebase quiz_bank pull notice:', fbErr);
+        }
+      }
+
+      // 4. 2ª tentativa: endpoint dedicado /api/quiz-bank
       try {
         const res = await fetch('/api/quiz-bank', { cache: 'no-store' });
         if (res.ok) {
@@ -1624,6 +1699,16 @@
 
       const payloadStr = JSON.stringify(payload);
 
+      // 0. Post to Google Firebase Realtime Database (Nuvem Oficial Permanente)
+      const fbUrl = getEffectiveFirebaseUrl();
+      if (fbUrl) {
+        fetch(`${fbUrl}/sync_state.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: payloadStr
+        }).catch(() => {});
+      }
+
       // 1. Post to Vercel Serverless Sync API (garante persistência de estado em nuvem)
       try {
         await fetch('/api/sync', {
@@ -2267,6 +2352,23 @@
       pullKataVideosFromCloud().catch(() => {});
       pullKumiteVideosFromCloud().catch(() => {});
 
+      // 5b. Sincronização geral persistente via Google Firebase Realtime Database
+      const fbUrl = getEffectiveFirebaseUrl();
+      if (fbUrl) {
+        try {
+          const fbController = new AbortController();
+          const fbTimeout = setTimeout(() => fbController.abort(), 3500);
+          const fbRes = await fetch(fbUrl + '/sync_state.json', { cache: 'no-store', signal: fbController.signal });
+          clearTimeout(fbTimeout);
+          if (fbRes.ok) {
+            const fbSync = await fbRes.json();
+            if (fbSync && typeof fbSync === 'object') {
+              applyCloudData(fbSync);
+            }
+          }
+        } catch(e) {}
+      }
+
       // 6. Vercel Serverless /api/sync (dados gerais: alunos, dojos, etc.)
       try {
         const apiRes = await fetch('/api/sync', { cache: 'no-store' });
@@ -2436,6 +2538,124 @@
     } catch(e) {}
   }
 
+  let _activeFirebaseEs = null;
+  function initFirebaseRealtimeStream() {
+    try {
+      const fbUrl = getEffectiveFirebaseUrl();
+      if (!fbUrl || typeof EventSource === 'undefined') return;
+      if (_activeFirebaseEs) {
+        try { _activeFirebaseEs.close(); } catch(e) {}
+        _activeFirebaseEs = null;
+      }
+      const es = new EventSource(fbUrl + '/quiz_bank.json');
+      _activeFirebaseEs = es;
+
+      const handleFirebasePayload = (path, data) => {
+        if (!data) return;
+        if (data.senderId && data.senderId === CLIENT_SENDER_ID) return;
+
+        let localEditedMap = {};
+        try { localEditedMap = JSON.parse(localStorage.getItem('tkst_edited_quiz_questions') || '{}'); } catch(e) {}
+        let modified = false;
+
+        if (path === '/' || path === '') {
+          if (data.edited_questions && typeof data.edited_questions === 'object') {
+            Object.keys(data.edited_questions).forEach(k => {
+              const q = data.edited_questions[k];
+              if (q && q.id) {
+                const cur = localEditedMap[k];
+                if (!cur || !cur.updatedAt || (q.updatedAt && q.updatedAt >= cur.updatedAt)) {
+                  localEditedMap[k] = q;
+                  modified = true;
+                }
+              }
+            });
+          }
+          if (Array.isArray(data.deleted_ids)) {
+            const curDel = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_QUIZZES) || '[]');
+            const setDel = new Set([...curDel, ...data.deleted_ids]);
+            localStorage.setItem(STORAGE_KEY_DELETED_QUIZZES, JSON.stringify(Array.from(setDel)));
+          }
+        } else if (path.startsWith('/edited_questions')) {
+          if (data && data.id && data.question) {
+            const cur = localEditedMap[data.id];
+            if (!cur || !cur.updatedAt || (data.updatedAt && data.updatedAt >= cur.updatedAt)) {
+              localEditedMap[data.id] = data;
+              modified = true;
+            }
+          } else if (typeof data === 'object') {
+            Object.keys(data).forEach(k => {
+              const q = data[k];
+              if (q && q.id && q.question) {
+                const cur = localEditedMap[k];
+                if (!cur || !cur.updatedAt || (q.updatedAt && q.updatedAt >= cur.updatedAt)) {
+                  localEditedMap[k] = q;
+                  modified = true;
+                }
+              }
+            });
+          }
+        }
+
+        if (modified) {
+          localStorage.setItem('tkst_edited_quiz_questions', JSON.stringify(localEditedMap));
+          if (Array.isArray(window.TKST_DEFAULT_QUIZ_BANK)) {
+            Object.keys(localEditedMap).forEach(qId => {
+              const eq = localEditedMap[qId];
+              const dIdx = window.TKST_DEFAULT_QUIZ_BANK.findIndex(item => item && (item.id === qId || String(item.id) === String(qId)));
+              if (dIdx !== -1) {
+                window.TKST_DEFAULT_QUIZ_BANK[dIdx] = { ...window.TKST_DEFAULT_QUIZ_BANK[dIdx], ...eq };
+              }
+            });
+          }
+          if (Array.isArray(window.TKST_CUSTOM_VAULT_QUESTIONS)) {
+            Object.keys(localEditedMap).forEach(qId => {
+              const eq = localEditedMap[qId];
+              const vIdx = window.TKST_CUSTOM_VAULT_QUESTIONS.findIndex(item => item && (item.id === qId || String(item.id) === String(qId)));
+              if (vIdx !== -1) {
+                window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx] = { ...window.TKST_CUSTOM_VAULT_QUESTIONS[vIdx], ...eq };
+              }
+            });
+          }
+          if (window.TKST_AUTH && typeof window.TKST_AUTH.getCustomQuizBank === 'function') {
+            const updatedBank = window.TKST_AUTH.getCustomQuizBank();
+            window.dispatchEvent(new CustomEvent('tkst_quiz_bank_updated', {
+              detail: { count: updatedBank.length, updated: true, fromFirebase: true }
+            }));
+          }
+        }
+      };
+
+      es.addEventListener('put', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          if (parsed) handleFirebasePayload(parsed.path || '/', parsed.data);
+        } catch(err) {}
+      });
+
+      es.addEventListener('patch', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          if (parsed) handleFirebasePayload(parsed.path || '/', parsed.data);
+        } catch(err) {}
+      });
+
+      es.onerror = () => {
+        if (es.readyState === 2) {
+          try { es.close(); } catch(e) {}
+          _activeFirebaseEs = null;
+          setTimeout(() => {
+            if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+              initFirebaseRealtimeStream();
+            }
+          }, 3000);
+        }
+      };
+    } catch(err) {
+      console.warn('Firebase Realtime Stream notice:', err);
+    }
+  }
+
   let _activeEventSource = null;
   function initRealtimeStream() {
     try {
@@ -2493,14 +2713,18 @@
   // Sincronização inicial em background diferida (nunca bloqueia o boot e nunca faz push sem ação do usuário)
   setTimeout(() => {
     pullFromCloud(true).catch(() => {});
+    initFirebaseRealtimeStream();
     initRealtimeStream();
-  }, 1200);
+  }, 1000);
 
   // Sincronização automática em caso de retorno do app ou desbloqueio de tela
   if (typeof document !== 'undefined') {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         pullFromCloud(true);
+        if (!_activeFirebaseEs || _activeFirebaseEs.readyState === 2) {
+          initFirebaseRealtimeStream();
+        }
         if (!_activeEventSource || _activeEventSource.readyState === 2) {
           initRealtimeStream();
         }
@@ -2508,6 +2732,9 @@
     });
     window.addEventListener('focus', () => {
       pullFromCloud(true);
+      if (!_activeFirebaseEs || _activeFirebaseEs.readyState === 2) {
+        initFirebaseRealtimeStream();
+      }
     });
     window.addEventListener('DOMContentLoaded', () => {
       pullGlossaryFromCloud();
@@ -4336,6 +4563,17 @@
 
       window.TKST_QUIZ_BANK = bank;
 
+      // Sincroniza deleção no Firebase Realtime Database
+      const fbUrl = getEffectiveFirebaseUrl();
+      if (fbUrl) {
+        fetch(`${fbUrl}/quiz_bank/edited_questions/${qId}.json`, { method: 'DELETE' }).catch(() => {});
+        fetch(`${fbUrl}/quiz_bank/deleted_ids.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(deleted)
+        }).catch(() => {});
+      }
+
       // Sincroniza deleção no endpoint dedicado
       pushQuizBankToCloud(bank, deleted);
       pushToCloud();
@@ -5281,7 +5519,19 @@
     broadcastQuizBank: broadcastQuizBankChunks,
     broadcastQuizEditDelta: broadcastQuizEditDelta,
     pushToCloud: pushToCloud,
-    pullQuizBankFromCloud: pullQuizBankFromCloud
+    pullQuizBankFromCloud: pullQuizBankFromCloud,
+    getFirebaseUrl: function() { return getEffectiveFirebaseUrl(); },
+    setFirebaseUrl: function(url) {
+      if (!url || !url.trim()) {
+        localStorage.removeItem(STORAGE_KEY_FIREBASE);
+      } else {
+        localStorage.setItem(STORAGE_KEY_FIREBASE, url.trim());
+      }
+      pushToCloud();
+      pullFromCloud(true);
+      return true;
+    },
+    initFirebaseRealtimeStream: initFirebaseRealtimeStream
   };
 
   // Background Heartbeat Engine (Executa discretamente a cada 45s apenas em background)
