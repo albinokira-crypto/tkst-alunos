@@ -2364,6 +2364,13 @@
       // 3. Endpoint dedicado de simulados permanentes no GitHub
       pullQuizSubmissionsFromCloud().catch(() => {});
 
+      // 3b. Endpoint dedicado de provas geradas permanentes no GitHub
+      try {
+        if (window.TKST_AUTH && typeof window.TKST_AUTH.syncAllGeneratedExams === 'function') {
+          window.TKST_AUTH.syncAllGeneratedExams().catch(() => {});
+        }
+      } catch(e) {}
+
       // 4. Endpoint dedicado de glossário japonês permanente no GitHub
       pullGlossaryFromCloud().catch(() => {});
 
@@ -5431,6 +5438,20 @@
             }
           })
         }).catch(() => {});
+
+        // 3. Persistência definitiva no repositório GitHub via /api/exam-commit
+        fetch('/api/exam-commit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            exam: record,
+            exams: {
+              [baseCode]: record,
+              [cleanId]: record,
+              [record.examId]: record
+            }
+          })
+        }).catch(() => {});
       } catch(e) {}
     },
 
@@ -5460,6 +5481,64 @@
       return null;
     },
 
+    syncAllGeneratedExams: async function() {
+      try {
+        let localExams = {};
+        try {
+          localExams = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+        } catch(e) {}
+
+        const keys = Object.keys(localExams);
+        if (keys.length > 0) {
+          fetch('/api/exam-commit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ exams: localExams })
+          }).catch(() => {});
+
+          fetch('/api/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ generated_exams: localExams })
+          }).catch(() => {});
+        }
+
+        let cloudExams = null;
+        try {
+          const res = await fetch('/api/exam-commit?_=' + Date.now(), { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.data) cloudExams = json.data;
+          }
+        } catch(e) {}
+
+        if (!cloudExams) {
+          try {
+            const resStatic = await fetch('./assets/data/generated-exams.json?_=' + Date.now(), { cache: 'no-store' });
+            if (resStatic.ok) cloudExams = await resStatic.json();
+          } catch(e) {}
+        }
+
+        if (cloudExams && typeof cloudExams === 'object') {
+          if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+          Object.assign(window.TKST_GENERATED_EXAMS_CACHE, cloudExams);
+          let store = {};
+          try { store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
+          Object.keys(cloudExams).forEach(k => {
+            const item = cloudExams[k];
+            if (!item) return;
+            const ex = store[k];
+            if (!ex || (!ex.studentName && item.studentName)) {
+              store[k] = item;
+            }
+          });
+          safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
+          return store;
+        }
+      } catch(e) {}
+      return null;
+    },
+
     fetchExamFromCloud: async function(examId) {
       if (!examId) return null;
       const clean = String(examId).replace(/^#/, '').replace(/^C[OÓ]DIGO:?\s*/i, '').trim().toUpperCase();
@@ -5468,6 +5547,39 @@
       // 1. Verifica cache local
       const local = this.getGeneratedExam(baseCode) || this.getGeneratedExam(clean);
       if (local && (local.studentName || local.studentAbbr)) return local;
+
+      // 1.5 Tenta buscar diretamente do endpoint dedicado permanente /api/exam-commit
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 3500);
+        const resCommit = await fetch('/api/exam-commit?_=' + Date.now(), { cache: 'no-store', signal: controller.signal });
+        clearTimeout(tid);
+        if (resCommit.ok) {
+          const resJson = await resCommit.json();
+          const commitExams = resJson && resJson.data;
+          if (commitExams && typeof commitExams === 'object') {
+            if (!window.TKST_GENERATED_EXAMS_CACHE) window.TKST_GENERATED_EXAMS_CACHE = {};
+            Object.assign(window.TKST_GENERATED_EXAMS_CACHE, commitExams);
+            let store = {};
+            try { store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}'); } catch(e) {}
+            Object.assign(store, commitExams);
+            safeLocalStorageSet('tkst_generated_exams', JSON.stringify(store));
+
+            let match = commitExams[baseCode] || commitExams[clean];
+            if (!match) {
+              match = Object.values(commitExams).find(x => {
+                if (!x) return false;
+                const xCode = String(x.examId || x.baseExamId || '').replace(/^#/, '').toUpperCase().split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+                return xCode === baseCode;
+              });
+            }
+            if (match) {
+              handleIncomingExamRecord(match);
+              if (match.studentName || match.studentAbbr) return match;
+            }
+          }
+        }
+      } catch(e) {}
 
       // 2. Tenta buscar diretamente do arquivo estático de provas geradas
       try {
@@ -5652,4 +5764,13 @@
       }
     } catch(e) {}
   }, 45000);
+
+  // Sincronização automática em segundo plano no startup (PC <-> Celular para provas geradas)
+  setTimeout(() => {
+    try {
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.syncAllGeneratedExams === 'function') {
+        window.TKST_AUTH.syncAllGeneratedExams();
+      }
+    } catch(e) {}
+  }, 2500);
 })();

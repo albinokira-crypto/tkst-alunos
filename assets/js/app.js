@@ -138,7 +138,7 @@ function bootTkstApp() {
   const sidebar = document.getElementById('sidebar');
 
   // Versão oficial do App exibida no Menu Lateral
-  const APP_DISPLAY_VERSION = 'V-3.16';
+  const APP_DISPLAY_VERSION = 'V-3.17';
   const appVersionBadgeEl = document.getElementById('appVersionBadge');
   if (appVersionBadgeEl) {
     appVersionBadgeEl.textContent = APP_DISPLAY_VERSION;
@@ -11594,6 +11594,9 @@ function bootTkstApp() {
       if (typeof showToast === 'function') {
         showToast(`🥋 Geradas ${candidateList.length} provas nominais para ${examTitle}!`, 'success', 4000);
       }
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.syncAllGeneratedExams === 'function') {
+        window.TKST_AUTH.syncAllGeneratedExams();
+      }
     },
     printMasterAnswerKey: () => {
       if (!window.TKST_EXAM_GENERATOR) return;
@@ -16744,7 +16747,11 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       if (!modal) return;
 
       // Sincroniza em segundo plano exames gerados na nuvem para o celular ter todas as provas do PC
-      if (window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
+      if (window.TKST_AUTH && typeof window.TKST_AUTH.syncAllGeneratedExams === 'function') {
+        window.TKST_AUTH.syncAllGeneratedExams().then(() => {
+          this.renderOmrRecentExams();
+        }).catch(() => { });
+      } else if (window.TKST_AUTH && typeof window.TKST_AUTH.fetchExamFromCloud === 'function') {
         fetch('/api/sync', { cache: 'no-store' }).then(r => r.json()).then(data => {
           const cloudData = (data && data.data) || data;
           if (cloudData && cloudData.generated_exams && window.TKST_AUTH.applyCloudData) {
@@ -16755,7 +16762,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       }
 
       // Popula lista de alunos matriculados e candidatos do Dojobook
-      this.populateOmrStudentsList();
+      this.populateOmrStudentsList(null, kyu);
 
       // Renderiza atalhos rápidos de provas recentes
       this.renderOmrRecentExams();
@@ -16770,19 +16777,66 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
       modal.style.display = 'flex';
     },
 
-    populateOmrStudentsList: function (selectedStudentId) {
+    populateOmrStudentsList: function (selectedStudentId, targetKyu) {
       const sel = document.getElementById('omrStudentSelect');
       if (!sel) return;
       const students = (typeof this.getAllAvailableStudentsForExam === 'function')
         ? this.getAllAvailableStudentsForExam()
         : ((window.TKST_AUTH && window.TKST_AUTH.getAllStudents()) || []);
-      sel.innerHTML = '<option value="">Confirmar ou alterar aluno...</option>' +
-        students.map(s => {
-          const isSelected = selectedStudentId && (String(s.id) === String(selectedStudentId));
-          const dojo = s.dojo_nome || s.dojo || 'TKST';
-          const codLabel = s.cod ? ` [${s.cod}]` : '';
-          return `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.nome || s.name || s.username}${codLabel} (${dojo})</option>`;
-        }).join('');
+
+      function mapBeltToKyuNum(b) {
+        const s = String(b || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (s.includes('amarela') || s.includes('6o') || s.includes('6 kyu') || s.includes('6º')) return 6;
+        if (s.includes('vermelha') || s.includes('5o') || s.includes('5 kyu') || s.includes('5º')) return 5;
+        if (s.includes('laranja') || s.includes('4o') || s.includes('4 kyu') || s.includes('4º')) return 4;
+        if (s.includes('verde') || s.includes('3o') || s.includes('3 kyu') || s.includes('3º')) return 3;
+        if (s.includes('roxa') || s.includes('2o') || s.includes('2 kyu') || s.includes('2º')) return 2;
+        if (s.includes('marrom') || s.includes('1o') || s.includes('1 kyu') || s.includes('1º')) return 1;
+        if (s.includes('shodan') || s.includes('preta') || s.includes('1o dan') || s.includes('1º dan')) return 0;
+        if (s.includes('nidan') || s.includes('2o dan') || s.includes('2º dan')) return -1;
+        if (s.includes('sandan') || s.includes('3o dan') || s.includes('3º dan')) return -2;
+        return null;
+      }
+
+      const hasTargetKyu = (targetKyu !== undefined && targetKyu !== null);
+      const targetKyuNum = hasTargetKyu ? Number(targetKyu) : null;
+
+      const matchingKyuStudents = [];
+      const otherStudents = [];
+
+      students.forEach(s => {
+        const studentKyu = mapBeltToKyuNum(s.vai_para || s.graduacao_destino || s.kyu_dan_proximo || s.graduacao_atual || s.faixa || s.belt);
+        if (hasTargetKyu && studentKyu !== null && studentKyu === targetKyuNum) {
+          matchingKyuStudents.push(s);
+        } else {
+          otherStudents.push(s);
+        }
+      });
+
+      function renderOption(s) {
+        const isSelected = selectedStudentId && (String(s.id) === String(selectedStudentId));
+        const dojo = s.dojo_nome || s.dojo || 'TKST';
+        const codLabel = s.cod ? ` [${s.cod}]` : '';
+        const beltLabel = s.vai_para ? ` → ${s.vai_para}` : (s.graduacao_atual ? ` (${s.graduacao_atual})` : '');
+        return `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.nome || s.name || s.username}${codLabel}${beltLabel} (${dojo})</option>`;
+      }
+
+      let optionsHtml = '<option value="">Confirmar ou alterar aluno...</option>';
+      if (matchingKyuStudents.length > 0) {
+        const beltName = (typeof getBeltNameFromKyu === 'function') ? getBeltNameFromKyu(targetKyuNum) : `Faixa Avaliada`;
+        optionsHtml += `<optgroup label="⭐ CANDIDATOS DESTA FAIXA (${beltName.toUpperCase()})">`;
+        optionsHtml += matchingKyuStudents.map(renderOption).join('');
+        optionsHtml += `</optgroup>`;
+        if (otherStudents.length > 0) {
+          optionsHtml += `<optgroup label="Demais Alunos e Candidatos">`;
+          optionsHtml += otherStudents.map(renderOption).join('');
+          optionsHtml += `</optgroup>`;
+        }
+      } else {
+        optionsHtml += students.map(renderOption).join('');
+      }
+
+      sel.innerHTML = optionsHtml;
     },
 
     renderOmrRecentExams: function () {
@@ -16999,18 +17053,38 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
           omrCurrentIdentifiedExam.studentName = studentName;
           omrCurrentIdentifiedExam.studentAbbr = studentName;
           if (s.dojo_nome || s.dojo) omrCurrentIdentifiedExam.dojoName = s.dojo_nome || s.dojo;
+
+          try {
+            const store = JSON.parse(localStorage.getItem('tkst_generated_exams') || '{}');
+            const eCode = omrCurrentIdentifiedExam.examId || omrCurrentIdentifiedExam.baseExamId;
+            if (eCode) {
+              store[eCode] = omrCurrentIdentifiedExam;
+              const clean5 = String(eCode).replace(/^#/, '').split('-')[0].replace(/[^0-9A-Z]/g, '').slice(0, 5);
+              if (clean5) store[clean5] = omrCurrentIdentifiedExam;
+              localStorage.setItem('tkst_generated_exams', JSON.stringify(store));
+            }
+          } catch(e) {}
+
+          if (window.TKST_AUTH && typeof window.TKST_AUTH.broadcastGeneratedExam === 'function') {
+            window.TKST_AUTH.broadcastGeneratedExam(omrCurrentIdentifiedExam);
+          }
         }
         const studentEl = document.getElementById('omrIdentifiedStudentText');
         if (studentEl) {
           studentEl.textContent = studentName;
           studentEl.style.color = '#38BDF8';
         }
+        const studentSub = document.getElementById('omrIdentifiedStudentSub');
+        if (studentSub) {
+          studentSub.innerHTML = '<i class="fas fa-check-circle" style="color: #10B981;"></i> Vinculado e sincronizado com todos os aparelhos!';
+          studentSub.style.display = 'block';
+        }
         const p2Student = document.getElementById('omrPhase2Student');
         if (p2Student) {
           p2Student.textContent = studentName;
         }
         if (typeof showToast === 'function') {
-          showToast(`👤 Aluno vinculado: ${studentName}`, 'info', 2000);
+          showToast(`👤 Aluno vinculado e sincronizado: ${studentName}`, 'success', 2500);
         }
       }
     },
@@ -17183,9 +17257,10 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         const kyuNum = (exam.kyu !== undefined && exam.kyu !== null) ? Number(exam.kyu) : 4;
         const beltName = getBeltNameFromKyu(kyuNum);
 
-        // Sincroniza select de Kyu
+        // Sincroniza select de Kyu e popula lista priorizando os alunos desta faixa
         const kyuSelect = document.getElementById('omrKyuSelect');
         if (kyuSelect) kyuSelect.value = String(kyuNum);
+        this.populateOmrStudentsList(exam.studentId, kyuNum);
 
         // Preenche dados da identificação
         const codeBadge = document.getElementById('omrIdentifiedCodeBadge');
@@ -17205,7 +17280,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
         const studentSub = document.getElementById('omrIdentifiedStudentSub');
         const studentName = exam.studentName || exam.studentAbbr || '';
         if (studentEl) {
-          studentEl.textContent = studentName || 'Aluno Vinculado ao Código';
+          studentEl.textContent = studentName || `Vincular Aluno da Faixa ${beltName}`;
           studentEl.style.color = studentName ? '#38BDF8' : '#F59E0B';
         }
         if (studentSub) {
@@ -17213,7 +17288,7 @@ Mariana Costa - Faixa Vermelha - TKST Rio do Ouro" style="font-family: monospace
             studentSub.innerHTML = '<i class="fas fa-check-circle" style="color: #10B981;"></i> Vinculado automaticamente pelo código da prova';
             studentSub.style.display = 'block';
           } else {
-            studentSub.innerHTML = '<span style="color: #94A3B8;">Código avulso (vincular aluno abaixo se desejar)</span>';
+            studentSub.innerHTML = `<span style="color: #38BDF8;"><i class="fas fa-hand-pointer"></i> Toque abaixo no aluno correspondente (${beltName}) para vincular permanentemente</span>`;
             studentSub.style.display = 'block';
           }
         }
